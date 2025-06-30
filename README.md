@@ -12,7 +12,7 @@
 
 ## 🧱 레포지토리 구조
 
-<code> ``` Server-Job-Prep/
+Server-Job-Prep/
 ├── C++/
 │ ├── 01_Pointer_Reference.md
 │ ├── 02_SmartPointer.md
@@ -30,8 +30,7 @@
 │ ├── OS_Interview_Questions.md
 │ ├── Network_Interview_Questions.md
 │ └── C++_Interview_Questions.md
-└── README.md``` </code>
-
+└── README.md
 
 ---
 
