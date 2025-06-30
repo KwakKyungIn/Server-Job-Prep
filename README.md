@@ -12,7 +12,7 @@
 
 ## 🧱 레포지토리 구조
 
-<pre><code> ``` Server-Job-Prep/ ├── C++/ │ ├── 01_Pointer_Reference.md │ ├── 02_SmartPointer.md │ └── README.md ├── Network/ │ ├── 01_TCP_IP.md │ ├── 02_Socket_Programming.md │ └── README.md ├── Operating-System/ │ ├── 01_Process_Thread.md │ ├── 02_Scheduling.md │ ├── 03_Memory_Management.md │ └── README.md ├── Interview/ │ ├── OS_Interview_Questions.md │ ├── Network_Interview_Questions.md │ └── C++_Interview_Questions.md └── README.md ``` </code></pre>
+<code> ``` Server-Job-Prep/ ├── C++/ │ ├── 01_Pointer_Reference.md │ ├── 02_SmartPointer.md │ └── README.md ├── Network/ │ ├── 01_TCP_IP.md │ ├── 02_Socket_Programming.md │ └── README.md ├── Operating-System/ │ ├── 01_Process_Thread.md │ ├── 02_Scheduling.md │ ├── 03_Memory_Management.md │ └── README.md ├── Interview/ │ ├── OS_Interview_Questions.md │ ├── Network_Interview_Questions.md │ └── C++_Interview_Questions.md └── README.md ``` </code>
 
 
 ---
