@@ -10,14 +10,9 @@
 이 저장소는 네오플/크래프톤 등 게임 서버 개발자 면접을 대비한 기술 정리 리포지토리입니다.
 
 
-## 🧱 리포지토리 구조
+## 🧱 레포지토리 구조
 
-Server-Job-Prep/
-├── C++/
-├── Network/
-├── Operating-System/
-├── Interview/
-└── README.md
+<pre><code> ``` Server-Job-Prep/ ├── C++/ │ ├── 01_Pointer_Reference.md │ ├── 02_SmartPointer.md │ └── README.md ├── Network/ │ ├── 01_TCP_IP.md │ ├── 02_Socket_Programming.md │ └── README.md ├── Operating-System/ │ ├── 01_Process_Thread.md │ ├── 02_Scheduling.md │ ├── 03_Memory_Management.md │ └── README.md ├── Interview/ │ ├── OS_Interview_Questions.md │ ├── Network_Interview_Questions.md │ └── C++_Interview_Questions.md └── README.md ``` </code></pre>
 
 
 ---
