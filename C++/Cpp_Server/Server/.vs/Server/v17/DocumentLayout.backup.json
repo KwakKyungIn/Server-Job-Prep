@@ -1,0 +1,173 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\GGI\\Desktop\\\uACBD\uC778\uC4F0\\\uAE43\uD5C8\uBE0C\\Repo\\MyCSStudy\\C\u002B\u002B\\Cpp_Server\\Server\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{0DC5384E-F7BE-4736-9339-8E75A46F4E86}|GameServer\\GameServer.vcxproj|C:\\Users\\GGI\\Desktop\\\uACBD\uC778\uC4F0\\\uAE43\uD5C8\uBE0C\\Repo\\MyCSStudy\\C\u002B\u002B\\Cpp_Server\\Server\\GameServer\\GameServer.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{0DC5384E-F7BE-4736-9339-8E75A46F4E86}|GameServer\\GameServer.vcxproj|solutionrelative:GameServer\\GameServer.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{AFC8D49F-96D7-451D-8439-A976A8707067}|DummyClient\\DummyClient.vcxproj|C:\\Users\\GGI\\Desktop\\\uACBD\uC778\uC4F0\\\uAE43\uD5C8\uBE0C\\Repo\\MyCSStudy\\C\u002B\u002B\\Cpp_Server\\Server\\DummyClient\\pch.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{AFC8D49F-96D7-451D-8439-A976A8707067}|DummyClient\\DummyClient.vcxproj|solutionrelative:DummyClient\\pch.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0DC5384E-F7BE-4736-9339-8E75A46F4E86}|GameServer\\GameServer.vcxproj|C:\\Users\\GGI\\Desktop\\\uACBD\uC778\uC4F0\\\uAE43\uD5C8\uBE0C\\Repo\\MyCSStudy\\C\u002B\u002B\\Cpp_Server\\Server\\GameServer\\pch.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{0DC5384E-F7BE-4736-9339-8E75A46F4E86}|GameServer\\GameServer.vcxproj|solutionrelative:GameServer\\pch.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0DC5384E-F7BE-4736-9339-8E75A46F4E86}|GameServer\\GameServer.vcxproj|C:\\Users\\GGI\\Desktop\\\uACBD\uC778\uC4F0\\\uAE43\uD5C8\uBE0C\\Repo\\MyCSStudy\\C\u002B\u002B\\Cpp_Server\\Server\\GameServer\\pch.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{0DC5384E-F7BE-4736-9339-8E75A46F4E86}|GameServer\\GameServer.vcxproj|solutionrelative:GameServer\\pch.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{AFC8D49F-96D7-451D-8439-A976A8707067}|DummyClient\\DummyClient.vcxproj|C:\\Users\\GGI\\Desktop\\\uACBD\uC778\uC4F0\\\uAE43\uD5C8\uBE0C\\Repo\\MyCSStudy\\C\u002B\u002B\\Cpp_Server\\Server\\DummyClient\\DummyClient.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{AFC8D49F-96D7-451D-8439-A976A8707067}|DummyClient\\DummyClient.vcxproj|solutionrelative:DummyClient\\DummyClient.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{54184ED7-9311-45A3-83FA-327411FD797F}|ServerCore\\ServerCore.vcxproj|C:\\Users\\GGI\\Desktop\\\uACBD\uC778\uC4F0\\\uAE43\uD5C8\uBE0C\\Repo\\MyCSStudy\\C\u002B\u002B\\Cpp_Server\\Server\\ServerCore\\CorePch.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{54184ED7-9311-45A3-83FA-327411FD797F}|ServerCore\\ServerCore.vcxproj|solutionrelative:ServerCore\\CorePch.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{54184ED7-9311-45A3-83FA-327411FD797F}|ServerCore\\ServerCore.vcxproj|C:\\Users\\GGI\\Desktop\\\uACBD\uC778\uC4F0\\\uAE43\uD5C8\uBE0C\\Repo\\MyCSStudy\\C\u002B\u002B\\Cpp_Server\\Server\\ServerCore\\CorePch.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{54184ED7-9311-45A3-83FA-327411FD797F}|ServerCore\\ServerCore.vcxproj|solutionrelative:ServerCore\\CorePch.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{54184ED7-9311-45A3-83FA-327411FD797F}|ServerCore\\ServerCore.vcxproj|C:\\Users\\GGI\\Desktop\\\uACBD\uC778\uC4F0\\\uAE43\uD5C8\uBE0C\\Repo\\MyCSStudy\\C\u002B\u002B\\Cpp_Server\\Server\\ServerCore\\pch.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{54184ED7-9311-45A3-83FA-327411FD797F}|ServerCore\\ServerCore.vcxproj|solutionrelative:ServerCore\\pch.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{54184ED7-9311-45A3-83FA-327411FD797F}|ServerCore\\ServerCore.vcxproj|C:\\Users\\GGI\\Desktop\\\uACBD\uC778\uC4F0\\\uAE43\uD5C8\uBE0C\\Repo\\MyCSStudy\\C\u002B\u002B\\Cpp_Server\\Server\\ServerCore\\Types.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{54184ED7-9311-45A3-83FA-327411FD797F}|ServerCore\\ServerCore.vcxproj|solutionrelative:ServerCore\\Types.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 1,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedHeight": 68,
+          "SelectedChildIndex": 7,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{cce594b6-0c39-4442-ba28-10c64ac7e89f}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{3ae79031-e1bc-11d0-8f78-00a0c9110057}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "CorePch.cpp",
+              "DocumentMoniker": "C:\\Users\\GGI\\Desktop\\\uACBD\uC778\uC4F0\\\uAE43\uD5C8\uBE0C\\Repo\\MyCSStudy\\C\u002B\u002B\\Cpp_Server\\Server\\ServerCore\\CorePch.cpp",
+              "RelativeDocumentMoniker": "ServerCore\\CorePch.cpp",
+              "ToolTip": "C:\\Users\\GGI\\Desktop\\\uACBD\uC778\uC4F0\\\uAE43\uD5C8\uBE0C\\Repo\\MyCSStudy\\C\u002B\u002B\\Cpp_Server\\Server\\ServerCore\\CorePch.cpp",
+              "RelativeToolTip": "ServerCore\\CorePch.cpp",
+              "ViewState": "AgIAAAAAAAAAAAAAAADwvwUAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
+              "WhenOpened": "2025-06-23T13:25:09.371Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "CorePch.h",
+              "DocumentMoniker": "C:\\Users\\GGI\\Desktop\\\uACBD\uC778\uC4F0\\\uAE43\uD5C8\uBE0C\\Repo\\MyCSStudy\\C\u002B\u002B\\Cpp_Server\\Server\\ServerCore\\CorePch.h",
+              "RelativeDocumentMoniker": "ServerCore\\CorePch.h",
+              "ToolTip": "C:\\Users\\GGI\\Desktop\\\uACBD\uC778\uC4F0\\\uAE43\uD5C8\uBE0C\\Repo\\MyCSStudy\\C\u002B\u002B\\Cpp_Server\\Server\\ServerCore\\CorePch.h",
+              "RelativeToolTip": "ServerCore\\CorePch.h",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA8AAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
+              "WhenOpened": "2025-06-23T13:25:00.135Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "pch.h",
+              "DocumentMoniker": "C:\\Users\\GGI\\Desktop\\\uACBD\uC778\uC4F0\\\uAE43\uD5C8\uBE0C\\Repo\\MyCSStudy\\C\u002B\u002B\\Cpp_Server\\Server\\ServerCore\\pch.h",
+              "RelativeDocumentMoniker": "ServerCore\\pch.h",
+              "ToolTip": "C:\\Users\\GGI\\Desktop\\\uACBD\uC778\uC4F0\\\uAE43\uD5C8\uBE0C\\Repo\\MyCSStudy\\C\u002B\u002B\\Cpp_Server\\Server\\ServerCore\\pch.h",
+              "RelativeToolTip": "ServerCore\\pch.h",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
+              "WhenOpened": "2025-06-23T13:23:41.419Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "DummyClient.cpp",
+              "DocumentMoniker": "C:\\Users\\GGI\\Desktop\\\uACBD\uC778\uC4F0\\\uAE43\uD5C8\uBE0C\\Repo\\MyCSStudy\\C\u002B\u002B\\Cpp_Server\\Server\\DummyClient\\DummyClient.cpp",
+              "RelativeDocumentMoniker": "DummyClient\\DummyClient.cpp",
+              "ToolTip": "C:\\Users\\GGI\\Desktop\\\uACBD\uC778\uC4F0\\\uAE43\uD5C8\uBE0C\\Repo\\MyCSStudy\\C\u002B\u002B\\Cpp_Server\\Server\\DummyClient\\DummyClient.cpp",
+              "RelativeToolTip": "DummyClient\\DummyClient.cpp",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
+              "WhenOpened": "2025-06-23T13:10:17.007Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "Types.h",
+              "DocumentMoniker": "C:\\Users\\GGI\\Desktop\\\uACBD\uC778\uC4F0\\\uAE43\uD5C8\uBE0C\\Repo\\MyCSStudy\\C\u002B\u002B\\Cpp_Server\\Server\\ServerCore\\Types.h",
+              "RelativeDocumentMoniker": "ServerCore\\Types.h",
+              "ToolTip": "C:\\Users\\GGI\\Desktop\\\uACBD\uC778\uC4F0\\\uAE43\uD5C8\uBE0C\\Repo\\MyCSStudy\\C\u002B\u002B\\Cpp_Server\\Server\\ServerCore\\Types.h",
+              "RelativeToolTip": "ServerCore\\Types.h",
+              "ViewState": "AgIAAAAAAAAAAAAAAADwvwoAAAAHAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
+              "WhenOpened": "2025-06-23T13:26:03.108Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "GameServer.cpp",
+              "DocumentMoniker": "C:\\Users\\GGI\\Desktop\\\uACBD\uC778\uC4F0\\\uAE43\uD5C8\uBE0C\\Repo\\MyCSStudy\\C\u002B\u002B\\Cpp_Server\\Server\\GameServer\\GameServer.cpp",
+              "RelativeDocumentMoniker": "GameServer\\GameServer.cpp",
+              "ToolTip": "C:\\Users\\GGI\\Desktop\\\uACBD\uC778\uC4F0\\\uAE43\uD5C8\uBE0C\\Repo\\MyCSStudy\\C\u002B\u002B\\Cpp_Server\\Server\\GameServer\\GameServer.cpp",
+              "RelativeToolTip": "GameServer\\GameServer.cpp",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAB0AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
+              "WhenOpened": "2025-06-23T13:09:11.664Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "pch.h",
+              "DocumentMoniker": "C:\\Users\\GGI\\Desktop\\\uACBD\uC778\uC4F0\\\uAE43\uD5C8\uBE0C\\Repo\\MyCSStudy\\C\u002B\u002B\\Cpp_Server\\Server\\DummyClient\\pch.h",
+              "RelativeDocumentMoniker": "DummyClient\\pch.h",
+              "ToolTip": "C:\\Users\\GGI\\Desktop\\\uACBD\uC778\uC4F0\\\uAE43\uD5C8\uBE0C\\Repo\\MyCSStudy\\C\u002B\u002B\\Cpp_Server\\Server\\DummyClient\\pch.h",
+              "RelativeToolTip": "DummyClient\\pch.h",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
+              "WhenOpened": "2025-06-23T13:44:57.929Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "pch.h",
+              "DocumentMoniker": "C:\\Users\\GGI\\Desktop\\\uACBD\uC778\uC4F0\\\uAE43\uD5C8\uBE0C\\Repo\\MyCSStudy\\C\u002B\u002B\\Cpp_Server\\Server\\GameServer\\pch.h",
+              "RelativeDocumentMoniker": "GameServer\\pch.h",
+              "ToolTip": "C:\\Users\\GGI\\Desktop\\\uACBD\uC778\uC4F0\\\uAE43\uD5C8\uBE0C\\Repo\\MyCSStudy\\C\u002B\u002B\\Cpp_Server\\Server\\GameServer\\pch.h",
+              "RelativeToolTip": "GameServer\\pch.h",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
+              "WhenOpened": "2025-06-23T13:33:37.241Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "pch.cpp",
+              "DocumentMoniker": "C:\\Users\\GGI\\Desktop\\\uACBD\uC778\uC4F0\\\uAE43\uD5C8\uBE0C\\Repo\\MyCSStudy\\C\u002B\u002B\\Cpp_Server\\Server\\GameServer\\pch.cpp",
+              "RelativeDocumentMoniker": "GameServer\\pch.cpp",
+              "ToolTip": "C:\\Users\\GGI\\Desktop\\\uACBD\uC778\uC4F0\\\uAE43\uD5C8\uBE0C\\Repo\\MyCSStudy\\C\u002B\u002B\\Cpp_Server\\Server\\GameServer\\pch.cpp",
+              "RelativeToolTip": "GameServer\\pch.cpp",
+              "ViewState": "AgIAAAAAAAAAAAAAAADwvwEAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
+              "WhenOpened": "2025-06-23T13:33:39.663Z"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
