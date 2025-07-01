@@ -15,10 +15,10 @@
 C++ 관점에서 보면 변수에 새로운 이름을 부여한 것과 같다.
 
 선언 방법 예시
-'''
+```
 int number = 1;
 int* pointer = &number;
 *pointer = 2;
 int& reference = number;
-'''
+```
 ---
