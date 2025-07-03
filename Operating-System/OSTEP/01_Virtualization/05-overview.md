@@ -138,4 +138,3 @@ close(fd);
 
 ---
 
-> 📚 출처: 『OSTEP Chapter 11 – 멀티 레벨 피드백 큐』
