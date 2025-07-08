@@ -9,12 +9,12 @@
 
 | 구분 | 주제 | 설명 | 링크 |
 |------|------|------|------|
-| ✅ | 포인터 기초 | 포인터 선언, 역참조, 연산 | [01_pointer-basics.md](./Concepts/01_pointer-basics.md) |
-| ✅ | 포인터 연산 | +, -, 비교, 거리 계산 | [02_pointer-arithmetic.md](./Concepts/02_pointer-arithmetic.md) |
-| ✅ | 참조 vs 포인터 | 참조의 개념과 포인터와의 작동 비교 | [03_reference-vs-pointer.md](./Concepts/03_reference-vs-pointer.md) |
-| ✅ | 배열 기초 | 배열 선언, 초기화, 순회 | [04_array-basics.md](./Concepts/04_array-basics.md) |
-| ✅ | 포인터 vs 배열 | 메모리 구조 차이, sizeof 비교 | [05_pointer-vs-array.md](./Concepts/05_pointer-vs-array.md) |
-| ✅ | 다중 포인터 & 다차원 배열 | 2차원 배열, 포인터 배열, `int**` 차이 | [06_multi-pointer-multidim-array.md](./Concepts/06_multi-pointer-multidim-array.md) |
+| ✅ | 포인터 기초 | 포인터 선언, 역참조, 연산 | [01_pointer-basics.md](./01_pointer-basics.md) |
+| ✅ | 포인터 연산 | +, -, 비교, 거리 계산 | [02_pointer-arithmetic.md](./02_pointer-arithmetic.md) |
+| ✅ | 참조 vs 포인터 | 참조의 개념과 포인터와의 작동 비교 | [03_reference-vs-pointer.md](./03_reference-vs-pointer.md) |
+| ✅ | 배열 기초 | 배열 선언, 초기화, 순회 | [04_array-basics.md](./04_array-basics.md) |
+| ✅ | 포인터 vs 배열 | 메모리 구조 차이, sizeof 비교 | [05_pointer-vs-array.md](./05_pointer-vs-array.md) |
+| ✅ | 다중 포인터 & 다차원 배열 | 2차원 배열, 포인터 배열, `int**` 차이 | [06_multi-pointer-multidim-array.md](./06_multi-pointer-multidim-array.md) |
 | ⏳ | const 키워드 | const 변수, 포인터, 참조에서의 활용 | *(작성 예정)* |
 | ⏳ | 함수 인자 전달 | 값/참조/포인터 전달 방식의 차이 | *(작성 예정)* |
 | ⏳ | 동적 메모리 | new/delete, 메모리 누수 방지 | *(작성 예정)* |
