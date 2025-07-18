@@ -164,8 +164,8 @@ free(p);  // ❌ undefined behavior
 
 | 구분 | 설명 |
 |------|------|
-| `malloc/free` | C 스타일 동적 할당 |
-| `new/delete` | C++ 스타일 동적 할당 (생성자/소멸자 호출됨) |
+| `malloc/free` | C 스타일 동적 할당, 함수 |
+| `new/delete` | C++ 스타일 동적 할당 (생성자/소멸자 호출됨), 연산자 |
 | void 포인터 | 타입 미지정 → 캐스팅 필요 |
 | 스마트 포인터 | 메모리 자동 해제 (RAII 패턴) |
 | 주요 버그 | 누수, double free, use-after-free 등 |
