@@ -3,8 +3,8 @@
   "WorkspaceRootPath": "C:\\Users\\GGI\\Desktop\\\uACBD\uC778\uC4F0\\\uAE43\uD5C8\uBE0C\\Repo\\MyCSStudy\\C\u002B\u002B\\CPP_Study\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{DB255E64-6DCE-4DB6-AC42-6021F4AE2041}|CPP_Study\\CPP_Study.vcxproj|C:\\Users\\GGI\\Desktop\\\uACBD\uC778\uC4F0\\\uAE43\uD5C8\uBE0C\\Repo\\MyCSStudy\\C\u002B\u002B\\CPP_Study\\CPP_Study\\Player.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{DB255E64-6DCE-4DB6-AC42-6021F4AE2041}|CPP_Study\\CPP_Study.vcxproj|solutionrelative:CPP_Study\\Player.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+      "AbsoluteMoniker": "D:0:0:{DB255E64-6DCE-4DB6-AC42-6021F4AE2041}|CPP_Study\\CPP_Study.vcxproj|C:\\Users\\GGI\\Desktop\\\uACBD\uC778\uC4F0\\\uAE43\uD5C8\uBE0C\\Repo\\MyCSStudy\\C\u002B\u002B\\CPP_Study\\CPP_Study\\CPP_Study.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{DB255E64-6DCE-4DB6-AC42-6021F4AE2041}|CPP_Study\\CPP_Study.vcxproj|solutionrelative:CPP_Study\\CPP_Study.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{DB255E64-6DCE-4DB6-AC42-6021F4AE2041}|CPP_Study\\CPP_Study.vcxproj|C:\\Users\\GGI\\Desktop\\\uACBD\uC778\uC4F0\\\uAE43\uD5C8\uBE0C\\Repo\\MyCSStudy\\C\u002B\u002B\\CPP_Study\\CPP_Study\\Player.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
@@ -19,8 +19,8 @@
       "RelativeMoniker": "D:0:0:{DB255E64-6DCE-4DB6-AC42-6021F4AE2041}|CPP_Study\\CPP_Study.vcxproj|solutionrelative:CPP_Study\\Game.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{DB255E64-6DCE-4DB6-AC42-6021F4AE2041}|CPP_Study\\CPP_Study.vcxproj|C:\\Users\\GGI\\Desktop\\\uACBD\uC778\uC4F0\\\uAE43\uD5C8\uBE0C\\Repo\\MyCSStudy\\C\u002B\u002B\\CPP_Study\\CPP_Study\\CPP_Study.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{DB255E64-6DCE-4DB6-AC42-6021F4AE2041}|CPP_Study\\CPP_Study.vcxproj|solutionrelative:CPP_Study\\CPP_Study.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+      "AbsoluteMoniker": "D:0:0:{DB255E64-6DCE-4DB6-AC42-6021F4AE2041}|CPP_Study\\CPP_Study.vcxproj|C:\\Users\\GGI\\Desktop\\\uACBD\uC778\uC4F0\\\uAE43\uD5C8\uBE0C\\Repo\\MyCSStudy\\C\u002B\u002B\\CPP_Study\\CPP_Study\\Player.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{DB255E64-6DCE-4DB6-AC42-6021F4AE2041}|CPP_Study\\CPP_Study.vcxproj|solutionrelative:CPP_Study\\Player.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     }
   ],
   "DocumentGroupContainers": [
@@ -30,43 +30,11 @@
       "DocumentGroups": [
         {
           "DockedHeight": 68,
-          "SelectedChildIndex": -1,
+          "SelectedChildIndex": 5,
           "Children": [
             {
               "$type": "Bookmark",
               "Name": "ST:0:0:{cce594b6-0c39-4442-ba28-10c64ac7e89f}"
-            }
-          ]
-        },
-        {
-          "DockedHeight": 320,
-          "SelectedChildIndex": 2,
-          "Children": [
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "CPP_Study.cpp",
-              "DocumentMoniker": "C:\\Users\\GGI\\Desktop\\\uACBD\uC778\uC4F0\\\uAE43\uD5C8\uBE0C\\Repo\\MyCSStudy\\C\u002B\u002B\\CPP_Study\\CPP_Study\\CPP_Study.cpp",
-              "RelativeDocumentMoniker": "CPP_Study\\CPP_Study.cpp",
-              "ToolTip": "C:\\Users\\GGI\\Desktop\\\uACBD\uC778\uC4F0\\\uAE43\uD5C8\uBE0C\\Repo\\MyCSStudy\\C\u002B\u002B\\CPP_Study\\CPP_Study\\CPP_Study.cpp",
-              "RelativeToolTip": "CPP_Study\\CPP_Study.cpp",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
-              "WhenOpened": "2025-05-20T13:15:34.402Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "Game.cpp",
-              "DocumentMoniker": "C:\\Users\\GGI\\Desktop\\\uACBD\uC778\uC4F0\\\uAE43\uD5C8\uBE0C\\Repo\\MyCSStudy\\C\u002B\u002B\\CPP_Study\\CPP_Study\\Game.cpp",
-              "RelativeDocumentMoniker": "CPP_Study\\Game.cpp",
-              "ToolTip": "C:\\Users\\GGI\\Desktop\\\uACBD\uC778\uC4F0\\\uAE43\uD5C8\uBE0C\\Repo\\MyCSStudy\\C\u002B\u002B\\CPP_Study\\CPP_Study\\Game.cpp",
-              "RelativeToolTip": "CPP_Study\\Game.cpp",
-              "ViewState": "AgIAAAAAAAAAAAAAAADwvwEAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
-              "WhenOpened": "2025-07-22T01:28:00.911Z",
-              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -76,32 +44,9 @@
               "RelativeDocumentMoniker": "CPP_Study\\Player.cpp",
               "ToolTip": "C:\\Users\\GGI\\Desktop\\\uACBD\uC778\uC4F0\\\uAE43\uD5C8\uBE0C\\Repo\\MyCSStudy\\C\u002B\u002B\\CPP_Study\\CPP_Study\\Player.cpp",
               "RelativeToolTip": "CPP_Study\\Player.cpp",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAADwvwEAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
-              "WhenOpened": "2025-07-22T01:29:22.952Z",
-              "EditorCaption": ""
-            }
-          ]
-        },
-        {
-          "DockedHeight": 344,
-          "SelectedChildIndex": 1,
-          "Children": [
-            {
-              "$type": "Bookmark",
-              "Name": "ST:0:0:{3ae79031-e1bc-11d0-8f78-00a0c9110057}"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "Player.h",
-              "DocumentMoniker": "C:\\Users\\GGI\\Desktop\\\uACBD\uC778\uC4F0\\\uAE43\uD5C8\uBE0C\\Repo\\MyCSStudy\\C\u002B\u002B\\CPP_Study\\CPP_Study\\Player.h",
-              "RelativeDocumentMoniker": "CPP_Study\\Player.h",
-              "ToolTip": "C:\\Users\\GGI\\Desktop\\\uACBD\uC778\uC4F0\\\uAE43\uD5C8\uBE0C\\Repo\\MyCSStudy\\C\u002B\u002B\\CPP_Study\\CPP_Study\\Player.h",
-              "RelativeToolTip": "CPP_Study\\Player.h",
-              "ViewState": "AgIAABgAAAAAAAAAAADwvx0AAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
-              "WhenOpened": "2025-07-22T01:28:31.545Z",
+              "WhenOpened": "2025-07-31T14:25:22.088Z",
               "EditorCaption": ""
             },
             {
@@ -112,10 +57,56 @@
               "RelativeDocumentMoniker": "CPP_Study\\Game.h",
               "ToolTip": "C:\\Users\\GGI\\Desktop\\\uACBD\uC778\uC4F0\\\uAE43\uD5C8\uBE0C\\Repo\\MyCSStudy\\C\u002B\u002B\\CPP_Study\\CPP_Study\\Game.h",
               "RelativeToolTip": "CPP_Study\\Game.h",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAADwvwUAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
-              "WhenOpened": "2025-07-22T01:26:05.858Z",
+              "WhenOpened": "2025-07-31T14:25:36.24Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "Player.h",
+              "DocumentMoniker": "C:\\Users\\GGI\\Desktop\\\uACBD\uC778\uC4F0\\\uAE43\uD5C8\uBE0C\\Repo\\MyCSStudy\\C\u002B\u002B\\CPP_Study\\CPP_Study\\Player.h",
+              "RelativeDocumentMoniker": "CPP_Study\\Player.h",
+              "ToolTip": "C:\\Users\\GGI\\Desktop\\\uACBD\uC778\uC4F0\\\uAE43\uD5C8\uBE0C\\Repo\\MyCSStudy\\C\u002B\u002B\\CPP_Study\\CPP_Study\\Player.h",
+              "RelativeToolTip": "CPP_Study\\Player.h",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
+              "WhenOpened": "2025-07-31T14:25:27.31Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "Game.cpp",
+              "DocumentMoniker": "C:\\Users\\GGI\\Desktop\\\uACBD\uC778\uC4F0\\\uAE43\uD5C8\uBE0C\\Repo\\MyCSStudy\\C\u002B\u002B\\CPP_Study\\CPP_Study\\Game.cpp",
+              "RelativeDocumentMoniker": "CPP_Study\\Game.cpp",
+              "ToolTip": "C:\\Users\\GGI\\Desktop\\\uACBD\uC778\uC4F0\\\uAE43\uD5C8\uBE0C\\Repo\\MyCSStudy\\C\u002B\u002B\\CPP_Study\\CPP_Study\\Game.cpp",
+              "RelativeToolTip": "CPP_Study\\Game.cpp",
+              "ViewState": "AgIAAAAAAAAAAAAAAADwvwAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
+              "WhenOpened": "2025-07-31T14:25:25.104Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "CPP_Study.cpp",
+              "DocumentMoniker": "C:\\Users\\GGI\\Desktop\\\uACBD\uC778\uC4F0\\\uAE43\uD5C8\uBE0C\\Repo\\MyCSStudy\\C\u002B\u002B\\CPP_Study\\CPP_Study\\CPP_Study.cpp",
+              "RelativeDocumentMoniker": "CPP_Study\\CPP_Study.cpp",
+              "ToolTip": "C:\\Users\\GGI\\Desktop\\\uACBD\uC778\uC4F0\\\uAE43\uD5C8\uBE0C\\Repo\\MyCSStudy\\C\u002B\u002B\\CPP_Study\\CPP_Study\\CPP_Study.cpp",
+              "RelativeToolTip": "CPP_Study\\CPP_Study.cpp",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
+              "WhenOpened": "2025-07-31T14:25:24.01Z",
               "EditorCaption": ""
+            }
+          ]
+        },
+        {
+          "DockedHeight": 320,
+          "SelectedChildIndex": -1,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{3ae79031-e1bc-11d0-8f78-00a0c9110057}"
             }
           ]
         }

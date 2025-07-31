@@ -1,0 +1,68 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\GGI\\Desktop\\\uACBD\uC778\uC4F0\\\uAE43\uD5C8\uBE0C\\Repo\\MyCSStudy\\C\u002B\u002B\\Cpp_Coding_Test\\Coding_Test\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{60974DE8-E60A-4816-BEB4-0378CDABDBF7}|test2\\test2.vcxproj|C:\\Users\\GGI\\Desktop\\\uACBD\uC778\uC4F0\\\uAE43\uD5C8\uBE0C\\Repo\\MyCSStudy\\C\u002B\u002B\\Cpp_Coding_Test\\Coding_Test\\test2\\\uC18C\uC2A4.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{60974DE8-E60A-4816-BEB4-0378CDABDBF7}|test2\\test2.vcxproj|solutionrelative:test2\\\uC18C\uC2A4.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2DB87B47-35D6-4521-861B-2C7BF49A15D6}|Coding_Test\\Coding_Test.vcxproj|C:\\Users\\GGI\\Desktop\\\uACBD\uC778\uC4F0\\\uAE43\uD5C8\uBE0C\\Repo\\MyCSStudy\\C\u002B\u002B\\Cpp_Coding_Test\\Coding_Test\\Coding_Test\\\uC18C\uC2A4.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{2DB87B47-35D6-4521-861B-2C7BF49A15D6}|Coding_Test\\Coding_Test.vcxproj|solutionrelative:Coding_Test\\\uC18C\uC2A4.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 1,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedHeight": 68,
+          "SelectedChildIndex": 1,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{cce594b6-0c39-4442-ba28-10c64ac7e89f}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "\uC18C\uC2A4.cpp",
+              "DocumentMoniker": "C:\\Users\\GGI\\Desktop\\\uACBD\uC778\uC4F0\\\uAE43\uD5C8\uBE0C\\Repo\\MyCSStudy\\C\u002B\u002B\\Cpp_Coding_Test\\Coding_Test\\test2\\\uC18C\uC2A4.cpp",
+              "RelativeDocumentMoniker": "test2\\\uC18C\uC2A4.cpp",
+              "ToolTip": "C:\\Users\\GGI\\Desktop\\\uACBD\uC778\uC4F0\\\uAE43\uD5C8\uBE0C\\Repo\\MyCSStudy\\C\u002B\u002B\\Cpp_Coding_Test\\Coding_Test\\test2\\\uC18C\uC2A4.cpp",
+              "RelativeToolTip": "test2\\\uC18C\uC2A4.cpp",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
+              "WhenOpened": "2025-07-31T14:35:10.162Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "\uC18C\uC2A4.cpp",
+              "DocumentMoniker": "C:\\Users\\GGI\\Desktop\\\uACBD\uC778\uC4F0\\\uAE43\uD5C8\uBE0C\\Repo\\MyCSStudy\\C\u002B\u002B\\Cpp_Coding_Test\\Coding_Test\\Coding_Test\\\uC18C\uC2A4.cpp",
+              "RelativeDocumentMoniker": "Coding_Test\\\uC18C\uC2A4.cpp",
+              "ToolTip": "C:\\Users\\GGI\\Desktop\\\uACBD\uC778\uC4F0\\\uAE43\uD5C8\uBE0C\\Repo\\MyCSStudy\\C\u002B\u002B\\Cpp_Coding_Test\\Coding_Test\\Coding_Test\\\uC18C\uC2A4.cpp",
+              "RelativeToolTip": "Coding_Test\\\uC18C\uC2A4.cpp",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
+              "WhenOpened": "2025-07-31T14:33:38.977Z",
+              "EditorCaption": ""
+            }
+          ]
+        },
+        {
+          "DockedHeight": 320,
+          "SelectedChildIndex": -1,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{3ae79031-e1bc-11d0-8f78-00a0c9110057}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
