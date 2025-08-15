@@ -1,29 +1,35 @@
 ﻿#include "pch.h"
 #include <iostream>
 #include "CorePch.h"
+#include <atomic> // atomic은 멀티스레드 환경에서 안전하게 변수를 공유하기 위해 사용합니다.
 
 #include <thread> //윈도우즈를 가져오면 리눅스 환경에서는 안될수도있으니까
 
-void HelloThread()
+atomic<int32> sum = 0;
+void Add()
 {
-	cout << "Hello Thread" << endl;
+	for (int32 i = 0; i < 1000000; ++i)
+	{
+		sum += i;
+	}
+}
+void Sub()
+{
+	for (int32 i = 0; i < 1000000; ++i)
+	{
+		sum -= i;
+	}
 }
 
 int main()
 {
-	std::thread t;
-	auto id1 = t.get_id(); //쓰레드마다 id를 줌
-	t = std::thread(HelloThread);
+	Add();
+	Sub();
+	cout << "Sum: " << sum << endl;
 
-
-	int32 count = t.hardware_concurrency();
-	auto id2 = t.get_id(); //쓰레드마다 id를 줌
-
-
-	t.detach(); //스레드가 끝나면 자동으로 자원을 해제한다.
-	if (t.joinable())
-		t.join();//스레드가 join()을 호출할 수 있는지 여부를 반환한다.
-
-
-	cout << "Hello World"<< count << endl;
+	std::thread t1(Add);
+	std::thread t2(Sub);
+	t1.join();
+	t2.join();
+	cout << "Final Sum: " << sum << std::endl;
 }
