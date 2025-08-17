@@ -23,6 +23,9 @@ public:
 		while (_locked.compare_exchange_strong(expected, desired)==false)
 		{
 			expected = false; // expected를 false로 초기화합니다.
+
+			this_thread::sleep_for(chrono::microseconds(100));  //스핀락을 획득하지 못했을 때 잠시 대기합니다.
+		
 		}
 
 	}
