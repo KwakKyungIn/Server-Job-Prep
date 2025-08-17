@@ -5,38 +5,6 @@
     {
       "AbsoluteMoniker": "D:0:0:{0DC5384E-F7BE-4736-9339-8E75A46F4E86}|GameServer\\GameServer.vcxproj|C:\\Users\\kwak\\source\\repos\\Server-Job-Prep\\C\u002B\u002B\\Cpp_Server\\Server\\GameServer\\GameServer.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
       "RelativeMoniker": "D:0:0:{0DC5384E-F7BE-4736-9339-8E75A46F4E86}|GameServer\\GameServer.vcxproj|solutionrelative:GameServer\\GameServer.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{AFC8D49F-96D7-451D-8439-A976A8707067}|DummyClient\\DummyClient.vcxproj|C:\\Users\\kwak\\source\\repos\\Server-Job-Prep\\C\u002B\u002B\\Cpp_Server\\Server\\DummyClient\\DummyClient.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{AFC8D49F-96D7-451D-8439-A976A8707067}|DummyClient\\DummyClient.vcxproj|solutionrelative:DummyClient\\DummyClient.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{54184ED7-9311-45A3-83FA-327411FD797F}|ServerCore\\ServerCore.vcxproj|C:\\Users\\kwak\\source\\repos\\Server-Job-Prep\\C\u002B\u002B\\Cpp_Server\\Server\\ServerCore\\CorePch.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{54184ED7-9311-45A3-83FA-327411FD797F}|ServerCore\\ServerCore.vcxproj|solutionrelative:ServerCore\\CorePch.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{54184ED7-9311-45A3-83FA-327411FD797F}|ServerCore\\ServerCore.vcxproj|C:\\Users\\kwak\\source\\repos\\Server-Job-Prep\\C\u002B\u002B\\Cpp_Server\\Server\\ServerCore\\CorePch.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{54184ED7-9311-45A3-83FA-327411FD797F}|ServerCore\\ServerCore.vcxproj|solutionrelative:ServerCore\\CorePch.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{AFC8D49F-96D7-451D-8439-A976A8707067}|DummyClient\\DummyClient.vcxproj|C:\\Users\\kwak\\source\\repos\\Server-Job-Prep\\C\u002B\u002B\\Cpp_Server\\Server\\DummyClient\\pch.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{AFC8D49F-96D7-451D-8439-A976A8707067}|DummyClient\\DummyClient.vcxproj|solutionrelative:DummyClient\\pch.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{AFC8D49F-96D7-451D-8439-A976A8707067}|DummyClient\\DummyClient.vcxproj|C:\\Users\\kwak\\source\\repos\\Server-Job-Prep\\C\u002B\u002B\\Cpp_Server\\Server\\DummyClient\\pch.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{AFC8D49F-96D7-451D-8439-A976A8707067}|DummyClient\\DummyClient.vcxproj|solutionrelative:DummyClient\\pch.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{0DC5384E-F7BE-4736-9339-8E75A46F4E86}|GameServer\\GameServer.vcxproj|C:\\Users\\kwak\\source\\repos\\Server-Job-Prep\\C\u002B\u002B\\Cpp_Server\\Server\\GameServer\\pch.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{0DC5384E-F7BE-4736-9339-8E75A46F4E86}|GameServer\\GameServer.vcxproj|solutionrelative:GameServer\\pch.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{0DC5384E-F7BE-4736-9339-8E75A46F4E86}|GameServer\\GameServer.vcxproj|C:\\Users\\kwak\\source\\repos\\Server-Job-Prep\\C\u002B\u002B\\Cpp_Server\\Server\\GameServer\\pch.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{0DC5384E-F7BE-4736-9339-8E75A46F4E86}|GameServer\\GameServer.vcxproj|solutionrelative:GameServer\\pch.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{54184ED7-9311-45A3-83FA-327411FD797F}|ServerCore\\ServerCore.vcxproj|C:\\Users\\kwak\\source\\repos\\Server-Job-Prep\\C\u002B\u002B\\Cpp_Server\\Server\\ServerCore\\pch.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{54184ED7-9311-45A3-83FA-327411FD797F}|ServerCore\\ServerCore.vcxproj|solutionrelative:ServerCore\\pch.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     }
   ],
   "DocumentGroupContainers": [
@@ -60,119 +28,9 @@
               "RelativeDocumentMoniker": "GameServer\\GameServer.cpp",
               "ToolTip": "C:\\Users\\kwak\\source\\repos\\Server-Job-Prep\\C\u002B\u002B\\Cpp_Server\\Server\\GameServer\\GameServer.cpp",
               "RelativeToolTip": "GameServer\\GameServer.cpp",
-              "ViewState": "AgIAAAIAAAA4MzMzMzMpwBsAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAAUAAADwJjMzMzMvwBUAAAAgAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
               "WhenOpened": "2025-08-15T09:56:45.591Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 5,
-              "Title": "pch.cpp",
-              "DocumentMoniker": "C:\\Users\\kwak\\source\\repos\\Server-Job-Prep\\C\u002B\u002B\\Cpp_Server\\Server\\DummyClient\\pch.cpp",
-              "RelativeDocumentMoniker": "DummyClient\\pch.cpp",
-              "ToolTip": "C:\\Users\\kwak\\source\\repos\\Server-Job-Prep\\C\u002B\u002B\\Cpp_Server\\Server\\DummyClient\\pch.cpp",
-              "RelativeToolTip": "DummyClient\\pch.cpp",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
-              "WhenOpened": "2025-08-15T09:19:36.221Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "CorePch.h",
-              "DocumentMoniker": "C:\\Users\\kwak\\source\\repos\\Server-Job-Prep\\C\u002B\u002B\\Cpp_Server\\Server\\ServerCore\\CorePch.h",
-              "RelativeDocumentMoniker": "ServerCore\\CorePch.h",
-              "ToolTip": "C:\\Users\\kwak\\source\\repos\\Server-Job-Prep\\C\u002B\u002B\\Cpp_Server\\Server\\ServerCore\\CorePch.h",
-              "RelativeToolTip": "ServerCore\\CorePch.h",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAAOAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
-              "WhenOpened": "2025-06-23T13:25:00.135Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "DummyClient.cpp",
-              "DocumentMoniker": "C:\\Users\\kwak\\source\\repos\\Server-Job-Prep\\C\u002B\u002B\\Cpp_Server\\Server\\DummyClient\\DummyClient.cpp",
-              "RelativeDocumentMoniker": "DummyClient\\DummyClient.cpp",
-              "ToolTip": "C:\\Users\\kwak\\source\\repos\\Server-Job-Prep\\C\u002B\u002B\\Cpp_Server\\Server\\DummyClient\\DummyClient.cpp",
-              "RelativeToolTip": "DummyClient\\DummyClient.cpp",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
-              "WhenOpened": "2025-06-23T13:10:17.007Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 8,
-              "Title": "pch.cpp",
-              "DocumentMoniker": "C:\\Users\\kwak\\source\\repos\\Server-Job-Prep\\C\u002B\u002B\\Cpp_Server\\Server\\ServerCore\\pch.cpp",
-              "RelativeDocumentMoniker": "ServerCore\\pch.cpp",
-              "ToolTip": "C:\\Users\\kwak\\source\\repos\\Server-Job-Prep\\C\u002B\u002B\\Cpp_Server\\Server\\ServerCore\\pch.cpp",
-              "RelativeToolTip": "ServerCore\\pch.cpp",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
-              "WhenOpened": "2025-08-15T09:12:49.913Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "pch.h",
-              "DocumentMoniker": "C:\\Users\\kwak\\source\\repos\\Server-Job-Prep\\C\u002B\u002B\\Cpp_Server\\Server\\DummyClient\\pch.h",
-              "RelativeDocumentMoniker": "DummyClient\\pch.h",
-              "ToolTip": "C:\\Users\\kwak\\source\\repos\\Server-Job-Prep\\C\u002B\u002B\\Cpp_Server\\Server\\DummyClient\\pch.h",
-              "RelativeToolTip": "DummyClient\\pch.h",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
-              "WhenOpened": "2025-06-23T13:44:57.929Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 7,
-              "Title": "pch.h",
-              "DocumentMoniker": "C:\\Users\\kwak\\source\\repos\\Server-Job-Prep\\C\u002B\u002B\\Cpp_Server\\Server\\GameServer\\pch.h",
-              "RelativeDocumentMoniker": "GameServer\\pch.h",
-              "ToolTip": "C:\\Users\\kwak\\source\\repos\\Server-Job-Prep\\C\u002B\u002B\\Cpp_Server\\Server\\GameServer\\pch.h",
-              "RelativeToolTip": "GameServer\\pch.h",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
-              "WhenOpened": "2025-06-23T13:33:37.241Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 6,
-              "Title": "pch.cpp",
-              "DocumentMoniker": "C:\\Users\\kwak\\source\\repos\\Server-Job-Prep\\C\u002B\u002B\\Cpp_Server\\Server\\GameServer\\pch.cpp",
-              "RelativeDocumentMoniker": "GameServer\\pch.cpp",
-              "ToolTip": "C:\\Users\\kwak\\source\\repos\\Server-Job-Prep\\C\u002B\u002B\\Cpp_Server\\Server\\GameServer\\pch.cpp",
-              "RelativeToolTip": "GameServer\\pch.cpp",
-              "ViewState": "AgIAAAAAAAAAAAAAAADwvwEAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
-              "WhenOpened": "2025-06-23T13:33:39.663Z",
-              "EditorCaption": ""
-            }
-          ]
-        },
-        {
-          "DockedWidth": 200,
-          "SelectedChildIndex": 0,
-          "Children": [
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "CorePch.cpp",
-              "DocumentMoniker": "C:\\Users\\kwak\\source\\repos\\Server-Job-Prep\\C\u002B\u002B\\Cpp_Server\\Server\\ServerCore\\CorePch.cpp",
-              "RelativeDocumentMoniker": "ServerCore\\CorePch.cpp",
-              "ToolTip": "C:\\Users\\kwak\\source\\repos\\Server-Job-Prep\\C\u002B\u002B\\Cpp_Server\\Server\\ServerCore\\CorePch.cpp",
-              "RelativeToolTip": "ServerCore\\CorePch.cpp",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAABAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
-              "WhenOpened": "2025-06-23T13:25:09.371Z",
               "EditorCaption": ""
             }
           ]
