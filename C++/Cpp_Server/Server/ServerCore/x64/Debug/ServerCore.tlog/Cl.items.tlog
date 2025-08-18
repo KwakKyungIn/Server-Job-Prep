@@ -1,6 +1,7 @@
 C:\Users\kwak\source\repos\Server-Job-Prep\C++\Cpp_Server\Server\ServerCore\CoreGlobal.cpp;C:\Users\kwak\source\repos\Server-Job-Prep\C++\Cpp_Server\Server\ServerCore\x64\Debug\CoreGlobal.obj
 C:\Users\kwak\source\repos\Server-Job-Prep\C++\Cpp_Server\Server\ServerCore\CorePch.cpp;C:\Users\kwak\source\repos\Server-Job-Prep\C++\Cpp_Server\Server\ServerCore\x64\Debug\CorePch.obj
 C:\Users\kwak\source\repos\Server-Job-Prep\C++\Cpp_Server\Server\ServerCore\CoreTLS.cpp;C:\Users\kwak\source\repos\Server-Job-Prep\C++\Cpp_Server\Server\ServerCore\x64\Debug\CoreTLS.obj
+C:\Users\kwak\source\repos\Server-Job-Prep\C++\Cpp_Server\Server\ServerCore\DeadLockProfiler.cpp;C:\Users\kwak\source\repos\Server-Job-Prep\C++\Cpp_Server\Server\ServerCore\x64\Debug\DeadLockProfiler.obj
 C:\Users\kwak\source\repos\Server-Job-Prep\C++\Cpp_Server\Server\ServerCore\Lock.cpp;C:\Users\kwak\source\repos\Server-Job-Prep\C++\Cpp_Server\Server\ServerCore\x64\Debug\Lock.obj
 C:\Users\kwak\source\repos\Server-Job-Prep\C++\Cpp_Server\Server\ServerCore\pch.cpp;C:\Users\kwak\source\repos\Server-Job-Prep\C++\Cpp_Server\Server\ServerCore\x64\Debug\pch.obj
 C:\Users\kwak\source\repos\Server-Job-Prep\C++\Cpp_Server\Server\ServerCore\ThreadManager.cpp;C:\Users\kwak\source\repos\Server-Job-Prep\C++\Cpp_Server\Server\ServerCore\x64\Debug\ThreadManager.obj
