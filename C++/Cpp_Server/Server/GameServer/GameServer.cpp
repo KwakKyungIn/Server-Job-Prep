@@ -9,14 +9,14 @@
 #include "ConcurrentQueue.h"
 #include "ConcurrentStack.h"
 LockQueue<int32> q;
-LockStack<int32> s;
+LockFreeStack<int32> s;
 
 void Push()
 {
 	while(true) // 무한 루프를 돌면서
 	{
 		int32 value = rand() % 100; // 0부터 99까지의 랜덤한 값을 생성합니다.
-		q.Push(value); // 스택에 값을 푸시합니다.
+		s.Push(value); // 스택에 값을 푸시합니다.
 		this_thread::sleep_for(chrono::milliseconds(10)); // 100ms 대기합니다.
 	}
 }
@@ -27,7 +27,7 @@ void Pop()
 	{
 		
 			int32 data = 0;
-			if (q.TryPop(OUT data))
+			if (s.TryPop(OUT data))
 				cout << data << endl;// 큐에서 값을 꺼내려고 시도합니다.
 		
 		}
