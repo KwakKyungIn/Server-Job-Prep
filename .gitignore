@@ -1,5 +1,5 @@
 # Visual Studio
-.vs/
+**/.vs/
 *.user
 *.suo
 *.ipch

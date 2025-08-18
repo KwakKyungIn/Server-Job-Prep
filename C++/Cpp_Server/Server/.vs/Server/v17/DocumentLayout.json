@@ -3,6 +3,14 @@
   "WorkspaceRootPath": "C:\\Users\\kwak\\source\\repos\\Server-Job-Prep\\C\u002B\u002B\\Cpp_Server\\Server\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{12FE05BB-E885-CBAA-A038-69FC44246910}|..\\..\\..\\..\\..\\..\\AppData\\Roaming\\Microsoft\\VisualStudio\\17.0_f6fecbf5\\SingleFileISense\\_sfi_b96acb2e-b286-4845-b11b-a53de1cf63b8_.vcxproj|C:\\USERS\\KWAK\\SOURCE\\REPOS\\SERVER-JOB-PREP\\C\u002B\u002B\\CPP_SERVER\\SERVER\\GAMESERVER\\CONCURRENTQUEUE.H||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{12FE05BB-E885-CBAA-A038-69FC44246910}|..\\..\\..\\..\\..\\..\\AppData\\Roaming\\Microsoft\\VisualStudio\\17.0_f6fecbf5\\SingleFileISense\\_sfi_b96acb2e-b286-4845-b11b-a53de1cf63b8_.vcxproj|solutionrelative:GAMESERVER\\CONCURRENTQUEUE.H||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\kwak\\source\\repos\\Server-Job-Prep\\C\u002B\u002B\\Cpp_Server\\Server\\GameServer\\ConcurrentQueue.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:GameServer\\ConcurrentQueue.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{0DC5384E-F7BE-4736-9339-8E75A46F4E86}|GameServer\\GameServer.vcxproj|C:\\Users\\kwak\\source\\repos\\Server-Job-Prep\\C\u002B\u002B\\Cpp_Server\\Server\\GameServer\\GameServer.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
       "RelativeMoniker": "D:0:0:{0DC5384E-F7BE-4736-9339-8E75A46F4E86}|GameServer\\GameServer.vcxproj|solutionrelative:GameServer\\GameServer.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     }
@@ -27,12 +35,38 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
+              "Title": "ConcurrentQueue.h",
+              "DocumentMoniker": "C:\\Users\\kwak\\source\\repos\\Server-Job-Prep\\C\u002B\u002B\\Cpp_Server\\Server\\GameServer\\ConcurrentQueue.h",
+              "RelativeDocumentMoniker": "GameServer\\ConcurrentQueue.h",
+              "ToolTip": "C:\\Users\\kwak\\source\\repos\\Server-Job-Prep\\C\u002B\u002B\\Cpp_Server\\Server\\GameServer\\ConcurrentQueue.h",
+              "RelativeToolTip": "GameServer\\ConcurrentQueue.h",
+              "ViewState": "AgIAAAAAAAAAAAAAAADwvwAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
+              "WhenOpened": "2025-08-18T03:49:01.949Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "ConcurrentQueue.cpp",
+              "DocumentMoniker": "C:\\Users\\kwak\\source\\repos\\Server-Job-Prep\\C\u002B\u002B\\Cpp_Server\\Server\\GameServer\\ConcurrentQueue.cpp",
+              "RelativeDocumentMoniker": "GameServer\\ConcurrentQueue.cpp",
+              "ToolTip": "C:\\Users\\kwak\\source\\repos\\Server-Job-Prep\\C\u002B\u002B\\Cpp_Server\\Server\\GameServer\\ConcurrentQueue.cpp",
+              "RelativeToolTip": "GameServer\\ConcurrentQueue.cpp",
+              "ViewState": "AgIAAAAAAAAAAAAAAADwvwAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
+              "WhenOpened": "2025-08-18T03:48:59.417Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
               "Title": "GameServer.cpp",
               "DocumentMoniker": "C:\\Users\\kwak\\source\\repos\\Server-Job-Prep\\C\u002B\u002B\\Cpp_Server\\Server\\GameServer\\GameServer.cpp",
               "RelativeDocumentMoniker": "GameServer\\GameServer.cpp",
               "ToolTip": "C:\\Users\\kwak\\source\\repos\\Server-Job-Prep\\C\u002B\u002B\\Cpp_Server\\Server\\GameServer\\GameServer.cpp",
               "RelativeToolTip": "GameServer\\GameServer.cpp",
-              "ViewState": "AgIAABgAAAAA18zMzMwiwCkAAAAEAAAAAAAAAA==",
+              "ViewState": "AgIAAB8AAAAAAAAAAAAUwCkAAAAEAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
               "WhenOpened": "2025-08-15T09:56:45.591Z",
               "EditorCaption": ""
