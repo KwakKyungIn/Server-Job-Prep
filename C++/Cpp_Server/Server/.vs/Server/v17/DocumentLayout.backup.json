@@ -1,10 +1,18 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "C:\\Users\\kwak\\source\\repos\\Server-Job-Prep\\C\u002B\u002B\\Cpp_Server\\Server\\",
+  "WorkspaceRootPath": "C:\\Users\\GGI\\Desktop\\\uACBD\uC778\uC4F0\\\uAE43\uD5C8\uBE0C\\Repo\\MyCSStudy\\C\u002B\u002B\\Cpp_Server\\Server\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{0DC5384E-F7BE-4736-9339-8E75A46F4E86}|GameServer\\GameServer.vcxproj|C:\\Users\\kwak\\source\\repos\\Server-Job-Prep\\C\u002B\u002B\\Cpp_Server\\Server\\GameServer\\GameServer.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "AbsoluteMoniker": "D:0:0:{0DC5384E-F7BE-4736-9339-8E75A46F4E86}|GameServer\\GameServer.vcxproj|C:\\Users\\GGI\\Desktop\\\uACBD\uC778\uC4F0\\\uAE43\uD5C8\uBE0C\\Repo\\MyCSStudy\\C\u002B\u002B\\Cpp_Server\\Server\\GameServer\\GameServer.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
       "RelativeMoniker": "D:0:0:{0DC5384E-F7BE-4736-9339-8E75A46F4E86}|GameServer\\GameServer.vcxproj|solutionrelative:GameServer\\GameServer.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0DC5384E-F7BE-4736-9339-8E75A46F4E86}|GameServer\\GameServer.vcxproj|C:\\Users\\GGI\\Desktop\\\uACBD\uC778\uC4F0\\\uAE43\uD5C8\uBE0C\\Repo\\MyCSStudy\\C\u002B\u002B\\Cpp_Server\\Server\\GameServer\\ConcurrentQueue.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{0DC5384E-F7BE-4736-9339-8E75A46F4E86}|GameServer\\GameServer.vcxproj|solutionrelative:GameServer\\ConcurrentQueue.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0DC5384E-F7BE-4736-9339-8E75A46F4E86}|GameServer\\GameServer.vcxproj|C:\\Users\\GGI\\Desktop\\\uACBD\uC778\uC4F0\\\uAE43\uD5C8\uBE0C\\Repo\\MyCSStudy\\C\u002B\u002B\\Cpp_Server\\Server\\GameServer\\ConcurrentStack.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{0DC5384E-F7BE-4736-9339-8E75A46F4E86}|GameServer\\GameServer.vcxproj|solutionrelative:GameServer\\ConcurrentStack.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     }
   ],
   "DocumentGroupContainers": [
@@ -14,8 +22,12 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 2,
+          "SelectedChildIndex": 5,
           "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{cce594b6-0c39-4442-ba28-10c64ac7e89f}"
+            },
             {
               "$type": "Bookmark",
               "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
@@ -26,13 +38,39 @@
             },
             {
               "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "ConcurrentStack.h",
+              "DocumentMoniker": "C:\\Users\\GGI\\Desktop\\\uACBD\uC778\uC4F0\\\uAE43\uD5C8\uBE0C\\Repo\\MyCSStudy\\C\u002B\u002B\\Cpp_Server\\Server\\GameServer\\ConcurrentStack.h",
+              "RelativeDocumentMoniker": "GameServer\\ConcurrentStack.h",
+              "ToolTip": "C:\\Users\\GGI\\Desktop\\\uACBD\uC778\uC4F0\\\uAE43\uD5C8\uBE0C\\Repo\\MyCSStudy\\C\u002B\u002B\\Cpp_Server\\Server\\GameServer\\ConcurrentStack.h",
+              "RelativeToolTip": "GameServer\\ConcurrentStack.h",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABMAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
+              "WhenOpened": "2025-08-18T02:13:04.28Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "ConcurrentQueue.h",
+              "DocumentMoniker": "C:\\Users\\GGI\\Desktop\\\uACBD\uC778\uC4F0\\\uAE43\uD5C8\uBE0C\\Repo\\MyCSStudy\\C\u002B\u002B\\Cpp_Server\\Server\\GameServer\\ConcurrentQueue.h",
+              "RelativeDocumentMoniker": "GameServer\\ConcurrentQueue.h",
+              "ToolTip": "C:\\Users\\GGI\\Desktop\\\uACBD\uC778\uC4F0\\\uAE43\uD5C8\uBE0C\\Repo\\MyCSStudy\\C\u002B\u002B\\Cpp_Server\\Server\\GameServer\\ConcurrentQueue.h",
+              "RelativeToolTip": "GameServer\\ConcurrentQueue.h",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAACcAAAACAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
+              "WhenOpened": "2025-08-18T02:12:46.647Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
               "DocumentIndex": 0,
               "Title": "GameServer.cpp",
-              "DocumentMoniker": "C:\\Users\\kwak\\source\\repos\\Server-Job-Prep\\C\u002B\u002B\\Cpp_Server\\Server\\GameServer\\GameServer.cpp",
+              "DocumentMoniker": "C:\\Users\\GGI\\Desktop\\\uACBD\uC778\uC4F0\\\uAE43\uD5C8\uBE0C\\Repo\\MyCSStudy\\C\u002B\u002B\\Cpp_Server\\Server\\GameServer\\GameServer.cpp",
               "RelativeDocumentMoniker": "GameServer\\GameServer.cpp",
-              "ToolTip": "C:\\Users\\kwak\\source\\repos\\Server-Job-Prep\\C\u002B\u002B\\Cpp_Server\\Server\\GameServer\\GameServer.cpp",
+              "ToolTip": "C:\\Users\\GGI\\Desktop\\\uACBD\uC778\uC4F0\\\uAE43\uD5C8\uBE0C\\Repo\\MyCSStudy\\C\u002B\u002B\\Cpp_Server\\Server\\GameServer\\GameServer.cpp",
               "RelativeToolTip": "GameServer\\GameServer.cpp",
-              "ViewState": "AgIAAAIAAACoNTMzMzMtwD0AAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAAAC4AAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
               "WhenOpened": "2025-08-15T09:56:45.591Z",
               "EditorCaption": ""
