@@ -1,32 +1,79 @@
 ﻿#include "pch.h"
 #include <iostream>
 #include "CorePch.h"
-#include <atomic> // atomic은 멀티스레드 환경에서 안전하게 변수를 공유하기 위해 사용합니다.
-#include <thread> //윈도우즈를 가져오면 리눅스 환경에서는 안될수도있으니까
-#include <mutex>	 // mutex는 스레드 간의 동기화를 위해 사용합니다.
-#include <windows.h> // Windows API를 사용하기 위해 포함합니다.
+#include <atomic>
+#include <mutex>
+#include <windows.h>
 #include <future>
 #include "ThreadManager.h"
 
-CoreGlobal Core; // CoreGlobal 객체를 생성합니다. 이 객체는 스레드 매니저를 초기화하고 관리합니다.
+class TestLock
+{
+	USE_LOCK;
 
+public:
+	int32 TestRead()
+	{
+		READ_LOCK;
 
-void ThreadMain()
+		if (_queue.empty())
+			return -1;
+
+		return _queue.front();
+	}
+
+	void TestPush()
+	{
+		WRITE_LOCK;
+
+		_queue.push(rand() % 100);
+	}
+
+	void TestPop()
+	{
+		WRITE_LOCK;
+
+		if (_queue.empty() == false)
+			_queue.pop();
+	}
+
+private:
+	queue<int32> _queue;
+};
+
+TestLock testLock;
+
+void ThreadWrite()
 {
 	while (true)
 	{
-		cout << "Hello, World! from Thread ID: " << LThreadId << endl;
-		this_thread::sleep_for(chrono::seconds(1)); // 1초 동안 대기합니다.
-
+		testLock.TestPush();
+		this_thread::sleep_for(chrono::milliseconds(1));
+		testLock.TestPop();
 	}
-
 }
+
+void ThreadRead()
+{
+	while (true)
+	{
+		int32 value = testLock.TestRead();
+		cout << value << endl;
+		this_thread::sleep_for(chrono::milliseconds(1));
+	}
+}
+
 int main()
 {
-	for(int32 i = 0; i < 5; ++i)
+	for (int32 i = 0; i < 2; i++)
 	{
-		GThreadManager->Launch(ThreadMain); // 스레드를 생성하고 ThreadMain 함수를 실행합니다.
+		GThreadManager->Launch(ThreadWrite);
 	}
-	GThreadManager->Join(); // 모든 스레드가 종료될 때까지 대기합니다.
 
+	for (int32 i = 0; i < 5; i++)
+	{
+		GThreadManager->Launch(ThreadRead);
+	}
+
+	GThreadManager->Join();
 }
