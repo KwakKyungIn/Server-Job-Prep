@@ -81,7 +81,7 @@ public:
 
 		}
 		value = oldHead->data; // 값을 반환
-		//delete oldHead; // 메모리 해제
+		tryDelete(oldHead); // 메모리 해제
 		return true; // 성공적으로 pop했음을 나타냄
 	}
 
@@ -89,7 +89,7 @@ public:
 	{
 		if(_popCount == 1) // pop 횟수가 1이면
 		{
-			Node* node = pendingList.exchange(nullptr); // 대기 중인 리스트의 첫 번째 노드를 가져옵니다.
+			Node* node = _pendingList.exchange(nullptr); // 대기 중인 리스트의 첫 번째 노드를 가져옵니다.
 
 			if (--_popCount == 0)
 			{
@@ -110,8 +110,8 @@ public:
 
 	void ChainPendingNodeList(Node* first, Node* last)
 	{
-		last->next = pendingList; // 마지막 노드의 next를 대기 중인 리스트로 설정
-		while (pendingList.compare_exchange_weak(last->next) == false)		// 대기 중인 리스트의 첫 번째 노드를 새로 설정
+		last->next = _pendingList; // 마지막 노드의 next를 대기 중인 리스트로 설정
+		while (_pendingList.compare_exchange_weak(last->next, first) == false)		// 대기 중인 리스트의 첫 번째 노드를 새로 설정
 		{
 		}
 
@@ -144,5 +144,5 @@ public:
 private:
 	atomic<Node*> _head; // 스택의 헤드를 원자적으로 관리합니다.
 	atomic<uint32> _popCount = 0; // pop 횟수를 원자적으로 관리합니다.
-	atomic<Node*> pendingList; // 대기 중인 노드 리스트를 원자적으로 관리합니다.
+	atomic<Node*> _pendingList; // 대기 중인 노드 리스트를 원자적으로 관리합니다.
 };
