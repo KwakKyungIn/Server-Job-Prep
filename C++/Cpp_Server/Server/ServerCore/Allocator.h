@@ -7,27 +7,39 @@
 class BaseAllocator
 {
 public:
-	static void*	Alloc(int32 size);
+	static void* Alloc(int32 size);
 	static void		Release(void* ptr);
 };
 
-/*-----------------------
-StompAllocator----> 메모리 오염 잡기 위해!
------------------------*/
+/*-------------------
+	StompAllocator
+-------------------*/
 
 class StompAllocator
 {
 	enum { PAGE_SIZE = 0x1000 };
-public:
-	static void*	Alloc(int32 size);
-	static void		Release(void* ptr);
 
+public:
+	static void* Alloc(int32 size);
+	static void		Release(void* ptr);
 };
 
-/*-----------------------
-STL Allocator----> 메모리 오염 잡기 위해!
------------------------*/
-template <typename T>
+/*-------------------
+	PoolAllocator
+-------------------*/
+
+class PoolAllocator
+{
+public:
+	static void* Alloc(int32 size);
+	static void		Release(void* ptr);
+};
+
+/*-------------------
+	STL Allocator
+-------------------*/
+
+template<typename T>
 class StlAllocator
 {
 public:
@@ -35,12 +47,12 @@ public:
 
 	StlAllocator() {}
 
-	template <typename Other>
+	template<typename Other>
 	StlAllocator(const StlAllocator<Other>&) {}
 
 	T* allocate(size_t count)
 	{
-		const int32 size = static_cast<int32>(sizeof(T) * count);
+		const int32 size = static_cast<int32>(count * sizeof(T));
 		return static_cast<T*>(Xalloc(size));
 	}
 
@@ -48,6 +60,4 @@ public:
 	{
 		Xrelease(ptr);
 	}
-
-
 };

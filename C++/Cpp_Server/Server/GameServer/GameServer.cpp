@@ -6,13 +6,19 @@
 #include <windows.h>
 #include <future>
 #include "ThreadManager.h"
-#include <vector>
-#include <map>
 
 #include "RefCounting.h"
 #include "Memory.h"
 #include "Allocator.h"
-class Knight
+
+class Player
+{
+public:
+	Player() {}
+	virtual ~Player() {}
+};
+
+class Knight : public Player
 {
 public:
 	Knight()
@@ -30,15 +36,27 @@ public:
 		cout << "~Knight()" << endl;
 	}
 
-
 	int32 _hp = 100;
 	int32 _mp = 10;
 };
 
-
-
 int main()
 {
-	Vector<Knight> v(100);
+	for (int32 i = 0; i < 5; i++)
+	{
+		GThreadManager->Launch([]()
+			{
+				while (true)
+				{
+					Vector<Knight> v(10);
 
+					Map<int32, Knight> m;
+					m[100] = Knight();
+
+                    this_thread::sleep_for(chrono::milliseconds(10));
+				}
+			});
+	}
+
+	GThreadManager->Join();
 }
