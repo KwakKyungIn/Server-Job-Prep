@@ -23,3 +23,31 @@ public:
 	static void		Release(void* ptr);
 
 };
+
+/*-----------------------
+STL Allocator----> 메모리 오염 잡기 위해!
+-----------------------*/
+template <typename T>
+class StlAllocator
+{
+public:
+	using value_type = T;
+
+	StlAllocator() {}
+
+	template <typename Other>
+	StlAllocator(const StlAllocator<Other>&) {}
+
+	T* allocate(size_t count)
+	{
+		const int32 size = static_cast<int32>(sizeof(T) * count);
+		return static_cast<T*>(Xalloc(size));
+	}
+
+	void deallocate(T* ptr, size_t count)
+	{
+		Xrelease(ptr);
+	}
+
+
+};

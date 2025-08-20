@@ -6,10 +6,12 @@
 #include <windows.h>
 #include <future>
 #include "ThreadManager.h"
+#include <vector>
+#include <map>
 
 #include "RefCounting.h"
 #include "Memory.h"
-
+#include "Allocator.h"
 class Knight
 {
 public:
@@ -37,10 +39,6 @@ public:
 
 int main()
 {
+	Vector<Knight> v(100);
 
-	Knight* knight = Xnew<Knight>(100);
-
-	Xdelete(knight);
-
-	knight->_hp = 100;
 }
