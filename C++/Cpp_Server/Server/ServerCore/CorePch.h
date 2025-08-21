@@ -13,3 +13,4 @@
 
 #include "ObjectPool.h"
 using namespace std;
+#include "TypeCast.h"
