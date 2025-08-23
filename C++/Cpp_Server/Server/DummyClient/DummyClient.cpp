@@ -79,7 +79,7 @@ int main()
 		cout << "Recv Data! Data = " << recvBuffer << endl;
 		cout << "Recv Data! Len = " << recvLen << endl;
 
-		this_thread::sleep_for(chrono::microseconds(1));
+		this_thread::sleep_for(chrono::seconds(1));
 	}
 
 	// ---------------------------

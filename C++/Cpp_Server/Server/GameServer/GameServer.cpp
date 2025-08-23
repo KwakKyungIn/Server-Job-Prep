@@ -49,7 +49,7 @@ int main()
 		::memset(&clientAddr, 0, sizeof(clientAddr));
 		int32 addrLen = sizeof(clientAddr);
 
-		this_thread::sleep_for(chrono::microseconds(1));
+		this_thread::sleep_for(chrono::seconds(1));
 
 		char recvBuffer[1000];
 
