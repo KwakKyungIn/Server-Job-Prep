@@ -1,2 +1,3 @@
-﻿  GameServer.cpp
+﻿  pch.cpp
+  GameServer.cpp
   GameServer.vcxproj -> C:\Users\kwak\source\repos\Server-Job-Prep\C++\Cpp_Server\Server\Binary\Debug\GameServer.exe

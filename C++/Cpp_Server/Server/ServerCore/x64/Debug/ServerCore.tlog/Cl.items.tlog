@@ -6,6 +6,8 @@ C:\Users\kwak\source\repos\Server-Job-Prep\C++\Cpp_Server\Server\ServerCore\Dead
 C:\Users\kwak\source\repos\Server-Job-Prep\C++\Cpp_Server\Server\ServerCore\Lock.cpp;C:\Users\kwak\source\repos\Server-Job-Prep\C++\Cpp_Server\Server\ServerCore\x64\Debug\Lock.obj
 C:\Users\kwak\source\repos\Server-Job-Prep\C++\Cpp_Server\Server\ServerCore\Memory.cpp;C:\Users\kwak\source\repos\Server-Job-Prep\C++\Cpp_Server\Server\ServerCore\x64\Debug\Memory.obj
 C:\Users\kwak\source\repos\Server-Job-Prep\C++\Cpp_Server\Server\ServerCore\MemoryPool.cpp;C:\Users\kwak\source\repos\Server-Job-Prep\C++\Cpp_Server\Server\ServerCore\x64\Debug\MemoryPool.obj
+C:\Users\kwak\source\repos\Server-Job-Prep\C++\Cpp_Server\Server\ServerCore\NetAddress.cpp;C:\Users\kwak\source\repos\Server-Job-Prep\C++\Cpp_Server\Server\ServerCore\x64\Debug\NetAddress.obj
 C:\Users\kwak\source\repos\Server-Job-Prep\C++\Cpp_Server\Server\ServerCore\pch.cpp;C:\Users\kwak\source\repos\Server-Job-Prep\C++\Cpp_Server\Server\ServerCore\x64\Debug\pch.obj
 C:\Users\kwak\source\repos\Server-Job-Prep\C++\Cpp_Server\Server\ServerCore\RefCounting.cpp;C:\Users\kwak\source\repos\Server-Job-Prep\C++\Cpp_Server\Server\ServerCore\x64\Debug\RefCounting.obj
+C:\Users\kwak\source\repos\Server-Job-Prep\C++\Cpp_Server\Server\ServerCore\SocketUtils.cpp;C:\Users\kwak\source\repos\Server-Job-Prep\C++\Cpp_Server\Server\ServerCore\x64\Debug\SocketUtils.obj
 C:\Users\kwak\source\repos\Server-Job-Prep\C++\Cpp_Server\Server\ServerCore\ThreadManager.cpp;C:\Users\kwak\source\repos\Server-Job-Prep\C++\Cpp_Server\Server\ServerCore\x64\Debug\ThreadManager.obj
