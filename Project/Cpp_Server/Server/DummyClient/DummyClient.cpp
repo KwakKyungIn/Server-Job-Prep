@@ -22,7 +22,11 @@ public:
 
 	virtual void OnRecvPacket(BYTE* buffer, int32 len) override
 	{
-		ClientPacketHandler::HandlePacket(buffer, len);
+		PacketSessionRef session = PacketSessionRef();
+		PacketHeader* header = reinterpret_cast<PacketHeader*>(buffer);
+
+		// TODO : packetId 대역 체크
+		ClientPacketHandler::HandlePacket(session, buffer, len);
 	}
 
 	virtual void OnSend(int32 len) override
@@ -38,6 +42,8 @@ public:
 
 int main()
 {
+	ClientPacketHandler::Init();
+
 	this_thread::sleep_for(chrono::seconds(1));
 
 	ClientServiceRef service = MakeShared<ClientService>(

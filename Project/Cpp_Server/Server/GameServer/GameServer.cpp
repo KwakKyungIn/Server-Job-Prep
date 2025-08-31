@@ -11,6 +11,8 @@
 
 int main()
 {
+	ServerPacketHandler::Init();
+
 	ServerServiceRef service = MakeShared<ServerService>(
 		NetAddress(L"127.0.0.1", 7777),
 		MakeShared<IocpCore>(),
@@ -35,7 +37,7 @@ int main()
 	while (true)
 	{
 		Protocol::S_TEST pkt;
-		pkt.set_id(1020);
+		pkt.set_id(1000);
 		pkt.set_hp(100);
 		pkt.set_attack(10);
 		{
