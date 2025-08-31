@@ -29,7 +29,7 @@
   </ItemGroup>
   <ItemGroup>
     <Xml Include="PDL.xml">
-      <Filter>Main</Filter>
+      <Filter>Utils</Filter>
     </Xml>
   </ItemGroup>
 </Project>
