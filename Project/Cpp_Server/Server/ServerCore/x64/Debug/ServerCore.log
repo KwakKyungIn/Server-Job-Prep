@@ -1,5 +1,6 @@
-﻿  pch.cpp
-  Allocator.cpp
+﻿  Allocator.cpp
+  BufferReader.cpp
+  BufferWriter.cpp
   CoreGlobal.cpp
   CorePch.cpp
   CoreTLS.cpp
@@ -17,6 +18,8 @@
   Service.cpp
   Session.cpp
   SocketUtils.cpp
+  코드를 생성하고 있습니다...
+  컴파일하고 있습니다...
   ThreadManager.cpp
   코드를 생성하고 있습니다...
-  ServerCore.vcxproj -> C:\Users\GGI\Desktop\경인쓰\깃허브\Repo\MyCSStudy\Project\Cpp_Server\Server\Libraries\Debug\ServerCore.lib
+  ServerCore.vcxproj -> C:\Users\kwak\source\repos\Server-Job-Prep\Project\Cpp_Server\Server\Libraries\Debug\ServerCore.lib
