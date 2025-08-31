@@ -3,7 +3,7 @@
 #include "Service.h"
 #include "Session.h"
 #include "BufferReader.h"
-#include "ClientPacketHandler.h"
+#include "ServerPacketHandler.h"
 
 char sendData[] = "Hello World";
 
@@ -22,11 +22,11 @@ public:
 
 	virtual void OnRecvPacket(BYTE* buffer, int32 len) override
 	{
-		PacketSessionRef session = PacketSessionRef();
+		PacketSessionRef session = GetPacketSessionRef();
 		PacketHeader* header = reinterpret_cast<PacketHeader*>(buffer);
 
 		// TODO : packetId 대역 체크
-		ClientPacketHandler::HandlePacket(session, buffer, len);
+		ServerPacketHandler::HandlePacket(session, buffer, len);
 	}
 
 	virtual void OnSend(int32 len) override
@@ -42,7 +42,7 @@ public:
 
 int main()
 {
-	ClientPacketHandler::Init();
+	ServerPacketHandler::Init();
 
 	this_thread::sleep_for(chrono::seconds(1));
 
