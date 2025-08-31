@@ -8,8 +8,6 @@ message C_TEST
 {
 	uint64 id = 1;
 }
-
-
 message C_MOVE
 {
 	uint64 id = 1;
@@ -29,4 +27,9 @@ message S_TEST
 message S_LOGIN
 {
 	//enum PacketId { NONE = 0; PACKET_ID = 1;}
+}
+
+message C_TEST3
+{
+	uint64 id = 1;
 }

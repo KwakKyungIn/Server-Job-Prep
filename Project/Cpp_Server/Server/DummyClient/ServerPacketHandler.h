@@ -10,6 +10,7 @@ enum : uint16
 	PKT_C_MOVE = 1001,
 	PKT_S_TEST = 1002,
 	PKT_S_LOGIN = 1003,
+	PKT_C_TEST3 = 1004,
 };
 
 // Custom Handlers
@@ -35,6 +36,7 @@ public:
 	}
 	static SendBufferRef MakeSendBuffer(Protocol::C_TEST& pkt) { return MakeSendBuffer(pkt, PKT_C_TEST); }
 	static SendBufferRef MakeSendBuffer(Protocol::C_MOVE& pkt) { return MakeSendBuffer(pkt, PKT_C_MOVE); }
+	static SendBufferRef MakeSendBuffer(Protocol::C_TEST3& pkt) { return MakeSendBuffer(pkt, PKT_C_TEST3); }
 
 private:
 	template<typename PacketType, typename ProcessFunc>
