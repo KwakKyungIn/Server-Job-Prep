@@ -172,4 +172,4 @@ Protocol.proto(4,1): warning G1A4DC0EC: Import Enum.proto is unused.
   GameServer.cpp
   GameSession.cpp
   코드를 생성하고 있습니다...
-  GameServer.vcxproj -> C:\Users\GGI\Desktop\Ky\Github\Repo\MyCSStudy\Project\Cpp_Server\Server\Binary\Debug\GameServer.exe
+  GameServer.vcxproj -> C:\Users\kwak\source\repos\Server-Job-Prep\Project\Cpp_Server\Server\Binary\Debug\GameServer.exe

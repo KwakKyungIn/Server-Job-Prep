@@ -12,12 +12,14 @@ Protocol.proto(4,1): warning G1A4DC0EC: Import Enum.proto is unused.
   	PKT_C_MOVE = 1001,
   	PKT_S_TEST = 1002,
   	PKT_S_LOGIN = 1003,
+  	PKT_C_TEST3 = 1004,
   };
   
   // Custom Handlers
   bool Handle_INVALID(PacketSessionRef& session, BYTE* buffer, int32 len);
   bool Handle_C_TEST(PacketSessionRef& session, Protocol::C_TEST& pkt);
   bool Handle_C_MOVE(PacketSessionRef& session, Protocol::C_MOVE& pkt);
+  bool Handle_C_TEST3(PacketSessionRef& session, Protocol::C_TEST3& pkt);
   
   class ClientPacketHandler
   {
@@ -28,6 +30,7 @@ Protocol.proto(4,1): warning G1A4DC0EC: Import Enum.proto is unused.
   			GPacketHandler[i] = Handle_INVALID;
   		GPacketHandler[PKT_C_TEST] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::C_TEST>(Handle_C_TEST, session, buffer, len); };
   		GPacketHandler[PKT_C_MOVE] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::C_MOVE>(Handle_C_MOVE, session, buffer, len); };
+  		GPacketHandler[PKT_C_TEST3] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::C_TEST3>(Handle_C_TEST3, session, buffer, len); };
   	}
   
   	static bool HandlePacket(PacketSessionRef& session, BYTE* buffer, int32 len)
@@ -77,6 +80,7 @@ Protocol.proto(4,1): warning G1A4DC0EC: Import Enum.proto is unused.
   	PKT_C_MOVE = 1001,
   	PKT_S_TEST = 1002,
   	PKT_S_LOGIN = 1003,
+  	PKT_C_TEST3 = 1004,
   };
   
   // Custom Handlers
@@ -102,6 +106,7 @@ Protocol.proto(4,1): warning G1A4DC0EC: Import Enum.proto is unused.
   	}
   	static SendBufferRef MakeSendBuffer(Protocol::C_TEST& pkt) { return MakeSendBuffer(pkt, PKT_C_TEST); }
   	static SendBufferRef MakeSendBuffer(Protocol::C_MOVE& pkt) { return MakeSendBuffer(pkt, PKT_C_MOVE); }
+  	static SendBufferRef MakeSendBuffer(Protocol::C_TEST3& pkt) { return MakeSendBuffer(pkt, PKT_C_TEST3); }
   
   private:
   	template<typename PacketType, typename ProcessFunc>
@@ -166,4 +171,4 @@ Protocol.proto(4,1): warning G1A4DC0EC: Import Enum.proto is unused.
   Protocol.pb.cc
   Struct.pb.cc
   코드를 생성하고 있습니다...
-  DummyClient.vcxproj -> C:\Users\GGI\Desktop\Ky\Github\Repo\MyCSStudy\Project\Cpp_Server\Server\Binary\Debug\DummyClient.exe
+  DummyClient.vcxproj -> C:\Users\kwak\source\repos\Server-Job-Prep\Project\Cpp_Server\Server\Binary\Debug\DummyClient.exe
