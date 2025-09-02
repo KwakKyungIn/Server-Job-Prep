@@ -42,3 +42,8 @@ bool Handle_S_CHAT(PacketSessionRef& session, Protocol::S_CHAT& pkt)
 	std::cout << pkt.msg() << endl;
 	return true;
 }
+
+bool Handle_S_TEST(PacketSessionRef& session, Protocol::S_TEST& pkt)
+{
+	return false;
+}
