@@ -9,6 +9,7 @@ message C_LOGIN
 
 }
 
+
 message S_LOGIN
 {
 	bool success = 1;
