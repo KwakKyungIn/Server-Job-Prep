@@ -52,6 +52,10 @@ message S_JOIN_ROOM_RES {
     RoomInfo room = 2;
     string reason = 3;
 }
+message S_JOIN_ROOM_NTF {
+    int64 playerId = 1;
+    string name = 2;
+}
 
 message C_ROOM_CHAT_REQ {
     int64 roomId = 1;

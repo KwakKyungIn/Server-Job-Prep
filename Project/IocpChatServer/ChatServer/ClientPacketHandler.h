@@ -16,16 +16,17 @@ enum : uint16
 	PKT_S_CREATE_ROOM_RES = 1007,
 	PKT_C_JOIN_ROOM_REQ = 1008,
 	PKT_S_JOIN_ROOM_RES = 1009,
-	PKT_C_ROOM_CHAT_REQ = 1010,
-	PKT_S_ROOM_CHAT_NTF = 1011,
-	PKT_C_FRIEND_ADD_REQ = 1012,
-	PKT_S_FRIEND_ADD_RES = 1013,
-	PKT_C_FRIEND_LIST_REQ = 1014,
-	PKT_S_FRIEND_LIST_RES = 1015,
-	PKT_S_PRESENCE_NTF = 1016,
-	PKT_S_RATE_LIMIT_NTF = 1017,
-	PKT_C_ADMIN_COMMAND_REQ = 1018,
-	PKT_S_ADMIN_COMMAND_RES = 1019,
+	PKT_S_JOIN_ROOM_NTF = 1010,
+	PKT_C_ROOM_CHAT_REQ = 1011,
+	PKT_S_ROOM_CHAT_NTF = 1012,
+	PKT_C_FRIEND_ADD_REQ = 1013,
+	PKT_S_FRIEND_ADD_RES = 1014,
+	PKT_C_FRIEND_LIST_REQ = 1015,
+	PKT_S_FRIEND_LIST_RES = 1016,
+	PKT_S_PRESENCE_NTF = 1017,
+	PKT_S_RATE_LIMIT_NTF = 1018,
+	PKT_C_ADMIN_COMMAND_REQ = 1019,
+	PKT_S_ADMIN_COMMAND_RES = 1020,
 };
 
 // Custom Handlers
@@ -68,6 +69,7 @@ public:
 	static SendBufferRef MakeSendBuffer(Protocol::S_PRIVATE_CHAT_NTF& pkt) { return MakeSendBuffer(pkt, PKT_S_PRIVATE_CHAT_NTF); }
 	static SendBufferRef MakeSendBuffer(Protocol::S_CREATE_ROOM_RES& pkt) { return MakeSendBuffer(pkt, PKT_S_CREATE_ROOM_RES); }
 	static SendBufferRef MakeSendBuffer(Protocol::S_JOIN_ROOM_RES& pkt) { return MakeSendBuffer(pkt, PKT_S_JOIN_ROOM_RES); }
+	static SendBufferRef MakeSendBuffer(Protocol::S_JOIN_ROOM_NTF& pkt) { return MakeSendBuffer(pkt, PKT_S_JOIN_ROOM_NTF); }
 	static SendBufferRef MakeSendBuffer(Protocol::S_ROOM_CHAT_NTF& pkt) { return MakeSendBuffer(pkt, PKT_S_ROOM_CHAT_NTF); }
 	static SendBufferRef MakeSendBuffer(Protocol::S_FRIEND_ADD_RES& pkt) { return MakeSendBuffer(pkt, PKT_S_FRIEND_ADD_RES); }
 	static SendBufferRef MakeSendBuffer(Protocol::S_FRIEND_LIST_RES& pkt) { return MakeSendBuffer(pkt, PKT_S_FRIEND_LIST_RES); }

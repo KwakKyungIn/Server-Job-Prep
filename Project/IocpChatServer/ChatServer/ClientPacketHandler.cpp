@@ -5,6 +5,7 @@
 #include "ChatSession.h"
 #include "DBConnectionPool.h"
 #include "RoomManager.h"
+#include <chrono>
 
 PacketHandlerFunc GPacketHandler[UINT16_MAX];
 
@@ -139,12 +140,105 @@ bool Handle_C_CREATE_ROOM_REQ(PacketSessionRef& session, Protocol::C_CREATE_ROOM
 
 bool Handle_C_JOIN_ROOM_REQ(PacketSessionRef& session, Protocol::C_JOIN_ROOM_REQ& pkt)
 {
-    return false;
-}
+	ChatSessionRef chatSession = std::static_pointer_cast<ChatSession>(session);
+	if (chatSession == nullptr || chatSession->GetPlayer() == nullptr)
+	{
+		return false;
+	}
+	PlayerRef player = chatSession->GetPlayer();
 
+	int64 roomId = pkt.roomid();
+	RoomRef room = GRoomManager.FindRoom(roomId);
+
+	Protocol::S_JOIN_ROOM_RES resPkt;
+	resPkt.set_success(false);
+
+	if (room == nullptr)
+	{
+		resPkt.set_reason("방을 찾을 수 없습니다.");
+		auto sendBuffer = ClientPacketHandler::MakeSendBuffer(resPkt);
+		session->Send(sendBuffer);
+		return true;
+	}
+
+	bool joinSuccess = room->Enter(player);
+
+	if (joinSuccess)
+	{
+		resPkt.set_success(true);
+
+		Protocol::RoomInfo* roomInfo = resPkt.mutable_room();
+		roomInfo->set_roomid(room->GetId());
+		roomInfo->set_type(room->GetType());
+		roomInfo->set_roomname(room->GetName());
+
+		for (const auto& member : room->GetPlayers())
+		{
+			Protocol::PlayerInfo* memberInfo = roomInfo->add_members();
+			memberInfo->set_playerid(member.second->playerId);
+			memberInfo->set_name(member.second->name);
+		}
+	}
+	else
+	{
+		resPkt.set_reason("방 입장에 실패했습니다.");
+	}
+
+	auto sendBuffer = ClientPacketHandler::MakeSendBuffer(resPkt);
+	session->Send(sendBuffer);
+
+	if (joinSuccess)
+	{
+		// 1. 다른 플레이어들에게 입장 알림 패킷을 보냅니다.
+		Protocol::S_JOIN_ROOM_NTF ntfPkt;
+		ntfPkt.set_name(player->name);
+		auto ntfBuffer = ClientPacketHandler::MakeSendBuffer(ntfPkt);
+
+		// 2. 자신을 제외한 다른 모든 플레이어에게 브로드캐스트합니다.
+		room->BroadcastWithoutSelf(ntfBuffer, player->playerId);
+	}
+
+	return true;
+}
 bool Handle_C_ROOM_CHAT_REQ(PacketSessionRef& session, Protocol::C_ROOM_CHAT_REQ& pkt)
 {
-    return false;
+	ChatSessionRef chatSession = std::static_pointer_cast<ChatSession>(session);
+	if (chatSession == nullptr || chatSession->GetPlayer() == nullptr)
+		return false;
+
+	PlayerRef player = chatSession->GetPlayer();
+	RoomRef room = player->_room;
+
+	// 방이 없으면 응답 없이 리턴
+	if (room == nullptr)
+		return true;
+
+	// 방 정보에서 roomId 가져오기
+	int32 roomId = room->GetId();
+
+	// 브로드캐스트 패킷 생성
+	Protocol::S_ROOM_CHAT_NTF resPkt;
+	resPkt.set_roomid(roomId);
+
+	// ChatMessage 생성 및 채우기
+	Protocol::ChatMessage* chatMsg = resPkt.mutable_chat();
+	static std::atomic<uint64> s_messageId{ 1 }; // 유니크 messageId 생성기
+	chatMsg->set_messageid(s_messageId.fetch_add(1));
+	chatMsg->set_senderid(player->playerId);
+	chatMsg->set_message(pkt.message());
+
+	// timestamp: 현재 epoch(ms) 기준
+	auto now = std::chrono::system_clock::now();
+	auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();
+	chatMsg->set_timestamp(ms);
+
+	// 패킷 직렬화
+	auto sendBuffer = ClientPacketHandler::MakeSendBuffer(resPkt);
+
+	// 방에 속한 모든 플레이어에게 브로드캐스트
+	room->Broadcast(sendBuffer);
+
+	return true;
 }
 
 bool Handle_C_FRIEND_ADD_REQ(PacketSessionRef& session, Protocol::C_FRIEND_ADD_REQ& pkt)
