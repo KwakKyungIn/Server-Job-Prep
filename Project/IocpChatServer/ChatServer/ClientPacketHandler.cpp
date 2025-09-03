@@ -163,6 +163,11 @@ bool Handle_C_LEAVE_ROOM_REQ(PacketSessionRef& session, Protocol::C_LEAVE_ROOM_R
 
 	// 방에서 플레이어를 제거합니다.
 	room->Leave(player);
+	if (room->GetPlayers().empty()) // 또는 GetPlayerCount() == 0
+	{
+		GRoomManager.RemoveRoom(room->GetId());
+		std::cout << "방 ID " << room->GetId() << "이(가) 모든 플레이어가 나가서 삭제되었습니다." << std::endl;
+	}
 
 	Protocol::S_ROOM_CHAT_NTF ntfPkt;
 	static std::atomic<uint64> s_messageId{ 1 };
@@ -208,7 +213,7 @@ bool Handle_C_JOIN_ROOM_REQ(PacketSessionRef& session, Protocol::C_JOIN_ROOM_REQ
 
 	if (room == nullptr)
 	{
-		resPkt.set_reason("방을 찾을 수 없습니다.");
+		resPkt.set_reason("Cannot find the room");
 		auto sendBuffer = ClientPacketHandler::MakeSendBuffer(resPkt);
 		session->Send(sendBuffer);
 		return true;
