@@ -47,32 +47,135 @@ PROTOBUF_NAMESPACE_OPEN
 PROTOBUF_NAMESPACE_CLOSE
 namespace Protocol {
 
-enum PlayerType : int {
-  PLAYER_TYPE_NONE = 0,
-  PLAYER_TYPE_KNIGHT = 1,
-  PLAYER_TYPE_MAGE = 2,
-  PLAYER_TYPE_ARCHER = 3,
-  PlayerType_INT_MIN_SENTINEL_DO_NOT_USE_ = std::numeric_limits<int32_t>::min(),
-  PlayerType_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits<int32_t>::max()
+enum ConnectStatus : int {
+  CONNECT_OK = 0,
+  CONNECT_FAIL = 1,
+  CONNECT_RECONNECT = 2,
+  ConnectStatus_INT_MIN_SENTINEL_DO_NOT_USE_ = std::numeric_limits<int32_t>::min(),
+  ConnectStatus_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits<int32_t>::max()
 };
-bool PlayerType_IsValid(int value);
-constexpr PlayerType PlayerType_MIN = PLAYER_TYPE_NONE;
-constexpr PlayerType PlayerType_MAX = PLAYER_TYPE_ARCHER;
-constexpr int PlayerType_ARRAYSIZE = PlayerType_MAX + 1;
+bool ConnectStatus_IsValid(int value);
+constexpr ConnectStatus ConnectStatus_MIN = CONNECT_OK;
+constexpr ConnectStatus ConnectStatus_MAX = CONNECT_RECONNECT;
+constexpr int ConnectStatus_ARRAYSIZE = ConnectStatus_MAX + 1;
 
-const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* PlayerType_descriptor();
+const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* ConnectStatus_descriptor();
 template<typename T>
-inline const std::string& PlayerType_Name(T enum_t_value) {
-  static_assert(::std::is_same<T, PlayerType>::value ||
+inline const std::string& ConnectStatus_Name(T enum_t_value) {
+  static_assert(::std::is_same<T, ConnectStatus>::value ||
     ::std::is_integral<T>::value,
-    "Incorrect type passed to function PlayerType_Name.");
+    "Incorrect type passed to function ConnectStatus_Name.");
   return ::PROTOBUF_NAMESPACE_ID::internal::NameOfEnum(
-    PlayerType_descriptor(), enum_t_value);
+    ConnectStatus_descriptor(), enum_t_value);
 }
-inline bool PlayerType_Parse(
-    ::PROTOBUF_NAMESPACE_ID::ConstStringParam name, PlayerType* value) {
-  return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<PlayerType>(
-    PlayerType_descriptor(), name, value);
+inline bool ConnectStatus_Parse(
+    ::PROTOBUF_NAMESPACE_ID::ConstStringParam name, ConnectStatus* value) {
+  return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<ConnectStatus>(
+    ConnectStatus_descriptor(), name, value);
+}
+enum RoomType : int {
+  ROOM_PRIVATE = 0,
+  ROOM_GROUP = 1,
+  ROOM_GUILD = 2,
+  RoomType_INT_MIN_SENTINEL_DO_NOT_USE_ = std::numeric_limits<int32_t>::min(),
+  RoomType_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits<int32_t>::max()
+};
+bool RoomType_IsValid(int value);
+constexpr RoomType RoomType_MIN = ROOM_PRIVATE;
+constexpr RoomType RoomType_MAX = ROOM_GUILD;
+constexpr int RoomType_ARRAYSIZE = RoomType_MAX + 1;
+
+const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* RoomType_descriptor();
+template<typename T>
+inline const std::string& RoomType_Name(T enum_t_value) {
+  static_assert(::std::is_same<T, RoomType>::value ||
+    ::std::is_integral<T>::value,
+    "Incorrect type passed to function RoomType_Name.");
+  return ::PROTOBUF_NAMESPACE_ID::internal::NameOfEnum(
+    RoomType_descriptor(), enum_t_value);
+}
+inline bool RoomType_Parse(
+    ::PROTOBUF_NAMESPACE_ID::ConstStringParam name, RoomType* value) {
+  return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<RoomType>(
+    RoomType_descriptor(), name, value);
+}
+enum PresenceStatus : int {
+  OFFLINE = 0,
+  ONLINE = 1,
+  IN_GAME = 2,
+  AWAY = 3,
+  PresenceStatus_INT_MIN_SENTINEL_DO_NOT_USE_ = std::numeric_limits<int32_t>::min(),
+  PresenceStatus_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits<int32_t>::max()
+};
+bool PresenceStatus_IsValid(int value);
+constexpr PresenceStatus PresenceStatus_MIN = OFFLINE;
+constexpr PresenceStatus PresenceStatus_MAX = AWAY;
+constexpr int PresenceStatus_ARRAYSIZE = PresenceStatus_MAX + 1;
+
+const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* PresenceStatus_descriptor();
+template<typename T>
+inline const std::string& PresenceStatus_Name(T enum_t_value) {
+  static_assert(::std::is_same<T, PresenceStatus>::value ||
+    ::std::is_integral<T>::value,
+    "Incorrect type passed to function PresenceStatus_Name.");
+  return ::PROTOBUF_NAMESPACE_ID::internal::NameOfEnum(
+    PresenceStatus_descriptor(), enum_t_value);
+}
+inline bool PresenceStatus_Parse(
+    ::PROTOBUF_NAMESPACE_ID::ConstStringParam name, PresenceStatus* value) {
+  return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<PresenceStatus>(
+    PresenceStatus_descriptor(), name, value);
+}
+enum FriendStatus : int {
+  PENDING = 0,
+  ACCEPTED = 1,
+  BLOCKED = 2,
+  FriendStatus_INT_MIN_SENTINEL_DO_NOT_USE_ = std::numeric_limits<int32_t>::min(),
+  FriendStatus_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits<int32_t>::max()
+};
+bool FriendStatus_IsValid(int value);
+constexpr FriendStatus FriendStatus_MIN = PENDING;
+constexpr FriendStatus FriendStatus_MAX = BLOCKED;
+constexpr int FriendStatus_ARRAYSIZE = FriendStatus_MAX + 1;
+
+const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* FriendStatus_descriptor();
+template<typename T>
+inline const std::string& FriendStatus_Name(T enum_t_value) {
+  static_assert(::std::is_same<T, FriendStatus>::value ||
+    ::std::is_integral<T>::value,
+    "Incorrect type passed to function FriendStatus_Name.");
+  return ::PROTOBUF_NAMESPACE_ID::internal::NameOfEnum(
+    FriendStatus_descriptor(), enum_t_value);
+}
+inline bool FriendStatus_Parse(
+    ::PROTOBUF_NAMESPACE_ID::ConstStringParam name, FriendStatus* value) {
+  return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<FriendStatus>(
+    FriendStatus_descriptor(), name, value);
+}
+enum AdminActionResult : int {
+  ACTION_OK = 0,
+  ACTION_FAIL = 1,
+  AdminActionResult_INT_MIN_SENTINEL_DO_NOT_USE_ = std::numeric_limits<int32_t>::min(),
+  AdminActionResult_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits<int32_t>::max()
+};
+bool AdminActionResult_IsValid(int value);
+constexpr AdminActionResult AdminActionResult_MIN = ACTION_OK;
+constexpr AdminActionResult AdminActionResult_MAX = ACTION_FAIL;
+constexpr int AdminActionResult_ARRAYSIZE = AdminActionResult_MAX + 1;
+
+const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* AdminActionResult_descriptor();
+template<typename T>
+inline const std::string& AdminActionResult_Name(T enum_t_value) {
+  static_assert(::std::is_same<T, AdminActionResult>::value ||
+    ::std::is_integral<T>::value,
+    "Incorrect type passed to function AdminActionResult_Name.");
+  return ::PROTOBUF_NAMESPACE_ID::internal::NameOfEnum(
+    AdminActionResult_descriptor(), enum_t_value);
+}
+inline bool AdminActionResult_Parse(
+    ::PROTOBUF_NAMESPACE_ID::ConstStringParam name, AdminActionResult* value) {
+  return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<AdminActionResult>(
+    AdminActionResult_descriptor(), name, value);
 }
 // ===================================================================
 
@@ -96,10 +199,30 @@ inline bool PlayerType_Parse(
 
 PROTOBUF_NAMESPACE_OPEN
 
-template <> struct is_proto_enum< ::Protocol::PlayerType> : ::std::true_type {};
+template <> struct is_proto_enum< ::Protocol::ConnectStatus> : ::std::true_type {};
 template <>
-inline const EnumDescriptor* GetEnumDescriptor< ::Protocol::PlayerType>() {
-  return ::Protocol::PlayerType_descriptor();
+inline const EnumDescriptor* GetEnumDescriptor< ::Protocol::ConnectStatus>() {
+  return ::Protocol::ConnectStatus_descriptor();
+}
+template <> struct is_proto_enum< ::Protocol::RoomType> : ::std::true_type {};
+template <>
+inline const EnumDescriptor* GetEnumDescriptor< ::Protocol::RoomType>() {
+  return ::Protocol::RoomType_descriptor();
+}
+template <> struct is_proto_enum< ::Protocol::PresenceStatus> : ::std::true_type {};
+template <>
+inline const EnumDescriptor* GetEnumDescriptor< ::Protocol::PresenceStatus>() {
+  return ::Protocol::PresenceStatus_descriptor();
+}
+template <> struct is_proto_enum< ::Protocol::FriendStatus> : ::std::true_type {};
+template <>
+inline const EnumDescriptor* GetEnumDescriptor< ::Protocol::FriendStatus>() {
+  return ::Protocol::FriendStatus_descriptor();
+}
+template <> struct is_proto_enum< ::Protocol::AdminActionResult> : ::std::true_type {};
+template <>
+inline const EnumDescriptor* GetEnumDescriptor< ::Protocol::AdminActionResult>() {
+  return ::Protocol::AdminActionResult_descriptor();
 }
 
 PROTOBUF_NAMESPACE_CLOSE

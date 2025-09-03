@@ -1,5 +1,6 @@
 #pragma once
 #include "Session.h"
+#include "Player.h"
 
 class ChatSession : public PacketSession
 {
@@ -15,5 +16,10 @@ public:
 	virtual void OnSend(int32 len) override;
 
 public:
-	Vector<PlayerRef> _players;
+	// A session should only have one player.
+	PlayerRef GetPlayer() { return _player; }
+	void SetPlayer(PlayerRef player) { _player = player; }
+
+private:
+	PlayerRef _player;
 };

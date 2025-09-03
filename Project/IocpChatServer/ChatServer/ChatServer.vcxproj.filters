@@ -45,6 +45,9 @@
     <ClCompile Include="Room.cpp">
       <Filter>ChatContents</Filter>
     </ClCompile>
+    <ClCompile Include="RoomManager.cpp">
+      <Filter>Main</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -73,6 +76,9 @@
     </ClInclude>
     <ClInclude Include="Room.h">
       <Filter>ChatContents</Filter>
+    </ClInclude>
+    <ClInclude Include="RoomManager.h">
+      <Filter>Main</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

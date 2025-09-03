@@ -1,5 +1,4 @@
 ﻿C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppBuild.targets(538,5): warning MSB8028: 중간 디렉터리(x64\Debug\)에 다른 프로젝트(GameServer.vcxproj)에서 공유하는 파일이 포함되어 있습니다.  이로 인해 잘못된 정리 및 다시 빌드 동작이 수행될 수 있습니다.
-Protocol.proto(4,1): warning G1A4DC0EC: Import Enum.proto is unused.
   #pragma once
   #include "Protocol.pb.h"
   
@@ -8,20 +7,39 @@ Protocol.proto(4,1): warning G1A4DC0EC: Import Enum.proto is unused.
   
   enum : uint16
   {
-  	PKT_C_LOGIN = 1000,
-  	PKT_S_LOGIN = 1001,
-  	PKT_C_ENTER_GAME = 1002,
-  	PKT_S_ENTER_GAME = 1003,
-  	PKT_C_CHAT = 1004,
-  	PKT_S_CHAT = 1005,
-  	PKT_S_TEST = 1006,
+  	PKT_C_LOGIN_REQ = 1000,
+  	PKT_S_LOGIN_RES = 1001,
+  	PKT_C_RECONNECT_REQ = 1002,
+  	PKT_S_RECONNECT_RES = 1003,
+  	PKT_C_PRIVATE_CHAT_REQ = 1004,
+  	PKT_S_PRIVATE_CHAT_NTF = 1005,
+  	PKT_C_CREATE_ROOM_REQ = 1006,
+  	PKT_S_CREATE_ROOM_RES = 1007,
+  	PKT_C_JOIN_ROOM_REQ = 1008,
+  	PKT_S_JOIN_ROOM_RES = 1009,
+  	PKT_C_ROOM_CHAT_REQ = 1010,
+  	PKT_S_ROOM_CHAT_NTF = 1011,
+  	PKT_C_FRIEND_ADD_REQ = 1012,
+  	PKT_S_FRIEND_ADD_RES = 1013,
+  	PKT_C_FRIEND_LIST_REQ = 1014,
+  	PKT_S_FRIEND_LIST_RES = 1015,
+  	PKT_S_PRESENCE_NTF = 1016,
+  	PKT_S_RATE_LIMIT_NTF = 1017,
+  	PKT_C_ADMIN_COMMAND_REQ = 1018,
+  	PKT_S_ADMIN_COMMAND_RES = 1019,
   };
   
   // Custom Handlers
   bool Handle_INVALID(PacketSessionRef& session, BYTE* buffer, int32 len);
-  bool Handle_C_LOGIN(PacketSessionRef& session, Protocol::C_LOGIN& pkt);
-  bool Handle_C_ENTER_GAME(PacketSessionRef& session, Protocol::C_ENTER_GAME& pkt);
-  bool Handle_C_CHAT(PacketSessionRef& session, Protocol::C_CHAT& pkt);
+  bool Handle_C_LOGIN_REQ(PacketSessionRef& session, Protocol::C_LOGIN_REQ& pkt);
+  bool Handle_C_RECONNECT_REQ(PacketSessionRef& session, Protocol::C_RECONNECT_REQ& pkt);
+  bool Handle_C_PRIVATE_CHAT_REQ(PacketSessionRef& session, Protocol::C_PRIVATE_CHAT_REQ& pkt);
+  bool Handle_C_CREATE_ROOM_REQ(PacketSessionRef& session, Protocol::C_CREATE_ROOM_REQ& pkt);
+  bool Handle_C_JOIN_ROOM_REQ(PacketSessionRef& session, Protocol::C_JOIN_ROOM_REQ& pkt);
+  bool Handle_C_ROOM_CHAT_REQ(PacketSessionRef& session, Protocol::C_ROOM_CHAT_REQ& pkt);
+  bool Handle_C_FRIEND_ADD_REQ(PacketSessionRef& session, Protocol::C_FRIEND_ADD_REQ& pkt);
+  bool Handle_C_FRIEND_LIST_REQ(PacketSessionRef& session, Protocol::C_FRIEND_LIST_REQ& pkt);
+  bool Handle_C_ADMIN_COMMAND_REQ(PacketSessionRef& session, Protocol::C_ADMIN_COMMAND_REQ& pkt);
   
   class ClientPacketHandler
   {
@@ -30,9 +48,15 @@ Protocol.proto(4,1): warning G1A4DC0EC: Import Enum.proto is unused.
   	{
   		for (int32 i = 0; i < UINT16_MAX; i++)
   			GPacketHandler[i] = Handle_INVALID;
-  		GPacketHandler[PKT_C_LOGIN] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::C_LOGIN>(Handle_C_LOGIN, session, buffer, len); };
-  		GPacketHandler[PKT_C_ENTER_GAME] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::C_ENTER_GAME>(Handle_C_ENTER_GAME, session, buffer, len); };
-  		GPacketHandler[PKT_C_CHAT] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::C_CHAT>(Handle_C_CHAT, session, buffer, len); };
+  		GPacketHandler[PKT_C_LOGIN_REQ] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::C_LOGIN_REQ>(Handle_C_LOGIN_REQ, session, buffer, len); };
+  		GPacketHandler[PKT_C_RECONNECT_REQ] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::C_RECONNECT_REQ>(Handle_C_RECONNECT_REQ, session, buffer, len); };
+  		GPacketHandler[PKT_C_PRIVATE_CHAT_REQ] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::C_PRIVATE_CHAT_REQ>(Handle_C_PRIVATE_CHAT_REQ, session, buffer, len); };
+  		GPacketHandler[PKT_C_CREATE_ROOM_REQ] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::C_CREATE_ROOM_REQ>(Handle_C_CREATE_ROOM_REQ, session, buffer, len); };
+  		GPacketHandler[PKT_C_JOIN_ROOM_REQ] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::C_JOIN_ROOM_REQ>(Handle_C_JOIN_ROOM_REQ, session, buffer, len); };
+  		GPacketHandler[PKT_C_ROOM_CHAT_REQ] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::C_ROOM_CHAT_REQ>(Handle_C_ROOM_CHAT_REQ, session, buffer, len); };
+  		GPacketHandler[PKT_C_FRIEND_ADD_REQ] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::C_FRIEND_ADD_REQ>(Handle_C_FRIEND_ADD_REQ, session, buffer, len); };
+  		GPacketHandler[PKT_C_FRIEND_LIST_REQ] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::C_FRIEND_LIST_REQ>(Handle_C_FRIEND_LIST_REQ, session, buffer, len); };
+  		GPacketHandler[PKT_C_ADMIN_COMMAND_REQ] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::C_ADMIN_COMMAND_REQ>(Handle_C_ADMIN_COMMAND_REQ, session, buffer, len); };
   	}
   
   	static bool HandlePacket(PacketSessionRef& session, BYTE* buffer, int32 len)
@@ -40,10 +64,17 @@ Protocol.proto(4,1): warning G1A4DC0EC: Import Enum.proto is unused.
   		PacketHeader* header = reinterpret_cast<PacketHeader*>(buffer);
   		return GPacketHandler[header->id](session, buffer, len);
   	}
-  	static SendBufferRef MakeSendBuffer(Protocol::S_LOGIN& pkt) { return MakeSendBuffer(pkt, PKT_S_LOGIN); }
-  	static SendBufferRef MakeSendBuffer(Protocol::S_ENTER_GAME& pkt) { return MakeSendBuffer(pkt, PKT_S_ENTER_GAME); }
-  	static SendBufferRef MakeSendBuffer(Protocol::S_CHAT& pkt) { return MakeSendBuffer(pkt, PKT_S_CHAT); }
-  	static SendBufferRef MakeSendBuffer(Protocol::S_TEST& pkt) { return MakeSendBuffer(pkt, PKT_S_TEST); }
+  	static SendBufferRef MakeSendBuffer(Protocol::S_LOGIN_RES& pkt) { return MakeSendBuffer(pkt, PKT_S_LOGIN_RES); }
+  	static SendBufferRef MakeSendBuffer(Protocol::S_RECONNECT_RES& pkt) { return MakeSendBuffer(pkt, PKT_S_RECONNECT_RES); }
+  	static SendBufferRef MakeSendBuffer(Protocol::S_PRIVATE_CHAT_NTF& pkt) { return MakeSendBuffer(pkt, PKT_S_PRIVATE_CHAT_NTF); }
+  	static SendBufferRef MakeSendBuffer(Protocol::S_CREATE_ROOM_RES& pkt) { return MakeSendBuffer(pkt, PKT_S_CREATE_ROOM_RES); }
+  	static SendBufferRef MakeSendBuffer(Protocol::S_JOIN_ROOM_RES& pkt) { return MakeSendBuffer(pkt, PKT_S_JOIN_ROOM_RES); }
+  	static SendBufferRef MakeSendBuffer(Protocol::S_ROOM_CHAT_NTF& pkt) { return MakeSendBuffer(pkt, PKT_S_ROOM_CHAT_NTF); }
+  	static SendBufferRef MakeSendBuffer(Protocol::S_FRIEND_ADD_RES& pkt) { return MakeSendBuffer(pkt, PKT_S_FRIEND_ADD_RES); }
+  	static SendBufferRef MakeSendBuffer(Protocol::S_FRIEND_LIST_RES& pkt) { return MakeSendBuffer(pkt, PKT_S_FRIEND_LIST_RES); }
+  	static SendBufferRef MakeSendBuffer(Protocol::S_PRESENCE_NTF& pkt) { return MakeSendBuffer(pkt, PKT_S_PRESENCE_NTF); }
+  	static SendBufferRef MakeSendBuffer(Protocol::S_RATE_LIMIT_NTF& pkt) { return MakeSendBuffer(pkt, PKT_S_RATE_LIMIT_NTF); }
+  	static SendBufferRef MakeSendBuffer(Protocol::S_ADMIN_COMMAND_RES& pkt) { return MakeSendBuffer(pkt, PKT_S_ADMIN_COMMAND_RES); }
   
   private:
   	template<typename PacketType, typename ProcessFunc>
@@ -80,21 +111,41 @@ Protocol.proto(4,1): warning G1A4DC0EC: Import Enum.proto is unused.
   
   enum : uint16
   {
-  	PKT_C_LOGIN = 1000,
-  	PKT_S_LOGIN = 1001,
-  	PKT_C_ENTER_GAME = 1002,
-  	PKT_S_ENTER_GAME = 1003,
-  	PKT_C_CHAT = 1004,
-  	PKT_S_CHAT = 1005,
-  	PKT_S_TEST = 1006,
+  	PKT_C_LOGIN_REQ = 1000,
+  	PKT_S_LOGIN_RES = 1001,
+  	PKT_C_RECONNECT_REQ = 1002,
+  	PKT_S_RECONNECT_RES = 1003,
+  	PKT_C_PRIVATE_CHAT_REQ = 1004,
+  	PKT_S_PRIVATE_CHAT_NTF = 1005,
+  	PKT_C_CREATE_ROOM_REQ = 1006,
+  	PKT_S_CREATE_ROOM_RES = 1007,
+  	PKT_C_JOIN_ROOM_REQ = 1008,
+  	PKT_S_JOIN_ROOM_RES = 1009,
+  	PKT_C_ROOM_CHAT_REQ = 1010,
+  	PKT_S_ROOM_CHAT_NTF = 1011,
+  	PKT_C_FRIEND_ADD_REQ = 1012,
+  	PKT_S_FRIEND_ADD_RES = 1013,
+  	PKT_C_FRIEND_LIST_REQ = 1014,
+  	PKT_S_FRIEND_LIST_RES = 1015,
+  	PKT_S_PRESENCE_NTF = 1016,
+  	PKT_S_RATE_LIMIT_NTF = 1017,
+  	PKT_C_ADMIN_COMMAND_REQ = 1018,
+  	PKT_S_ADMIN_COMMAND_RES = 1019,
   };
   
   // Custom Handlers
   bool Handle_INVALID(PacketSessionRef& session, BYTE* buffer, int32 len);
-  bool Handle_S_LOGIN(PacketSessionRef& session, Protocol::S_LOGIN& pkt);
-  bool Handle_S_ENTER_GAME(PacketSessionRef& session, Protocol::S_ENTER_GAME& pkt);
-  bool Handle_S_CHAT(PacketSessionRef& session, Protocol::S_CHAT& pkt);
-  bool Handle_S_TEST(PacketSessionRef& session, Protocol::S_TEST& pkt);
+  bool Handle_S_LOGIN_RES(PacketSessionRef& session, Protocol::S_LOGIN_RES& pkt);
+  bool Handle_S_RECONNECT_RES(PacketSessionRef& session, Protocol::S_RECONNECT_RES& pkt);
+  bool Handle_S_PRIVATE_CHAT_NTF(PacketSessionRef& session, Protocol::S_PRIVATE_CHAT_NTF& pkt);
+  bool Handle_S_CREATE_ROOM_RES(PacketSessionRef& session, Protocol::S_CREATE_ROOM_RES& pkt);
+  bool Handle_S_JOIN_ROOM_RES(PacketSessionRef& session, Protocol::S_JOIN_ROOM_RES& pkt);
+  bool Handle_S_ROOM_CHAT_NTF(PacketSessionRef& session, Protocol::S_ROOM_CHAT_NTF& pkt);
+  bool Handle_S_FRIEND_ADD_RES(PacketSessionRef& session, Protocol::S_FRIEND_ADD_RES& pkt);
+  bool Handle_S_FRIEND_LIST_RES(PacketSessionRef& session, Protocol::S_FRIEND_LIST_RES& pkt);
+  bool Handle_S_PRESENCE_NTF(PacketSessionRef& session, Protocol::S_PRESENCE_NTF& pkt);
+  bool Handle_S_RATE_LIMIT_NTF(PacketSessionRef& session, Protocol::S_RATE_LIMIT_NTF& pkt);
+  bool Handle_S_ADMIN_COMMAND_RES(PacketSessionRef& session, Protocol::S_ADMIN_COMMAND_RES& pkt);
   
   class ServerPacketHandler
   {
@@ -103,10 +154,17 @@ Protocol.proto(4,1): warning G1A4DC0EC: Import Enum.proto is unused.
   	{
   		for (int32 i = 0; i < UINT16_MAX; i++)
   			GPacketHandler[i] = Handle_INVALID;
-  		GPacketHandler[PKT_S_LOGIN] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S_LOGIN>(Handle_S_LOGIN, session, buffer, len); };
-  		GPacketHandler[PKT_S_ENTER_GAME] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S_ENTER_GAME>(Handle_S_ENTER_GAME, session, buffer, len); };
-  		GPacketHandler[PKT_S_CHAT] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S_CHAT>(Handle_S_CHAT, session, buffer, len); };
-  		GPacketHandler[PKT_S_TEST] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S_TEST>(Handle_S_TEST, session, buffer, len); };
+  		GPacketHandler[PKT_S_LOGIN_RES] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S_LOGIN_RES>(Handle_S_LOGIN_RES, session, buffer, len); };
+  		GPacketHandler[PKT_S_RECONNECT_RES] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S_RECONNECT_RES>(Handle_S_RECONNECT_RES, session, buffer, len); };
+  		GPacketHandler[PKT_S_PRIVATE_CHAT_NTF] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S_PRIVATE_CHAT_NTF>(Handle_S_PRIVATE_CHAT_NTF, session, buffer, len); };
+  		GPacketHandler[PKT_S_CREATE_ROOM_RES] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S_CREATE_ROOM_RES>(Handle_S_CREATE_ROOM_RES, session, buffer, len); };
+  		GPacketHandler[PKT_S_JOIN_ROOM_RES] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S_JOIN_ROOM_RES>(Handle_S_JOIN_ROOM_RES, session, buffer, len); };
+  		GPacketHandler[PKT_S_ROOM_CHAT_NTF] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S_ROOM_CHAT_NTF>(Handle_S_ROOM_CHAT_NTF, session, buffer, len); };
+  		GPacketHandler[PKT_S_FRIEND_ADD_RES] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S_FRIEND_ADD_RES>(Handle_S_FRIEND_ADD_RES, session, buffer, len); };
+  		GPacketHandler[PKT_S_FRIEND_LIST_RES] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S_FRIEND_LIST_RES>(Handle_S_FRIEND_LIST_RES, session, buffer, len); };
+  		GPacketHandler[PKT_S_PRESENCE_NTF] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S_PRESENCE_NTF>(Handle_S_PRESENCE_NTF, session, buffer, len); };
+  		GPacketHandler[PKT_S_RATE_LIMIT_NTF] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S_RATE_LIMIT_NTF>(Handle_S_RATE_LIMIT_NTF, session, buffer, len); };
+  		GPacketHandler[PKT_S_ADMIN_COMMAND_RES] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S_ADMIN_COMMAND_RES>(Handle_S_ADMIN_COMMAND_RES, session, buffer, len); };
   	}
   
   	static bool HandlePacket(PacketSessionRef& session, BYTE* buffer, int32 len)
@@ -114,9 +172,15 @@ Protocol.proto(4,1): warning G1A4DC0EC: Import Enum.proto is unused.
   		PacketHeader* header = reinterpret_cast<PacketHeader*>(buffer);
   		return GPacketHandler[header->id](session, buffer, len);
   	}
-  	static SendBufferRef MakeSendBuffer(Protocol::C_LOGIN& pkt) { return MakeSendBuffer(pkt, PKT_C_LOGIN); }
-  	static SendBufferRef MakeSendBuffer(Protocol::C_ENTER_GAME& pkt) { return MakeSendBuffer(pkt, PKT_C_ENTER_GAME); }
-  	static SendBufferRef MakeSendBuffer(Protocol::C_CHAT& pkt) { return MakeSendBuffer(pkt, PKT_C_CHAT); }
+  	static SendBufferRef MakeSendBuffer(Protocol::C_LOGIN_REQ& pkt) { return MakeSendBuffer(pkt, PKT_C_LOGIN_REQ); }
+  	static SendBufferRef MakeSendBuffer(Protocol::C_RECONNECT_REQ& pkt) { return MakeSendBuffer(pkt, PKT_C_RECONNECT_REQ); }
+  	static SendBufferRef MakeSendBuffer(Protocol::C_PRIVATE_CHAT_REQ& pkt) { return MakeSendBuffer(pkt, PKT_C_PRIVATE_CHAT_REQ); }
+  	static SendBufferRef MakeSendBuffer(Protocol::C_CREATE_ROOM_REQ& pkt) { return MakeSendBuffer(pkt, PKT_C_CREATE_ROOM_REQ); }
+  	static SendBufferRef MakeSendBuffer(Protocol::C_JOIN_ROOM_REQ& pkt) { return MakeSendBuffer(pkt, PKT_C_JOIN_ROOM_REQ); }
+  	static SendBufferRef MakeSendBuffer(Protocol::C_ROOM_CHAT_REQ& pkt) { return MakeSendBuffer(pkt, PKT_C_ROOM_CHAT_REQ); }
+  	static SendBufferRef MakeSendBuffer(Protocol::C_FRIEND_ADD_REQ& pkt) { return MakeSendBuffer(pkt, PKT_C_FRIEND_ADD_REQ); }
+  	static SendBufferRef MakeSendBuffer(Protocol::C_FRIEND_LIST_REQ& pkt) { return MakeSendBuffer(pkt, PKT_C_FRIEND_LIST_REQ); }
+  	static SendBufferRef MakeSendBuffer(Protocol::C_ADMIN_COMMAND_REQ& pkt) { return MakeSendBuffer(pkt, PKT_C_ADMIN_COMMAND_REQ); }
   
   private:
   	template<typename PacketType, typename ProcessFunc>
@@ -182,8 +246,9 @@ Protocol.proto(4,1): warning G1A4DC0EC: Import Enum.proto is unused.
   ChatServer.cpp
   ChatSession.cpp
   ChatSessionManager.cpp
-  ClientPacketHandler.cpp
   Player.cpp
+  ClientPacketHandler.cpp
   Room.cpp
+  RoomManager.cpp
   코드를 생성하고 있습니다...
   ChatServer.vcxproj -> C:\Users\GGI\Desktop\Ky\Github\Repo\MyCSStudy\Project\IocpChatServer\Binary\Debug\ChatServer.exe

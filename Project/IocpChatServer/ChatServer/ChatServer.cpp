@@ -11,88 +11,51 @@
 #include "Room.h"
 #include "Player.h"
 #include "DBConnectionPool.h"
-
-enum
-{
-	WORKER_TICK = 64
-};
-
-
+#include <iostream>
 
 int main()
 {
+    ASSERT_CRASH(GDBConnectionPool->Connect(1, L"Driver={ODBC Driver 18 for SQL Server};Server=localhost;Database=test2;Trusted_Connection=Yes;Encrypt=Yes;TrustServerCertificate=Yes;"));
 
-	ASSERT_CRASH(GDBConnectionPool->Connect(1, L"Driver={ODBC Driver 18 for SQL Server};Server=localhost;Database=test2;Trusted_Connection=Yes;Encrypt=Yes;TrustServerCertificate=Yes;"));
+    // 1. Create a dummy Players table for the login test.
+    std::cout << "--- Creating Players Table and adding a test user ---" << std::endl;
+    DBConnection* dbConn = GDBConnectionPool->Pop();
+    ASSERT_CRASH(dbConn);
+    auto createTableQuery = L"DROP TABLE IF EXISTS [dbo].[Players];"
+        L"CREATE TABLE [dbo].[Players] ("
+        L"[playerId] BIGINT NOT NULL PRIMARY KEY IDENTITY,"
+        L"[name] NVARCHAR(50) NULL);";
+    ASSERT_CRASH(dbConn->Execute(createTableQuery));
 
+    auto insertUserQuery = L"INSERT INTO [dbo].[Players] ([name]) VALUES('TestUser')";
+    ASSERT_CRASH(dbConn->Execute(insertUserQuery));
+    GDBConnectionPool->Push(dbConn);
+    std::cout << "Table created and 'TestUser' inserted." << std::endl;
 
-	// Create Table
-	{
-		auto query = L"									\
-			DROP TABLE IF EXISTS [dbo].[Gold];			\
-			CREATE TABLE [dbo].[Gold]					\
-			(											\
-				[id] INT NOT NULL PRIMARY KEY IDENTITY, \
-				[gold] INT NULL							\
-			);";
+    // 2. Start the server service to listen for client connections.
 
-		DBConnection* dbConn = GDBConnectionPool->Pop();
-		ASSERT_CRASH(dbConn->Execute(query));
-		GDBConnectionPool->Push(dbConn);
-	}
+    ClientPacketHandler::Init();
 
-	// Add Data
-	for (int32 i = 0; i < 3; i++)
-	{
-		DBConnection* dbConn = GDBConnectionPool->Pop();
-		// 기존에 바인딩 된 정보 날림
-		dbConn->Unbind();
+    ServerServiceRef service = MakeShared<ServerService>(
+        NetAddress(L"127.0.0.1", 7777),
+        MakeShared<IocpCore>(),
+        MakeShared<ChatSession>,
+        100);
 
-		// 넘길 인자 바인딩
-		int32 gold = 100;
-		SQLLEN len = 0;
+    ASSERT_CRASH(service->Start());
 
-		// 넘길 인자 바인딩
-		ASSERT_CRASH(dbConn->BindParam(1, SQL_C_LONG, SQL_INTEGER, sizeof(gold), &gold, &len));
+    for (int32 i = 0; i < 2; i++)
+    {
+        GThreadManager->Launch([=]()
+            {
+                while (true)
+                {
+                    service->GetIocpCore()->Dispatch();
+                }
+            });
+    }
 
-		// SQL 실행
-		ASSERT_CRASH(dbConn->Execute(L"INSERT INTO [dbo].[Gold]([gold]) VALUES(?)"));
+    GThreadManager->Join();
 
-		GDBConnectionPool->Push(dbConn);
-	}
-
-	// Read
-	{
-		DBConnection* dbConn = GDBConnectionPool->Pop();
-		// 기존에 바인딩 된 정보 날림
-		dbConn->Unbind();
-
-		int32 gold = 100;
-		SQLLEN len = 0;
-		// 넘길 인자 바인딩
-		ASSERT_CRASH(dbConn->BindParam(1, SQL_C_LONG, SQL_INTEGER, sizeof(gold), &gold, &len));
-
-		int32 outId = 0;
-		SQLLEN outIdLen = 0;
-		ASSERT_CRASH(dbConn->BindCol(1, SQL_C_LONG, sizeof(outId), &outId, &outIdLen));
-
-		int32 outGold = 0;
-		SQLLEN outGoldLen = 0;
-		ASSERT_CRASH(dbConn->BindCol(2, SQL_C_LONG, sizeof(outGold), &outGold, &outGoldLen));
-
-		// SQL 실행
-		ASSERT_CRASH(dbConn->Execute(L"SELECT id, gold FROM [dbo].[Gold] WHERE gold = (?)"));
-
-		while (dbConn->Fetch())
-		{
-			cout << "Id: " << outId << " Gold : " << outGold << endl;
-		}
-
-		GDBConnectionPool->Push(dbConn);
-	}
-
-
-	ASSERT_CRASH(service->Start());
-
-
-	GThreadManager->Join();
+    return 0;
 }
