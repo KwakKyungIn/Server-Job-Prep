@@ -173,11 +173,12 @@
   C:ServerPacketHandler.h
   1개 파일이 복사되었습니다.
   계속하려면 아무 키나 누르십시오 . . . 
-  DummyClient.cpp
+  pch.cpp
   ServerPacketHandler.cpp
+  DummyClient.cpp
   코드를 생성하고 있습니다...
   Enum.pb.cc
   Protocol.pb.cc
   Struct.pb.cc
   코드를 생성하고 있습니다...
-  DummyClient.vcxproj -> C:\Users\kwak\source\repos\Server-Job-Prep\Project\IocpChatServer\Binary\Debug\DummyClient.exe
+  DummyClient.vcxproj -> C:\Users\GGI\Desktop\Ky\Github\Repo\MyCSStudy\Project\IocpChatServer\Binary\Debug\DummyClient.exe
