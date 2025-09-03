@@ -139,6 +139,22 @@ bool Handle_S_ROOM_CHAT_NTF(PacketSessionRef& session, Protocol::S_ROOM_CHAT_NTF
 	return true;
 }
 
+bool Handle_S_LEAVE_ROOM_ACK(PacketSessionRef& session, Protocol::S_LEAVE_ROOM_ACK& pkt)
+{
+	if (pkt.success())
+	{
+		g_isInRoom = false; // 방 나가기 성공 시 플래그 변경
+		std::cout << "\n방에서 성공적으로 나갔습니다." << std::endl;
+		std::cout << "메인 메뉴로 돌아갑니다." << std::endl;
+	}
+	else
+	{
+		std::cout << "\n방 나가기 실패! "  << std::endl;
+	}
+	return true;
+}
+
+
 bool Handle_S_FRIEND_ADD_RES(PacketSessionRef& session, Protocol::S_FRIEND_ADD_RES& pkt)
 {
 	return false;

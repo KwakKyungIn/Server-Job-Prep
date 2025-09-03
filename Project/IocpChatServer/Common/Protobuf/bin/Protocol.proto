@@ -66,6 +66,16 @@ message S_ROOM_CHAT_NTF {
     ChatMessage chat = 2;
 }
 
+message C_LEAVE_ROOM_REQ {
+    int32 roomId = 1; // 클라가 나가려는 방 ID
+}
+
+message S_LEAVE_ROOM_ACK {
+    int32 roomId = 1;    // 나간 방 ID
+    bool success = 2;    // 성공 여부
+}
+
+
 // ===== 친구 =====
 message C_FRIEND_ADD_REQ {
     int64 targetId = 1;

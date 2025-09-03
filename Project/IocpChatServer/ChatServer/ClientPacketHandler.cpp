@@ -137,7 +137,60 @@ bool Handle_C_CREATE_ROOM_REQ(PacketSessionRef& session, Protocol::C_CREATE_ROOM
 
     return true;
 }
+// [새로 추가] C_LEAVE_ROOM_REQ 핸들러
+bool Handle_C_LEAVE_ROOM_REQ(PacketSessionRef& session, Protocol::C_LEAVE_ROOM_REQ& pkt)
+{
+	ChatSessionRef chatSession = std::static_pointer_cast<ChatSession>(session);
+	if (chatSession == nullptr || chatSession->GetPlayer() == nullptr)
+	{
+		return false;
+	}
+	PlayerRef player = chatSession->GetPlayer();
 
+	// 플레이어가 속한 방을 찾습니다.
+	RoomRef room = player->_room;
+
+	// 플레이어가 방에 있는지 확인합니다.
+	if (room == nullptr)
+	{
+		// 이미 방에 없으면 성공으로 간주하고 응답만 보냅니다.
+		Protocol::S_LEAVE_ROOM_ACK ackPkt;
+		ackPkt.set_success(true);
+		auto resBuffer = ClientPacketHandler::MakeSendBuffer(ackPkt);
+		session->Send(resBuffer);
+		return true;
+	}
+
+	// 방에서 플레이어를 제거합니다.
+	room->Leave(player);
+
+	Protocol::S_ROOM_CHAT_NTF ntfPkt;
+	static std::atomic<uint64> s_messageId{ 1 };
+	Protocol::ChatMessage* chatMsg = ntfPkt.mutable_chat();
+
+	// ChatMessage 필드 채우기
+	chatMsg->set_messageid(s_messageId.fetch_add(1));
+	chatMsg->set_senderid(0); // 시스템 메시지이므로 senderId를 0으로 설정
+	chatMsg->set_message("SYSTEM: " + player->name + " has left the room.");
+
+	// timestamp: 현재 epoch(ms) 기준
+	auto now = std::chrono::system_clock::now();
+	auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();
+	chatMsg->set_timestamp(ms);
+
+	auto ntfBuffer = ClientPacketHandler::MakeSendBuffer(ntfPkt);
+
+	// 알림 패킷을 자신을 제외한 다른 플레이어들에게 브로드캐스트합니다.
+	room->BroadcastWithoutSelf(ntfBuffer, player->playerId);
+
+	// 클라이언트에 방 나가기 성공을 알리는 응답 패킷을 보냅니다.
+	Protocol::S_LEAVE_ROOM_ACK resPkt;
+	resPkt.set_success(true);
+	auto resBuffer = ClientPacketHandler::MakeSendBuffer(resPkt);
+	session->Send(resBuffer);
+
+	return true;
+}
 bool Handle_C_JOIN_ROOM_REQ(PacketSessionRef& session, Protocol::C_JOIN_ROOM_REQ& pkt)
 {
 	ChatSessionRef chatSession = std::static_pointer_cast<ChatSession>(session);
@@ -198,7 +251,7 @@ bool Handle_C_JOIN_ROOM_REQ(PacketSessionRef& session, Protocol::C_JOIN_ROOM_REQ
 		room->BroadcastWithoutSelf(ntfBuffer, player->playerId);
 	}
 
-	return true;
+	return true; 
 }
 bool Handle_C_ROOM_CHAT_REQ(PacketSessionRef& session, Protocol::C_ROOM_CHAT_REQ& pkt)
 {
@@ -255,4 +308,5 @@ bool Handle_C_ADMIN_COMMAND_REQ(PacketSessionRef& session, Protocol::C_ADMIN_COM
 {
     return false;
 }
+
 

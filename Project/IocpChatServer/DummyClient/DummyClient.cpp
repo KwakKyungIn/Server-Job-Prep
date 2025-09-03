@@ -8,7 +8,8 @@
 #include <iostream>
 #include <string> // std::string, std::getline 사용을 위해 추가
 #include <atomic>
-
+#include <limits>   // std::numeric_limits
+#include <ios>      // std::streamsize
 // 로그인 성공 여부를 저장하는 전역 플래그를 '정의'합니다.
 std::atomic<bool> g_isLoggedIn = false;
 // [추가] 방에 입장했는지 여부를 저장하는 전역 플래그를 '정의'합니다.
@@ -17,45 +18,7 @@ std::atomic<bool> g_isInRoom = false;
 // 연결된 세션을 저장하는 전역 변수를 '정의'합니다.
 PacketSessionRef g_session = nullptr;
 
-// [중요]
-// 서버로부터 방 생성/입장 성공 응답을 받았을 때, g_isInRoom 플래그를 true로 설정해주는 핸들러가 필요합니다.
-// 예를 들어, ServerPacketHandler.cpp 파일에 아래와 같은 핸들러가 등록되어 있어야 합니다.
-/*
-bool Handle_S_CREATE_ROOM_ACK(PacketSessionRef& session, Protocol::S_CREATE_ROOM_ACK& pkt)
-{
-	if (pkt.success())
-	{
-		std::cout << "방 생성 성공! 이제 채팅을 시작할 수 있습니다. (/exit 입력 시 퇴장)" << std::endl;
-		g_isInRoom = true;
-	}
-	else
-	{
-		std::cout << "방 생성에 실패했습니다." << std::endl;
-	}
-	return true;
-}
 
-bool Handle_S_JOIN_ROOM_ACK(PacketSessionRef& session, Protocol::S_JOIN_ROOM_ACK& pkt)
-{
-	if (pkt.success())
-	{
-		std::cout << "방 입장 성공! 이제 채팅을 시작할 수 있습니다. (/exit 입력 시 퇴장)" << std::endl;
-		g_isInRoom = true;
-	}
-	else
-	{
-		std::cout << "방 입장에 실패했습니다." << std::endl;
-	}
-	return true;
-}
-
-bool Handle_S_LEAVE_ROOM_ACK(PacketSessionRef& session, Protocol::S_LEAVE_ROOM_ACK& pkt)
-{
-	std::cout << "방에서 퇴장했습니다." << std::endl;
-	g_isInRoom = false;
-	return true;
-}
-*/
 
 
 class ServerSession : public PacketSession
@@ -93,7 +56,7 @@ public:
 
 	virtual void OnSend(int32 len) override
 	{
-		//std::cout << "OnSend Len = " << len << std::endl;
+		std::cout << "OnSend Len = " << len << std::endl;
 	}
 
 	virtual void OnDisconnected() override
@@ -143,20 +106,25 @@ int main()
 				if (message.empty()) // 로그인 후나 방 생성/입장 후 버퍼에 남아있는 개행문자 무시
 					continue;
 
-				//// "/exit" 입력 시 방 나가기 요청
-				//if (message == "/exit")
-				//{
-				//	Protocol::C_LEAVE_ROOM_REQ reqPkt;
-				//	if (g_session != nullptr)
-				//	{
-				//		auto sendBuffer = ServerPacketHandler::MakeSendBuffer(reqPkt);
-				//		g_session->Send(sendBuffer);
-				//	}
-				//	// 서버 응답(S_LEAVE_ROOM_ACK)을 받으면 g_isInRoom이 false로 바뀔 것이므로
-				//	// 클라에서 먼저 상태를 바꾸지 않고 대기합니다.
-				//}
-				else // 일반 채팅 메시지 전송
+				// "/exit" 입력 시 방 나가기 요청
+				if (message == "EXIT")
 				{
+					// 방 나가기 요청 패킷을 생성하고 보냅니다.
+					Protocol::C_LEAVE_ROOM_REQ reqPkt;
+					if (g_session != nullptr)
+					{
+						auto sendBuffer = ServerPacketHandler::MakeSendBuffer(reqPkt);
+						g_session->Send(sendBuffer);
+						std::cout << "방 나가기 요청을 보냈습니다." << std::endl;
+					}
+					else
+					{
+						std::cout << "세션이 없어 방 나가기 요청을 보낼 수 없습니다." << std::endl;
+					}
+				}
+				else
+				{
+					// 채팅 메시지 패킷을 생성하고 보냅니다.
 					Protocol::C_ROOM_CHAT_REQ reqPkt;
 					reqPkt.set_message(message);
 

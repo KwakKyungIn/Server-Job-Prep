@@ -63,6 +63,9 @@ extern C_FRIEND_LIST_REQDefaultTypeInternal _C_FRIEND_LIST_REQ_default_instance_
 class C_JOIN_ROOM_REQ;
 struct C_JOIN_ROOM_REQDefaultTypeInternal;
 extern C_JOIN_ROOM_REQDefaultTypeInternal _C_JOIN_ROOM_REQ_default_instance_;
+class C_LEAVE_ROOM_REQ;
+struct C_LEAVE_ROOM_REQDefaultTypeInternal;
+extern C_LEAVE_ROOM_REQDefaultTypeInternal _C_LEAVE_ROOM_REQ_default_instance_;
 class C_LOGIN_REQ;
 struct C_LOGIN_REQDefaultTypeInternal;
 extern C_LOGIN_REQDefaultTypeInternal _C_LOGIN_REQ_default_instance_;
@@ -93,6 +96,9 @@ extern S_JOIN_ROOM_NTFDefaultTypeInternal _S_JOIN_ROOM_NTF_default_instance_;
 class S_JOIN_ROOM_RES;
 struct S_JOIN_ROOM_RESDefaultTypeInternal;
 extern S_JOIN_ROOM_RESDefaultTypeInternal _S_JOIN_ROOM_RES_default_instance_;
+class S_LEAVE_ROOM_ACK;
+struct S_LEAVE_ROOM_ACKDefaultTypeInternal;
+extern S_LEAVE_ROOM_ACKDefaultTypeInternal _S_LEAVE_ROOM_ACK_default_instance_;
 class S_LOGIN_RES;
 struct S_LOGIN_RESDefaultTypeInternal;
 extern S_LOGIN_RESDefaultTypeInternal _S_LOGIN_RES_default_instance_;
@@ -118,6 +124,7 @@ template<> ::Protocol::C_CREATE_ROOM_REQ* Arena::CreateMaybeMessage<::Protocol::
 template<> ::Protocol::C_FRIEND_ADD_REQ* Arena::CreateMaybeMessage<::Protocol::C_FRIEND_ADD_REQ>(Arena*);
 template<> ::Protocol::C_FRIEND_LIST_REQ* Arena::CreateMaybeMessage<::Protocol::C_FRIEND_LIST_REQ>(Arena*);
 template<> ::Protocol::C_JOIN_ROOM_REQ* Arena::CreateMaybeMessage<::Protocol::C_JOIN_ROOM_REQ>(Arena*);
+template<> ::Protocol::C_LEAVE_ROOM_REQ* Arena::CreateMaybeMessage<::Protocol::C_LEAVE_ROOM_REQ>(Arena*);
 template<> ::Protocol::C_LOGIN_REQ* Arena::CreateMaybeMessage<::Protocol::C_LOGIN_REQ>(Arena*);
 template<> ::Protocol::C_PRIVATE_CHAT_REQ* Arena::CreateMaybeMessage<::Protocol::C_PRIVATE_CHAT_REQ>(Arena*);
 template<> ::Protocol::C_RECONNECT_REQ* Arena::CreateMaybeMessage<::Protocol::C_RECONNECT_REQ>(Arena*);
@@ -128,6 +135,7 @@ template<> ::Protocol::S_FRIEND_ADD_RES* Arena::CreateMaybeMessage<::Protocol::S
 template<> ::Protocol::S_FRIEND_LIST_RES* Arena::CreateMaybeMessage<::Protocol::S_FRIEND_LIST_RES>(Arena*);
 template<> ::Protocol::S_JOIN_ROOM_NTF* Arena::CreateMaybeMessage<::Protocol::S_JOIN_ROOM_NTF>(Arena*);
 template<> ::Protocol::S_JOIN_ROOM_RES* Arena::CreateMaybeMessage<::Protocol::S_JOIN_ROOM_RES>(Arena*);
+template<> ::Protocol::S_LEAVE_ROOM_ACK* Arena::CreateMaybeMessage<::Protocol::S_LEAVE_ROOM_ACK>(Arena*);
 template<> ::Protocol::S_LOGIN_RES* Arena::CreateMaybeMessage<::Protocol::S_LOGIN_RES>(Arena*);
 template<> ::Protocol::S_PRESENCE_NTF* Arena::CreateMaybeMessage<::Protocol::S_PRESENCE_NTF>(Arena*);
 template<> ::Protocol::S_PRIVATE_CHAT_NTF* Arena::CreateMaybeMessage<::Protocol::S_PRIVATE_CHAT_NTF>(Arena*);
@@ -2307,6 +2315,313 @@ class S_ROOM_CHAT_NTF final :
 };
 // -------------------------------------------------------------------
 
+class C_LEAVE_ROOM_REQ final :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:Protocol.C_LEAVE_ROOM_REQ) */ {
+ public:
+  inline C_LEAVE_ROOM_REQ() : C_LEAVE_ROOM_REQ(nullptr) {}
+  ~C_LEAVE_ROOM_REQ() override;
+  explicit PROTOBUF_CONSTEXPR C_LEAVE_ROOM_REQ(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+
+  C_LEAVE_ROOM_REQ(const C_LEAVE_ROOM_REQ& from);
+  C_LEAVE_ROOM_REQ(C_LEAVE_ROOM_REQ&& from) noexcept
+    : C_LEAVE_ROOM_REQ() {
+    *this = ::std::move(from);
+  }
+
+  inline C_LEAVE_ROOM_REQ& operator=(const C_LEAVE_ROOM_REQ& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline C_LEAVE_ROOM_REQ& operator=(C_LEAVE_ROOM_REQ&& from) noexcept {
+    if (this == &from) return *this;
+    if (GetOwningArena() == from.GetOwningArena()
+  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+        && GetOwningArena() != nullptr
+  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+    ) {
+      InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return default_instance().GetMetadata().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return default_instance().GetMetadata().reflection;
+  }
+  static const C_LEAVE_ROOM_REQ& default_instance() {
+    return *internal_default_instance();
+  }
+  static inline const C_LEAVE_ROOM_REQ* internal_default_instance() {
+    return reinterpret_cast<const C_LEAVE_ROOM_REQ*>(
+               &_C_LEAVE_ROOM_REQ_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    13;
+
+  friend void swap(C_LEAVE_ROOM_REQ& a, C_LEAVE_ROOM_REQ& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(C_LEAVE_ROOM_REQ* other) {
+    if (other == this) return;
+  #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetOwningArena() != nullptr &&
+        GetOwningArena() == other->GetOwningArena()) {
+   #else  // PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetOwningArena() == other->GetOwningArena()) {
+  #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(C_LEAVE_ROOM_REQ* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetOwningArena() == other->GetOwningArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  C_LEAVE_ROOM_REQ* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
+    return CreateMaybeMessage<C_LEAVE_ROOM_REQ>(arena);
+  }
+  using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
+  void CopyFrom(const C_LEAVE_ROOM_REQ& from);
+  using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
+  void MergeFrom( const C_LEAVE_ROOM_REQ& from) {
+    C_LEAVE_ROOM_REQ::MergeImpl(*this, from);
+  }
+  private:
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg);
+  public:
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  uint8_t* _InternalSerialize(
+      uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
+
+  private:
+  void SharedCtor(::PROTOBUF_NAMESPACE_ID::Arena* arena, bool is_message_owned);
+  void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(C_LEAVE_ROOM_REQ* other);
+
+  private:
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "Protocol.C_LEAVE_ROOM_REQ";
+  }
+  protected:
+  explicit C_LEAVE_ROOM_REQ(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                       bool is_message_owned = false);
+  public:
+
+  static const ClassData _class_data_;
+  const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*GetClassData() const final;
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kRoomIdFieldNumber = 1,
+  };
+  // int32 roomId = 1;
+  void clear_roomid();
+  int32_t roomid() const;
+  void set_roomid(int32_t value);
+  private:
+  int32_t _internal_roomid() const;
+  void _internal_set_roomid(int32_t value);
+  public:
+
+  // @@protoc_insertion_point(class_scope:Protocol.C_LEAVE_ROOM_REQ)
+ private:
+  class _Internal;
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  struct Impl_ {
+    int32_t roomid_;
+    mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  };
+  union { Impl_ _impl_; };
+  friend struct ::TableStruct_Protocol_2eproto;
+};
+// -------------------------------------------------------------------
+
+class S_LEAVE_ROOM_ACK final :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:Protocol.S_LEAVE_ROOM_ACK) */ {
+ public:
+  inline S_LEAVE_ROOM_ACK() : S_LEAVE_ROOM_ACK(nullptr) {}
+  ~S_LEAVE_ROOM_ACK() override;
+  explicit PROTOBUF_CONSTEXPR S_LEAVE_ROOM_ACK(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+
+  S_LEAVE_ROOM_ACK(const S_LEAVE_ROOM_ACK& from);
+  S_LEAVE_ROOM_ACK(S_LEAVE_ROOM_ACK&& from) noexcept
+    : S_LEAVE_ROOM_ACK() {
+    *this = ::std::move(from);
+  }
+
+  inline S_LEAVE_ROOM_ACK& operator=(const S_LEAVE_ROOM_ACK& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline S_LEAVE_ROOM_ACK& operator=(S_LEAVE_ROOM_ACK&& from) noexcept {
+    if (this == &from) return *this;
+    if (GetOwningArena() == from.GetOwningArena()
+  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+        && GetOwningArena() != nullptr
+  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+    ) {
+      InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return default_instance().GetMetadata().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return default_instance().GetMetadata().reflection;
+  }
+  static const S_LEAVE_ROOM_ACK& default_instance() {
+    return *internal_default_instance();
+  }
+  static inline const S_LEAVE_ROOM_ACK* internal_default_instance() {
+    return reinterpret_cast<const S_LEAVE_ROOM_ACK*>(
+               &_S_LEAVE_ROOM_ACK_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    14;
+
+  friend void swap(S_LEAVE_ROOM_ACK& a, S_LEAVE_ROOM_ACK& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(S_LEAVE_ROOM_ACK* other) {
+    if (other == this) return;
+  #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetOwningArena() != nullptr &&
+        GetOwningArena() == other->GetOwningArena()) {
+   #else  // PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetOwningArena() == other->GetOwningArena()) {
+  #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(S_LEAVE_ROOM_ACK* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetOwningArena() == other->GetOwningArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  S_LEAVE_ROOM_ACK* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
+    return CreateMaybeMessage<S_LEAVE_ROOM_ACK>(arena);
+  }
+  using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
+  void CopyFrom(const S_LEAVE_ROOM_ACK& from);
+  using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
+  void MergeFrom( const S_LEAVE_ROOM_ACK& from) {
+    S_LEAVE_ROOM_ACK::MergeImpl(*this, from);
+  }
+  private:
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg);
+  public:
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  uint8_t* _InternalSerialize(
+      uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
+
+  private:
+  void SharedCtor(::PROTOBUF_NAMESPACE_ID::Arena* arena, bool is_message_owned);
+  void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(S_LEAVE_ROOM_ACK* other);
+
+  private:
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "Protocol.S_LEAVE_ROOM_ACK";
+  }
+  protected:
+  explicit S_LEAVE_ROOM_ACK(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                       bool is_message_owned = false);
+  public:
+
+  static const ClassData _class_data_;
+  const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*GetClassData() const final;
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kRoomIdFieldNumber = 1,
+    kSuccessFieldNumber = 2,
+  };
+  // int32 roomId = 1;
+  void clear_roomid();
+  int32_t roomid() const;
+  void set_roomid(int32_t value);
+  private:
+  int32_t _internal_roomid() const;
+  void _internal_set_roomid(int32_t value);
+  public:
+
+  // bool success = 2;
+  void clear_success();
+  bool success() const;
+  void set_success(bool value);
+  private:
+  bool _internal_success() const;
+  void _internal_set_success(bool value);
+  public:
+
+  // @@protoc_insertion_point(class_scope:Protocol.S_LEAVE_ROOM_ACK)
+ private:
+  class _Internal;
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  struct Impl_ {
+    int32_t roomid_;
+    bool success_;
+    mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  };
+  union { Impl_ _impl_; };
+  friend struct ::TableStruct_Protocol_2eproto;
+};
+// -------------------------------------------------------------------
+
 class C_FRIEND_ADD_REQ final :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:Protocol.C_FRIEND_ADD_REQ) */ {
  public:
@@ -2355,7 +2670,7 @@ class C_FRIEND_ADD_REQ final :
                &_C_FRIEND_ADD_REQ_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    13;
+    15;
 
   friend void swap(C_FRIEND_ADD_REQ& a, C_FRIEND_ADD_REQ& b) {
     a.Swap(&b);
@@ -2503,7 +2818,7 @@ class S_FRIEND_ADD_RES final :
                &_S_FRIEND_ADD_RES_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    14;
+    16;
 
   friend void swap(S_FRIEND_ADD_RES& a, S_FRIEND_ADD_RES& b) {
     a.Swap(&b);
@@ -2686,7 +3001,7 @@ class C_FRIEND_LIST_REQ final :
                &_C_FRIEND_LIST_REQ_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    15;
+    17;
 
   friend void swap(C_FRIEND_LIST_REQ& a, C_FRIEND_LIST_REQ& b) {
     a.Swap(&b);
@@ -2805,7 +3120,7 @@ class S_FRIEND_LIST_RES final :
                &_S_FRIEND_LIST_RES_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    16;
+    18;
 
   friend void swap(S_FRIEND_LIST_RES& a, S_FRIEND_LIST_RES& b) {
     a.Swap(&b);
@@ -2962,7 +3277,7 @@ class S_PRESENCE_NTF final :
                &_S_PRESENCE_NTF_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    17;
+    19;
 
   friend void swap(S_PRESENCE_NTF& a, S_PRESENCE_NTF& b) {
     a.Swap(&b);
@@ -3121,7 +3436,7 @@ class S_RATE_LIMIT_NTF final :
                &_S_RATE_LIMIT_NTF_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    18;
+    20;
 
   friend void swap(S_RATE_LIMIT_NTF& a, S_RATE_LIMIT_NTF& b) {
     a.Swap(&b);
@@ -3296,7 +3611,7 @@ class C_ADMIN_COMMAND_REQ final :
                &_C_ADMIN_COMMAND_REQ_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    19;
+    21;
 
   friend void swap(C_ADMIN_COMMAND_REQ& a, C_ADMIN_COMMAND_REQ& b) {
     a.Swap(&b);
@@ -3449,7 +3764,7 @@ class S_ADMIN_COMMAND_RES final :
                &_S_ADMIN_COMMAND_RES_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    20;
+    22;
 
   friend void swap(S_ADMIN_COMMAND_RES& a, S_ADMIN_COMMAND_RES& b) {
     a.Swap(&b);
@@ -4711,6 +5026,74 @@ inline void S_ROOM_CHAT_NTF::set_allocated_chat(::Protocol::ChatMessage* chat) {
 
 // -------------------------------------------------------------------
 
+// C_LEAVE_ROOM_REQ
+
+// int32 roomId = 1;
+inline void C_LEAVE_ROOM_REQ::clear_roomid() {
+  _impl_.roomid_ = 0;
+}
+inline int32_t C_LEAVE_ROOM_REQ::_internal_roomid() const {
+  return _impl_.roomid_;
+}
+inline int32_t C_LEAVE_ROOM_REQ::roomid() const {
+  // @@protoc_insertion_point(field_get:Protocol.C_LEAVE_ROOM_REQ.roomId)
+  return _internal_roomid();
+}
+inline void C_LEAVE_ROOM_REQ::_internal_set_roomid(int32_t value) {
+  
+  _impl_.roomid_ = value;
+}
+inline void C_LEAVE_ROOM_REQ::set_roomid(int32_t value) {
+  _internal_set_roomid(value);
+  // @@protoc_insertion_point(field_set:Protocol.C_LEAVE_ROOM_REQ.roomId)
+}
+
+// -------------------------------------------------------------------
+
+// S_LEAVE_ROOM_ACK
+
+// int32 roomId = 1;
+inline void S_LEAVE_ROOM_ACK::clear_roomid() {
+  _impl_.roomid_ = 0;
+}
+inline int32_t S_LEAVE_ROOM_ACK::_internal_roomid() const {
+  return _impl_.roomid_;
+}
+inline int32_t S_LEAVE_ROOM_ACK::roomid() const {
+  // @@protoc_insertion_point(field_get:Protocol.S_LEAVE_ROOM_ACK.roomId)
+  return _internal_roomid();
+}
+inline void S_LEAVE_ROOM_ACK::_internal_set_roomid(int32_t value) {
+  
+  _impl_.roomid_ = value;
+}
+inline void S_LEAVE_ROOM_ACK::set_roomid(int32_t value) {
+  _internal_set_roomid(value);
+  // @@protoc_insertion_point(field_set:Protocol.S_LEAVE_ROOM_ACK.roomId)
+}
+
+// bool success = 2;
+inline void S_LEAVE_ROOM_ACK::clear_success() {
+  _impl_.success_ = false;
+}
+inline bool S_LEAVE_ROOM_ACK::_internal_success() const {
+  return _impl_.success_;
+}
+inline bool S_LEAVE_ROOM_ACK::success() const {
+  // @@protoc_insertion_point(field_get:Protocol.S_LEAVE_ROOM_ACK.success)
+  return _internal_success();
+}
+inline void S_LEAVE_ROOM_ACK::_internal_set_success(bool value) {
+  
+  _impl_.success_ = value;
+}
+inline void S_LEAVE_ROOM_ACK::set_success(bool value) {
+  _internal_set_success(value);
+  // @@protoc_insertion_point(field_set:Protocol.S_LEAVE_ROOM_ACK.success)
+}
+
+// -------------------------------------------------------------------
+
 // C_FRIEND_ADD_REQ
 
 // int64 targetId = 1;
@@ -5206,6 +5589,10 @@ inline void S_ADMIN_COMMAND_RES::set_allocated_output(std::string* output) {
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------
