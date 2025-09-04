@@ -24,13 +24,10 @@ bool Handle_S_LOGIN_RES(PacketSessionRef& session, Protocol::S_LOGIN_RES& pkt)
 	{
 		// [핵심 수정] 로그인 성공 시 g_isLoggedIn 플래그를 true로 변경합니다.
 		g_isLoggedIn = true;
-
 		std::cout << "\n로그인 성공! Player ID: " << pkt.playerid() << std::endl;
 		std::cout << "서버 메시지: " << pkt.reason() << std::endl;
 
-		// [추가] 다음 입력을 받기 전, 혹시 남아있을 수 있는 입력 버퍼(특히 개행 문자)를 비웁니다.
-		// 이렇게 하면 main 루프에서 메뉴 입력을 받을 때 발생할 수 있는 오류를 방지합니다.
-		// std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
 	}
 	else
 	{

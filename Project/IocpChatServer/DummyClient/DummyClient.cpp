@@ -1,195 +1,238 @@
-﻿#include "pch.h"
-#include "ThreadManager.h"
-#include "Service.h"
+﻿// DummyClient/Main/DummyClient.cpp  (새 메인 권장)
+// 기존 include 유지 + 약간 추가
+#include "pch.h"                 // [1] 항상 최상단
+#include "ThreadManager.h"       // [2] 스레드 매니저
+#include "Service.h" 
 #include "Session.h"
 #include "BufferReader.h"
-#include "ServerPacketHandler.h"
-#include "Protocol.pb.h"
-#include <iostream>
-#include <string> // std::string, std::getline 사용을 위해 추가
+#include "ServerPacketHandler.h" // [2] 핸들러 (세션 필요하므로 Session 다음)
+#include "Protocol.pb.h"         // [3] 자동 생성된 프로토콜
+
+// [4] 표준 라이브러리
 #include <atomic>
-#include <limits>   // std::numeric_limits
-#include <ios>      // std::streamsize
-// 로그인 성공 여부를 저장하는 전역 플래그를 '정의'합니다.
-std::atomic<bool> g_isLoggedIn = false;
-// [추가] 방에 입장했는지 여부를 저장하는 전역 플래그를 '정의'합니다.
-std::atomic<bool> g_isInRoom = false;
-
-// 연결된 세션을 저장하는 전역 변수를 '정의'합니다.
-PacketSessionRef g_session = nullptr;
+#include <csignal>
+#include <iostream>
+#include <mutex>
+#include <queue>
+#include <sstream>
+#include <string>
+#include <thread>
 
 
+// =====[글로벌: 기존 핸들러와의 호환 위해 일단 유지]=====
+std::atomic<bool> g_isLoggedIn = false;   // 로그인 완료 여부 (핸들러가 true로 바꿔줌)
+std::atomic<bool> g_isInRoom = false;   // 방 입장 여부    (핸들러가 true/false로 바꿔줌)
+PacketSessionRef  g_session = nullptr; // 현재 세션 (패킷 보낼 때 사용)
 
+// =====[간단 유틸]=====
+static inline std::string Trim(const std::string& s) {
+    size_t b = s.find_first_not_of(" \t\r\n");
+    if (b == std::string::npos) return "";
+    size_t e = s.find_last_not_of(" \t\r\n");
+    return s.substr(b, e - b + 1);
+}
 
+// 콘솔 안전 출력(멀티스레드)
+std::mutex g_coutMtx;
+#define TS_COUT(expr) do { std::lock_guard<std::mutex> _lk(g_coutMtx); std::cout << expr << std::endl; } while(0)
+
+// =====[세션]=====
 class ServerSession : public PacketSession
 {
 public:
-	~ServerSession()
-	{
-		std::cout << "~ServerSession" << std::endl;
-	}
+    ~ServerSession() override { TS_COUT("~ServerSession"); }
 
-	virtual void OnConnected() override
-	{
-		g_session = GetPacketSessionRef();
+    void OnConnected() override
+    {
+        g_session = GetPacketSessionRef();
+        TS_COUT("[Connected] Successfully connected to the server. Use /login <name> first.");
+    }
 
-		std::cout << "로그인할 플레이어 이름을 입력하세요: ";
-		std::string playerName;
-		std::cin >> playerName;
 
-		Protocol::C_LOGIN_REQ pkt;
-		pkt.set_name(playerName);
+    void OnRecvPacket(BYTE* buffer, int32 len) override
+    {
+        auto session = GetPacketSessionRef();
+        ServerPacketHandler::HandlePacket(session, buffer, len);
+    }
+    void OnSend(int32 len) override
+    {
+        TS_COUT("[Send] " << len << " bytes");
+    }
 
-		auto sendBuffer = ServerPacketHandler::MakeSendBuffer(pkt);
-		Send(sendBuffer);
-
-		std::cout << "서버에 '" << playerName << "' 플레이어의 로그인 요청을 보냈습니다." << std::endl;
-	}
-
-	virtual void OnRecvPacket(BYTE* buffer, int32 len) override
-	{
-		PacketSessionRef session = GetPacketSessionRef();
-		PacketHeader* header = reinterpret_cast<PacketHeader*>(buffer);
-
-		ServerPacketHandler::HandlePacket(session, buffer, len);
-	}
-
-	virtual void OnSend(int32 len) override
-	{
-		std::cout << "OnSend Len = " << len << std::endl;
-	}
-
-	virtual void OnDisconnected() override
-	{
-		g_isLoggedIn = false;
-		g_isInRoom = false; // [추가] 연결 끊어지면 방에서도 나간 상태로 변경
-		g_session = nullptr;
-		std::cout << "서버와 연결이 끊어졌습니다." << std::endl;
-	}
+    void OnDisconnected() override
+    {
+        g_isLoggedIn = false;
+        g_isInRoom = false;
+        g_session = nullptr;
+        TS_COUT("[Disconnected] Connection to server lost");
+    }
 };
+
+// =====[전역 종료 플래그]=====
+std::atomic<bool> g_running = true;
+
+void SigIntHandler(int) {
+    g_running = false;
+    TS_COUT("\nShutdown signal received: exiting...");
+}
+
+// =====[명령 처리]=====
+void PrintHelp()
+{
+    TS_COUT(
+        "\n=== Commands ===\n"
+        "/help                          : Show this help\n"
+        "/login <name>                  : Send login request\n"
+        "/create <roomName>             : Create a room\n"
+        "/join <roomId>                 : Join a room\n"
+        "/leave                         : Leave the current room\n"
+        "/say <message>                 : Send chat message (inside a room)\n"
+        "/quit                          : Quit client\n"
+    );
+}
+
+bool EnsureSessionReady()
+{
+    if (!g_session) {
+        TS_COUT("Not connected to server yet.");
+        return false;
+    }
+    return true;
+}
+
+void HandleCommandLine(const std::string& lineRaw)
+{
+    std::string line = Trim(lineRaw);
+    if (line.empty()) return;
+
+    if (line == "/help") { PrintHelp(); return; }
+    if (line == "/quit") { g_running = false; return; }
+
+    // 토큰화
+    std::istringstream iss(line);
+    std::string cmd; iss >> cmd;
+
+    if (cmd == "/login") {
+        std::string name; iss >> name;
+        if (name.empty()) { TS_COUT("Usage: /login <name>"); return; }
+        if (!EnsureSessionReady()) return;
+
+        Protocol::C_LOGIN_REQ pkt;
+        pkt.set_name(name);
+        g_session->Send(ServerPacketHandler::MakeSendBuffer(pkt));
+        TS_COUT("Login request -> " << name);
+        return;
+    }
+
+    if (cmd == "/create") {
+        if (!g_isLoggedIn) { TS_COUT("You must log in first."); return; }
+        std::string roomName; std::getline(iss, roomName);
+        roomName = Trim(roomName);
+        if (roomName.empty()) { TS_COUT("Usage: /create <roomName>"); return; }
+        if (!EnsureSessionReady()) return;
+
+        Protocol::C_CREATE_ROOM_REQ pkt;
+        pkt.set_roomname(roomName);
+        pkt.set_type(Protocol::ROOM_GROUP);
+        g_session->Send(ServerPacketHandler::MakeSendBuffer(pkt));
+        TS_COUT("Create room request -> '" << roomName << "'");
+        return;
+    }
+
+    if (cmd == "/join") {
+        if (!g_isLoggedIn) { TS_COUT("You must log in first."); return; }
+        int roomId;
+        if (!(iss >> roomId)) { TS_COUT("Usage: /join <roomId(number)>"); return; }
+        if (!EnsureSessionReady()) return;
+
+        Protocol::C_JOIN_ROOM_REQ pkt;
+        pkt.set_roomid(roomId);
+        g_session->Send(ServerPacketHandler::MakeSendBuffer(pkt));
+        TS_COUT("Join room request -> " << roomId);
+        return;
+    }
+
+    if (cmd == "/leave") {
+        if (!g_isLoggedIn) { TS_COUT("You must log in first."); return; }
+        if (!g_isInRoom) { TS_COUT("You are already outside of a room."); return; }
+        if (!EnsureSessionReady()) return;
+
+        Protocol::C_LEAVE_ROOM_REQ pkt;
+        g_session->Send(ServerPacketHandler::MakeSendBuffer(pkt));
+        TS_COUT("Leave room request");
+        return;
+    }
+
+    if (cmd == "/say") {
+        if (!g_isLoggedIn) { TS_COUT("You must log in first."); return; }
+        if (!g_isInRoom) { TS_COUT("Join a room first to use this."); return; }
+        std::string msg; std::getline(iss, msg);
+        msg = Trim(msg);
+        if (msg.empty()) { TS_COUT("Usage: /say <message>"); return; }
+        if (!EnsureSessionReady()) return;
+
+        Protocol::C_ROOM_CHAT_REQ pkt;
+        pkt.set_message(msg);
+        g_session->Send(ServerPacketHandler::MakeSendBuffer(pkt));
+        return;
+    }
+
+    TS_COUT("Unknown command. Type /help to see available commands.");
+}
+
+// =====[입력 스레드]=====
+void InputThread()
+{
+    PrintHelp();
+    std::string line;
+    while (g_running) {
+        {
+            std::lock_guard<std::mutex> _lk(g_coutMtx);
+            std::cout << "> " << std::flush;
+        }
+        if (!std::getline(std::cin, line)) {
+            // EOF or error
+            g_running = false;
+            break;
+        }
+        HandleCommandLine(line);
+    }
+}
+
+// =====[네트워크 디스패처 스레드]=====
+void NetworkThread(ClientServiceRef service)
+{
+    while (g_running) {
+        service->GetIocpCore()->Dispatch();
+        // 과도한 busy-loop 방지 (IOCP는 보통 블로킹 대기지만 구현에 맞춰 소폭 양보)
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    }
+}
 
 int main()
 {
-	ServerPacketHandler::Init();
+    std::signal(SIGINT, SigIntHandler);
 
-	std::this_thread::sleep_for(std::chrono::seconds(1));
+    ServerPacketHandler::Init();
 
-	ClientServiceRef service = MakeShared<ClientService>(
-		NetAddress(L"127.0.0.1", 7777),
-		MakeShared<IocpCore>(),
-		MakeShared<ServerSession>,
-		1);
+    // 서비스 생성/시작
+    ClientServiceRef service = MakeShared<ClientService>(
+        NetAddress(L"127.0.0.1", 7777),
+        MakeShared<IocpCore>(),
+        MakeShared<ServerSession>,
+        1);
 
-	ASSERT_CRASH(service->Start());
+    ASSERT_CRASH(service->Start());
 
-	GThreadManager->Launch([=]()
-		{
-			while (true)
-			{
-				service->GetIocpCore()->Dispatch();
-				std::this_thread::sleep_for(std::chrono::milliseconds(10));
-			}
-		});
+    // 스레드 런칭
+    GThreadManager->Launch([service] { NetworkThread(service); });
+    std::thread inputThread(InputThread);
 
-	// [변경] 메인 스레드의 사용자 입력 처리 로직 전체 수정
-	while (true)
-	{
-		// 로그인 된 상태에서만 입력 처리
-		if (g_isLoggedIn)
-		{
-			// 방에 들어가 있는 상태라면 채팅 입력 모드
-			if (g_isInRoom)
-			{
-				std::string message;
-				std::getline(std::cin, message); // 공백 포함 한 줄 전체 입력받기
+    // 메인 스레드는 종료 대기
+    inputThread.join();
+    g_running = false;
 
-				if (message.empty()) // 로그인 후나 방 생성/입장 후 버퍼에 남아있는 개행문자 무시
-					continue;
-
-				// "/exit" 입력 시 방 나가기 요청
-				if (message == "EXIT")
-				{
-					// 방 나가기 요청 패킷을 생성하고 보냅니다.
-					Protocol::C_LEAVE_ROOM_REQ reqPkt;
-					if (g_session != nullptr)
-					{
-						auto sendBuffer = ServerPacketHandler::MakeSendBuffer(reqPkt);
-						g_session->Send(sendBuffer);
-						std::cout << "방 나가기 요청을 보냈습니다." << std::endl;
-					}
-					else
-					{
-						std::cout << "세션이 없어 방 나가기 요청을 보낼 수 없습니다." << std::endl;
-					}
-				}
-				else
-				{
-					// 채팅 메시지 패킷을 생성하고 보냅니다.
-					Protocol::C_ROOM_CHAT_REQ reqPkt;
-					reqPkt.set_message(message);
-
-					if (g_session != nullptr)
-					{
-						auto sendBuffer = ServerPacketHandler::MakeSendBuffer(reqPkt);
-						g_session->Send(sendBuffer);
-					}
-				}
-			}
-			// 방에 들어가 있지 않다면 방 생성/입장 메뉴 표시
-			else
-			{
-				std::cout << std::endl;
-				std::cout << "[방 생성: 1] [방 입장: 2] -> ";
-				std::string userInput;
-				std::cin >> userInput;
-
-				if (userInput == "1")
-				{
-					std::cout << "생성할 방 이름을 입력하세요: ";
-					std::string roomName;
-					//std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // 버퍼 비우기
-					std::getline(std::cin, roomName);
-
-					Protocol::C_CREATE_ROOM_REQ reqPkt;
-					reqPkt.set_roomname(roomName);
-					reqPkt.set_type(Protocol::ROOM_GROUP);
-
-					if (g_session != nullptr)
-					{
-						auto sendBuffer = ServerPacketHandler::MakeSendBuffer(reqPkt);
-						g_session->Send(sendBuffer);
-						std::cout << "'" << roomName << "' 방 생성 요청을 보냈습니다." << std::endl;
-					}
-				}
-				else if (userInput == "2")
-				{
-					std::cout << "입장할 방 번호를 입력하세요: ";
-					int32 roomId;
-					std::cin >> roomId;
-
-					// 입력 버퍼에 숫자가 아닌 값이 들어왔을 경우 처리
-					if (std::cin.fail())
-					{
-						std::cin.clear();
-						//std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-						std::cout << "잘못된 입력입니다. 숫자를 입력해주세요." << std::endl;
-						continue;
-					}
-
-					Protocol::C_JOIN_ROOM_REQ reqPkt;
-					reqPkt.set_roomid(roomId);
-
-					if (g_session != nullptr)
-					{
-						auto sendBuffer = ServerPacketHandler::MakeSendBuffer(reqPkt);
-						g_session->Send(sendBuffer);
-						std::cout << "방 ID " << roomId << " 입장 요청을 보냈습니다." << std::endl;
-					}
-				}
-			}
-		}
-		std::this_thread::sleep_for(std::chrono::milliseconds(100));
-	}
-
-	GThreadManager->Join();
+    // 서비스/스레드 정리
+    GThreadManager->Join(); // 네트워크 스레드 종료 대기
+    return 0;
 }

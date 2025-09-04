@@ -1,5 +1,7 @@
 #include "pch.h"
 #include "DBConnection.h"
+#include <iostream>
+#include <locale>
 
 /*----------------
 	DBConnection
@@ -48,6 +50,29 @@ void DBConnection::Clear()
 	}
 }
 
+bool DBConnection::Prepare(const WCHAR* query)
+{
+	SQLRETURN ret = ::SQLPrepareW(_statement, (SQLWCHAR*)query, SQL_NTSL);
+	if (ret != SQL_SUCCESS && ret != SQL_SUCCESS_WITH_INFO)
+	{
+		HandleError(ret);
+		return false;
+	}
+	return true;
+}
+
+bool DBConnection::Execute()
+{
+	SQLRETURN ret = ::SQLExecute(_statement);
+	if (ret != SQL_SUCCESS && ret != SQL_SUCCESS_WITH_INFO)
+	{
+		HandleError(ret);
+		return false;
+	}
+	return true;
+}
+
+
 bool DBConnection::Execute(const WCHAR* query)
 {
 	SQLRETURN ret = ::SQLExecDirectW(_statement, (SQLWCHAR*)query, SQL_NTSL);
@@ -73,6 +98,7 @@ bool DBConnection::Fetch()
 		HandleError(ret);
 		return false;
 	default:
+		// SQL_STILL_EXECUTING 등의 경우
 		return true;
 	}
 }
@@ -80,7 +106,7 @@ bool DBConnection::Fetch()
 int32 DBConnection::GetRowCount()
 {
 	SQLLEN count = 0;
-	SQLRETURN ret = ::SQLRowCount(_statement, OUT &count);
+	SQLRETURN ret = ::SQLRowCount(_statement, OUT & count);
 
 	if (ret == SQL_SUCCESS || ret == SQL_SUCCESS_WITH_INFO)
 		return static_cast<int32>(count);
@@ -90,9 +116,13 @@ int32 DBConnection::GetRowCount()
 
 void DBConnection::Unbind()
 {
-	::SQLFreeStmt(_statement, SQL_UNBIND);
-	::SQLFreeStmt(_statement, SQL_RESET_PARAMS);
+	// [수정] 함수 호출 순서를 변경하여 함수 시퀀스 오류를 해결합니다.
+	// 1. 커서를 먼저 닫습니다.
 	::SQLFreeStmt(_statement, SQL_CLOSE);
+	// 2. 파라미터 바인딩을 해제합니다.
+	::SQLFreeStmt(_statement, SQL_RESET_PARAMS);
+	// 3. 컬럼 바인딩을 해제합니다.
+	::SQLFreeStmt(_statement, SQL_UNBIND);
 }
 
 bool DBConnection::BindParam(SQLUSMALLINT paramIndex, SQLSMALLINT cType, SQLSMALLINT sqlType, SQLULEN len, SQLPOINTER ptr, SQLLEN* index)
@@ -138,10 +168,10 @@ void DBConnection::HandleError(SQLRETURN ret)
 			_statement,
 			index,
 			sqlState,
-			OUT &nativeErr,
+			OUT & nativeErr,
 			errMsg,
 			_countof(errMsg),
-			OUT &msgLen
+			OUT & msgLen
 		);
 
 		if (errorRet == SQL_NO_DATA)
@@ -151,9 +181,10 @@ void DBConnection::HandleError(SQLRETURN ret)
 			break;
 
 		// TODO : Log
-		wcout.imbue(locale("kor"));
-		wcout << errMsg << endl;
+		std::wcout.imbue(std::locale("kor"));
+		std::wcout << L"DB Error: " << errMsg << std::endl;
 
 		index++;
 	}
 }
+

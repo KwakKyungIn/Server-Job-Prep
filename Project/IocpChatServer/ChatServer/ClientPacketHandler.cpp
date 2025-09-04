@@ -24,7 +24,7 @@ bool Handle_C_LOGIN_REQ(PacketSessionRef& session, Protocol::C_LOGIN_REQ& pkt)
 
 	// 1. Get DBConnection from the pool.
 	DBConnection* dbConn = GDBConnectionPool->Pop();
-	if (dbConn == nullptr)
+	if (!dbConn)
 	{
 		Protocol::S_LOGIN_RES resPkt;
 		resPkt.set_status(Protocol::CONNECT_FAIL);
@@ -33,28 +33,47 @@ bool Handle_C_LOGIN_REQ(PacketSessionRef& session, Protocol::C_LOGIN_REQ& pkt)
 		return false;
 	}
 
+	int64 playerId = -1;
+	bool success = false;
+
 	// 2. Prepare and execute the SQL query for login authentication.
 	std::string name_str = pkt.name();
 	std::wstring wname_str(name_str.begin(), name_str.end());
 
-	std::wstring query = L"SELECT playerId FROM Players WHERE name = '" + wname_str + L"'";
+	try
+	{
+		std::wstring query = L"SELECT playerId FROM Players WHERE name = ?";
+		if (dbConn->Prepare(query.c_str()))
+		{
+			SQLLEN nameLen = SQL_NTS;
+			dbConn->BindParam(1, SQL_C_WCHAR, SQL_WVARCHAR, wname_str.length(), (SQLPOINTER)wname_str.c_str(), &nameLen);
 
-	int64 playerId = -1;
-	bool success = dbConn->Execute(query.c_str());
-	if (success) {
-		dbConn->BindCol(1, SQL_C_LONG, sizeof(int64), &playerId, nullptr);
-		dbConn->Fetch();
+			// [수정] Execute()를 먼저 호출하여 쿼리를 실행합니다.
+			if (dbConn->Execute())
+			{
+				// [수정] 쿼리가 성공적으로 실행된 후에, 결과 컬럼을 바인딩합니다.
+				dbConn->BindCol(1, SQL_C_LONG, sizeof(int64), &playerId, nullptr);
+
+				// 데이터를 가져옵니다.
+				success = dbConn->Fetch();
+			}
+		}
 	}
-
+	catch (...)
+	{
+		// 예외 발생 시 안전하게 처리
+		success = false;
+	}
+	// 3. Always release DB connection back to pool
 	dbConn->Unbind();
 	GDBConnectionPool->Push(dbConn);
 
-	// 3. Check for login success or failure.
+	// 4. Build response
 	Protocol::S_LOGIN_RES resPkt;
 
-	if (playerId != -1)
+	if (success && playerId != -1)
 	{
-		// 4. Handle login session: create a Player object and link it to the session.
+		// Login success
 		PlayerRef player = MakeShared<Player>();
 		player->playerId = playerId;
 		player->name = pkt.name();
@@ -68,15 +87,12 @@ bool Handle_C_LOGIN_REQ(PacketSessionRef& session, Protocol::C_LOGIN_REQ& pkt)
 	}
 	else
 	{
-		// Player not found in DB or query failed.
 		resPkt.set_status(Protocol::CONNECT_FAIL);
 		resPkt.set_reason("Player not found or DB error.");
 	}
 
 	// 5. Send the response packet to the client.
-	auto sendBuffer = ClientPacketHandler::MakeSendBuffer(resPkt);
-	session->Send(sendBuffer);
-
+	session->Send(ClientPacketHandler::MakeSendBuffer(resPkt));
 	return true;
 }
 
@@ -163,6 +179,7 @@ bool Handle_C_LEAVE_ROOM_REQ(PacketSessionRef& session, Protocol::C_LEAVE_ROOM_R
 
 	// 방에서 플레이어를 제거합니다.
 	room->Leave(player);
+	player->_room = nullptr; // 방 나간 후 반드시 null 처리
 	if (room->GetPlayers().empty()) // 또는 GetPlayerCount() == 0
 	{
 		GRoomManager.RemoveRoom(room->GetId());
@@ -196,6 +213,7 @@ bool Handle_C_LEAVE_ROOM_REQ(PacketSessionRef& session, Protocol::C_LEAVE_ROOM_R
 
 	return true;
 }
+
 bool Handle_C_JOIN_ROOM_REQ(PacketSessionRef& session, Protocol::C_JOIN_ROOM_REQ& pkt)
 {
 	ChatSessionRef chatSession = std::static_pointer_cast<ChatSession>(session);
@@ -258,6 +276,7 @@ bool Handle_C_JOIN_ROOM_REQ(PacketSessionRef& session, Protocol::C_JOIN_ROOM_REQ
 
 	return true; 
 }
+
 bool Handle_C_ROOM_CHAT_REQ(PacketSessionRef& session, Protocol::C_ROOM_CHAT_REQ& pkt)
 {
 	ChatSessionRef chatSession = std::static_pointer_cast<ChatSession>(session);
