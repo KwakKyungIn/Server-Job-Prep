@@ -8,40 +8,28 @@ enum : uint16
 {
 	PKT_C_LOGIN_REQ = 1000,
 	PKT_S_LOGIN_RES = 1001,
-	PKT_C_RECONNECT_REQ = 1002,
-	PKT_S_RECONNECT_RES = 1003,
-	PKT_C_PRIVATE_CHAT_REQ = 1004,
-	PKT_S_PRIVATE_CHAT_NTF = 1005,
-	PKT_C_CREATE_ROOM_REQ = 1006,
-	PKT_S_CREATE_ROOM_RES = 1007,
-	PKT_C_JOIN_ROOM_REQ = 1008,
-	PKT_S_JOIN_ROOM_RES = 1009,
-	PKT_S_JOIN_ROOM_NTF = 1010,
-	PKT_C_ROOM_CHAT_REQ = 1011,
-	PKT_S_ROOM_CHAT_NTF = 1012,
-	PKT_C_LEAVE_ROOM_REQ = 1013,
-	PKT_S_LEAVE_ROOM_ACK = 1014,
-	PKT_C_FRIEND_ADD_REQ = 1015,
-	PKT_S_FRIEND_ADD_RES = 1016,
-	PKT_C_FRIEND_LIST_REQ = 1017,
-	PKT_S_FRIEND_LIST_RES = 1018,
-	PKT_S_PRESENCE_NTF = 1019,
-	PKT_S_RATE_LIMIT_NTF = 1020,
-	PKT_C_ADMIN_COMMAND_REQ = 1021,
-	PKT_S_ADMIN_COMMAND_RES = 1022,
+	PKT_C_CREATE_ROOM_REQ = 1002,
+	PKT_S_CREATE_ROOM_RES = 1003,
+	PKT_C_JOIN_ROOM_REQ = 1004,
+	PKT_S_JOIN_ROOM_RES = 1005,
+	PKT_S_JOIN_ROOM_NTF = 1006,
+	PKT_C_ROOM_CHAT_REQ = 1007,
+	PKT_S_ROOM_CHAT_NTF = 1008,
+	PKT_C_LEAVE_ROOM_REQ = 1009,
+	PKT_S_LEAVE_ROOM_ACK = 1010,
+	PKT_S_PRESENCE_NTF = 1011,
+	PKT_S_RATE_LIMIT_NTF = 1012,
+	PKT_C_ADMIN_COMMAND_REQ = 1013,
+	PKT_S_ADMIN_COMMAND_RES = 1014,
 };
 
 // Custom Handlers
 bool Handle_INVALID(PacketSessionRef& session, BYTE* buffer, int32 len);
 bool Handle_C_LOGIN_REQ(PacketSessionRef& session, Protocol::C_LOGIN_REQ& pkt);
-bool Handle_C_RECONNECT_REQ(PacketSessionRef& session, Protocol::C_RECONNECT_REQ& pkt);
-bool Handle_C_PRIVATE_CHAT_REQ(PacketSessionRef& session, Protocol::C_PRIVATE_CHAT_REQ& pkt);
 bool Handle_C_CREATE_ROOM_REQ(PacketSessionRef& session, Protocol::C_CREATE_ROOM_REQ& pkt);
 bool Handle_C_JOIN_ROOM_REQ(PacketSessionRef& session, Protocol::C_JOIN_ROOM_REQ& pkt);
 bool Handle_C_ROOM_CHAT_REQ(PacketSessionRef& session, Protocol::C_ROOM_CHAT_REQ& pkt);
 bool Handle_C_LEAVE_ROOM_REQ(PacketSessionRef& session, Protocol::C_LEAVE_ROOM_REQ& pkt);
-bool Handle_C_FRIEND_ADD_REQ(PacketSessionRef& session, Protocol::C_FRIEND_ADD_REQ& pkt);
-bool Handle_C_FRIEND_LIST_REQ(PacketSessionRef& session, Protocol::C_FRIEND_LIST_REQ& pkt);
 bool Handle_C_ADMIN_COMMAND_REQ(PacketSessionRef& session, Protocol::C_ADMIN_COMMAND_REQ& pkt);
 
 class ClientPacketHandler
@@ -52,14 +40,10 @@ public:
 		for (int32 i = 0; i < UINT16_MAX; i++)
 			GPacketHandler[i] = Handle_INVALID;
 		GPacketHandler[PKT_C_LOGIN_REQ] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::C_LOGIN_REQ>(Handle_C_LOGIN_REQ, session, buffer, len); };
-		GPacketHandler[PKT_C_RECONNECT_REQ] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::C_RECONNECT_REQ>(Handle_C_RECONNECT_REQ, session, buffer, len); };
-		GPacketHandler[PKT_C_PRIVATE_CHAT_REQ] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::C_PRIVATE_CHAT_REQ>(Handle_C_PRIVATE_CHAT_REQ, session, buffer, len); };
 		GPacketHandler[PKT_C_CREATE_ROOM_REQ] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::C_CREATE_ROOM_REQ>(Handle_C_CREATE_ROOM_REQ, session, buffer, len); };
 		GPacketHandler[PKT_C_JOIN_ROOM_REQ] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::C_JOIN_ROOM_REQ>(Handle_C_JOIN_ROOM_REQ, session, buffer, len); };
 		GPacketHandler[PKT_C_ROOM_CHAT_REQ] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::C_ROOM_CHAT_REQ>(Handle_C_ROOM_CHAT_REQ, session, buffer, len); };
 		GPacketHandler[PKT_C_LEAVE_ROOM_REQ] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::C_LEAVE_ROOM_REQ>(Handle_C_LEAVE_ROOM_REQ, session, buffer, len); };
-		GPacketHandler[PKT_C_FRIEND_ADD_REQ] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::C_FRIEND_ADD_REQ>(Handle_C_FRIEND_ADD_REQ, session, buffer, len); };
-		GPacketHandler[PKT_C_FRIEND_LIST_REQ] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::C_FRIEND_LIST_REQ>(Handle_C_FRIEND_LIST_REQ, session, buffer, len); };
 		GPacketHandler[PKT_C_ADMIN_COMMAND_REQ] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::C_ADMIN_COMMAND_REQ>(Handle_C_ADMIN_COMMAND_REQ, session, buffer, len); };
 	}
 
@@ -69,15 +53,11 @@ public:
 		return GPacketHandler[header->id](session, buffer, len);
 	}
 	static SendBufferRef MakeSendBuffer(Protocol::S_LOGIN_RES& pkt) { return MakeSendBuffer(pkt, PKT_S_LOGIN_RES); }
-	static SendBufferRef MakeSendBuffer(Protocol::S_RECONNECT_RES& pkt) { return MakeSendBuffer(pkt, PKT_S_RECONNECT_RES); }
-	static SendBufferRef MakeSendBuffer(Protocol::S_PRIVATE_CHAT_NTF& pkt) { return MakeSendBuffer(pkt, PKT_S_PRIVATE_CHAT_NTF); }
 	static SendBufferRef MakeSendBuffer(Protocol::S_CREATE_ROOM_RES& pkt) { return MakeSendBuffer(pkt, PKT_S_CREATE_ROOM_RES); }
 	static SendBufferRef MakeSendBuffer(Protocol::S_JOIN_ROOM_RES& pkt) { return MakeSendBuffer(pkt, PKT_S_JOIN_ROOM_RES); }
 	static SendBufferRef MakeSendBuffer(Protocol::S_JOIN_ROOM_NTF& pkt) { return MakeSendBuffer(pkt, PKT_S_JOIN_ROOM_NTF); }
 	static SendBufferRef MakeSendBuffer(Protocol::S_ROOM_CHAT_NTF& pkt) { return MakeSendBuffer(pkt, PKT_S_ROOM_CHAT_NTF); }
 	static SendBufferRef MakeSendBuffer(Protocol::S_LEAVE_ROOM_ACK& pkt) { return MakeSendBuffer(pkt, PKT_S_LEAVE_ROOM_ACK); }
-	static SendBufferRef MakeSendBuffer(Protocol::S_FRIEND_ADD_RES& pkt) { return MakeSendBuffer(pkt, PKT_S_FRIEND_ADD_RES); }
-	static SendBufferRef MakeSendBuffer(Protocol::S_FRIEND_LIST_RES& pkt) { return MakeSendBuffer(pkt, PKT_S_FRIEND_LIST_RES); }
 	static SendBufferRef MakeSendBuffer(Protocol::S_PRESENCE_NTF& pkt) { return MakeSendBuffer(pkt, PKT_S_PRESENCE_NTF); }
 	static SendBufferRef MakeSendBuffer(Protocol::S_RATE_LIMIT_NTF& pkt) { return MakeSendBuffer(pkt, PKT_S_RATE_LIMIT_NTF); }
 	static SendBufferRef MakeSendBuffer(Protocol::S_ADMIN_COMMAND_RES& pkt) { return MakeSendBuffer(pkt, PKT_S_ADMIN_COMMAND_RES); }

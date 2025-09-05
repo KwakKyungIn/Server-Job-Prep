@@ -19,6 +19,9 @@
     <Filter Include="DB">
       <UniqueIdentifier>{070cd12a-b492-4fc9-b84d-f6b329dd0ee0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Test">
+      <UniqueIdentifier>{15f65fab-e10f-42a5-b1c2-91d26da893b1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CorePch.h">
@@ -108,6 +111,12 @@
     <ClInclude Include="DBConnectionPool.h">
       <Filter>DB</Filter>
     </ClInclude>
+    <ClInclude Include="Metrics.h">
+      <Filter>Test</Filter>
+    </ClInclude>
+    <ClInclude Include="MetricsRunner.h">
+      <Filter>Test</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CorePch.cpp">
@@ -181,6 +190,12 @@
     </ClCompile>
     <ClCompile Include="DBConnectionPool.cpp">
       <Filter>DB</Filter>
+    </ClCompile>
+    <ClCompile Include="Metrics.cpp">
+      <Filter>Test</Filter>
+    </ClCompile>
+    <ClCompile Include="MetricsRunner.cpp">
+      <Filter>Test</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

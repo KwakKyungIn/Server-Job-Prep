@@ -6,6 +6,7 @@
 #include "SocketUtils.h"
 #include "SendBuffer.h"
 #include "DBConnectionPool.h"
+#include "MetricsRunner.h"
 
 ThreadManager* GThreadManager = nullptr;
 Memory* GMemory = nullptr;
@@ -23,6 +24,7 @@ public:
 		GSendBufferManager = new SendBufferManager();
 		GDeadLockProfiler = new DeadLockProfiler();
 		GDBConnectionPool = new DBConnectionPool();
+		StartMetricsTicker(); //테스트
 		SocketUtils::Init();
 		cout << "CoreGlobal Initialized" << endl;
 	}
@@ -34,6 +36,7 @@ public:
 		delete GSendBufferManager;
 		delete GDeadLockProfiler;
 		delete GDBConnectionPool;
+		StopMetricsTicker();//테스트
 		SocketUtils::Clear();
 	}
 } GCoreGlobal;

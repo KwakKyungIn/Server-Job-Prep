@@ -2,189 +2,212 @@
 #include "DBConnection.h"
 #include <iostream>
 #include <locale>
+#include "Metrics.h" // [METRICS]
 
 /*----------------
-	DBConnection
+    DBConnection
 -----------------*/
 
 bool DBConnection::Connect(SQLHENV henv, const WCHAR* connectionString)
 {
-	if (::SQLAllocHandle(SQL_HANDLE_DBC, henv, &_connection) != SQL_SUCCESS)
-		return false;
+    if (::SQLAllocHandle(SQL_HANDLE_DBC, henv, &_connection) != SQL_SUCCESS)
+        return false;
 
-	WCHAR stringBuffer[MAX_PATH] = { 0 };
-	::wcscpy_s(stringBuffer, connectionString);
+    WCHAR stringBuffer[MAX_PATH] = { 0 };
+    ::wcscpy_s(stringBuffer, connectionString);
 
-	WCHAR resultString[MAX_PATH] = { 0 };
-	SQLSMALLINT resultStringLen = 0;
+    WCHAR resultString[MAX_PATH] = { 0 };
+    SQLSMALLINT resultStringLen = 0;
 
-	SQLRETURN ret = ::SQLDriverConnectW(
-		_connection,
-		NULL,
-		reinterpret_cast<SQLWCHAR*>(stringBuffer),
-		_countof(stringBuffer),
-		OUT reinterpret_cast<SQLWCHAR*>(resultString),
-		_countof(resultString),
-		OUT & resultStringLen,
-		SQL_DRIVER_NOPROMPT
-	);
+    SQLRETURN ret = ::SQLDriverConnectW(
+        _connection,
+        NULL,
+        reinterpret_cast<SQLWCHAR*>(stringBuffer),
+        _countof(stringBuffer),
+        OUT reinterpret_cast<SQLWCHAR*>(resultString),
+        _countof(resultString),
+        OUT & resultStringLen,
+        SQL_DRIVER_NOPROMPT
+    );
 
-	if (::SQLAllocHandle(SQL_HANDLE_STMT, _connection, &_statement) != SQL_SUCCESS)
-		return false;
+    if (::SQLAllocHandle(SQL_HANDLE_STMT, _connection, &_statement) != SQL_SUCCESS)
+        return false;
 
-	return (ret == SQL_SUCCESS || ret == SQL_SUCCESS_WITH_INFO);
+    return (ret == SQL_SUCCESS || ret == SQL_SUCCESS_WITH_INFO);
 }
 
 void DBConnection::Clear()
 {
-	if (_connection != SQL_NULL_HANDLE)
-	{
-		::SQLFreeHandle(SQL_HANDLE_DBC, _connection);
-		_connection = SQL_NULL_HANDLE;
-	}
+    if (_connection != SQL_NULL_HANDLE)
+    {
+        ::SQLFreeHandle(SQL_HANDLE_DBC, _connection);
+        _connection = SQL_NULL_HANDLE;
+    }
 
-	if (_statement != SQL_NULL_HANDLE)
-	{
-		::SQLFreeHandle(SQL_HANDLE_STMT, _statement);
-		_statement = SQL_NULL_HANDLE;
-	}
+    if (_statement != SQL_NULL_HANDLE)
+    {
+        ::SQLFreeHandle(SQL_HANDLE_STMT, _statement);
+        _statement = SQL_NULL_HANDLE;
+    }
 }
 
 bool DBConnection::Prepare(const WCHAR* query)
 {
-	SQLRETURN ret = ::SQLPrepareW(_statement, (SQLWCHAR*)query, SQL_NTSL);
-	if (ret != SQL_SUCCESS && ret != SQL_SUCCESS_WITH_INFO)
-	{
-		HandleError(ret);
-		return false;
-	}
-	return true;
+    SQLRETURN ret = ::SQLPrepareW(_statement, (SQLWCHAR*)query, SQL_NTSL);
+    if (ret != SQL_SUCCESS && ret != SQL_SUCCESS_WITH_INFO)
+    {
+        HandleError(ret);
+        // [METRICS]
+        GMetrics.db_prepare_fail.fetch_add(1, std::memory_order_relaxed);
+        return false;
+    }
+    return true;
 }
 
 bool DBConnection::Execute()
 {
-	SQLRETURN ret = ::SQLExecute(_statement);
-	if (ret != SQL_SUCCESS && ret != SQL_SUCCESS_WITH_INFO)
-	{
-		HandleError(ret);
-		return false;
-	}
-	return true;
+    SQLRETURN ret = ::SQLExecute(_statement);
+    if (ret != SQL_SUCCESS && ret != SQL_SUCCESS_WITH_INFO)
+    {
+        HandleError(ret);
+        // [METRICS]
+        GMetrics.db_exec_fail.fetch_add(1, std::memory_order_relaxed);
+        return false;
+    }
+    // [METRICS]
+    GMetrics.db_exec_ok.fetch_add(1, std::memory_order_relaxed);
+    return true;
 }
-
 
 bool DBConnection::Execute(const WCHAR* query)
 {
-	SQLRETURN ret = ::SQLExecDirectW(_statement, (SQLWCHAR*)query, SQL_NTSL);
-	if (ret == SQL_SUCCESS || ret == SQL_SUCCESS_WITH_INFO)
-		return true;
+    SQLRETURN ret = ::SQLExecDirectW(_statement, (SQLWCHAR*)query, SQL_NTSL);
+    if (ret == SQL_SUCCESS || ret == SQL_SUCCESS_WITH_INFO)
+    {
+        // [METRICS]
+        GMetrics.db_exec_ok.fetch_add(1, std::memory_order_relaxed);
+        return true;
+    }
 
-	HandleError(ret);
-	return false;
+    HandleError(ret);
+    // [METRICS]
+    GMetrics.db_exec_fail.fetch_add(1, std::memory_order_relaxed);
+    return false;
 }
 
 bool DBConnection::Fetch()
 {
-	SQLRETURN ret = ::SQLFetch(_statement);
+    SQLRETURN ret = ::SQLFetch(_statement);
 
-	switch (ret)
-	{
-	case SQL_SUCCESS:
-	case SQL_SUCCESS_WITH_INFO:
-		return true;
-	case SQL_NO_DATA:
-		return false;
-	case SQL_ERROR:
-		HandleError(ret);
-		return false;
-	default:
-		// SQL_STILL_EXECUTING 등의 경우
-		return true;
-	}
+    switch (ret)
+    {
+    case SQL_SUCCESS:
+    case SQL_SUCCESS_WITH_INFO:
+        // [METRICS]
+        GMetrics.db_fetch_ok.fetch_add(1, std::memory_order_relaxed);
+        return true;
+    case SQL_NO_DATA:
+        // [METRICS]
+        GMetrics.db_fetch_no_data.fetch_add(1, std::memory_order_relaxed);
+        return false;
+    case SQL_ERROR:
+        HandleError(ret);
+        // [METRICS]
+        GMetrics.db_fetch_fail.fetch_add(1, std::memory_order_relaxed);
+        return false;
+    default:
+        // SQL_STILL_EXECUTING 등의 경우
+        return true;
+    }
 }
 
 int32 DBConnection::GetRowCount()
 {
-	SQLLEN count = 0;
-	SQLRETURN ret = ::SQLRowCount(_statement, OUT & count);
+    SQLLEN count = 0;
+    SQLRETURN ret = ::SQLRowCount(_statement, OUT & count);
 
-	if (ret == SQL_SUCCESS || ret == SQL_SUCCESS_WITH_INFO)
-		return static_cast<int32>(count);
+    if (ret == SQL_SUCCESS || ret == SQL_SUCCESS_WITH_INFO)
+        return static_cast<int32>(count);
 
-	return -1;
+    return -1;
 }
 
 void DBConnection::Unbind()
 {
-	// [수정] 함수 호출 순서를 변경하여 함수 시퀀스 오류를 해결합니다.
-	// 1. 커서를 먼저 닫습니다.
-	::SQLFreeStmt(_statement, SQL_CLOSE);
-	// 2. 파라미터 바인딩을 해제합니다.
-	::SQLFreeStmt(_statement, SQL_RESET_PARAMS);
-	// 3. 컬럼 바인딩을 해제합니다.
-	::SQLFreeStmt(_statement, SQL_UNBIND);
+    // 1. 커서를 먼저 닫습니다.
+    ::SQLFreeStmt(_statement, SQL_CLOSE);
+    // 2. 파라미터 바인딩을 해제합니다.
+    ::SQLFreeStmt(_statement, SQL_RESET_PARAMS);
+    // 3. 컬럼 바인딩을 해제합니다.
+    ::SQLFreeStmt(_statement, SQL_UNBIND);
+
+    // [METRICS]
+    GMetrics.db_unbind_calls.fetch_add(1, std::memory_order_relaxed);
 }
 
 bool DBConnection::BindParam(SQLUSMALLINT paramIndex, SQLSMALLINT cType, SQLSMALLINT sqlType, SQLULEN len, SQLPOINTER ptr, SQLLEN* index)
 {
-	SQLRETURN ret = ::SQLBindParameter(_statement, paramIndex, SQL_PARAM_INPUT, cType, sqlType, len, 0, ptr, 0, index);
-	if (ret != SQL_SUCCESS && ret != SQL_SUCCESS_WITH_INFO)
-	{
-		HandleError(ret);
-		return false;
-	}
+    SQLRETURN ret = ::SQLBindParameter(_statement, paramIndex, SQL_PARAM_INPUT, cType, sqlType, len, 0, ptr, 0, index);
+    if (ret != SQL_SUCCESS && ret != SQL_SUCCESS_WITH_INFO)
+    {
+        HandleError(ret);
+        // [선택] 파라미터 바인드 실패 카운터를 만들었다면 여기서 증가
+        // GMetrics.db_bindparam_fail.fetch_add(1, std::memory_order_relaxed);
+        return false;
+    }
 
-	return true;
+    return true;
 }
 
 bool DBConnection::BindCol(SQLUSMALLINT columnIndex, SQLSMALLINT cType, SQLULEN len, SQLPOINTER value, SQLLEN* index)
 {
-	SQLRETURN ret = ::SQLBindCol(_statement, columnIndex, cType, value, len, index);
-	if (ret != SQL_SUCCESS && ret != SQL_SUCCESS_WITH_INFO)
-	{
-		HandleError(ret);
-		return false;
-	}
+    SQLRETURN ret = ::SQLBindCol(_statement, columnIndex, cType, value, len, index);
+    if (ret != SQL_SUCCESS && ret != SQL_SUCCESS_WITH_INFO)
+    {
+        HandleError(ret);
+        // [선택] 컬럼 바인드 실패 카운터를 만들었다면 여기서 증가
+        // GMetrics.db_bindcol_fail.fetch_add(1, std::memory_order_relaxed);
+        return false;
+    }
 
-	return true;
+    return true;
 }
 
 void DBConnection::HandleError(SQLRETURN ret)
 {
-	if (ret == SQL_SUCCESS)
-		return;
+    if (ret == SQL_SUCCESS)
+        return;
 
-	SQLSMALLINT index = 1;
-	SQLWCHAR sqlState[MAX_PATH] = { 0 };
-	SQLINTEGER nativeErr = 0;
-	SQLWCHAR errMsg[MAX_PATH] = { 0 };
-	SQLSMALLINT msgLen = 0;
-	SQLRETURN errorRet = 0;
+    SQLSMALLINT index = 1;
+    SQLWCHAR sqlState[MAX_PATH] = { 0 };
+    SQLINTEGER nativeErr = 0;
+    SQLWCHAR errMsg[MAX_PATH] = { 0 };
+    SQLSMALLINT msgLen = 0;
+    SQLRETURN errorRet = 0;
 
-	while (true)
-	{
-		errorRet = ::SQLGetDiagRecW(
-			SQL_HANDLE_STMT,
-			_statement,
-			index,
-			sqlState,
-			OUT & nativeErr,
-			errMsg,
-			_countof(errMsg),
-			OUT & msgLen
-		);
+    while (true)
+    {
+        errorRet = ::SQLGetDiagRecW(
+            SQL_HANDLE_STMT,
+            _statement,
+            index,
+            sqlState,
+            OUT & nativeErr,
+            errMsg,
+            _countof(errMsg),
+            OUT & msgLen
+        );
 
-		if (errorRet == SQL_NO_DATA)
-			break;
+        if (errorRet == SQL_NO_DATA)
+            break;
 
-		if (errorRet != SQL_SUCCESS && errorRet != SQL_SUCCESS_WITH_INFO)
-			break;
+        if (errorRet != SQL_SUCCESS && errorRet != SQL_SUCCESS_WITH_INFO)
+            break;
 
-		// TODO : Log
-		std::wcout.imbue(std::locale("kor"));
-		std::wcout << L"DB Error: " << errMsg << std::endl;
+        // TODO : Log
+        std::wcout.imbue(std::locale("kor"));
+        std::wcout << L"DB Error: " << errMsg << std::endl;
 
-		index++;
-	}
+        index++;
+    }
 }
-

@@ -13,6 +13,9 @@
     <Filter Include="ChatContents">
       <UniqueIdentifier>{0cd555c4-b35b-4327-bda7-d99791831d11}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Job">
+      <UniqueIdentifier>{7723e696-acf6-4587-a3ca-13ef78ee3103}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ChatServer.cpp">
@@ -79,6 +82,9 @@
     </ClInclude>
     <ClInclude Include="RoomManager.h">
       <Filter>Main</Filter>
+    </ClInclude>
+    <ClInclude Include="JobQueue.h">
+      <Filter>Job</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

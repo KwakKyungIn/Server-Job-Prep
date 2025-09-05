@@ -13,6 +13,8 @@ C:\Users\GGI\Desktop\Ky\Github\Repo\MyCSStudy\Project\IocpChatServer\ServerCore\
 C:\Users\GGI\Desktop\Ky\Github\Repo\MyCSStudy\Project\IocpChatServer\ServerCore\Lock.cpp;C:\Users\GGI\Desktop\Ky\Github\Repo\MyCSStudy\Project\IocpChatServer\ServerCore\x64\Debug\Lock.obj
 C:\Users\GGI\Desktop\Ky\Github\Repo\MyCSStudy\Project\IocpChatServer\ServerCore\Memory.cpp;C:\Users\GGI\Desktop\Ky\Github\Repo\MyCSStudy\Project\IocpChatServer\ServerCore\x64\Debug\Memory.obj
 C:\Users\GGI\Desktop\Ky\Github\Repo\MyCSStudy\Project\IocpChatServer\ServerCore\MemoryPool.cpp;C:\Users\GGI\Desktop\Ky\Github\Repo\MyCSStudy\Project\IocpChatServer\ServerCore\x64\Debug\MemoryPool.obj
+C:\Users\GGI\Desktop\Ky\Github\Repo\MyCSStudy\Project\IocpChatServer\ServerCore\Metrics.cpp;C:\Users\GGI\Desktop\Ky\Github\Repo\MyCSStudy\Project\IocpChatServer\ServerCore\x64\Debug\Metrics.obj
+C:\Users\GGI\Desktop\Ky\Github\Repo\MyCSStudy\Project\IocpChatServer\ServerCore\MetricsRunner.cpp;C:\Users\GGI\Desktop\Ky\Github\Repo\MyCSStudy\Project\IocpChatServer\ServerCore\x64\Debug\MetricsRunner.obj
 C:\Users\GGI\Desktop\Ky\Github\Repo\MyCSStudy\Project\IocpChatServer\ServerCore\NetAddress.cpp;C:\Users\GGI\Desktop\Ky\Github\Repo\MyCSStudy\Project\IocpChatServer\ServerCore\x64\Debug\NetAddress.obj
 C:\Users\GGI\Desktop\Ky\Github\Repo\MyCSStudy\Project\IocpChatServer\ServerCore\pch.cpp;C:\Users\GGI\Desktop\Ky\Github\Repo\MyCSStudy\Project\IocpChatServer\ServerCore\x64\Debug\pch.obj
 C:\Users\GGI\Desktop\Ky\Github\Repo\MyCSStudy\Project\IocpChatServer\ServerCore\RecvBuffer.cpp;C:\Users\GGI\Desktop\Ky\Github\Repo\MyCSStudy\Project\IocpChatServer\ServerCore\x64\Debug\RecvBuffer.obj

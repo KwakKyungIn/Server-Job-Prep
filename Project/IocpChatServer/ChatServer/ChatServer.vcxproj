@@ -200,6 +200,7 @@
     <ClInclude Include="Enum.pb.h" />
     <ClInclude Include="ChatSession.h" />
     <ClInclude Include="ChatSessionManager.h" />
+    <ClInclude Include="JobQueue.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="Protocol.pb.h" />

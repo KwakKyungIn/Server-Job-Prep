@@ -13,25 +13,7 @@ message S_LOGIN_RES {
     string reason = 3;
 }
 
-// Reconnect
-message C_RECONNECT_REQ {
-    int64 playerId = 1;
-    int64 lastReceivedMessageId = 2; // 클라가 마지막으로 받은 메시지 ID
-}
-message S_RECONNECT_RES {
-    bool success = 1;
-    repeated PendingMessage pending = 2;
-    string reason = 3;
-}
 
-// ===== 1:1 채팅 =====
-message C_PRIVATE_CHAT_REQ {
-    int64 targetId = 1;
-    string message = 2;
-}
-message S_PRIVATE_CHAT_NTF {
-    ChatMessage chat = 1;
-}
 
 // ===== 채팅 룸 =====
 message C_CREATE_ROOM_REQ {
@@ -76,20 +58,6 @@ message S_LEAVE_ROOM_ACK {
 }
 
 
-// ===== 친구 =====
-message C_FRIEND_ADD_REQ {
-    int64 targetId = 1;
-}
-message S_FRIEND_ADD_RES {
-    bool success = 1;
-    FriendInfo friend = 2;
-    string reason = 3;
-}
-
-message C_FRIEND_LIST_REQ {}
-message S_FRIEND_LIST_RES {
-    repeated FriendInfo friends = 1;
-}
 
 // ===== Presence =====
 message S_PRESENCE_NTF {

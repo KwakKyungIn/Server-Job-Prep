@@ -80,5 +80,6 @@ class SendEvent : public IocpEvent
 public:
 	SendEvent() : IocpEvent(EventType::Send) {}
 
-	Vector<SendBufferRef> sendBuffers;
+	Vector<SendBufferRef>		sendBuffers;
+	Vector<WSABUF>			wsaBufs;     // <-- 추가: WSABUF도 보관
 };
