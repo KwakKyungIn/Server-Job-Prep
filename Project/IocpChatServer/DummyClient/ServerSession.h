@@ -5,14 +5,6 @@
 #include "Protocol.pb.h"
 #include <string>
 #include <atomic>
-#include <iostream>
-#include <mutex>
-
-
-
-
-extern std::mutex g_coutMtx;
-#define TS_COUT(expr) do { std::lock_guard<std::mutex> _lk(g_coutMtx); std::cout << expr << std::endl; } while(0)
 
 class ServerSession : public PacketSession
 {
@@ -25,11 +17,11 @@ public:
     std::atomic<bool> isInRoom{ false };
     std::atomic<int32> roomId{ -1 };
 
-    ~ServerSession() override { TS_COUT("~ServerSession " << name); }
+    // 로그만 하던 소멸자 제거 (기본 소멸자 사용)
+    //~ServerSession() override {}
 
     void OnConnected() override
     {
-        TS_COUT("[" << name << "] Connected. Sending login...");
         Protocol::C_LOGIN_REQ pkt;
         pkt.set_name(name);
         Send(ServerPacketHandler::MakeSendBuffer(pkt));
@@ -41,16 +33,15 @@ public:
         ServerPacketHandler::HandlePacket(self, buffer, len);
     }
 
-    void OnSend(int32 len) override
-    {
-        TS_COUT("[" << name << "] Sent " << len << " bytes");
-    }
+    // 로그만 하던 OnSend 제거
+    // void OnSend(int32 len) override {}
 
     void OnDisconnected() override
     {
-        TS_COUT("[" << name << "] Disconnected");
         isLoggedIn = false;
         isInRoom = false;
         roomId = -1;
     }
 };
+
+

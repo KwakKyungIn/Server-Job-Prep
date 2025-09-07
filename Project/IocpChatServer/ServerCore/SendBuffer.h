@@ -17,6 +17,9 @@ public:
     uint32  WriteSize() const { return _writeSize; }
     void    Close(uint32 writeSize);
 
+    // ¡Ú Getter Ãß°¡
+    SendBufferChunkRef GetOwner() const { return _owner; }
+
 private:
     BYTE* _buffer = nullptr;
     uint32              _allocSize = 0;
@@ -58,12 +61,12 @@ class SendBufferManager
 {
 public:
     SendBufferRef   Open(uint32 size);
-
+    static void         PushGlobal(SendBufferChunk* buffer);
 private:
     SendBufferChunkRef  Pop();
     void                Push(SendBufferChunkRef buffer);
-
-    static void         PushGlobal(SendBufferChunk* buffer);
+    
+    
 
 private:
     USE_LOCK;

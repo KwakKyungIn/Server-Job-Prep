@@ -2,16 +2,12 @@
 #include "SendBuffer.h"
 
 /*----------------
-    SendBuffer
+	SendBuffer
 -----------------*/
 
 SendBuffer::SendBuffer(SendBufferChunkRef owner, BYTE* buffer, uint32 allocSize)
-    : _owner(std::move(owner)), _buffer(buffer), _allocSize(allocSize), _writeSize(0)
+	: _owner(owner), _buffer(buffer), _allocSize(allocSize)
 {
-    // 방어적 체크 (개발 중 ASSERT, 릴리즈에서도 안전)
-    ASSERT_CRASH(_owner != nullptr);
-    ASSERT_CRASH(_buffer != nullptr);
-    ASSERT_CRASH(_allocSize > 0);
 }
 
 SendBuffer::~SendBuffer()
@@ -20,110 +16,96 @@ SendBuffer::~SendBuffer()
 
 void SendBuffer::Close(uint32 writeSize)
 {
-    // writeSize는 반드시 allocSize 이하
-    ASSERT_CRASH(_allocSize >= writeSize);
-    _writeSize = writeSize;
-
-    // owner가 반드시 살아있어야 함 (SendBufferRef가 잡고 있음)
-    ASSERT_CRASH(_owner != nullptr);
-    _owner->Close(writeSize);
+	ASSERT_CRASH(_allocSize >= writeSize);
+	_writeSize = writeSize;
+	_owner->Close(writeSize);
 }
 
 /*--------------------
-    SendBufferChunk
+	SendBufferChunk
 --------------------*/
 
-SendBufferChunk::SendBufferChunk() {}
-SendBufferChunk::~SendBufferChunk() {}
+SendBufferChunk::SendBufferChunk()
+{
+}
 
-extern thread_local SendBufferChunkRef LSendBufferChunk;
+SendBufferChunk::~SendBufferChunk()
+{
+}
 
 void SendBufferChunk::Reset()
 {
-    _open = false;
-    _usedSize = 0;
+	_open = false;
+	_usedSize = 0;
 }
 
 SendBufferRef SendBufferChunk::Open(uint32 allocSize)
 {
-    ASSERT_CRASH(allocSize <= SEND_BUFFER_CHUNK_SIZE);
-    ASSERT_CRASH(_open == false);
+	ASSERT_CRASH(allocSize <= SEND_BUFFER_CHUNK_SIZE);
+	ASSERT_CRASH(_open == false);
 
-    if (allocSize > FreeSize())
-        return nullptr;
+	if (allocSize > FreeSize())
+		return nullptr;
 
-    _open = true;
-    return std::make_shared<SendBuffer>(shared_from_this(), Buffer(), allocSize);
-
-    //return ObjectPool<SendBuffer>::MakeShared(shared_from_this(), Buffer(), allocSize);
+	_open = true;
+	return ObjectPool<SendBuffer>::MakeShared(shared_from_this(), Buffer(), allocSize);
 }
 
 void SendBufferChunk::Close(uint32 writeSize)
 {
-    ASSERT_CRASH(_open == true);
-    _open = false;
-    _usedSize += writeSize;
+	ASSERT_CRASH(_open == true);
+	_open = false;
+	_usedSize += writeSize;
 }
 
 /*---------------------
-    SendBufferManager
+	SendBufferManager
 ----------------------*/
-
 
 SendBufferRef SendBufferManager::Open(uint32 size)
 {
-    
+	if (LSendBufferChunk == nullptr)
+	{
+		LSendBufferChunk = Pop(); // WRITE_LOCK
+		LSendBufferChunk->Reset();
+	}
 
-    if (LSendBufferChunk == nullptr)
-    {
-        LSendBufferChunk = Pop(); // WRITE_LOCK
-        LSendBufferChunk->Reset();
-    }
+	ASSERT_CRASH(LSendBufferChunk->IsOpen() == false);
 
-    ASSERT_CRASH(LSendBufferChunk->IsOpen() == false);
+	// 다 썼으면 버리고 새거로 교체
+	if (LSendBufferChunk->FreeSize() < size)
+	{
+		LSendBufferChunk = Pop(); // WRITE_LOCK
+		LSendBufferChunk->Reset();
+	}
 
-    // 여유 공간 부족하면 새 청크
-    if (LSendBufferChunk->FreeSize() < size)
-    {
-        LSendBufferChunk = Pop(); // WRITE_LOCK
-        LSendBufferChunk->Reset();
-    }
-
-    // 드물게 Open이 nullptr을 반환할 수도 있으니 방어
-    SendBufferRef sb = LSendBufferChunk->Open(size);
-    if (sb == nullptr)
-    {
-        // 새 청크 팝 후 한 번 더 시도
-        LSendBufferChunk = Pop();
-        LSendBufferChunk->Reset();
-        sb = LSendBufferChunk->Open(size);
-        ASSERT_CRASH(sb != nullptr); // 여기서도 nullptr이면 치명적
-    }
-    return sb;
+	return LSendBufferChunk->Open(size);
 }
 
 SendBufferChunkRef SendBufferManager::Pop()
 {
-    {
-        WRITE_LOCK;
-        if (_sendBufferChunks.empty() == false)
-        {
-            SendBufferChunkRef sendBufferChunk = _sendBufferChunks.back();
-            _sendBufferChunks.pop_back();
-            return sendBufferChunk;
-        }
-    }
-    return SendBufferChunkRef(xnew<SendBufferChunk>(), PushGlobal);
+	{
+		WRITE_LOCK;
+		if (_sendBufferChunks.empty() == false)
+		{
+			SendBufferChunkRef sendBufferChunk = _sendBufferChunks.back();
+			_sendBufferChunks.pop_back();
+			return sendBufferChunk;
+		}
+	}
+
+	return SendBufferChunkRef(xnew<SendBufferChunk>(), PushGlobal);
 }
 
 void SendBufferManager::Push(SendBufferChunkRef buffer)
 {
-    WRITE_LOCK;
-    _sendBufferChunks.push_back(buffer);
+	WRITE_LOCK;
+	_sendBufferChunks.push_back(buffer);
 }
 
 void SendBufferManager::PushGlobal(SendBufferChunk* buffer)
 {
-    cout << "PushGlobal SENDBUFFERCHUNK" << endl;
-    GSendBufferManager->Push(SendBufferChunkRef(buffer, PushGlobal));
+	cout << "PushGlobal SENDBUFFERCHUNK" << endl;
+
+	GSendBufferManager->Push(SendBufferChunkRef(buffer, PushGlobal));
 }

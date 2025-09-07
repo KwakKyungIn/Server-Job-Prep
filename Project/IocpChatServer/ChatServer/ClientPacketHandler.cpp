@@ -192,6 +192,7 @@ bool Handle_C_JOIN_ROOM_REQ(PacketSessionRef& session, Protocol::C_JOIN_ROOM_REQ
 		resPkt.set_reason("Cannot find the room");
 		session->Send(ClientPacketHandler::MakeSendBuffer(resPkt));
 		return true;
+
 	}
 
 	bool joinSuccess = room->Enter(player);

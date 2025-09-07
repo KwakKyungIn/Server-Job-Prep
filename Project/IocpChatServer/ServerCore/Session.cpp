@@ -166,60 +166,43 @@ void Session::RegisterSend()
 	_sendEvent.Init();
 	_sendEvent.owner = shared_from_this(); // ADD_REF
 
-	// 1) 락 안에서는 '꺼내기'만 (복사 X, move O)
-	Vector<SendBufferRef> batch;
+	// 보낼 데이터를 sendEvent에 등록
 	{
 		WRITE_LOCK;
+
+		int32 writeSize = 0;
 		while (_sendQueue.empty() == false)
 		{
-			SendBufferRef sb = std::move(_sendQueue.front());
+			SendBufferRef sendBuffer = _sendQueue.front();
+
+			writeSize += sendBuffer->WriteSize();
+			// TODO : 예외 체크
+
 			_sendQueue.pop();
-			if (sb) batch.push_back(std::move(sb));
+			_sendEvent.sendBuffers.push_back(sendBuffer);
 		}
 	}
 
-	if (batch.empty())
+	// Scatter-Gather (흩어져 있는 데이터들을 모아서 한 방에 보낸다)
+	Vector<WSABUF> wsaBufs;
+	wsaBufs.reserve(_sendEvent.sendBuffers.size());
+	for (SendBufferRef sendBuffer : _sendEvent.sendBuffers)
 	{
-		_sendEvent.owner = nullptr; // RELEASE_REF
-		_sendRegistered.store(false);
-		return;
-	}
-
-	// 2) 락 밖에서 이벤트 버퍼 구성 (복사 X, move O)
-	_sendEvent.sendBuffers.clear();
-	_sendEvent.sendBuffers.reserve(batch.size());
-	for (auto& sb : batch)
-	{
-		ASSERT_CRASH(sb != nullptr);
-		const uint32 ws = sb->WriteSize();
-		ASSERT_CRASH(ws > 0);
-		_sendEvent.sendBuffers.push_back(std::move(sb));
-	}
-
-	_sendEvent.wsaBufs.clear();
-	_sendEvent.wsaBufs.reserve(_sendEvent.sendBuffers.size());
-	for (const auto& sb : _sendEvent.sendBuffers)
-	{
-		WSABUF b;
-		b.buf = reinterpret_cast<char*>(sb->Buffer());
-		b.len = static_cast<ULONG>(sb->WriteSize());
-		ASSERT_CRASH(b.buf != nullptr && b.len > 0);
-		_sendEvent.wsaBufs.push_back(b);
+		WSABUF wsaBuf;
+		wsaBuf.buf = reinterpret_cast<char*>(sendBuffer->Buffer());
+		wsaBuf.len = static_cast<LONG>(sendBuffer->WriteSize());
+		wsaBufs.push_back(wsaBuf);
 	}
 
 	DWORD numOfBytes = 0;
-	if (SOCKET_ERROR == ::WSASend(_socket,
-		_sendEvent.wsaBufs.data(),
-		static_cast<DWORD>(_sendEvent.wsaBufs.size()),
-		OUT & numOfBytes, 0, &_sendEvent, nullptr))
+	if (SOCKET_ERROR == ::WSASend(_socket, wsaBufs.data(), static_cast<DWORD>(wsaBufs.size()), OUT & numOfBytes, 0, &_sendEvent, nullptr))
 	{
 		int32 errorCode = ::WSAGetLastError();
 		if (errorCode != WSA_IO_PENDING)
 		{
 			HandleError(errorCode);
-			_sendEvent.owner = nullptr;        // RELEASE_REF
-			_sendEvent.sendBuffers.clear();    // RELEASE_REF
-			_sendEvent.wsaBufs.clear();
+			_sendEvent.owner = nullptr; // RELEASE_REF
+			_sendEvent.sendBuffers.clear(); // RELEASE_REF
 			_sendRegistered.store(false);
 		}
 	}
@@ -287,7 +270,6 @@ void Session::ProcessSend(int32 numOfBytes)
 {
 	_sendEvent.owner = nullptr; // RELEASE_REF
 	_sendEvent.sendBuffers.clear(); // RELEASE_REF
-	_sendEvent.wsaBufs.clear();     // WSABUF도 정리
 
 	if (numOfBytes == 0)
 	{
@@ -295,30 +277,14 @@ void Session::ProcessSend(int32 numOfBytes)
 		return;
 	}
 
-	//테스트용
-	GMetrics.packets_sent.fetch_add(1, std::memory_order_relaxed);
-	GMetrics.bytes_sent.fetch_add((uint64_t)numOfBytes, std::memory_order_relaxed);
-
 	// 컨텐츠 코드에서 재정의
 	OnSend(numOfBytes);
 
-	bool needRegister = false;
-	{
-		WRITE_LOCK;
-		if (_sendQueue.empty())
-		{
-			_sendRegistered.store(false);
-		}
-		else
-		{
-			// 여기서 RegisterSend()를 호출하지 말고, 플래그만 남겨둠
-			needRegister = true;
-		}
-	}
-
-	if (needRegister)
-		RegisterSend(); // <-- 락 밖에서 호출 (중복 락 회피)
-
+	WRITE_LOCK;
+	if (_sendQueue.empty())
+		_sendRegistered.store(false);
+	else
+		RegisterSend();
 }
 
 void Session::HandleError(int32 errorCode)
