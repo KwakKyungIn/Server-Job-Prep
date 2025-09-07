@@ -67,14 +67,20 @@ void Room::Leave(PlayerRef player)
     GMetrics.room_leave.fetch_add(1, std::memory_order_relaxed);
 }
 
+// Room.cpp
+
 void Room::Broadcast(SendBufferRef sendBuffer)
 {
     std::vector<PacketSessionRef> targets;
     {
         READ_LOCK;
+        targets.reserve(_players.size());
         for (const auto& kv : _players)
-            if (kv.second && kv.second->ownerSession)
-                targets.push_back(kv.second->ownerSession);
+        {
+            const auto& player = kv.second;
+            if (player && player->ownerSession)
+                targets.push_back(player->ownerSession);
+        }
     }
 
     if (targets.empty()) return;
@@ -82,52 +88,41 @@ void Room::Broadcast(SendBufferRef sendBuffer)
     // [METRICS] 실제 전달 수(수신자 수 단위)
     GMetrics.broadcast_deliveries.fetch_add(targets.size(), std::memory_order_relaxed);
 
-    // [METRICS] app out (브로드캐스트 메시지 1건 생산)
+    // [METRICS] app out (브로드캐스트 1건 생산)
     GMetrics.app_packets_out.fetch_add(1, std::memory_order_relaxed);
 
-    if (!_jobQueue.TryEnqueue([targets, sendBuffer]() {
-        for (auto& sess : targets)
-            sess->Send(sendBuffer);
-        })) {
-        for (auto& sess : targets)
-            sess->Send(sendBuffer);
-    }
+    // 잡큐 없이 즉시 전송
+    for (auto& sess : targets)
+        sess->Send(sendBuffer);
 }
 
 void Room::BroadcastWithoutSelf(SendBufferRef sendBuffer, uint64 selfId)
 {
-    struct Target { PacketSessionRef sess; uint64 id; };
-    std::vector<Target> targets;
+    std::vector<PacketSessionRef> targets;
     {
         READ_LOCK;
+        targets.reserve(_players.size());
         for (const auto& kv : _players)
-            if (kv.second && kv.second->ownerSession)
-                targets.push_back({ kv.second->ownerSession, kv.first });
+        {
+            const uint64 pid = kv.first;
+            const auto& player = kv.second;
+            if (pid == selfId) continue;
+            if (player && player->ownerSession)
+                targets.push_back(player->ownerSession);
+        }
     }
 
     if (targets.empty()) return;
 
     // [METRICS] 실제 전달 수(본인 제외)
-    size_t recipients = 0;
-    for (const auto& t : targets)
-        if (t.id != selfId && t.sess) ++recipients;
-    GMetrics.broadcast_deliveries.fetch_add(recipients, std::memory_order_relaxed);
+    GMetrics.broadcast_deliveries.fetch_add(targets.size(), std::memory_order_relaxed);
 
-    // [METRICS] app out (브로드캐스트 메시지 1건 생산: 실제 수신 대상 있을 때만)
-    if (recipients > 0)
-        GMetrics.app_packets_out.fetch_add(1, std::memory_order_relaxed);
+    // [METRICS] app out (브로드캐스트 1건 생산)
+    GMetrics.app_packets_out.fetch_add(1, std::memory_order_relaxed);
 
-    if (!_jobQueue.TryEnqueue([targets, sendBuffer, selfId]() {
-        for (const auto& t : targets) {
-            if (t.id == selfId) continue;
-            t.sess->Send(sendBuffer);
-        }
-        })) {
-        for (const auto& t : targets) {
-            if (t.id == selfId) continue;
-            t.sess->Send(sendBuffer);
-        }
-    }
+    // 잡큐 없이 즉시 전송
+    for (auto& sess : targets)
+        sess->Send(sendBuffer);
 }
 
 void Room::LogChat(uint64 playerId, const std::string& playerName, const std::string& message)

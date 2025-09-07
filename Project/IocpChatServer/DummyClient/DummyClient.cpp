@@ -17,6 +17,7 @@
 #include <vector>
 #include <chrono>
 
+#include <random>
 using namespace std::chrono;
 
 // ===== 고정 프로파일 =====
@@ -80,6 +81,26 @@ private:
         bool                                    roomReqInFlight = false;
     };
 
+    std::string RandomString()
+    {
+        static const char charset[] =
+            "abcdefghijklmnopqrstuvwxyz"
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+            "0123456789";
+
+        thread_local static std::mt19937 rng{ std::random_device{}() };
+        thread_local static std::uniform_int_distribution<> distChar(0, sizeof(charset) - 2);
+        thread_local static std::uniform_int_distribution<> distLen(10, 20); // 길이 10~20
+
+        const int length = distLen(rng);
+
+        std::string result;
+        result.reserve(length);
+        for (int i = 0; i < length; ++i)
+            result.push_back(charset[distChar(rng)]);
+        return result;
+    }
+
     void RunLoop()
     {
         while (_running)
@@ -120,7 +141,7 @@ private:
                 if (sess->isInRoom && now >= st.nextChat)
                 {
                     Protocol::C_ROOM_CHAT_REQ pkt;
-                    pkt.set_message("Hello from " + sess->name);
+                    pkt.set_message(RandomString()); // 10~20글자 랜덤
                     sess->Send(ServerPacketHandler::MakeSendBuffer(pkt));
                     st.nextChat = now + std::chrono::duration_cast<std::chrono::steady_clock::duration>(st.period);
                 }

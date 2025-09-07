@@ -9,6 +9,7 @@
 	Session
 ---------------*/
 
+
 Session::Session() : _recvBuffer(BUFFER_SIZE)
 {
 	_socket = SocketUtils::CreateSocket();
@@ -25,12 +26,33 @@ void Session::Send(SendBufferRef sendBuffer)
 		return;
 
 	bool registerSend = false;
+	const int32 sz = static_cast<int32>(sendBuffer->WriteSize());
 
-	// 현재 RegisterSend가 걸리지 않은 상태라면, 걸어준다
 	{
 		WRITE_LOCK;
 
+		// --- 하드캡: 너무 느린 세션 보호 (브로드캐스트라도 과감히 드롭) ---
+		if ((_sendBacklogBytes + sz > MAX_BACKLOG_BYTES) ||
+			(_sendBacklogCount + 1 > MAX_BACKLOG_COUNT))
+		{
+			// 필요시 강종 정책으로 바꾸려면 아래 주석 해제
+			// Disconnect("send backlog");
+			return; // 드롭
+		}
+
+		// --- 소프트캡: 이미 WSASend 진행중이면 더 빡세게 드롭 ---
+		if (_sendRegistered.load(std::memory_order_relaxed))
+		{
+			if ((_sendBacklogBytes >= SOFT_BACKLOG_BYTES_WHEN_REGISTERED) ||
+				(_sendBacklogCount >= SOFT_BACKLOG_COUNT_WHEN_REGISTERED))
+			{
+				return; // 드롭
+			}
+		}
+
 		_sendQueue.push(sendBuffer);
+		_sendBacklogBytes += sz;
+		_sendBacklogCount += 1;
 
 		if (_sendRegistered.exchange(true) == false)
 			registerSend = true;
@@ -166,48 +188,57 @@ void Session::RegisterSend()
 	_sendEvent.Init();
 	_sendEvent.owner = shared_from_this(); // ADD_REF
 
-	// 보낼 데이터를 sendEvent에 등록
+	// --- 배치 상한 적용: 한 번에 너무 많이 묶지 않도록 ---
 	{
 		WRITE_LOCK;
 
-		int32 writeSize = 0;
+		int32 batchedBytes = 0;
 		while (_sendQueue.empty() == false)
 		{
-			SendBufferRef sendBuffer = _sendQueue.front();
+			SendBufferRef sb = _sendQueue.front();
+			const int32 sz = static_cast<int32>(sb->WriteSize());
 
-			writeSize += sendBuffer->WriteSize();
-			// TODO : 예외 체크
+			// 첫 요소는 예외적으로 허용, 그 뒤부터 상한 체크
+			if (!_sendEvent.sendBuffers.empty())
+			{
+				if (batchedBytes + sz > MAX_SEND_BATCH_BYTES) break;
+				if ((int32)_sendEvent.sendBuffers.size() >= MAX_SEND_BATCH_COUNT) break;
+			}
 
 			_sendQueue.pop();
-			_sendEvent.sendBuffers.push_back(sendBuffer);
+			_sendEvent.sendBuffers.push_back(sb);
+			batchedBytes += sz;
+
+			// 큐 -> 이벤트 이동했으니 백로그 장부 차감
+			_sendBacklogBytes -= sz;
+			_sendBacklogCount -= 1;
 		}
 	}
 
-	// Scatter-Gather (흩어져 있는 데이터들을 모아서 한 방에 보낸다)
+	// Scatter-Gather WSASend
 	Vector<WSABUF> wsaBufs;
 	wsaBufs.reserve(_sendEvent.sendBuffers.size());
-	for (SendBufferRef sendBuffer : _sendEvent.sendBuffers)
+	for (SendBufferRef sb : _sendEvent.sendBuffers)
 	{
-		WSABUF wsaBuf;
-		wsaBuf.buf = reinterpret_cast<char*>(sendBuffer->Buffer());
-		wsaBuf.len = static_cast<LONG>(sendBuffer->WriteSize());
-		wsaBufs.push_back(wsaBuf);
+		WSABUF b;
+		b.buf = reinterpret_cast<char*>(sb->Buffer());
+		b.len = static_cast<ULONG>(sb->WriteSize());
+		wsaBufs.push_back(b);
 	}
 
 	DWORD numOfBytes = 0;
-	if (SOCKET_ERROR == ::WSASend(_socket, wsaBufs.data(), static_cast<DWORD>(wsaBufs.size()), OUT & numOfBytes, 0, &_sendEvent, nullptr))
+	if (SOCKET_ERROR == ::WSASend(_socket, wsaBufs.data(), (DWORD)wsaBufs.size(), OUT & numOfBytes, 0, &_sendEvent, nullptr))
 	{
-		int32 errorCode = ::WSAGetLastError();
-		if (errorCode != WSA_IO_PENDING)
+		const int32 err = ::WSAGetLastError();
+		if (err != WSA_IO_PENDING)
 		{
-			HandleError(errorCode);
-			_sendEvent.owner = nullptr; // RELEASE_REF
-			_sendEvent.sendBuffers.clear(); // RELEASE_REF
+			HandleError(err);
+			_sendEvent.owner = nullptr;      // RELEASE_REF
+			_sendEvent.sendBuffers.clear();  // RELEASE_REF
 			_sendRegistered.store(false);
 		}
 	}
 }
-
 void Session::ProcessConnect()
 {
 	_connectEvent.owner = nullptr; // RELEASE_REF
