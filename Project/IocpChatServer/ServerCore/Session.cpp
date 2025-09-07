@@ -232,6 +232,7 @@ void Session::ProcessDisconnect()
 	GetService()->ReleaseSession(GetSessionRef());
 }
 
+// === 변경 1: ProcessRecv() 내 계측 수정 ===
 void Session::ProcessRecv(int32 numOfBytes)
 {
 	_recvEvent.owner = nullptr; // RELEASE_REF
@@ -247,8 +248,9 @@ void Session::ProcessRecv(int32 numOfBytes)
 		Disconnect(L"OnWrite Overflow");
 		return;
 	}
-	//테스트용
-	GMetrics.packets_recv.fetch_add(1, std::memory_order_relaxed);
+
+	// [METRICS] IOCP Recv 완료 개수/바이트 (명시적으로 io_* 사용)
+	GMetrics.io_recv_ops.fetch_add(1, std::memory_order_relaxed);
 	GMetrics.bytes_recv.fetch_add((uint64_t)numOfBytes, std::memory_order_relaxed);
 
 	int32 dataSize = _recvBuffer.DataSize();
@@ -266,6 +268,7 @@ void Session::ProcessRecv(int32 numOfBytes)
 	RegisterRecv();
 }
 
+// === 변경 2: ProcessSend() 내 계측 수정 ===
 void Session::ProcessSend(int32 numOfBytes)
 {
 	_sendEvent.owner = nullptr; // RELEASE_REF
@@ -276,6 +279,10 @@ void Session::ProcessSend(int32 numOfBytes)
 		Disconnect(L"Send 0");
 		return;
 	}
+
+	// [METRICS] IOCP Send 완료 개수/바이트 (명시적으로 io_* 사용)
+	GMetrics.io_send_ops.fetch_add(1, std::memory_order_relaxed);
+	GMetrics.bytes_sent.fetch_add((uint64_t)numOfBytes, std::memory_order_relaxed);
 
 	// 컨텐츠 코드에서 재정의
 	OnSend(numOfBytes);

@@ -1,4 +1,4 @@
-#include "pch.h"
+ï»¿#include "pch.h"
 #include "Room.h"
 #include "Player.h"
 #include "ChatSession.h"
@@ -8,15 +8,15 @@
 
 #include "Metrics.h" // [METRICS]
 
-// »ı¼ºÀÚ
+// ìƒì„±ì
 Room::Room() : _jobQueue(0)
 {
     _jobQueue.Start(1); // per-room single thread
 
-    // roomId´Â ¾ÆÁ÷ ¾ø´Â »óÅÂ ¡æ SetId()¿¡¼­ ·Î±× ÆÄÀÏ ¿ÀÇÂ
+    // roomIdëŠ” ì•„ì§ ì—†ëŠ” ìƒíƒœ â†’ SetId()ì—ì„œ ë¡œê·¸ íŒŒì¼ ì˜¤í”ˆ
 }
 
-// ¼Ò¸êÀÚ
+// ì†Œë©¸ì
 Room::~Room()
 {
     _jobQueue.Stop();
@@ -31,11 +31,11 @@ void Room::SetId(int32 roomId) {
     _logFile.open(filename, std::ios::out | std::ios::app);
     if (!_logFile.is_open()) {
         std::cerr << "Failed to open log file for room " << _roomId << std::endl;
-        // [METRICS]
+        // [METRICS] ë£¸ ë¡œê·¸ íŒŒì¼ ì˜¤í”ˆ ì‹¤íŒ¨
         GMetrics.room_log_open_fail.fetch_add(1, std::memory_order_relaxed);
     }
     else {
-        // [METRICS] (¼±ÅÃ) ¹æ ·Î±×ÆÄÀÏ Á¤»ó ¿ÀÇÂ Ä«¿îÅÍ°¡ ÀÖÀ¸¸é ¿Ã·Áµµ µÊ
+        // [METRICS] í•„ìš”í•˜ë©´ room_log_open_ok ë“±ì„ ì¶”ê°€í•´ë„ ë¨
         // GMetrics.room_log_open_ok.fetch_add(1, std::memory_order_relaxed);
     }
 }
@@ -44,7 +44,7 @@ bool Room::Enter(PlayerRef player)
 {
     WRITE_LOCK;
     if (_players.size() >= 100) {
-        // [METRICS]
+        // [METRICS] ë£¸ ì…ì¥ ì‹¤íŒ¨
         GMetrics.room_enter_fail.fetch_add(1, std::memory_order_relaxed);
         return false;
     }
@@ -52,7 +52,7 @@ bool Room::Enter(PlayerRef player)
     _players[player->playerId] = player;
     player->_room = shared_from_this();
 
-    // [METRICS]
+    // [METRICS] ë£¸ ì…ì¥ ì„±ê³µ
     GMetrics.room_enter_ok.fetch_add(1, std::memory_order_relaxed);
     return true;
 }
@@ -63,7 +63,7 @@ void Room::Leave(PlayerRef player)
     _players.erase(player->playerId);
     player->_room = nullptr;
 
-    // [METRICS]
+    // [METRICS] ë£¸ í‡´ì¥
     GMetrics.room_leave.fetch_add(1, std::memory_order_relaxed);
 }
 
@@ -79,8 +79,11 @@ void Room::Broadcast(SendBufferRef sendBuffer)
 
     if (targets.empty()) return;
 
-    // [METRICS] ½ÇÁ¦ Àü´Ş ¼ö(¼ö½ÅÀÚ ¼ö ´ÜÀ§)
+    // [METRICS] ì‹¤ì œ ì „ë‹¬ ìˆ˜(ìˆ˜ì‹ ì ìˆ˜ ë‹¨ìœ„)
     GMetrics.broadcast_deliveries.fetch_add(targets.size(), std::memory_order_relaxed);
+
+    // [METRICS] app out (ë¸Œë¡œë“œìºìŠ¤íŠ¸ ë©”ì‹œì§€ 1ê±´ ìƒì‚°)
+    GMetrics.app_packets_out.fetch_add(1, std::memory_order_relaxed);
 
     if (!_jobQueue.TryEnqueue([targets, sendBuffer]() {
         for (auto& sess : targets)
@@ -103,6 +106,16 @@ void Room::BroadcastWithoutSelf(SendBufferRef sendBuffer, uint64 selfId)
     }
 
     if (targets.empty()) return;
+
+    // [METRICS] ì‹¤ì œ ì „ë‹¬ ìˆ˜(ë³¸ì¸ ì œì™¸)
+    size_t recipients = 0;
+    for (const auto& t : targets)
+        if (t.id != selfId && t.sess) ++recipients;
+    GMetrics.broadcast_deliveries.fetch_add(recipients, std::memory_order_relaxed);
+
+    // [METRICS] app out (ë¸Œë¡œë“œìºìŠ¤íŠ¸ ë©”ì‹œì§€ 1ê±´ ìƒì‚°: ì‹¤ì œ ìˆ˜ì‹  ëŒ€ìƒ ìˆì„ ë•Œë§Œ)
+    if (recipients > 0)
+        GMetrics.app_packets_out.fetch_add(1, std::memory_order_relaxed);
 
     if (!_jobQueue.TryEnqueue([targets, sendBuffer, selfId]() {
         for (const auto& t : targets) {
@@ -130,7 +143,7 @@ void Room::LogChat(uint64 playerId, const std::string& playerName, const std::st
         }
         });
 
-    // [METRICS]
+    // [METRICS] íŒŒì¼ ë¡œê·¸ ë¼ì¸ ìˆ˜
     GMetrics.chat_log_file_lines.fetch_add(1, std::memory_order_relaxed);
 }
 
@@ -139,14 +152,20 @@ void Room::LogChatToDB(uint64 playerId, const std::string& playerName, const std
     _jobQueue.TryEnqueue([playerId, playerName, message]() {
         DBConnection* dbConn = GDBConnectionPool->Pop();
         if (!dbConn) {
-            // [METRICS]
+            // [METRICS] DB ì»¤ë„¥ì…˜ íšë“ ì‹¤íŒ¨
             GMetrics.conn_acquire_fail.fetch_add(1, std::memory_order_relaxed);
             return;
         }
 
+        // [METRICS] ì»¤ë„¥ì…˜ í’€ pop
+        GMetrics.conn_pool_pop_total.fetch_add(1, std::memory_order_relaxed);
+
         try {
             std::wstring query = L"INSERT INTO ChatLogs (PlayerId, PlayerName, Message, Timestamp) VALUES (?, ?, ?, ?)";
             if (dbConn->Prepare(query.c_str())) {
+                // [METRICS] ì¿¼ë¦¬ ì‹œë„
+                GMetrics.db_query_count.fetch_add(1, std::memory_order_relaxed);
+
                 auto wname = std::wstring(playerName.begin(), playerName.end());
                 auto wmsg = std::wstring(message.begin(), message.end());
 
@@ -160,24 +179,33 @@ void Room::LogChatToDB(uint64 playerId, const std::string& playerName, const std
                 dbConn->BindParam(4, SQL_C_SBIGINT, SQL_BIGINT, 0, (SQLPOINTER)&ts, &tsLen);
 
                 if (dbConn->Execute()) {
-                    // [METRICS]
+                    // [METRICS] Exec OK / DB ë¡œê·¸ ì„±ê³µ
+                    GMetrics.db_exec_ok.fetch_add(1, std::memory_order_relaxed);
                     GMetrics.chat_log_db_ok.fetch_add(1, std::memory_order_relaxed);
                 }
                 else {
+                    // [METRICS] Exec FAIL / DB ë¡œê·¸ ì‹¤íŒ¨
+                    GMetrics.db_exec_fail.fetch_add(1, std::memory_order_relaxed);
                     GMetrics.chat_log_db_fail.fetch_add(1, std::memory_order_relaxed);
                 }
             }
             else {
-                // Prepare ½ÇÆĞ
+                // [METRICS] Prepare ì‹¤íŒ¨ / DB ë¡œê·¸ ì‹¤íŒ¨
+                GMetrics.db_prepare_fail.fetch_add(1, std::memory_order_relaxed);
                 GMetrics.chat_log_db_fail.fetch_add(1, std::memory_order_relaxed);
             }
         }
         catch (...) {
-            // [METRICS]
+            // [METRICS] ì˜ˆì™¸ â€” DB ë¡œê·¸ ì‹¤íŒ¨
             GMetrics.chat_log_db_fail.fetch_add(1, std::memory_order_relaxed);
         }
 
         dbConn->Unbind();
+        // [METRICS] Unbind í˜¸ì¶œ ìˆ˜
+        GMetrics.db_unbind_calls.fetch_add(1, std::memory_order_relaxed);
+
         GDBConnectionPool->Push(dbConn);
+        // [METRICS] ì»¤ë„¥ì…˜ í’€ push
+        GMetrics.conn_pool_push_total.fetch_add(1, std::memory_order_relaxed);
         });
 }

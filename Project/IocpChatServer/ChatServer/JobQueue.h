@@ -8,7 +8,7 @@
 #include <functional>
 #include <atomic>
 
-#include "Metrics.h"// 테스트용
+#include "Metrics.h"// [METRICS]
 
 class JobQueue {
 public:
@@ -41,7 +41,6 @@ public:
         workers_.clear();
     }
 
-    // Enqueue returns a future for the task result.
     template<typename F, typename... Args>
     auto Enqueue(F&& f, Args&&... args)
         -> std::future<typename std::result_of<F(Args...)>::type>
@@ -53,11 +52,17 @@ public:
         {
             std::unique_lock<std::mutex> lk(mtx_);
             if (maxQueueSize_ > 0) {
-                // blocking or fail policy: here we block until space (simple)
                 cvFull_.wait(lk, [this]() { return stop_ || tasks_.size() < maxQueueSize_; });
                 if (stop_) throw std::runtime_error("JobQueue stopped");
             }
             tasks_.emplace_back([taskPtr]() { (*taskPtr)(); });
+
+            // [METRICS] 큐 길이/피크 & enqueue 카운트
+            uint32_t sz = static_cast<uint32_t>(tasks_.size());
+            GMetrics.jobs_enqueued.fetch_add(1, std::memory_order_relaxed);
+            GMetrics.jobqueue_gauge.store(sz, std::memory_order_relaxed);
+            uint32_t prev = GMetrics.jobqueue_peak.load(std::memory_order_relaxed);
+            while (sz > prev && !GMetrics.jobqueue_peak.compare_exchange_weak(prev, sz, std::memory_order_relaxed)) {}
         }
         cv_.notify_one();
         return res;
@@ -71,38 +76,40 @@ public:
         tasks_.push_back(std::move(job));
         cv_.notify_one();
 
-        //테스트용
+        // [METRICS] 큐 길이/피크 & enqueue 카운트
         GMetrics.jobs_enqueued.fetch_add(1, std::memory_order_relaxed);
         uint32_t sz = static_cast<uint32_t>(tasks_.size());
-        uint32_t prev = GMetrics.jobqueue_peak.load();
-        while (sz > prev && !GMetrics.jobqueue_peak.compare_exchange_weak(prev, sz)) {}
-
+        GMetrics.jobqueue_gauge.store(sz, std::memory_order_relaxed);
+        uint32_t prev = GMetrics.jobqueue_peak.load(std::memory_order_relaxed);
+        while (sz > prev && !GMetrics.jobqueue_peak.compare_exchange_weak(prev, sz, std::memory_order_relaxed)) {}
 
         return true;
     }
 
-    // <-- 수정: Size()를 const로 변경하고 내부 뮤텍스는 mutable로 선언 -->
     size_t Size() const {
-        std::unique_lock<std::mutex> lk(mtx_); // mtx_ is mutable so we can lock in const method
+        std::unique_lock<std::mutex> lk(mtx_);
         return tasks_.size();
     }
 
 private:
     void WorkerLoop() {
         while (true) {
-			//테스트용
-            GMetrics.jobs_executed.fetch_add(1, std::memory_order_relaxed);
-
             Job job;
             {
                 std::unique_lock<std::mutex> lk(mtx_);
                 cv_.wait(lk, [this]() { return stop_ || !tasks_.empty(); });
                 if (stop_ && tasks_.empty()) return;
                 job = std::move(tasks_.front()); tasks_.pop_front();
-                if (maxQueueSize_ > 0) cvFull_.notify_one();
+
+                // [METRICS] pop 이후 현재 큐 길이 갱신
+                uint32_t sz = static_cast<uint32_t>(tasks_.size());
+                GMetrics.jobqueue_gauge.store(sz, std::memory_order_relaxed);
             }
             try {
                 job();
+
+                // [METRICS] 실제 잡 실행 완료 수
+                GMetrics.jobs_executed.fetch_add(1, std::memory_order_relaxed);
             }
             catch (const std::exception& e) {
                 std::cerr << "[JobQueue Error] " << e.what() << std::endl;
@@ -115,7 +122,7 @@ private:
 
     std::vector<std::thread> workers_;
     std::deque<Job> tasks_;
-    mutable std::mutex mtx_;               // <-- 수정: mutable로 변경
+    mutable std::mutex mtx_;
     std::condition_variable cv_;
     std::condition_variable cvFull_;
     std::atomic<bool> stop_;

@@ -15,6 +15,10 @@
 */
 
 struct Metrics {
+
+#define packets_recv io_recv_ops
+#define packets_sent io_send_ops
+
     /* ========== 네트워크(IOCP/소켓) ========== */
     // IO 완료 개수(커널 기준) — WSASend/WSARecv 완료 당 1 증가
     std::atomic<uint64_t> io_recv_ops{ 0 };

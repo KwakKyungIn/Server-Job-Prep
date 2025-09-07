@@ -225,7 +225,7 @@ C:\Users\GGI\Desktop\Ky\Github\Repo\MyCSStudy\Project\IocpChatServer\ChatServer\
   ChatSession.cpp
   ChatSessionManager.cpp
   ClientPacketHandler.cpp
-C:\Users\GGI\Desktop\Ky\Github\Repo\MyCSStudy\Project\IocpChatServer\ChatServer\ClientPacketHandler.cpp(185,49): warning C4244: '인수': 'int64_t'에서 'int32'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\GGI\Desktop\Ky\Github\Repo\MyCSStudy\Project\IocpChatServer\ChatServer\ClientPacketHandler.cpp(233,52): warning C4244: '인수': 'int64_t'에서 'int32'(으)로 변환하면서 데이터가 손실될 수 있습니다.
   (소스 파일 '/ClientPacketHandler.cpp'을(를) 컴파일하는 중)
   
   Player.cpp
