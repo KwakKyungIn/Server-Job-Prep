@@ -161,9 +161,9 @@ struct Metrics {
 
         // 2줄: 큐 & 연결/룸 게이지
         std::printf(
-            "     jobs e/s=%llu x/s=%llu (q-peak=%u) | conns now=%u (peak=%u) | rooms now=%u (peak=%u) | players now=%u (peak=%u)\n",
-            (unsigned long long)(nje - je), (unsigned long long)(njx - jx), pqp,
-            connG, connP, roomsG, roomsP, plyG, plyP
+            "     jobs e/s=%llu x/s=%llu (q-peak=%u) |\n",
+            (unsigned long long)(nje - je), (unsigned long long)(njx - jx), pqp
+            
         );
 
         // 3줄: DB & 풀 상태

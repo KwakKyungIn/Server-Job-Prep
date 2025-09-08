@@ -213,13 +213,6 @@
   1개 파일이 복사되었습니다.
   계속하려면 아무 키나 누르십시오 . . . 
   DummyClient.cpp
-C:\Users\GGI\Desktop\Ky\Github\Repo\MyCSStudy\Project\IocpChatServer\DummyClient\DummyClient.cpp(3,9): warning C4603: 'NOMINMAX': 매크로가 정의되지 않았거나 미리 컴파일된 헤더 사용 후와 정의가 다릅니다.
-  (소스 파일 '/DummyClient.cpp'을(를) 컴파일하는 중)
-      C:\Users\GGI\Desktop\Ky\Github\Repo\MyCSStudy\Project\IocpChatServer\DummyClient\DummyClient.cpp(3,9):
-      여기에서 정의하지 않고 미리 컴파일된 헤더에 매크로 추가
-      C:\Users\GGI\Desktop\Ky\Github\Repo\MyCSStudy\Project\IocpChatServer\DummyClient\DummyClient.cpp(5,1):
-      미리 컴파일된 헤더 사용
-  
   ServerPacketHandler.cpp
   코드를 생성하고 있습니다...
   Enum.pb.cc

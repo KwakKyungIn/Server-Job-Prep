@@ -108,10 +108,10 @@ bool Handle_S_LEAVE_ROOM_ACK(PacketSessionRef& session, Protocol::S_LEAVE_ROOM_A
 bool Handle_S_ROOM_CHAT_NTF(PacketSessionRef& session, Protocol::S_ROOM_CHAT_NTF& pkt)
 {
     const auto& chat = pkt.chat();
-    std::cout << "[Room " << pkt.roomid() << "] "
+    /*std::cout << "[Room " << pkt.roomid() << "] "
         << "<" << chat.senderid() << "> " << chat.message()
         << " (msgId=" << chat.messageid()
-        << ", ts=" << chat.timestamp() << ")" << std::endl;
+        << ", ts=" << chat.timestamp() << ")" << std::endl;*/
     return true;
 }
 
