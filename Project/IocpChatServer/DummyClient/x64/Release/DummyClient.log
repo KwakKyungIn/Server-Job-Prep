@@ -209,43 +209,20 @@
   1개 파일이 복사되었습니다.
   C:Protocol.pb.cc
   1개 파일이 복사되었습니다.
-  C:ServerPacketHandler.h
-  1개 파일이 복사되었습니다.
+  0개 파일이 복사되었습니다.
+  파일을 찾을 수 없습니다-ServerPacketHandler.h
+  C:\Users\GGI\Desktop\Ky\Github\Repo\MyCSStudy\Project\IocpChatServer\Common\Protobuf\bin\*.pb.h을(를) 찾을 수 없습니다.
+  C:\Users\GGI\Desktop\Ky\Github\Repo\MyCSStudy\Project\IocpChatServer\Common\Protobuf\bin\*.pb.cc을(를) 찾을 수 없습니다.
+  C:\Users\GGI\Desktop\Ky\Github\Repo\MyCSStudy\Project\IocpChatServer\Common\Protobuf\bin\*.h을(를) 찾을 수 없습니다.
   계속하려면 아무 키나 누르십시오 . . . 
-  pch.cpp
-  ServerPacketHandler.cpp
-C:\Users\GGI\Desktop\Ky\Github\Repo\MyCSStudy\Project\IocpChatServer\DummyClient\ServerPacketHandler.cpp(43,40): warning C4244: '인수': 'int64_t'에서 'const _Ty'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-C:\Users\GGI\Desktop\Ky\Github\Repo\MyCSStudy\Project\IocpChatServer\DummyClient\ServerPacketHandler.cpp(43,40): warning C4244:         with
-C:\Users\GGI\Desktop\Ky\Github\Repo\MyCSStudy\Project\IocpChatServer\DummyClient\ServerPacketHandler.cpp(43,40): warning C4244:         [
-C:\Users\GGI\Desktop\Ky\Github\Repo\MyCSStudy\Project\IocpChatServer\DummyClient\ServerPacketHandler.cpp(43,40): warning C4244:             _Ty=int
-C:\Users\GGI\Desktop\Ky\Github\Repo\MyCSStudy\Project\IocpChatServer\DummyClient\ServerPacketHandler.cpp(43,40): warning C4244:         ]
-  (소스 파일 '/ServerPacketHandler.cpp'을(를) 컴파일하는 중)
-  
-C:\Users\GGI\Desktop\Ky\Github\Repo\MyCSStudy\Project\IocpChatServer\DummyClient\ServerPacketHandler.cpp(70,40): warning C4244: '인수': 'int64_t'에서 'const _Ty'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-C:\Users\GGI\Desktop\Ky\Github\Repo\MyCSStudy\Project\IocpChatServer\DummyClient\ServerPacketHandler.cpp(70,40): warning C4244:         with
-C:\Users\GGI\Desktop\Ky\Github\Repo\MyCSStudy\Project\IocpChatServer\DummyClient\ServerPacketHandler.cpp(70,40): warning C4244:         [
-C:\Users\GGI\Desktop\Ky\Github\Repo\MyCSStudy\Project\IocpChatServer\DummyClient\ServerPacketHandler.cpp(70,40): warning C4244:             _Ty=int
-C:\Users\GGI\Desktop\Ky\Github\Repo\MyCSStudy\Project\IocpChatServer\DummyClient\ServerPacketHandler.cpp(70,40): warning C4244:         ]
-  (소스 파일 '/ServerPacketHandler.cpp'을(를) 컴파일하는 중)
-  
   DummyClient.cpp
-C:\Users\GGI\Desktop\Ky\Github\Repo\MyCSStudy\Project\IocpChatServer\DummyClient\DummyClient.cpp(2,9): warning C4603: 'NOMINMAX': 매크로가 정의되지 않았거나 미리 컴파일된 헤더 사용 후와 정의가 다릅니다.
-  (소스 파일 '/DummyClient.cpp'을(를) 컴파일하는 중)
-      C:\Users\GGI\Desktop\Ky\Github\Repo\MyCSStudy\Project\IocpChatServer\DummyClient\DummyClient.cpp(2,9):
-      여기에서 정의하지 않고 미리 컴파일된 헤더에 매크로 추가
-      C:\Users\GGI\Desktop\Ky\Github\Repo\MyCSStudy\Project\IocpChatServer\DummyClient\DummyClient.cpp(5,1):
-      미리 컴파일된 헤더 사용
-  
-C:\Users\GGI\Desktop\Ky\Github\Repo\MyCSStudy\Project\IocpChatServer\DummyClient\DummyClient.cpp(39,9): warning C4005: 'TS_COUT': 매크로 재정의
-  (소스 파일 '/DummyClient.cpp'을(를) 컴파일하는 중)
-      C:\Users\GGI\Desktop\Ky\Github\Repo\MyCSStudy\Project\IocpChatServer\DummyClient\ServerSession.h(15,9):
-      'TS_COUT'의 이전 정의를 참조하십시오.
-  
+  ServerPacketHandler.cpp
   Enum.pb.cc
   Protocol.pb.cc
   Struct.pb.cc
   코드를 생성하고 있습니다.
-  Previous IPDB not found, fall back to full compilation.
-  All 3077 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  6 of 3096 functions ( 0.2%) were compiled, the rest were copied from previous compilation.
+    2 functions were new in current compilation
+    1 functions had inline decision re-evaluated but remain unchanged
   코드를 생성했습니다.
   DummyClient.vcxproj -> C:\Users\GGI\Desktop\Ky\Github\Repo\MyCSStudy\Project\IocpChatServer\Binary\Release\DummyClient.exe

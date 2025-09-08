@@ -13,7 +13,7 @@ public:
 
 private:
 	USE_LOCK;
-	Set<ChatSessionRef> _sessions;
+	std::set<ChatSessionRef> _sessions;
 };
 
 extern ChatSessionManager GSessionManager;

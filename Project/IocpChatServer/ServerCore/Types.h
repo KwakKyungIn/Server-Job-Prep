@@ -35,4 +35,4 @@ using SendBufferChunkRef = std::shared_ptr<class SendBufferChunk>;
 #define len16(arr)		static_cast<int16>(sizeof(arr)/sizeof(arr[0]))
 #define len32(arr)		static_cast<int32>(sizeof(arr)/sizeof(arr[0]))
 
-#define _STOMP
+//#define _STOMP

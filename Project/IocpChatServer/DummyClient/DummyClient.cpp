@@ -22,7 +22,7 @@ using namespace std::chrono;
 // ===== 고정 프로파일 =====
 static constexpr int   kClients = 500;
 static constexpr int   kRooms = 10;
-static constexpr double kRps =3.0;   // per client
+static constexpr double kRps =10.0;   // per client
 
 // === 시뮬레이터 ===
 class ClientSimulator

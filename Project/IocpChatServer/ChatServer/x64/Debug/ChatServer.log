@@ -184,34 +184,37 @@
   		return sendBuffer;
   	}
   };
-  C:Enum.pb.h
-  1개 파일이 복사되었습니다.
-  C:Enum.pb.cc
-  1개 파일이 복사되었습니다.
-  C:Struct.pb.h
-  1개 파일이 복사되었습니다.
-  C:Struct.pb.cc
-  1개 파일이 복사되었습니다.
-  C:Protocol.pb.h
-  1개 파일이 복사되었습니다.
-  C:Protocol.pb.cc
-  1개 파일이 복사되었습니다.
-  C:ClientPacketHandler.h
-  1개 파일이 복사되었습니다.
-  C:Enum.pb.h
-  1개 파일이 복사되었습니다.
-  C:Enum.pb.cc
-  1개 파일이 복사되었습니다.
-  C:Struct.pb.h
-  1개 파일이 복사되었습니다.
-  C:Struct.pb.cc
-  1개 파일이 복사되었습니다.
-  C:Protocol.pb.h
-  1개 파일이 복사되었습니다.
-  C:Protocol.pb.cc
-  1개 파일이 복사되었습니다.
-  C:ServerPacketHandler.h
-  1개 파일이 복사되었습니다.
+  0개 파일이 복사되었습니다.
+  파일을 찾을 수 없습니다-Enum.pb.h
+  파일을 찾을 수 없습니다-Enum.pb.cc
+  0개 파일이 복사되었습니다.
+  파일을 찾을 수 없습니다-Struct.pb.h
+  0개 파일이 복사되었습니다.
+  파일을 찾을 수 없습니다-Struct.pb.cc
+  0개 파일이 복사되었습니다.
+  파일을 찾을 수 없습니다-Protocol.pb.h
+  0개 파일이 복사되었습니다.
+  파일을 찾을 수 없습니다-Protocol.pb.cc
+  0개 파일이 복사되었습니다.
+  파일을 찾을 수 없습니다-ClientPacketHandler.h
+  0개 파일이 복사되었습니다.
+  파일을 찾을 수 없습니다-Enum.pb.h
+  0개 파일이 복사되었습니다.
+  파일을 찾을 수 없습니다-Enum.pb.cc
+  0개 파일이 복사되었습니다.
+  파일을 찾을 수 없습니다-Struct.pb.h
+  0개 파일이 복사되었습니다.
+  파일을 찾을 수 없습니다-Struct.pb.cc
+  0개 파일이 복사되었습니다.
+  파일을 찾을 수 없습니다-Protocol.pb.h
+  0개 파일이 복사되었습니다.
+  파일을 찾을 수 없습니다-Protocol.pb.cc
+  0개 파일이 복사되었습니다.
+  0개 파일이 복사되었습니다.
+  파일을 찾을 수 없습니다-ServerPacketHandler.h
+  C:\Users\GGI\Desktop\Ky\Github\Repo\MyCSStudy\Project\IocpChatServer\Common\Protobuf\bin\*.pb.h을(를) 찾을 수 없습니다.
+  C:\Users\GGI\Desktop\Ky\Github\Repo\MyCSStudy\Project\IocpChatServer\Common\Protobuf\bin\*.pb.cc을(를) 찾을 수 없습니다.
+  C:\Users\GGI\Desktop\Ky\Github\Repo\MyCSStudy\Project\IocpChatServer\Common\Protobuf\bin\*.h을(를) 찾을 수 없습니다.
   계속하려면 아무 키나 누르십시오 . . . 
   pch.cpp
   Enum.pb.cc
@@ -232,5 +235,4 @@ C:\Users\GGI\Desktop\Ky\Github\Repo\MyCSStudy\Project\IocpChatServer\ChatServer\
   Room.cpp
   RoomManager.cpp
   코드를 생성하고 있습니다...
-ServerCore.lib(pch.obj) : warning LNK4099: 'ServerCore.pdb' PDB를 'ServerCore.lib(pch.obj)' 또는 'C:\Users\GGI\Desktop\Ky\Github\Repo\MyCSStudy\Project\IocpChatServer\Binary\Debug\ServerCore.pdb'에서 찾을 수 없습니다. 디버그 정보가 없는 것처럼 개체를 링크합니다.
   ChatServer.vcxproj -> C:\Users\GGI\Desktop\Ky\Github\Repo\MyCSStudy\Project\IocpChatServer\Binary\Debug\ChatServer.exe
