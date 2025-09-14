@@ -91,15 +91,6 @@
 
 ---
 
-## 🧪 실습 정리 (C++ Projects & Practice)
-
-| 프로젝트             | 설명                        | 링크                                                                                |
-| ---------------- | ------------------------- | --------------------------------------------------------------------------------- |
-| IOCP Mini Server | Windows IOCP 기반 비동기 서버 구현 | 🔗 [IOCP-GameServer](https://github.com/KwakKyungIn/IOCP-GameServer)              |
-| C++ Practice     | STL, 템플릿, 람다 등을 활용한 실습 코드 | 🔗 [CPlusPlus-Practice](https://github.com/KwakKyungIn/CPlusPlus-Practice) *(예정)* |
-
----
-
 
 ## ✍️ 사용법 및 정리 기준
 
