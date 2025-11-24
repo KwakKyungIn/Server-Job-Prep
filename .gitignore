@@ -1,0 +1,34 @@
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.ipch
+*.pch
+*.obj
+*.idb
+*.opendb
+
+# Compiler/Linker outputs
+*.ilk
+*.log
+*.tlog
+*.cache
+*.lastbuildstate# Visual Studio
+.vs/
+*.user
+*.suo
+*.ipch
+*.pch
+*.obj
+*.idb
+*.opendb
+
+# Build output
+
+# Compiler/Linker outputs
+
+*.ilk
+*.log
+*.tlog
+*.cache
+*.lastbuildstate

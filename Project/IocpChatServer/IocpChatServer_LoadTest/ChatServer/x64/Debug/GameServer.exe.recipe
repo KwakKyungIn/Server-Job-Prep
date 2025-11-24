@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <ProjectOutputs>
+    <ProjectOutput>
+<<<<<<< HEAD:Project/IocpChatServer/IocpChatServer_LoadTest/ChatServer/x64/Debug/GameServer.exe.recipe
+      <FullPath>C:\Users\kwak\source\repos\Server-Job-Prep\Project\IocpChatServer\Binary\Debug\GameServer.exe</FullPath>
+=======
+      <FullPath>C:\Users\kwak\Desktop\GithubRepo\Server-Job-Prep\Project\IocpChatServer\Binary\Debug\DummyClient.exe</FullPath>
+>>>>>>> eb0ef515f062bc71003c85db785292ac686a220c:Project/IocpChatServer/DummyClient/x64/Debug/DummyClient.exe.recipe
+    </ProjectOutput>
+  </ProjectOutputs>
+  <ContentFiles />
+  <SatelliteDlls />
+  <NonRecipeFileRefs />
+</Project>
