@@ -5,30 +5,26 @@
 *.ipch
 *.pch
 *.obj
+*.iobj
+*.ipdb
 *.idb
 *.opendb
 
-# Compiler/Linker outputs
-*.ilk
-*.log
-*.tlog
-*.cache
-*.lastbuildstate# Visual Studio
-.vs/
-*.user
-*.suo
-*.ipch
-*.pch
-*.obj
-*.idb
-*.opendb
-
-# Build output
+# Build output folders
+Debug/
+Release/
+x64/
+Binary/
 
 # Compiler/Linker outputs
-
+*.exe
+*.dll
+*.lib
+*.pdb
 *.ilk
 *.log
 *.tlog
 *.cache
 *.lastbuildstate
+*.recipe
+*.FileListAbsolute.txt
