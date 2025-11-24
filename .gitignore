@@ -1,7 +1,27 @@
 # Visual Studio
-**/.vs/
+.vs/
 *.user
 *.suo
 *.ipch
 *.pch
 *.obj
+*.idb
+*.opendb
+
+# Build output
+Debug/
+Release/
+Binary/
+x64/
+x86/
+
+# Compiler/Linker outputs
+*.exe
+*.dll
+*.lib
+*.pdb
+*.ilk
+*.log
+*.tlog
+*.cache
+*.lastbuildstate
