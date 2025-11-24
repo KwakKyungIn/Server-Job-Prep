@@ -12,6 +12,7 @@
 #include "Player.h"
 #include "DBConnectionPool.h"
 #include "RoomManager.h"
+#include "DbLogger.h"
 #include <iostream>
 
 int main()
@@ -24,6 +25,8 @@ int main()
 
     std::cout << "DB Connection established." << std::endl;
 
+    GDbLogger = new DbLogger();
+
     // 2. 패킷 핸들러 초기화
     ClientPacketHandler::Init();
 
@@ -35,6 +38,7 @@ int main()
         500);
 
     ASSERT_CRASH(service->Start());
+    GDbLogger->Start(4);
 
     // 4. 스레드 런칭
     for (int32 i = 0; i < std::thread::hardware_concurrency(); i++)  // 예: 8~16

@@ -204,6 +204,15 @@ struct Metrics {
             mpG, mpP, d_mp_alloc, d_mp_free
         );
 
+        const auto chat_ok = chat_log_db_ok.load(std::memory_order_relaxed);
+        const auto chat_fail = chat_log_db_fail.load(std::memory_order_relaxed);
+        const auto unbinds = db_unbind_calls.load(std::memory_order_relaxed);
+
+        std::printf("     chatlog db ok=%llu fail=%llu | db unbind=%llu\n",
+            (unsigned long long)chat_ok,
+            (unsigned long long)chat_fail,
+            (unsigned long long)unbinds);
+
         // 4줄: 지연(평균/퍼센타일). 히스토그램은 누적이라 1초 델타로 변환해서 p50/p90/p99 추정
         const auto lcnt = lat_count.load(std::memory_order_relaxed);
         const auto lsum = lat_sum_us.load(std::memory_order_relaxed);

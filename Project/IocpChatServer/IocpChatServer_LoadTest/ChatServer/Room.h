@@ -2,7 +2,7 @@
 #include "Protocol.pb.h"
 #include "Session.h"
 #include "Player.h"
-#include "JobQueue.h"
+// #include "JobQueue.h"
 #include <map>
 #include <memory>
 #include <fstream>
@@ -44,7 +44,7 @@ public:
 
     const std::map<uint64, PlayerRef>& GetPlayers() { return _players; }
 
-    size_t PendingJobs() const { return _jobQueue.Size(); }
+   // size_t PendingJobs() const { return _jobQueue.Size(); }
 
 private:
     USE_LOCK;                                          // RW Lock (멀티스레드 대비)
@@ -54,6 +54,6 @@ private:
     Protocol::RoomType      _roomType;                // Room 타입 (Public, Private 등)
     std::map<uint64, PlayerRef> _players;             // 현재 Room에 들어온 플레이어들
 
-    JobQueue                _jobQueue;                // 로그/DB 기록용 JobQueue
+    //JobQueue                _jobQueue;                // 로그/DB 기록용 JobQueue
     std::ofstream           _logFile;                 // 채팅 로그 파일 핸들
 };

@@ -2,23 +2,24 @@
 #include "Room.h"
 #include "Player.h"
 #include "ChatSession.h"
-#include "DBConnectionPool.h"
+//#include "DBConnectionPool.h"
+#include "DbLogger.h"
 #include <vector>
 #include <chrono>
 
 #include "Metrics.h" // 성능/상태 지표 모니터링용 전역 객체
 
 // Room 객체가 생성될 때 JobQueue 초기화
-Room::Room() : _jobQueue(0)
+Room::Room()// : _jobQueue(0)
 {
-    _jobQueue.Start(1); // 방마다 JobQueue 스레드 하나만 돌린다 → 로그/DB 작업 전용
+    //_jobQueue.Start(1); // 방마다 JobQueue 스레드 하나만 돌린다 → 로그/DB 작업 전용
     // roomId는 여기선 아직 없음 → 나중에 SetId()로 지정
 }
 
 // Room 객체 소멸 시 실행
 Room::~Room()
 {
-    _jobQueue.Stop();              // JobQueue 멈추고
+    //_jobQueue.Stop();              // JobQueue 멈추고
     if (_logFile.is_open())        // 로그파일 열려있으면
         _logFile.close();          // 닫아준다
 }
@@ -122,11 +123,15 @@ void Room::LogChat(uint64 playerId, const std::string& playerName, const std::st
     auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
         now.time_since_epoch()).count();   // epoch 기준 ms로 변환
 
-    _jobQueue.TryEnqueue([this, ms, playerId, playerName, message]() {
-        if (_logFile.is_open()) {          // 큐 안에서 실행 → 비동기 처리
-            _logFile << ms << "," << playerId << "," << playerName << "," << message << std::endl;
-        }
-        });
+    //_jobQueue.TryEnqueue([this, ms, playerId, playerName, message]() {
+    //    if (_logFile.is_open()) {          // 큐 안에서 실행 → 비동기 처리
+    //        _logFile << ms << "," << playerId << "," << playerName << "," << message << std::endl;
+    //    }
+    //    });
+
+    if (_logFile.is_open()) {
+        _logFile << ms << "," << playerId << "," << playerName << "," << message << std::endl;
+    }
 
     GMetrics.chat_log_file_lines.fetch_add(1, std::memory_order_relaxed); // 라인 수 카운트
 }
@@ -134,55 +139,57 @@ void Room::LogChat(uint64 playerId, const std::string& playerName, const std::st
 // 채팅 로그를 DB에 기록
 void Room::LogChatToDB(uint64 playerId, const std::string& playerName, const std::string& message)
 {
-    _jobQueue.TryEnqueue([playerId, playerName, message]() { // JobQueue에 DB 작업 등록
-        DBConnection* dbConn = GDBConnectionPool->Pop();     // 커넥션 풀에서 하나 가져오기
-        if (!dbConn) {                                       // 실패 시 Metrics만 기록하고 종료
-            GMetrics.conn_acquire_fail.fetch_add(1, std::memory_order_relaxed);
-            return;
-        }
+    GDbLogger->Push(playerId, playerName, message);
 
-        GMetrics.conn_pool_pop_total.fetch_add(1, std::memory_order_relaxed); // 풀 pop 기록
+    //_jobQueue.TryEnqueue([playerId, playerName, message]() { // JobQueue에 DB 작업 등록
+    //    DBConnection* dbConn = GDBConnectionPool->Pop();     // 커넥션 풀에서 하나 가져오기
+    //    if (!dbConn) {                                       // 실패 시 Metrics만 기록하고 종료
+    //        GMetrics.conn_acquire_fail.fetch_add(1, std::memory_order_relaxed);
+    //        return;
+    //    }
 
-        try {
-            std::wstring query = L"INSERT INTO ChatLogs (PlayerId, PlayerName, Message, Timestamp) VALUES (?, ?, ?, ?)";
-            if (dbConn->Prepare(query.c_str())) {            // 쿼리 준비
-                GMetrics.db_query_count.fetch_add(1, std::memory_order_relaxed);
+    //    GMetrics.conn_pool_pop_total.fetch_add(1, std::memory_order_relaxed); // 풀 pop 기록
 
-                auto wname = std::wstring(playerName.begin(), playerName.end()); // string → wstring 변환
-                auto wmsg = std::wstring(message.begin(), message.end());
+    //    try {
+    //        std::wstring query = L"INSERT INTO ChatLogs (PlayerId, PlayerName, Message, Timestamp) VALUES (?, ?, ?, ?)";
+    //        if (dbConn->Prepare(query.c_str())) {            // 쿼리 준비
+    //            GMetrics.db_query_count.fetch_add(1, std::memory_order_relaxed);
 
-                SQLLEN idLen = 0, nameLen = SQL_NTS, msgLen = SQL_NTS, tsLen = 0;
-                int64 ts = std::chrono::duration_cast<std::chrono::milliseconds>(
-                    std::chrono::system_clock::now().time_since_epoch()).count(); // 현재시간(ms)
+    //            auto wname = std::wstring(playerName.begin(), playerName.end()); // string → wstring 변환
+    //            auto wmsg = std::wstring(message.begin(), message.end());
 
-                // 바인딩: 파라미터 순서대로 PlayerId, Name, Message, Timestamp
-                dbConn->BindParam(1, SQL_C_SBIGINT, SQL_BIGINT, 0, (SQLPOINTER)&playerId, &idLen);
-                dbConn->BindParam(2, SQL_C_WCHAR, SQL_WVARCHAR, (SQLULEN)wname.size(), (SQLPOINTER)wname.c_str(), &nameLen);
-                dbConn->BindParam(3, SQL_C_WCHAR, SQL_WVARCHAR, (SQLULEN)wmsg.size(), (SQLPOINTER)wmsg.c_str(), &msgLen);
-                dbConn->BindParam(4, SQL_C_SBIGINT, SQL_BIGINT, 0, (SQLPOINTER)&ts, &tsLen);
+    //            SQLLEN idLen = 0, nameLen = SQL_NTS, msgLen = SQL_NTS, tsLen = 0;
+    //            int64 ts = std::chrono::duration_cast<std::chrono::milliseconds>(
+    //                std::chrono::system_clock::now().time_since_epoch()).count(); // 현재시간(ms)
 
-                if (dbConn->Execute()) {                     // 실행 성공 시
-                    GMetrics.db_exec_ok.fetch_add(1, std::memory_order_relaxed);
-                    GMetrics.chat_log_db_ok.fetch_add(1, std::memory_order_relaxed);
-                }
-                else {                                       // 실패 시
-                    GMetrics.db_exec_fail.fetch_add(1, std::memory_order_relaxed);
-                    GMetrics.chat_log_db_fail.fetch_add(1, std::memory_order_relaxed);
-                }
-            }
-            else {                                           // Prepare 실패 시
-                GMetrics.db_prepare_fail.fetch_add(1, std::memory_order_relaxed);
-                GMetrics.chat_log_db_fail.fetch_add(1, std::memory_order_relaxed);
-            }
-        }
-        catch (...) {                                        // 예외 발생 시
-            GMetrics.chat_log_db_fail.fetch_add(1, std::memory_order_relaxed);
-        }
+    //            // 바인딩: 파라미터 순서대로 PlayerId, Name, Message, Timestamp
+    //            dbConn->BindParam(1, SQL_C_SBIGINT, SQL_BIGINT, 0, (SQLPOINTER)&playerId, &idLen);
+    //            dbConn->BindParam(2, SQL_C_WCHAR, SQL_WVARCHAR, (SQLULEN)wname.size(), (SQLPOINTER)wname.c_str(), &nameLen);
+    //            dbConn->BindParam(3, SQL_C_WCHAR, SQL_WVARCHAR, (SQLULEN)wmsg.size(), (SQLPOINTER)wmsg.c_str(), &msgLen);
+    //            dbConn->BindParam(4, SQL_C_SBIGINT, SQL_BIGINT, 0, (SQLPOINTER)&ts, &tsLen);
 
-        dbConn->Unbind();                                    // 파라미터 Unbind
-        GMetrics.db_unbind_calls.fetch_add(1, std::memory_order_relaxed);
+    //            if (dbConn->Execute()) {                     // 실행 성공 시
+    //                GMetrics.db_exec_ok.fetch_add(1, std::memory_order_relaxed);
+    //                GMetrics.chat_log_db_ok.fetch_add(1, std::memory_order_relaxed);
+    //            }
+    //            else {                                       // 실패 시
+    //                GMetrics.db_exec_fail.fetch_add(1, std::memory_order_relaxed);
+    //                GMetrics.chat_log_db_fail.fetch_add(1, std::memory_order_relaxed);
+    //            }
+    //        }
+    //        else {                                           // Prepare 실패 시
+    //            GMetrics.db_prepare_fail.fetch_add(1, std::memory_order_relaxed);
+    //            GMetrics.chat_log_db_fail.fetch_add(1, std::memory_order_relaxed);
+    //        }
+    //    }
+    //    catch (...) {                                        // 예외 발생 시
+    //        GMetrics.chat_log_db_fail.fetch_add(1, std::memory_order_relaxed);
+    //    }
 
-        GDBConnectionPool->Push(dbConn);                     // 커넥션 풀에 반환
-        GMetrics.conn_pool_push_total.fetch_add(1, std::memory_order_relaxed);
-        });
+    //    dbConn->Unbind();                                    // 파라미터 Unbind
+    //    GMetrics.db_unbind_calls.fetch_add(1, std::memory_order_relaxed);
+
+    //    GDBConnectionPool->Push(dbConn);                     // 커넥션 풀에 반환
+    //    GMetrics.conn_pool_push_total.fetch_add(1, std::memory_order_relaxed);
+    //    });
 }

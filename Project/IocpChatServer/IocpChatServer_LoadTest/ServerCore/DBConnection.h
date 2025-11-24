@@ -43,6 +43,13 @@ public:
 	// SQL 실행 시 발생한 에러 출력
 	void HandleError(SQLRETURN ret);
 
+	// =================================================================
+	// GIGACHAD ADDITIONS (FOR BATCHING)
+	// =================================================================
+	bool SetAutoCommit(bool autoCommit);
+	bool Commit();
+	bool Rollback();
+
 private:
 	// DB 연결 핸들
 	SQLHDBC _connection = SQL_NULL_HANDLE;

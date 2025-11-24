@@ -1,30 +1,27 @@
-# Visual Studio
+# ✅ Visual Studio 쓰레기
 .vs/
 *.user
 *.suo
 *.ipch
 *.pch
 *.obj
-*.iobj
-*.ipdb
 *.idb
 *.opendb
-
-# Build output folders
-Debug/
-Release/
-x64/
-Binary/
-
-# Compiler/Linker outputs
-*.exe
-*.dll
-*.lib
-*.pdb
+*.tlog
 *.ilk
 *.log
-*.tlog
 *.cache
 *.lastbuildstate
-*.recipe
 *.FileListAbsolute.txt
+
+# ✅ 자동 생성되는 임시 DB / 브라우징 파일
+*.ipdb
+*.iobj
+
+# ✅ 빌드 폴더 — ⚠️ 네가 산출물 저장 안 할 경우만
+# Debug/
+# Release/
+# x64/
+
+# ✅ 무조건 제외해야 하는 것
+*.recipe

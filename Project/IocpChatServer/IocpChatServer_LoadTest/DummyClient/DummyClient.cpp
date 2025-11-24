@@ -65,20 +65,28 @@ public:
             _states.push_back(std::move(st)); // 상태 보관(재할당 최소화 위해 reserve 선행)
         }
 
-        _running = true;                       // 런루프 가동 플래그
+        _running = true;
 
         [[maybe_unused]] unsigned int hc = std::thread::hardware_concurrency(); // CPU 코어 수 참조용
         [[maybe_unused]] int ioThreads = (hc > 0 ? static_cast<int>(hc) / 4 : 1); // 향후 확장 아이디어(현재 미사용)
+        if (ioThreads < 1) ioThreads = 1; // 방어적 보정
 
-        GThreadManager->Launch([this]() {      // IOCP 디스패치 전용 스레드
-            while (_running) {
-                _core->Dispatch();             // 완료패킷 처리(Recv/Send 콜백)
-            }
+        // IOCP 디스패처 스레드들을 ioThreads 개수만큼 가동
+        for (int i = 0; i < ioThreads; ++i)
+        {
+            GThreadManager->Launch([this]() {      // IOCP 디스패치 전용 스레드
+                while (_running) {
+                    _core->Dispatch();             // 완료패킷 처리(Recv/Send 콜백)
+                }
+                });
+        }
+
+        // 시뮬레이터 로직 스레드(게임 루프 느낌)
+        GThreadManager->Launch([this]() {
+            RunLoopPartition(0, 1);                // 전체 인덱스를 1개 파티션으로 순회
             });
 
-        GThreadManager->Launch([this]() {      // 시뮬레이터 로직 스레드(게임 루프 느낌)
-            RunLoopPartition(0, 1);            // 전체 인덱스를 1개 파티션으로 순회
-            });
+
     }
 
     void Stop()
@@ -114,29 +122,15 @@ private:
             "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
             "0123456789";                       // 가벼운 랜덤 페이로드
 
-        thread_local static std::mt19937 rng{ std::random_device{}() };
-        thread_local static std::uniform_int_distribution<int> distProb(1, 100); // 확률 결정
-        thread_local static std::uniform_int_distribution<> distChar(0, sizeof(charset) - 2);
+        thread_local static std::mt19937 rng{ std::random_device{}() }; // 스레드별 RNG(락 회피)
+        thread_local static std::uniform_int_distribution<> distChar(0, sizeof(charset) - 2); // 인덱스 분포
+        thread_local static std::uniform_int_distribution<> distLen(10, 20); // 메시지 길이 다양화
 
-        // 길이 분포 설정
-        thread_local static std::uniform_int_distribution<> dist64(60, 64);      // 64B 근처
-        thread_local static std::uniform_int_distribution<> dist256(240, 256);   // 256B 근처
-        thread_local static std::uniform_int_distribution<> dist1k(1024, 2048);  // 1~2KB
-
-        int p = distProb(rng);
-        int length = 0;
-        if (p <= 80)        // 80% 확률
-            length = dist64(rng);
-        else if (p <= 98)   // 다음 18%
-            length = dist256(rng);
-        else                // 나머지 2%
-            length = dist1k(rng);
-
-        std::string result;
-        result.reserve(length);
+        const int length = distLen(rng);       // 이번에 만들 길이
+        std::string result; result.reserve(length); // 반복 push 성능 위해 reserve
         for (int i = 0; i < length; ++i)
-            result.push_back(charset[distChar(rng)]);
-        return result;
+            result.push_back(charset[distChar(rng)]); // 균등 랜덤 문자 뽑기
+        return result;                         // 완성 문자열
     }
 
     void RunLoopPartition(int tid, int tcount)

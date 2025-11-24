@@ -8,6 +8,13 @@
 
 
 #include <iostream>
+
+// =================================================================
+// GIGACHAD FIX: 윈도우 매크로가 C++ 표준 min/max를 망가뜨리는 것을 방지
+// (Define this *before* Windows.h to disable the min/max macros)
+// =================================================================
+#define NOMINMAX
+
 #include <Windows.h>
 using namespace std;
 

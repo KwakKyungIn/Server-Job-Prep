@@ -10,7 +10,6 @@ bool DBConnection::Connect(SQLHENV henv, const WCHAR* connectionString)
     if (::SQLAllocHandle(SQL_HANDLE_DBC, henv, &_connection) != SQL_SUCCESS)
         return false;
 
-
     WCHAR stringBuffer[MAX_PATH] = { 0 };
     ::wcscpy_s(stringBuffer, connectionString);
 
