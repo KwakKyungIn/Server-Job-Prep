@@ -2,7 +2,11 @@
 <Project>
   <ProjectOutputs>
     <ProjectOutput>
+<<<<<<< HEAD:Project/IocpChatServer/IocpChatServer/ChatServer/x64/Debug/GameServer.exe.recipe
       <FullPath>C:\Users\kwak\source\repos\Server-Job-Prep\Project\IocpChatServer\Binary\Debug\GameServer.exe</FullPath>
+=======
+      <FullPath>C:\Users\kwak\Desktop\GithubRepo\Server-Job-Prep\Project\IocpChatServer\Binary\Debug\ChatServer.exe</FullPath>
+>>>>>>> eb0ef515f062bc71003c85db785292ac686a220c:Project/IocpChatServer/ChatServer/x64/Debug/ChatServer.exe.recipe
     </ProjectOutput>
   </ProjectOutputs>
   <ContentFiles />
