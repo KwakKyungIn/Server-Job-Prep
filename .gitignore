@@ -51,3 +51,5 @@ dist/
 #✅ NuGet 패키지 폴더 (자동 복원되므로 올리지 마라)
 
 packages/
+
+#error eba
