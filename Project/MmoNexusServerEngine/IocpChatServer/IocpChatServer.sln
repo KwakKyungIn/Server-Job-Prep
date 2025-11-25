@@ -13,6 +13,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{C8D5274F
 EndProject
 Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "PacketGenerator", "Tools\PacketGenerator\PacketGenerator.pyproj", "{CBE49499-7389-4553-8576-4D3151125B6B}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DBAgent", "DBAgent\DBAgent.vcxproj", "{43A19ABE-9EDC-4E57-980B-EE7C5EB6E1D2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -65,6 +67,18 @@ Global
 		{CBE49499-7389-4553-8576-4D3151125B6B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CBE49499-7389-4553-8576-4D3151125B6B}.Release|x64.ActiveCfg = Release|Any CPU
 		{CBE49499-7389-4553-8576-4D3151125B6B}.Release|x86.ActiveCfg = Release|Any CPU
+		{43A19ABE-9EDC-4E57-980B-EE7C5EB6E1D2}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{43A19ABE-9EDC-4E57-980B-EE7C5EB6E1D2}.Debug|Any CPU.Build.0 = Debug|x64
+		{43A19ABE-9EDC-4E57-980B-EE7C5EB6E1D2}.Debug|x64.ActiveCfg = Debug|x64
+		{43A19ABE-9EDC-4E57-980B-EE7C5EB6E1D2}.Debug|x64.Build.0 = Debug|x64
+		{43A19ABE-9EDC-4E57-980B-EE7C5EB6E1D2}.Debug|x86.ActiveCfg = Debug|Win32
+		{43A19ABE-9EDC-4E57-980B-EE7C5EB6E1D2}.Debug|x86.Build.0 = Debug|Win32
+		{43A19ABE-9EDC-4E57-980B-EE7C5EB6E1D2}.Release|Any CPU.ActiveCfg = Release|x64
+		{43A19ABE-9EDC-4E57-980B-EE7C5EB6E1D2}.Release|Any CPU.Build.0 = Release|x64
+		{43A19ABE-9EDC-4E57-980B-EE7C5EB6E1D2}.Release|x64.ActiveCfg = Release|x64
+		{43A19ABE-9EDC-4E57-980B-EE7C5EB6E1D2}.Release|x64.Build.0 = Release|x64
+		{43A19ABE-9EDC-4E57-980B-EE7C5EB6E1D2}.Release|x86.ActiveCfg = Release|Win32
+		{43A19ABE-9EDC-4E57-980B-EE7C5EB6E1D2}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

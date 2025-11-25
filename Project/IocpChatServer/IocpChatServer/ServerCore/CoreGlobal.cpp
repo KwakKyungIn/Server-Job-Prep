@@ -1,4 +1,4 @@
-#include "pch.h"
+ï»¿#include "pch.h"
 #include "CoreGlobal.h"
 #include "ThreadManager.h"
 #include "Memory.h"
@@ -7,42 +7,79 @@
 #include "SendBuffer.h"
 #include "DBConnectionPool.h"
 
-// Àü¿ª ½Ì±ÛÅæ ÀÎ½ºÅÏ½ºµé
+//  JSON ë¼ì´ë¸ŒëŸ¬ë¦¬ í•„ìˆ˜
+#include <fstream>
+#include <iostream>
+#include <nlohmann/json.hpp>
+using json = nlohmann::json;
+
+// -----------------------------------------------------------
+// 1. ì „ì—­ ë³€ìˆ˜ 'ì‹¤ì²´' ì •ì˜ (Headerì— ìˆëŠ” externë“¤ì˜ ë©”ëª¨ë¦¬ í• ë‹¹)
+// -----------------------------------------------------------
 ThreadManager* GThreadManager = nullptr;
 Memory* GMemory = nullptr;
 SendBufferManager* GSendBufferManager = nullptr;
 DeadLockProfiler* GDeadLockProfiler = nullptr;
 DBConnectionPool* GDBConnectionPool = nullptr;
 
-// CoreGlobal: ¼­¹ö ÀüÃ¼¿¡¼­ °ø¿ëÀ¸·Î »ç¿ëÇÏ´Â Àü¿ª °´Ã¼µéÀ» ÃÊ±âÈ­/Á¤¸®
-class CoreGlobal
+ServerConfig GServerConfig; // ì„¤ì •ê°’ ë‹´ì„ ì „ì—­ ë³€ìˆ˜
+
+// -----------------------------------------------------------
+// 2. CoreGlobal êµ¬í˜„ë¶€
+// -----------------------------------------------------------
+
+CoreGlobal::CoreGlobal()
 {
-public:
-	CoreGlobal()
+	// [Step 1] Config Load (ë§¤ë‹ˆì € ì´ˆê¸°í™”ë³´ë‹¤ ë¨¼ì € ì‹¤í–‰ë˜ì–´ì•¼ í•¨)
+	std::ifstream file("ServerConfig.json");
+	if (file.is_open())
 	{
-		// ÇÙ½É ¸Å´ÏÀú °´Ã¼µé ÃÊ±âÈ­
-		GThreadManager = new ThreadManager();
-		GMemory = new Memory();
-		GSendBufferManager = new SendBufferManager();
-		GDeadLockProfiler = new DeadLockProfiler();
-		GDBConnectionPool = new DBConnectionPool();
+		json data;
+		file >> data;
 
-		// ¼ÒÄÏ ¶óÀÌºê·¯¸® ÃÊ±âÈ­
-		SocketUtils::Init();
+		// std::string(UTF-8) -> std::wstring(Unicode) ë³€í™˜
+		std::string connStr = data["DB"]["ConnectionString"];
+		GServerConfig.DBConnectionString.assign(connStr.begin(), connStr.end());
 
-		cout << "CoreGlobal Initialized" << endl;
+		GServerConfig.Port = data["Server"]["Port"];
+		GServerConfig.MaxUser = data["Server"]["MaxUser"];
+
+		std::cout << "[Config] Loaded Successfully." << std::endl;
+	}
+	else
+	{
+		// íŒŒì¼ì´ ì—†ìœ¼ë©´ ì¹˜ëª…ì  ì—ëŸ¬
+		std::cout << "[Config] CRITICAL ERROR: ServerConfig.json not found!" << std::endl;
+		// ASSERT_CRASH(false); // í•„ìš”í•˜ë©´ ì£¼ì„ í•´ì œ
 	}
 
-	~CoreGlobal()
-	{
-		// °´Ã¼ ¸Ş¸ğ¸® ÇØÁ¦
-		delete GThreadManager;
-		delete GMemory;
-		delete GSendBufferManager;
-		delete GDeadLockProfiler;
-		delete GDBConnectionPool;
+	// [Step 2] í•µì‹¬ ë§¤ë‹ˆì € ê°ì²´ë“¤ ì´ˆê¸°í™”
+	GThreadManager = new ThreadManager();
+	GMemory = new Memory();
+	GSendBufferManager = new SendBufferManager();
+	GDeadLockProfiler = new DeadLockProfiler();
+	GDBConnectionPool = new DBConnectionPool();
 
-		// ¼ÒÄÏ ¶óÀÌºê·¯¸® Á¤¸®
-		SocketUtils::Clear();
-	}
-} GCoreGlobal; // Àü¿ª CoreGlobal ÀÎ½ºÅÏ½º (ÇÁ·Î±×·¥ ½ÃÀÛ ½Ã ÀÚµ¿ ½ÇÇà)
+	// [Step 3] ì†Œì¼“ ë¼ì´ë¸ŒëŸ¬ë¦¬ ì´ˆê¸°í™”
+	SocketUtils::Init();
+
+	std::cout << "CoreGlobal Initialized" << std::endl;
+}
+
+CoreGlobal::~CoreGlobal()
+{
+	// ê°ì²´ ë©”ëª¨ë¦¬ í•´ì œ
+	delete GThreadManager;
+	delete GMemory;
+	delete GSendBufferManager;
+	delete GDeadLockProfiler;
+	delete GDBConnectionPool;
+
+	// ì†Œì¼“ ë¼ì´ë¸ŒëŸ¬ë¦¬ ì •ë¦¬
+	SocketUtils::Clear();
+}
+
+// -----------------------------------------------------------
+// 3. ì „ì—­ ì‹¤í–‰ ê°ì²´ (ì´ê²Œ ìˆì–´ì•¼ í”„ë¡œê·¸ë¨ ì‹œì‘ ì‹œ ìƒì„±ì í˜¸ì¶œë¨)
+// -----------------------------------------------------------
+CoreGlobal GCoreGlobal;

@@ -1,0 +1,14 @@
+syntax = "proto3";
+package ProtocolS2S;
+
+// S2S 패킷은 2000번대부터 시작한다고 가정하자. (혹은 10000번)
+// 네 파이썬 파서는 message 순서대로 번호를 매기니까,
+// 그냥 이 파일에 정의된 순서대로 ID가 부여될 거다.
+
+message S2S_LOGIN_REQ {
+    uint64 playerId = 1;
+}
+
+message S2S_LOGIN_RES {
+    bool success = 1;
+}

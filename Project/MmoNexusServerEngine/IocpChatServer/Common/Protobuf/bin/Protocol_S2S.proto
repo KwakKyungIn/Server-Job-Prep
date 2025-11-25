@@ -1,0 +1,30 @@
+syntax = "proto3";
+package Protocol;
+
+import "Enum.proto";
+import "Struct.proto";
+
+// [변경] S2S_REQ_... / S2S_RES_... 로 네이밍 통일
+
+// GameServer -> DBAgent (요청)
+message S2S_REQ_LOGIN {
+    uint64 playerId = 1;
+    string name = 2;
+}
+
+// DBAgent -> GameServer (응답)
+message S2S_RES_LOGIN {
+    bool success = 1;
+    uint64 playerId = 2;
+}
+
+// 채팅 로그 저장
+message S2S_REQ_CHAT_LOG {
+    int64 roomId = 1;
+    int64 playerId = 2;
+    string message = 3;
+}
+
+message S2S_RES_CHAT_LOG {
+    bool success = 1;
+}

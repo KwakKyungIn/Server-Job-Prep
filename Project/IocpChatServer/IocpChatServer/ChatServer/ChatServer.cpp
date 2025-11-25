@@ -14,15 +14,16 @@
 #include "RoomManager.h"
 #include <iostream>
 #include "Log.h"
+
+
 int main()
 {
-    // 1. DB 연결만 확인 (테이블 drop/create/delete/insert X)
     ASSERT_CRASH(GDBConnectionPool->Connect(
         16,
-        L"Driver={ODBC Driver 18 for SQL Server};Server=localhost;Database=test2;Trusted_Connection=Yes;Encrypt=Yes;TrustServerCertificate=Yes;"
+        GServerConfig.DBConnectionString.c_str() 
     ));
 
-    std::cout << "DB Connection established." << std::endl;
+    std::cout << "DB Connection established to Azure SQL." << std::endl;
 
 
     // 2. 패킷 핸들러 초기화
