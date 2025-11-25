@@ -103,7 +103,7 @@
     <None Include="..\Common\Protobuf\bin\GenPackets.bat">
       <Filter>Protocol</Filter>
     </None>
-    <None Include="ServerConfig.json" />
     <None Include="packages.config" />
+    <None Include="ServerConfig.json" />
   </ItemGroup>
 </Project>

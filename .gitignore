@@ -1,4 +1,5 @@
-# ✅ Visual Studio 쓰레기
+#✅ Visual Studio 쓰레기
+
 .vs/
 *.user
 *.suo
@@ -14,18 +15,39 @@
 *.lastbuildstate
 *.FileListAbsolute.txt
 
-# ✅ 자동 생성되는 임시 DB / 브라우징 파일
+#✅ 컴파일러 산출물 (바이너리 절대 금지)
+
+*.exe
+*.dll
+*.lib
+*.exp
+*.pdb
+
+
+#✅ 자동 생성되는 임시 DB / 브라우징 파일
+
 *.ipdb
 *.iobj
 
-# ✅ 빌드 폴더 — ⚠️ 네가 산출물 저장 안 할 경우만
-# Debug/
-# Release/
-# x64/
+#✅ 빌드 폴더 — ⚠️ 산출물 저장 안 함 (주석 해제됨)
 
-# ✅ 무조건 제외해야 하는 것
+Debug/
+Release/
+x64/
+ARM64/
+
+#✅ 무조건 제외해야 하는 것
+
 *.recipe
 ServerConfig.json
 
-# ✅ NuGet 패키지 폴더 (자동 복원되므로 올리지 마라)
+#✅ 파이썬 생성기 부산물 (각자 빌드해라)
+
+pycache/
+*.spec
+build/
+dist/
+
+#✅ NuGet 패키지 폴더 (자동 복원되므로 올리지 마라)
+
 packages/

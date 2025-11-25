@@ -49,12 +49,12 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="ServerConfig.json" />
     <None Include="..\Common\Protobuf\bin\Protocol_S2S.proto">
       <Filter>Protocol</Filter>
     </None>
     <None Include="..\Common\Protobuf\bin\GenPackets.bat">
       <Filter>Protocol</Filter>
     </None>
+    <None Include="ServerConfig.json" />
   </ItemGroup>
 </Project>
