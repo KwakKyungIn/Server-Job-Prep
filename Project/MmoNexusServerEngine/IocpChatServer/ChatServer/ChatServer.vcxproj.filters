@@ -10,11 +10,20 @@
     <Filter Include="Protocol">
       <UniqueIdentifier>{ed51a60c-2c67-4336-ba65-82c0938f2c65}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ChatContents">
-      <UniqueIdentifier>{0cd555c4-b35b-4327-bda7-d99791831d11}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Log">
       <UniqueIdentifier>{12460123-92ae-47ee-a64c-ae7af13003cb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Handler">
+      <UniqueIdentifier>{26d69680-1375-45ee-9f8a-b8d26feb670a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DBSession">
+      <UniqueIdentifier>{67947d78-4476-4299-a514-ee2648d45ba1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ChatSession">
+      <UniqueIdentifier>{ce38593c-79f2-4546-bb79-3c832e60209e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameContents">
+      <UniqueIdentifier>{0cd555c4-b35b-4327-bda7-d99791831d11}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -23,15 +32,6 @@
     </ClCompile>
     <ClCompile Include="pch.cpp">
       <Filter>Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="ChatSession.cpp">
-      <Filter>Main</Filter>
-    </ClCompile>
-    <ClCompile Include="ChatSessionManager.cpp">
-      <Filter>Main</Filter>
-    </ClCompile>
-    <ClCompile Include="ClientPacketHandler.cpp">
-      <Filter>Main</Filter>
     </ClCompile>
     <ClCompile Include="Protocol.pb.cc">
       <Filter>Protocol</Filter>
@@ -43,27 +43,36 @@
       <Filter>Protocol</Filter>
     </ClCompile>
     <ClCompile Include="Player.cpp">
-      <Filter>ChatContents</Filter>
+      <Filter>GameContents</Filter>
     </ClCompile>
     <ClCompile Include="Room.cpp">
-      <Filter>ChatContents</Filter>
+      <Filter>GameContents</Filter>
     </ClCompile>
     <ClCompile Include="RoomManager.cpp">
       <Filter>Main</Filter>
+    </ClCompile>
+    <ClCompile Include="Protocol_S2S.pb.cc">
+      <Filter>Protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="ChatSession.cpp">
+      <Filter>ChatSession</Filter>
+    </ClCompile>
+    <ClCompile Include="ChatSessionManager.cpp">
+      <Filter>ChatSession</Filter>
+    </ClCompile>
+    <ClCompile Include="DBSession.cpp">
+      <Filter>DBSession</Filter>
+    </ClCompile>
+    <ClCompile Include="ChatServerPacketHandler.cpp">
+      <Filter>Handler</Filter>
+    </ClCompile>
+    <ClCompile Include="S2SPacketHandler.cpp">
+      <Filter>Handler</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
       <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="ChatSession.h">
-      <Filter>Main</Filter>
-    </ClInclude>
-    <ClInclude Include="ChatSessionManager.h">
-      <Filter>Main</Filter>
-    </ClInclude>
-    <ClInclude Include="ClientPacketHandler.h">
-      <Filter>Main</Filter>
     </ClInclude>
     <ClInclude Include="Protocol.pb.h">
       <Filter>Protocol</Filter>
@@ -75,10 +84,10 @@
       <Filter>Protocol</Filter>
     </ClInclude>
     <ClInclude Include="Player.h">
-      <Filter>ChatContents</Filter>
+      <Filter>GameContents</Filter>
     </ClInclude>
     <ClInclude Include="Room.h">
-      <Filter>ChatContents</Filter>
+      <Filter>GameContents</Filter>
     </ClInclude>
     <ClInclude Include="RoomManager.h">
       <Filter>Main</Filter>
@@ -87,7 +96,25 @@
       <Filter>Log</Filter>
     </ClInclude>
     <ClInclude Include="JobQueue.h">
-      <Filter>ChatContents</Filter>
+      <Filter>GameContents</Filter>
+    </ClInclude>
+    <ClInclude Include="Protocol_S2S.pb.h">
+      <Filter>Protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSession.h">
+      <Filter>ChatSession</Filter>
+    </ClInclude>
+    <ClInclude Include="ChatSessionManager.h">
+      <Filter>ChatSession</Filter>
+    </ClInclude>
+    <ClInclude Include="DBSession.h">
+      <Filter>DBSession</Filter>
+    </ClInclude>
+    <ClInclude Include="ChatServerPacketHandler.h">
+      <Filter>Handler</Filter>
+    </ClInclude>
+    <ClInclude Include="S2SPacketHandler.h">
+      <Filter>Handler</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

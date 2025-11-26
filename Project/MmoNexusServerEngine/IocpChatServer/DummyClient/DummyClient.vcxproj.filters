@@ -10,6 +10,9 @@
     <Filter Include="Protocol">
       <UniqueIdentifier>{90bebca2-2a2b-4ed1-919a-17beec07aec5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ServerSession">
+      <UniqueIdentifier>{cd6705e8-0b73-4ed2-8a44-78e149d0ad25}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DummyClient.cpp">
@@ -30,6 +33,9 @@
     <ClCompile Include="Struct.pb.cc">
       <Filter>Protocol</Filter>
     </ClCompile>
+    <ClCompile Include="ServerSession.cpp">
+      <Filter>ServerSession</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -46,6 +52,9 @@
     </ClInclude>
     <ClInclude Include="ServerPacketHandler.h">
       <Filter>Main</Filter>
+    </ClInclude>
+    <ClInclude Include="ServerSession.h">
+      <Filter>ServerSession</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

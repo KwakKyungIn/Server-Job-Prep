@@ -18,7 +18,7 @@ extern class ThreadManager* GThreadManager;
 extern class Memory* GMemory;
 extern class SendBufferManager* GSendBufferManager;
 extern class DeadLockProfiler* GDeadLockProfiler;
-extern class DBConnectionPool* GDBConnectionPool;
+//extern class DBConnectionPool* GDBConnectionPool;
 
 // 4. CoreGlobal 클래스 선언
 // (생성자/소멸자가 cpp에 구현되어 있음)
@@ -28,3 +28,5 @@ public:
 	CoreGlobal();
 	~CoreGlobal();
 };
+
+extern class CoreGlobal GCoreGlobal;

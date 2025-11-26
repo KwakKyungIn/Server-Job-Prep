@@ -1,37 +1,25 @@
-#include "pch.h"
-#include "ChatSession.h"
-#include "ChatSessionManager.h"
-#include "ClientPacketHandler.h"
-#include "Log.h"
+ï»¿#include "pch.h"
+#include "GameSession.h"
+#include "ChatServerPacketHandler.h" // [REQ ì²˜ë¦¬] GameServerì˜ ìš”ì²­ ì²˜ë¦¬
 
-// ¼¼¼ÇÀÌ ¿¬°áµÇ¾úÀ» ¶§ È£ÃâµÇ´Â Äİ¹é
-void ChatSession::OnConnected()
+void GameSession::OnConnected()
 {
-    // »õ·Î ¿¬°áµÈ ChatSessionÀ» ¼¼¼Ç ¸Å´ÏÀú¿¡ µî·Ï
-    GSessionManager.Add(static_pointer_cast<ChatSession>(shared_from_this()));
-    LOG_SNAPSHOT_CTX(this, 0, 0, "OnConnected()");
+	// GameServerê°€ ìš°ë¦¬(ChatServer)ì—ê²Œ ì ‘ì†í–ˆë‹¤!
+	std::cout << "âœ… [ChatServer] GameServer Connected!" << std::endl;
 }
 
-// ¼¼¼ÇÀÌ ²÷¾îÁ³À» ¶§ È£ÃâµÇ´Â Äİ¹é
-void ChatSession::OnDisconnected()
+void GameSession::OnDisconnected()
 {
-	LOG_SNAPSHOT_CTX(this, 0, 0, "OnDisconnected()");
-    // ¿¬°áÀÌ Á¾·áµÈ ChatSessionÀ» ¼¼¼Ç ¸Å´ÏÀú¿¡¼­ Á¦°Å
-    GSessionManager.Remove(static_pointer_cast<ChatSession>(shared_from_this()));
+	std::cout << "âŒ [ChatServer] GameServer Disconnected" << std::endl;
 }
 
-// ÆĞÅ¶ ¼ö½Å ½Ã È£ÃâµÇ´Â Äİ¹é
-void ChatSession::OnRecvPacket(BYTE* buffer, int32 len)
+void GameSession::OnRecvPacket(BYTE* buffer, int32 len)
 {
-    PacketSessionRef session = GetPacketSessionRef();          // ÇöÀç ¼¼¼Ç ÂüÁ¶ ¾ò±â
-    PacketHeader* header = reinterpret_cast<PacketHeader*>(buffer); // ¹öÆÛ ¾ÕºÎºĞÀ» ÆĞÅ¶ Çì´õ·Î Ä³½ºÆÃ
-
-    // TODO: ÆĞÅ¶ ID À¯È¿ ¹üÀ§ °Ë»ç ÇÊ¿ä (º¸¾È/¾ÈÁ¤¼º)
-    ClientPacketHandler::HandlePacket(session, buffer, len);   // ÆĞÅ¶ Ã³¸®±â·Î Àü´Ş
+	PacketSessionRef session = GetPacketSessionRef();
+	// [GameServer -> ChatServer] : "ì´ê±° ë°©ì†¡í•´ì¤˜" ê°™ì€ ìš”ì²­ ì²˜ë¦¬
+	ChatServerPacketHandler::HandlePacket(session, buffer, len);
 }
 
-// ÆĞÅ¶ Àü¼Û ¿Ï·á ½Ã È£ÃâµÇ´Â Äİ¹é
-void ChatSession::OnSend(int32 len)
+void GameSession::OnSend(int32 len)
 {
-    // ÇöÀç´Â Æ¯º°ÇÑ Ã³¸® ¾øÀ½ (·Î±×³ª Åë°è¿ëÀ¸·Î È®Àå °¡´É)
 }

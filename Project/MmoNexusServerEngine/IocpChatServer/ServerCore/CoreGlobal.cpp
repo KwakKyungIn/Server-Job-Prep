@@ -5,7 +5,6 @@
 #include "DeadLockProfiler.h"
 #include "SocketUtils.h"
 #include "SendBuffer.h"
-#include "DBConnectionPool.h"
 
 //  JSON 라이브러리 필수
 #include <fstream>
@@ -20,7 +19,7 @@ ThreadManager* GThreadManager = nullptr;
 Memory* GMemory = nullptr;
 SendBufferManager* GSendBufferManager = nullptr;
 DeadLockProfiler* GDeadLockProfiler = nullptr;
-DBConnectionPool* GDBConnectionPool = nullptr;
+//DBConnectionPool* GDBConnectionPool = nullptr;
 
 ServerConfig GServerConfig; // 설정값 담을 전역 변수
 
@@ -58,7 +57,7 @@ CoreGlobal::CoreGlobal()
 	GMemory = new Memory();
 	GSendBufferManager = new SendBufferManager();
 	GDeadLockProfiler = new DeadLockProfiler();
-	GDBConnectionPool = new DBConnectionPool();
+	//GDBConnectionPool = new DBConnectionPool();
 
 	// [Step 3] 소켓 라이브러리 초기화
 	SocketUtils::Init();
@@ -73,7 +72,7 @@ CoreGlobal::~CoreGlobal()
 	delete GMemory;
 	delete GSendBufferManager;
 	delete GDeadLockProfiler;
-	delete GDBConnectionPool;
+	//delete GDBConnectionPool;
 
 	// 소켓 라이브러리 정리
 	SocketUtils::Clear();

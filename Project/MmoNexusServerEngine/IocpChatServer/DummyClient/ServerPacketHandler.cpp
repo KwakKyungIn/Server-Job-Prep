@@ -1,156 +1,51 @@
-#include "pch.h"
+ï»¿#include "pch.h"
 #include "ServerPacketHandler.h"
+#include <iostream>
 
+// [Definition] ì •ì  ë©¤ë²„ ë©”ëª¨ë¦¬ í• ë‹¹
+PacketHandlerFunc ServerPacketHandler::GPacketHandler[UINT16_MAX];
 
-PacketHandlerFunc GPacketHandler[UINT16_MAX];
-extern std::atomic<bool> g_isLoggedIn;
-extern std::atomic<bool> g_isInRoom;
-extern PacketSessionRef g_session;
-
-// ======================================================================
-// Á÷Á¢ ÄÁÅÙÃ÷ ÀÛ¾÷ÀÚ (Å¬¶ó°¡ "¼­¹ö ¡æ Å¬¶ó" ÆĞÅ¶À» Ã³¸®ÇÏ´Â ¿µ¿ª)
-// ======================================================================
-
-// ===================== INVALID =====================
-// ¼­¹ö°¡ º¸³½ ÆĞÅ¶ ID°¡ ¸ÅÄªµÇÁö ¾ÊÀ» ¶§ (Å×ÀÌºí ÃÊ±âÈ­ ½ÇÆĞ, Àß¸øµÈ µ¥ÀÌÅÍ µî)
-bool Handle_INVALID(PacketSessionRef& session, BYTE* buffer, int32 len)
+// [INVALID]
+bool ServerPacketHandler::Handle_INVALID(PacketSessionRef& session, BYTE* buffer, int32 len)
 {
-	PacketHeader* header = reinterpret_cast<PacketHeader*>(buffer);  // ¾Õ 4¹ÙÀÌÆ® [size,id] ÇØ¼®
-	// TODO : Log (ÆĞÅ¶ ID ¹üÀ§/¹«°á¼º Ã¼Å© ÈÄ ±â·Ï)
-	return false;                                                     // Ã³¸® ½ÇÆĞ·Î ¹İÈ¯ (µğÆúÆ®)
+	return false;
 }
 
-
-// ===================== LOGIN =====================
-// ·Î±×ÀÎ ÀÀ´ä: »óÅÂ Ã¼Å© ÈÄ Å¬¶ó Àü¿ª ÇÃ·¡±× °»½Å
-bool Handle_S_LOGIN_RES(PacketSessionRef& session, Protocol::S_LOGIN_RES& pkt)
-{
-	if (pkt.status() == Protocol::CONNECT_OK)
-	{
-		g_isLoggedIn = true; // ¼º°ø ½Ã ·Î±×ÀÎ »óÅÂ on
-
-		std::cout << "\n·Î±×ÀÎ ¼º°ø! Player ID: " << pkt.playerid() << std::endl;
-		std::cout << "¼­¹ö ¸Ş½ÃÁö: " << pkt.reason() << std::endl;
-	}
-	else
-	{
-		// ½ÇÆĞ »çÀ¯´Â ¼­¹ö°¡ ³»·ÁÁØ reason¿¡ µé¾îÀÖÀ½
-		std::cout << "\n·Î±×ÀÎ ½ÇÆĞ! ÀÌÀ¯: " << pkt.reason() << std::endl;
-	}
-
-	return true;
-}
-
-// ´©±º°¡ ÀÔÀåÇß´Ù´Â ¾Ë¸²(³»°¡ ¾Æ´Ñ ´Ù¸¥ À¯Àú¿¡ ´ëÇÑ ÀÌº¥Æ®)
-bool Handle_S_JOIN_ROOM_NTF(PacketSessionRef& session, Protocol::S_JOIN_ROOM_NTF& pkt)
-{
-	std::cout << pkt.name() << " ´ÔÀÌ ¹æ¿¡ µé¾î¿Ô½À´Ï´Ù!" << std::endl;
-	return true;
-}
-
-
-// ===================== CREATE ROOM =====================
-// ¹æ »ı¼º ÀÀ´ä: ¼º°ø ½Ã Àü¿ª Âü¿© ÇÃ·¡±× °»½Å + ¸â¹ö ¸ñ·Ï Ãâ·Â
-bool Handle_S_CREATE_ROOM_RES(PacketSessionRef& session, Protocol::S_CREATE_ROOM_RES& pkt)
+// [LOGIN RES] ë¡œê·¸ì¸ ê²°ê³¼
+bool ServerPacketHandler::Handle_S_LOGIN_RES(PacketSessionRef& session, Protocol::S_LOGIN_RES& pkt)
 {
 	if (pkt.success())
 	{
-		const Protocol::RoomInfo& roomInfo = pkt.room();
-		g_isInRoom = true; // ¹æ »ı¼º ¼º°ø ½Ã ÀÔÀå »óÅÂ on
+		std::cout << "âœ… [Client] Login Success! My PlayerID: " << pkt.playerid() << std::endl;
 
-		std::cout << "\n==============================================" << std::endl;
-		std::cout << "Room created successfully!\nRoom ID: " << roomInfo.roomid()
-			<< ", Room Name: " << roomInfo.roomname() << std::endl;
-		std::cout << "Ã¤ÆÃÀ» ½ÃÀÛÇÏ¼¼¿ä! (³ª°¡·Á¸é /exit ÀÔ·Â)" << std::endl;
-		std::cout << "--- ÇöÀç Á¢¼ÓÀÚ ---" << std::endl;
-
-		// ¼­¹ö°¡ ³»·ÁÁØ ÇöÀç ¸â¹ö ½º³À¼¦ Ãâ·Â (µğ¹ö±ë/Å×½ºÆ®¿¡ À¯¿ë)
-		for (const auto& member : roomInfo.members())
-		{
-			std::cout << "- " << member.name() << " (ID: " << member.playerid() << ")" << std::endl;
-		}
-		std::cout << "==============================================" << std::endl;
+		// [TEST] ë¡œê·¸ì¸ ì„±ê³µí•˜ë©´ ë°”ë¡œ ì±„íŒ… í•œë²ˆ ì´ë³¸ë‹¤.
+		Protocol::C_CHAT_REQ chatPkt;
+		chatPkt.set_message("Hello World! I am alive!");
+		auto sendBuffer = ServerPacketHandler::MakeSendBuffer(chatPkt);
+		session->Send(sendBuffer);
 	}
 	else
 	{
-		std::cout << "Failed to create room. Reason: " << pkt.reason() << std::endl;
+		std::cout << "âŒ [Client] Login Failed." << std::endl;
 	}
+
 	return true;
 }
 
-
-// ===================== JOIN ROOM =====================
-// ¹æ ÀÔÀå ÀÀ´ä: ¼º°ø ½Ã Àü¿ª Âü¿© ÇÃ·¡±× °»½Å + ¸â¹ö ¸ñ·Ï Ãâ·Â
-bool Handle_S_JOIN_ROOM_RES(PacketSessionRef& session, Protocol::S_JOIN_ROOM_RES& pkt)
+// [CHAT RES] ë‚´ ì±„íŒ…ì´ ì„œë²„ì— ì˜ ë„ì°©í–ˆëŠ”ì§€ í™•ì¸
+bool ServerPacketHandler::Handle_S_CHAT_RES(PacketSessionRef& session, Protocol::S_CHAT_RES& pkt)
 {
-	if (pkt.success())
+	// ì„±ê³µí–ˆìœ¼ë©´ êµ³ì´ ë¡œê·¸ ì•ˆ ì°ì–´ë„ ë¨ (ë„ë°° ë°©ì§€)
+	if (pkt.success() == false)
 	{
-		g_isInRoom = true; // ¼º°ø ½Ã Âü¿© »óÅÂ on
-
-		const Protocol::RoomInfo& roomInfo = pkt.room();
-		std::cout << "\n==============================================" << std::endl;
-		std::cout << "[" << roomInfo.roomname() << "] ¹æ (ID: " << roomInfo.roomid() << ")¿¡ ÀÔÀåÇß½À´Ï´Ù." << std::endl;
-		std::cout << "Ã¤ÆÃÀ» ½ÃÀÛÇÏ¼¼¿ä! (³ª°¡·Á¸é /exit ÀÔ·Â)" << std::endl;
-		std::cout << "--- ÇöÀç Á¢¼ÓÀÚ ---" << std::endl;
-
-		for (const auto& member : roomInfo.members())
-		{
-			std::cout << "- " << member.name() << " (ID: " << member.playerid() << ")" << std::endl;
-		}
-		std::cout << "==============================================" << std::endl;
+		std::cout << "âš ï¸ [Client] Chat Failed." << std::endl;
 	}
-	else
-	{
-		std::cout << "\n¹æ Âü°¡ ½ÇÆĞ! ÀÌÀ¯: " << pkt.reason() << std::endl;
-	}
-
 	return true;
 }
 
-// ===================== ROOM CHAT =====================
-// ¹æ Ã¤ÆÃ ¾Ë¸²: ¹ß½ÅÀÚ°¡ 0ÀÌ¸é ½Ã½ºÅÛ ¸Ş½ÃÁö, ¾Æ´Ï¸é ÀÏ¹İ ÇÃ·¹ÀÌ¾î ¸Ş½ÃÁö
-bool Handle_S_ROOM_CHAT_NTF(PacketSessionRef& session, Protocol::S_ROOM_CHAT_NTF& pkt)
+// [CHAT NTF] ëˆ„êµ°ê°€ì˜ ì±„íŒ…ì„ ìˆ˜ì‹  (ë°©ì†¡)
+bool ServerPacketHandler::Handle_S_CHAT_NTF(PacketSessionRef& session, Protocol::S_CHAT_NTF& pkt)
 {
-	int64 roomId = pkt.roomid();
-	const Protocol::ChatMessage& chatMsg = pkt.chat();
-
-	uint64 messageId = chatMsg.messageid();
-	int64 senderId = chatMsg.senderid();
-	const std::string& message = chatMsg.message();
-	int64 timestamp = chatMsg.timestamp();
-
-	if (senderId == 0) // ½Ã½ºÅÛ ¹ß½ÅÀÚ
-	{
-		std::cout << message << std::endl;
-		return true;
-	}
-	std::cout << "[Room " << roomId << "] "
-		<< "Player(" << senderId << "): "
-		<< message
-		<< std::endl;
+	std::cout << "ğŸ’¬ [" << pkt.name() << "]: " << pkt.message() << std::endl;
 	return true;
 }
-
-// ===================== LEAVE ROOM =====================
-// ¹æ ³ª°¡±â ÀÀ´ä: ¼º°ø ½Ã Àü¿ª Âü¿© ÇÃ·¡±× ÃÊ±âÈ­
-bool Handle_S_LEAVE_ROOM_ACK(PacketSessionRef& session, Protocol::S_LEAVE_ROOM_ACK& pkt)
-{
-	if (pkt.success())
-	{
-		g_isInRoom = false; // ¹æ ³ª°¡±â ¼º°ø ½Ã ÇÃ·¡±× º¯°æ
-		std::cout << "\n¹æ¿¡¼­ ¼º°øÀûÀ¸·Î ³ª°¬½À´Ï´Ù." << std::endl;
-		std::cout << "¸ŞÀÎ ¸Ş´º·Î µ¹¾Æ°©´Ï´Ù." << std::endl;
-	}
-	else
-	{
-		std::cout << "\n¹æ ³ª°¡±â ½ÇÆĞ! " << std::endl;
-	}
-	return true;
-}
-
-
-// ===================== ±âÅ¸ =====================
-// ÇÊ¿ä ½Ã È®Àå Æ÷ÀÎÆ®(ÇÁ·¹Áğ½º/·¹ÀÌÆ®¸®¹Ô/°ü¸®ÀÚ Ä¿¸Çµå ÀÀ´ä µî)
-bool Handle_S_PRESENCE_NTF(PacketSessionRef& session, Protocol::S_PRESENCE_NTF& pkt) { return false; }
-bool Handle_S_RATE_LIMIT_NTF(PacketSessionRef& session, Protocol::S_RATE_LIMIT_NTF& pkt) { return false; }
-bool Handle_S_ADMIN_COMMAND_RES(PacketSessionRef& session, Protocol::S_ADMIN_COMMAND_RES& pkt) { return false; }

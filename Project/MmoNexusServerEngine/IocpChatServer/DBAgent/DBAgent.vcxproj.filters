@@ -10,6 +10,18 @@
     <Filter Include="Protocol">
       <UniqueIdentifier>{f96cf91e-2c91-4063-a7e7-5f83cc1ab2da}</UniqueIdentifier>
     </Filter>
+    <Filter Include="DB">
+      <UniqueIdentifier>{e4049a21-b7e5-46b9-b7cd-226a3a2a9bf5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Handler">
+      <UniqueIdentifier>{60f40974-46e7-4ba0-a1b7-7d64728a2a34}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Session_Chat">
+      <UniqueIdentifier>{461cbb41-96a9-4726-96a2-4aa79107ec66}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Session_Game">
+      <UniqueIdentifier>{fbf5d918-5c8f-4b2f-9412-f84c94c71b33}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -27,8 +39,20 @@
     <ClCompile Include="Struct.pb.cc">
       <Filter>Protocol</Filter>
     </ClCompile>
+    <ClCompile Include="DBConnectionPool.cpp">
+      <Filter>DB</Filter>
+    </ClCompile>
+    <ClCompile Include="DBConnection.cpp">
+      <Filter>DB</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSession.cpp">
+      <Filter>Session_Game</Filter>
+    </ClCompile>
     <ClCompile Include="DBAgentPacketHandler.cpp">
-      <Filter>Main</Filter>
+      <Filter>Handler</Filter>
+    </ClCompile>
+    <ClCompile Include="ChatSession.cpp">
+      <Filter>Session_Chat</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -44,8 +68,20 @@
     <ClInclude Include="Struct.pb.h">
       <Filter>Protocol</Filter>
     </ClInclude>
+    <ClInclude Include="DBConnection.h">
+      <Filter>DB</Filter>
+    </ClInclude>
+    <ClInclude Include="DBConnectionPool.h">
+      <Filter>DB</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSession.h">
+      <Filter>Session_Game</Filter>
+    </ClInclude>
     <ClInclude Include="DBAgentPacketHandler.h">
-      <Filter>Main</Filter>
+      <Filter>Handler</Filter>
+    </ClInclude>
+    <ClInclude Include="ChatSession.h">
+      <Filter>Session_Chat</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

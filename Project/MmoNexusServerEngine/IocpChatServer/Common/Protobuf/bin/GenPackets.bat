@@ -6,56 +6,64 @@ protoc.exe -I=./ --cpp_out=./ ./Struct.proto
 protoc.exe -I=./ --cpp_out=./ ./Protocol.proto
 protoc.exe -I=./ --cpp_out=./ ./Protocol_S2S.proto
 
-:: 2. 파이썬 생성기 호출 (핸들러 생성)
+:: 2. 패킷 핸들러 생성 (Role-Based)
 
-:: [주의] 곽삣삐의 네이밍 철학 반영 (Source-based Naming)
-
-:: (1) ClientPacketHandler -> "클라이언트로부터 온 패킷을 처리"
-::     위치: Server / 역할: Recv C_, Send S_
+:: [GameServer용] 클라에서 온 요청(C_) 처리, 클라로 보낼 응답(S_) 생성
 GenPackets.exe --path=./Protocol.proto --output=ClientPacketHandler --recv=C_ --send=S_ --id=1000
 
-:: (2) ServerPacketHandler -> "서버로부터 온 패킷을 처리"
-::     위치: Client / 역할: Recv S_, Send C_
+:: [Client용] 서버에서 온 응답(S_) 처리, 서버로 보낼 요청(C_) 생성
 GenPackets.exe --path=./Protocol.proto --output=ServerPacketHandler --recv=S_ --send=C_ --id=1000
 
-:: (3) DBAgentPacketHandler -> "DBAgent가 처리할 패킷 (Game -> DB)"
-::     위치: DBAgent / 역할: Recv S2S_REQ, Send S2S_RES
+:: [DBAgent용] S2S 요청(REQ) 처리, 응답(RES) 생성
 GenPackets.exe --path=./Protocol_S2S.proto --output=DBAgentPacketHandler --recv=S2S_REQ --send=S2S_RES --id=2000
 
-:: (4) S2SPacketHandler -> "GameServer가 처리할 패킷 (DB -> Game)"
-::     위치: Game/ChatServer / 역할: Recv S2S_RES, Send S2S_REQ
+:: [ChatServer용] S2S 요청(REQ) 처리, 응답(RES) 생성 (DBAgent와 역할 동일)
+GenPackets.exe --path=./Protocol_S2S.proto --output=ChatServerPacketHandler --recv=S2S_REQ --send=S2S_RES --id=2000
+
+:: [GameServer/ChatServer용] S2S 응답(RES) 처리, 요청(REQ) 생성
+:: (GameServer가 DB/Chat에 요청 보낼 때 사용)
 GenPackets.exe --path=./Protocol_S2S.proto --output=S2SPacketHandler --recv=S2S_RES --send=S2S_REQ --id=2000
 
 IF ERRORLEVEL 1 PAUSE
 
 :: 3. 파일 복사 (Deployment)
-:: 네가 원하는 위치 그대로 유지
 
-:: --- ChatServer (Server App) ---
-:: 서버니까 ClientPacketHandler(C를 처리하는 놈)를 가져감 -> Correct
+:: --- GameServer (Main Hub) ---
+XCOPY /Y Enum.pb.h "../../../GameServer"
+XCOPY /Y Enum.pb.cc "../../../GameServer"
+XCOPY /Y Struct.pb.h "../../../GameServer"
+XCOPY /Y Struct.pb.cc "../../../GameServer"
+XCOPY /Y Protocol.pb.h "../../../GameServer"
+XCOPY /Y Protocol.pb.cc "../../../GameServer"
+XCOPY /Y ClientPacketHandler.h "../../../GameServer"
+:: S2S (DB/Chat 접속용)
+XCOPY /Y Protocol_S2S.pb.h "../../../GameServer"
+XCOPY /Y Protocol_S2S.pb.cc "../../../GameServer"
+XCOPY /Y S2SPacketHandler.h "../../../GameServer"
+
+:: --- ChatServer (Sub Server) ---
 XCOPY /Y Enum.pb.h "../../../ChatServer"
 XCOPY /Y Enum.pb.cc "../../../ChatServer"
 XCOPY /Y Struct.pb.h "../../../ChatServer"
 XCOPY /Y Struct.pb.cc "../../../ChatServer"
-XCOPY /Y Protocol.pb.h "../../../ChatServer"
-XCOPY /Y Protocol.pb.cc "../../../ChatServer"
-XCOPY /Y ClientPacketHandler.h "../../../ChatServer"
-:: S2S
+:: S2S (GameServer 접속 받기용)
 XCOPY /Y Protocol_S2S.pb.h "../../../ChatServer"
 XCOPY /Y Protocol_S2S.pb.cc "../../../ChatServer"
+XCOPY /Y ChatServerPacketHandler.h "../../../ChatServer"
+:: (만약 ChatServer도 DB에 붙는다면 S2SPacketHandler도 필요함. 일단 복사해둠)
 XCOPY /Y S2SPacketHandler.h "../../../ChatServer"
 
-:: --- DBAgent (DB App) ---
+:: --- DBAgent (DB Server) ---
 XCOPY /Y Enum.pb.h "../../../DBAgent"
 XCOPY /Y Enum.pb.cc "../../../DBAgent"
 XCOPY /Y Struct.pb.h "../../../DBAgent"
 XCOPY /Y Struct.pb.cc "../../../DBAgent"
+:: S2S
 XCOPY /Y Protocol_S2S.pb.h "../../../DBAgent"
 XCOPY /Y Protocol_S2S.pb.cc "../../../DBAgent"
 XCOPY /Y DBAgentPacketHandler.h "../../../DBAgent"
 
-:: --- DummyClient (Client App) ---
-:: 클라니까 ServerPacketHandler(S를 처리하는 놈)를 가져감 -> Correct
+:: --- DummyClient (Test Client) ---
 XCOPY /Y Enum.pb.h "../../../DummyClient"
 XCOPY /Y Enum.pb.cc "../../../DummyClient"
 XCOPY /Y Struct.pb.h "../../../DummyClient"

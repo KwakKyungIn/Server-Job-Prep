@@ -10,4 +10,15 @@
 #pragma comment(lib, "Protobuf\\Release\\libprotobuf.lib")
 #endif
 
+
 #include "CorePch.h"
+
+// 2. ODBC 헤더 (필수)
+#include <sql.h>
+#include <sqlext.h>
+
+// 3. DBConnectionPool 헤더
+#include "DBConnectionPool.h"
+
+// 4. [선언] "GDBConnectionPool이라는 전역 포인터가 어딘가에 있을 거야"라고 공표
+extern DBConnectionPool* GDBConnectionPool;
