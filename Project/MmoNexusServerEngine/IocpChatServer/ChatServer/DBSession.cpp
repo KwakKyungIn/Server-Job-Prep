@@ -22,3 +22,10 @@ void DBSession::OnRecvPacket(BYTE* buffer, int32 len)
 void DBSession::OnSend(int32 len)
 {
 }
+void DBSession::Ping()
+{
+	std::cout << "CHAT -> DB" << std::endl;
+	Protocol::S2S_REQ_HEART_BEAT pkt;
+	auto sendBuffer = S2SPacketHandler::MakeSendBuffer(pkt);
+	Send(sendBuffer);
+}

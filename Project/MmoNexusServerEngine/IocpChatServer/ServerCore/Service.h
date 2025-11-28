@@ -60,6 +60,10 @@ public:
 	// 최대 세션 수
 	int32 GetMaxSessionCount() { return _maxSessionCount; }
 
+	// [ADD] 주기적 검사 함수 (Heartbeat & Reconnect)
+	// 모든 메인 루프에서 이걸 호출해줘야 한다.
+	virtual void CheckHeartbeat();
+
 public:
 	// 서비스 타입 (Server/Client)
 	ServiceType GetServiceType() { return _type; }
@@ -94,6 +98,9 @@ public:
 	virtual ~ClientService() {}
 
 	virtual bool Start() override;
+
+	// [ADD] 클라는 여기서 '재접속' 로직을 추가한다.
+	virtual void CheckHeartbeat() override;
 };
 
 // ==============================

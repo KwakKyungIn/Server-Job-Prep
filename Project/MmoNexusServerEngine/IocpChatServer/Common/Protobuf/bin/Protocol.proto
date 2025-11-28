@@ -4,7 +4,9 @@ package Protocol;
 import "Enum.proto";
 import "Struct.proto";
 
+// ============================================================
 // [LOGIN]
+// ============================================================
 message C_LOGIN_REQ {
     string name = 1;
 }
@@ -12,19 +14,30 @@ message C_LOGIN_REQ {
 message S_LOGIN_RES {
     bool success = 1;
     uint64 playerId = 2;
+    // 추후 여기에 PlayerInfo (Stat, Pos) 등이 Struct로 포함됨
 }
 
-// [CHAT] 방 개념 없음. 그냥 쏘면 GameServer가 알아서 처리.
+// ============================================================
+// [CHAT] 
+// ============================================================
 message C_CHAT_REQ {
     string message = 1;
 }
 
 message S_CHAT_RES {
     bool success = 1;
+    // 내가 보낸 채팅이 서버에 잘 도착했는지 확인용 (클라 UI 처리)
 }
 
+// 서버가 "야, 누가 말했어" 라고 뿌려주는 것
 message S_CHAT_NTF {
     uint64 playerId = 1;
     string name = 2;
     string message = 3;
 }
+
+// ============================================================
+// [HEARTBEAT]
+// ============================================================
+message S_HEART_BEAT_RES { } // Server -> Client (Ping)
+message C_HEART_BEAT_REQ { } // Client -> Server (Pong)

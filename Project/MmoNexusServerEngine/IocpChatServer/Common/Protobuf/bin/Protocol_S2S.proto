@@ -5,28 +5,45 @@ import "Enum.proto";
 import "Struct.proto";
 
 // ============================================================
-// 1. DB Agent 통신 (로그인)
+// [S2S] Common Logic
+// ============================================================
+// 서버 간 통신에서는 '누구의 요청인가'를 추적하는 Context가 생명이다.
+// GameServer가 요청할 때 playerSessionId를 담아 보내고, 
+// DB/Chat 서버는 이걸 그대로 돌려줘야 한다.
+
+// ============================================================
+// 1. DB Agent 통신 (Login & Data)
 // ============================================================
 message S2S_REQ_LOGIN {
-    string name = 1;
+    uint64 playerSessionId = 1; // [Context] 요청한 PlayerSession의 ID (GameServer 내부 ID)
+    string name = 2;            // 계정 이름
 }
 
 message S2S_RES_LOGIN {
     bool success = 1;
-    uint64 playerId = 2;
+    uint64 playerId = 2;        // DB에서 발급된 Player ID (UID)
+    uint64 playerSessionId = 3; // [Context] 그대로 반환 -> 이걸로 GameServer가 PlayerSession 찾음
 }
 
 // ============================================================
-// 2. Chat Server 통신 (채팅 중계)
+// 2. Chat Server 통신 (Relay)
 // ============================================================
-// GameServer -> ChatServer (이거 뿌려줘)
+// GameServer -> ChatServer : "이거 뿌려줘"
 message S2S_REQ_BROADCAST_CHAT {
-    uint64 playerId = 1;
+    uint64 playerId = 1; 
     string name = 2;
     string message = 3;
+    // 채팅은 굳이 응답을 기다릴 필요가 없을 수도 있지만,
+    // 전송 실패 로그 등을 위해 남겨둔다.
 }
 
-// ChatServer -> GameServer (뿌렸어)
+// ChatServer -> GameServer : "뿌렸어 (혹은 실패했어)"
 message S2S_RES_BROADCAST_CHAT {
     bool success = 1;
 }
+
+// ============================================================
+// 3. System (Heartbeat)
+// ============================================================
+message S2S_RES_HEART_BEAT { } 
+message S2S_REQ_HEART_BEAT { }

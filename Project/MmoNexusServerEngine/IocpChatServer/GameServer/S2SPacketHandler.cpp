@@ -1,6 +1,8 @@
-#include "pch.h"
+ï»¿#include "pch.h"
 #include "S2SPacketHandler.h"
-//#include "GameSessionManager.h" // Å¬¶ó ¼¼¼Ç Ã£±â¿ë
+#include "ClientPacketHandler.h" // í´ë¼ì—ê²Œ ë³´ë‚¼ íŒ¨í‚· ìƒì„±ìš©
+#include "GameSessionManager.h"  // ìœ ì € ì°¾ê¸°ìš©
+#include "PlayerSession.h"
 
 PacketHandlerFunc S2SPacketHandler::GPacketHandler[UINT16_MAX];
 
@@ -9,26 +11,47 @@ bool S2SPacketHandler::Handle_INVALID(PacketSessionRef& session, BYTE* buffer, i
 	return false;
 }
 
-// [DB -> Game] ·Î±×ÀÎ °á°ú µµÂø
+// [DB -> Game] ë¡œê·¸ì¸ ê²°ê³¼ ë„ì°© (ì—¬ê¸°ì„œ í´ë¼ì—ê²Œ ìµœì¢… ì‘ë‹µ)
 bool S2SPacketHandler::Handle_S2S_RES_LOGIN(PacketSessionRef& session, Protocol::S2S_RES_LOGIN& pkt)
 {
+	// 1. ì™•ë³µ í‹°ì¼“ í™•ì¸ (Context Recovery)
+	uint64 userSessionId = pkt.playersessionid();
+
+	// 2. ëŒ€ê¸° ì¤‘ì´ë˜ ìœ ì € ì°¾ê¸° (O(logN))
+	auto playerSession = GameSessionManager::GSessionManager->Find(userSessionId);
+	if (playerSession == nullptr)
+	{
+		// ìœ ì €ê°€ ë¡œê·¸ì¸ ìš”ì²­ í›„ ëª» ì°¸ê³  ë‚˜ê° (ì¢…ì¢… ë°œìƒ)
+		std::cout << "ğŸ’€ [FAIL] Session Not Found! ID: " << userSessionId << std::endl;
+
+		return true;
+	}
+
+	// 3. í´ë¼ì—ê²Œ ë³´ë‚¼ íŒ¨í‚· êµ¬ì„±
+	Protocol::S_LOGIN_RES resPkt;
+	resPkt.set_success(pkt.success());
+	resPkt.set_playerid(pkt.playerid()); // DBì—ì„œ ë°œê¸‰ë°›ì€ UID (ìºë¦­í„° ID)
+
+	// 4. ìœ ì €ì—ê²Œ ìµœì¢… ì „ì†¡
+	auto sendBuffer = ClientPacketHandler::MakeSendBuffer(resPkt);
+	playerSession->Send(sendBuffer);
+
+	// [Log] ì„±ê³µ ì—¬ë¶€ ì¶œë ¥
 	if (pkt.success())
-	{
-		// TODO: ÇØ´ç À¯Àú ¼¼¼Ç Ã£¾Æ¼­ '·Î±×ÀÎ ¼º°ø' ÆĞÅ¶(S_LOGIN_RES) º¸³»±â
-		// GameSessionManager::Find(pkt.playerId())->Send(...)
-		std::cout << " [DB Success] Login OK! ID: " << pkt.playerid() << std::endl;
-	}
+		std::cout << "[Login Success] SessionID: " << userSessionId << " -> PlayerID: " << pkt.playerid() << std::endl;
 	else
-	{
-		// ½ÇÆĞ Ã³¸®
-		std::cout << " [DB Fail] Login Failed." << std::endl;
-	}
+		std::cout << "[Login Failed] SessionID: " << userSessionId << std::endl;
+
 	return true;
 }
 
-// [Chat -> Game] Ã¤ÆÃ ¹æ¼Û °á°ú (¼º°ø ¿©ºÎ¸¸ ¿È)
+// [Chat -> Game] ì±„íŒ… ì „ì†¡ ê²°ê³¼
 bool S2SPacketHandler::Handle_S2S_RES_BROADCAST_CHAT(PacketSessionRef& session, Protocol::S2S_RES_BROADCAST_CHAT& pkt)
 {
-	// ±»ÀÌ ·Î±× ¾È ³²°Üµµ µÊ
+	return true;
+}
+
+bool S2SPacketHandler::Handle_S2S_RES_HEART_BEAT(PacketSessionRef& session, Protocol::S2S_RES_HEART_BEAT& pkt)
+{
 	return true;
 }

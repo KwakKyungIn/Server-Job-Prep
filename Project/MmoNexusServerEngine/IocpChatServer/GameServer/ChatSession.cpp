@@ -23,3 +23,11 @@ void ChatSession::OnRecvPacket(BYTE* buffer, int32 len)
 void ChatSession::OnSend(int32 len)
 {
 }
+
+void ChatSession::Ping()
+{
+	std::cout << "GAME -> CHAT" << std::endl;
+	Protocol::S2S_REQ_HEART_BEAT pkt;
+	auto sendBuffer = S2SPacketHandler::MakeSendBuffer(pkt);
+	Send(sendBuffer);
+}

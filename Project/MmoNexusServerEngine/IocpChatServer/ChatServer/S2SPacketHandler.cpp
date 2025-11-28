@@ -27,3 +27,8 @@ bool S2SPacketHandler::Handle_S2S_RES_BROADCAST_CHAT(PacketSessionRef& session, 
 
 // [추가 필요] 만약 채팅 로그 저장 기능(S2S_REQ_CHAT_LOG)이 생기면 
 // 여기에 Handle_S2S_RES_CHAT_LOG 가 추가될 것임.
+bool S2SPacketHandler::Handle_S2S_RES_HEART_BEAT(PacketSessionRef& session, Protocol::S2S_RES_HEART_BEAT& pkt)
+{
+	
+	return true;
+}

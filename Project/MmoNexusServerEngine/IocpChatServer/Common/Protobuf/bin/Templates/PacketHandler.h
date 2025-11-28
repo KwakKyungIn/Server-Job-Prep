@@ -51,8 +51,16 @@ private:
 	template<typename PacketType, typename ProcessFunc>
 	static bool HandlePacket(ProcessFunc func, PacketSessionRef& session, BYTE* buffer, int32 len)
 	{
+		// [GIGACHAD] 1. 복호화 (Body Only)
+		// buffer는 현재 [Header][Encrypted Body]
+		// 헤더는 이미 읽었으니 건드리지 말고, 뒷부분만 복호화
+		int32 dataSize = len - sizeof(PacketHeader);
+		
+		// 내부 static 함수 호출
+		XorCrypt(buffer + sizeof(PacketHeader), dataSize);
+
 		PacketType pkt;
-		if (pkt.ParseFromArray(buffer + sizeof(PacketHeader), len - sizeof(PacketHeader)) == false)
+		if (pkt.ParseFromArray(buffer + sizeof(PacketHeader), dataSize) == false)
 			return false;
 
 		return func(session, pkt);
@@ -68,9 +76,29 @@ private:
 		PacketHeader* header = reinterpret_cast<PacketHeader*>(sendBuffer->Buffer());
 		header->size = packetSize;
 		header->id = pktId;
+		
+		// [GIGACHAD] 1. 직렬화
 		ASSERT_CRASH(pkt.SerializeToArray(&header[1], dataSize));
+
+		// [GIGACHAD] 2. 암호화 (Body Only)
+		// &header[1] 부터 dataSize 만큼 암호화
+		XorCrypt(reinterpret_cast<BYTE*>(&header[1]), dataSize);
+
 		sendBuffer->Close(packetSize);
 
 		return sendBuffer;
+	}
+
+	// [Encryption Logic] 내장형 XOR
+	static void XorCrypt(BYTE* buffer, int32 len)
+	{
+		// 단순 XOR 키 (Server-Client 동일해야 함)
+		const BYTE xorKey = 0x5A; 
+		
+		// 루프 돌면서 비트 반전
+		for (int32 i = 0; i < len; i++)
+		{
+			buffer[i] ^= xorKey;
+		}
 	}
 };

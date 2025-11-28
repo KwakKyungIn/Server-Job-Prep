@@ -29,3 +29,12 @@ bool ChatServerPacketHandler::Handle_S2S_REQ_BROADCAST_CHAT(PacketSessionRef& se
 
 	return true;
 }
+
+bool ChatServerPacketHandler::Handle_S2S_REQ_HEART_BEAT(PacketSessionRef& session, Protocol::S2S_REQ_HEART_BEAT& pkt)
+{
+	std::cout << "CHAT->GAME" << std::endl;
+	Protocol::S2S_RES_HEART_BEAT resPkt;
+	auto sendBuffer = ChatServerPacketHandler::MakeSendBuffer(resPkt);
+	session->Send(sendBuffer);
+	return true;
+}

@@ -24,7 +24,7 @@ public:
     bool StartAccept(ServerServiceRef service);
 
     // 외부 API: 리슨 소켓만 닫기
-    void CloseSocket();
+    void CloseAccept();
 
 public:
     // IocpObject 인터페이스

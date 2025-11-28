@@ -89,8 +89,30 @@ struct S_CHAT_NTFDefaultTypeInternal {
   };
 };
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 S_CHAT_NTFDefaultTypeInternal _S_CHAT_NTF_default_instance_;
+PROTOBUF_CONSTEXPR S_HEART_BEAT_RES::S_HEART_BEAT_RES(
+    ::_pbi::ConstantInitialized) {}
+struct S_HEART_BEAT_RESDefaultTypeInternal {
+  PROTOBUF_CONSTEXPR S_HEART_BEAT_RESDefaultTypeInternal()
+      : _instance(::_pbi::ConstantInitialized{}) {}
+  ~S_HEART_BEAT_RESDefaultTypeInternal() {}
+  union {
+    S_HEART_BEAT_RES _instance;
+  };
+};
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 S_HEART_BEAT_RESDefaultTypeInternal _S_HEART_BEAT_RES_default_instance_;
+PROTOBUF_CONSTEXPR C_HEART_BEAT_REQ::C_HEART_BEAT_REQ(
+    ::_pbi::ConstantInitialized) {}
+struct C_HEART_BEAT_REQDefaultTypeInternal {
+  PROTOBUF_CONSTEXPR C_HEART_BEAT_REQDefaultTypeInternal()
+      : _instance(::_pbi::ConstantInitialized{}) {}
+  ~C_HEART_BEAT_REQDefaultTypeInternal() {}
+  union {
+    C_HEART_BEAT_REQ _instance;
+  };
+};
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 C_HEART_BEAT_REQDefaultTypeInternal _C_HEART_BEAT_REQ_default_instance_;
 }  // namespace Protocol
-static ::_pb::Metadata file_level_metadata_Protocol_2eproto[5];
+static ::_pb::Metadata file_level_metadata_Protocol_2eproto[7];
 static constexpr ::_pb::EnumDescriptor const** file_level_enum_descriptors_Protocol_2eproto = nullptr;
 static constexpr ::_pb::ServiceDescriptor const** file_level_service_descriptors_Protocol_2eproto = nullptr;
 
@@ -133,6 +155,18 @@ const uint32_t TableStruct_Protocol_2eproto::offsets[] PROTOBUF_SECTION_VARIABLE
   PROTOBUF_FIELD_OFFSET(::Protocol::S_CHAT_NTF, _impl_.playerid_),
   PROTOBUF_FIELD_OFFSET(::Protocol::S_CHAT_NTF, _impl_.name_),
   PROTOBUF_FIELD_OFFSET(::Protocol::S_CHAT_NTF, _impl_.message_),
+  ~0u,  // no _has_bits_
+  PROTOBUF_FIELD_OFFSET(::Protocol::S_HEART_BEAT_RES, _internal_metadata_),
+  ~0u,  // no _extensions_
+  ~0u,  // no _oneof_case_
+  ~0u,  // no _weak_field_map_
+  ~0u,  // no _inlined_string_donated_
+  ~0u,  // no _has_bits_
+  PROTOBUF_FIELD_OFFSET(::Protocol::C_HEART_BEAT_REQ, _internal_metadata_),
+  ~0u,  // no _extensions_
+  ~0u,  // no _oneof_case_
+  ~0u,  // no _weak_field_map_
+  ~0u,  // no _inlined_string_donated_
 };
 static const ::_pbi::MigrationSchema schemas[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
   { 0, -1, -1, sizeof(::Protocol::C_LOGIN_REQ)},
@@ -140,6 +174,8 @@ static const ::_pbi::MigrationSchema schemas[] PROTOBUF_SECTION_VARIABLE(protode
   { 15, -1, -1, sizeof(::Protocol::C_CHAT_REQ)},
   { 22, -1, -1, sizeof(::Protocol::S_CHAT_RES)},
   { 29, -1, -1, sizeof(::Protocol::S_CHAT_NTF)},
+  { 38, -1, -1, sizeof(::Protocol::S_HEART_BEAT_RES)},
+  { 44, -1, -1, sizeof(::Protocol::C_HEART_BEAT_REQ)},
 };
 
 static const ::_pb::Message* const file_default_instances[] = {
@@ -148,6 +184,8 @@ static const ::_pb::Message* const file_default_instances[] = {
   &::Protocol::_C_CHAT_REQ_default_instance_._instance,
   &::Protocol::_S_CHAT_RES_default_instance_._instance,
   &::Protocol::_S_CHAT_NTF_default_instance_._instance,
+  &::Protocol::_S_HEART_BEAT_RES_default_instance_._instance,
+  &::Protocol::_C_HEART_BEAT_REQ_default_instance_._instance,
 };
 
 const char descriptor_table_protodef_Protocol_2eproto[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) =
@@ -157,7 +195,8 @@ const char descriptor_table_protodef_Protocol_2eproto[] PROTOBUF_SECTION_VARIABL
   "yerId\030\002 \001(\004\"\035\n\nC_CHAT_REQ\022\017\n\007message\030\001 \001"
   "(\t\"\035\n\nS_CHAT_RES\022\017\n\007success\030\001 \001(\010\"=\n\nS_C"
   "HAT_NTF\022\020\n\010playerId\030\001 \001(\004\022\014\n\004name\030\002 \001(\t\022"
-  "\017\n\007message\030\003 \001(\tb\006proto3"
+  "\017\n\007message\030\003 \001(\t\"\022\n\020S_HEART_BEAT_RES\"\022\n\020"
+  "C_HEART_BEAT_REQb\006proto3"
   ;
 static const ::_pbi::DescriptorTable* const descriptor_table_Protocol_2eproto_deps[2] = {
   &::descriptor_table_Enum_2eproto,
@@ -165,9 +204,9 @@ static const ::_pbi::DescriptorTable* const descriptor_table_Protocol_2eproto_de
 };
 static ::_pbi::once_flag descriptor_table_Protocol_2eproto_once;
 const ::_pbi::DescriptorTable descriptor_table_Protocol_2eproto = {
-    false, false, 264, descriptor_table_protodef_Protocol_2eproto,
+    false, false, 304, descriptor_table_protodef_Protocol_2eproto,
     "Protocol.proto",
-    &descriptor_table_Protocol_2eproto_once, descriptor_table_Protocol_2eproto_deps, 2, 5,
+    &descriptor_table_Protocol_2eproto_once, descriptor_table_Protocol_2eproto_deps, 2, 7,
     schemas, file_default_instances, TableStruct_Protocol_2eproto::offsets,
     file_level_metadata_Protocol_2eproto, file_level_enum_descriptors_Protocol_2eproto,
     file_level_service_descriptors_Protocol_2eproto,
@@ -1255,6 +1294,86 @@ void S_CHAT_NTF::InternalSwap(S_CHAT_NTF* other) {
       file_level_metadata_Protocol_2eproto[4]);
 }
 
+// ===================================================================
+
+class S_HEART_BEAT_RES::_Internal {
+ public:
+};
+
+S_HEART_BEAT_RES::S_HEART_BEAT_RES(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                         bool is_message_owned)
+  : ::PROTOBUF_NAMESPACE_ID::internal::ZeroFieldsBase(arena, is_message_owned) {
+  // @@protoc_insertion_point(arena_constructor:Protocol.S_HEART_BEAT_RES)
+}
+S_HEART_BEAT_RES::S_HEART_BEAT_RES(const S_HEART_BEAT_RES& from)
+  : ::PROTOBUF_NAMESPACE_ID::internal::ZeroFieldsBase() {
+  S_HEART_BEAT_RES* const _this = this; (void)_this;
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  // @@protoc_insertion_point(copy_constructor:Protocol.S_HEART_BEAT_RES)
+}
+
+
+
+
+
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData S_HEART_BEAT_RES::_class_data_ = {
+    ::PROTOBUF_NAMESPACE_ID::internal::ZeroFieldsBase::CopyImpl,
+    ::PROTOBUF_NAMESPACE_ID::internal::ZeroFieldsBase::MergeImpl,
+};
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*S_HEART_BEAT_RES::GetClassData() const { return &_class_data_; }
+
+
+
+
+
+
+
+::PROTOBUF_NAMESPACE_ID::Metadata S_HEART_BEAT_RES::GetMetadata() const {
+  return ::_pbi::AssignDescriptors(
+      &descriptor_table_Protocol_2eproto_getter, &descriptor_table_Protocol_2eproto_once,
+      file_level_metadata_Protocol_2eproto[5]);
+}
+
+// ===================================================================
+
+class C_HEART_BEAT_REQ::_Internal {
+ public:
+};
+
+C_HEART_BEAT_REQ::C_HEART_BEAT_REQ(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                         bool is_message_owned)
+  : ::PROTOBUF_NAMESPACE_ID::internal::ZeroFieldsBase(arena, is_message_owned) {
+  // @@protoc_insertion_point(arena_constructor:Protocol.C_HEART_BEAT_REQ)
+}
+C_HEART_BEAT_REQ::C_HEART_BEAT_REQ(const C_HEART_BEAT_REQ& from)
+  : ::PROTOBUF_NAMESPACE_ID::internal::ZeroFieldsBase() {
+  C_HEART_BEAT_REQ* const _this = this; (void)_this;
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  // @@protoc_insertion_point(copy_constructor:Protocol.C_HEART_BEAT_REQ)
+}
+
+
+
+
+
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData C_HEART_BEAT_REQ::_class_data_ = {
+    ::PROTOBUF_NAMESPACE_ID::internal::ZeroFieldsBase::CopyImpl,
+    ::PROTOBUF_NAMESPACE_ID::internal::ZeroFieldsBase::MergeImpl,
+};
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*C_HEART_BEAT_REQ::GetClassData() const { return &_class_data_; }
+
+
+
+
+
+
+
+::PROTOBUF_NAMESPACE_ID::Metadata C_HEART_BEAT_REQ::GetMetadata() const {
+  return ::_pbi::AssignDescriptors(
+      &descriptor_table_Protocol_2eproto_getter, &descriptor_table_Protocol_2eproto_once,
+      file_level_metadata_Protocol_2eproto[6]);
+}
+
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace Protocol
 PROTOBUF_NAMESPACE_OPEN
@@ -1277,6 +1396,14 @@ Arena::CreateMaybeMessage< ::Protocol::S_CHAT_RES >(Arena* arena) {
 template<> PROTOBUF_NOINLINE ::Protocol::S_CHAT_NTF*
 Arena::CreateMaybeMessage< ::Protocol::S_CHAT_NTF >(Arena* arena) {
   return Arena::CreateMessageInternal< ::Protocol::S_CHAT_NTF >(arena);
+}
+template<> PROTOBUF_NOINLINE ::Protocol::S_HEART_BEAT_RES*
+Arena::CreateMaybeMessage< ::Protocol::S_HEART_BEAT_RES >(Arena* arena) {
+  return Arena::CreateMessageInternal< ::Protocol::S_HEART_BEAT_RES >(arena);
+}
+template<> PROTOBUF_NOINLINE ::Protocol::C_HEART_BEAT_REQ*
+Arena::CreateMaybeMessage< ::Protocol::C_HEART_BEAT_REQ >(Arena* arena) {
+  return Arena::CreateMessageInternal< ::Protocol::C_HEART_BEAT_REQ >(arena);
 }
 PROTOBUF_NAMESPACE_CLOSE
 

@@ -19,11 +19,11 @@
     <Filter Include="DBSession">
       <UniqueIdentifier>{67947d78-4476-4299-a514-ee2648d45ba1}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ChatSession">
-      <UniqueIdentifier>{ce38593c-79f2-4546-bb79-3c832e60209e}</UniqueIdentifier>
-    </Filter>
     <Filter Include="GameContents">
       <UniqueIdentifier>{0cd555c4-b35b-4327-bda7-d99791831d11}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameSession">
+      <UniqueIdentifier>{ce38593c-79f2-4546-bb79-3c832e60209e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -54,11 +54,8 @@
     <ClCompile Include="Protocol_S2S.pb.cc">
       <Filter>Protocol</Filter>
     </ClCompile>
-    <ClCompile Include="ChatSession.cpp">
-      <Filter>ChatSession</Filter>
-    </ClCompile>
-    <ClCompile Include="ChatSessionManager.cpp">
-      <Filter>ChatSession</Filter>
+    <ClCompile Include="GameSession.cpp">
+      <Filter>GameSession</Filter>
     </ClCompile>
     <ClCompile Include="DBSession.cpp">
       <Filter>DBSession</Filter>
@@ -102,10 +99,7 @@
       <Filter>Protocol</Filter>
     </ClInclude>
     <ClInclude Include="GameSession.h">
-      <Filter>ChatSession</Filter>
-    </ClInclude>
-    <ClInclude Include="ChatSessionManager.h">
-      <Filter>ChatSession</Filter>
+      <Filter>GameSession</Filter>
     </ClInclude>
     <ClInclude Include="DBSession.h">
       <Filter>DBSession</Filter>
@@ -132,5 +126,8 @@
     </None>
     <None Include="packages.config" />
     <None Include="ServerConfig.json" />
+    <None Include="..\Common\Protobuf\bin\Protocol_S2S.proto">
+      <Filter>Protocol</Filter>
+    </None>
   </ItemGroup>
 </Project>

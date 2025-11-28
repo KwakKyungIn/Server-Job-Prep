@@ -1,21 +1,31 @@
 #include "pch.h"
 #include "PlayerSession.h"
-#include "ClientPacketHandler.h" // [User Request]
+#include "ClientPacketHandler.h"
+#include "GameSessionManager.h" // 매니저 등록용
+
+
 
 void PlayerSession::OnConnected()
 {
-	// std::cout << "[Player] Client Connected" << std::endl;
+	// [Manager] 입장 신고
+	GameSessionManager::GSessionManager->Add(static_pointer_cast<PlayerSession>(shared_from_this()));
+
+	// std::cout << "[Player] Client Connected (ID: " << _sessionId << ")" << std::endl;
 }
 
 void PlayerSession::OnDisconnected()
 {
-	// std::cout << "[Player] Client Disconnected" << std::endl;
+	// [Manager] 퇴장 신고
+	GameSessionManager::GSessionManager->Remove(static_pointer_cast<PlayerSession>(shared_from_this()));
+
+	// std::cout << "[Player] Client Disconnected (ID: " << _sessionId << ")" << std::endl;
 }
 
 void PlayerSession::OnRecvPacket(BYTE* buffer, int32 len)
 {
 	PacketSessionRef session = GetPacketSessionRef();
-	// 유저가 보낸 패킷 처리 (C_LOGIN, C_CHAT 등)
+
+	// 패킷 핸들러에게 넘길 때, 이 세션이 누군지 알 수 있게 됨
 	ClientPacketHandler::HandlePacket(session, buffer, len);
 }
 

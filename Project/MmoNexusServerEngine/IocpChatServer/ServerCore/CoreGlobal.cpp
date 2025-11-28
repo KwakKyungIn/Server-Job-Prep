@@ -19,6 +19,7 @@ ThreadManager* GThreadManager = nullptr;
 Memory* GMemory = nullptr;
 SendBufferManager* GSendBufferManager = nullptr;
 DeadLockProfiler* GDeadLockProfiler = nullptr;
+std::atomic<bool> GIsRunning = true;
 //DBConnectionPool* GDBConnectionPool = nullptr;
 
 ServerConfig GServerConfig; // 설정값 담을 전역 변수

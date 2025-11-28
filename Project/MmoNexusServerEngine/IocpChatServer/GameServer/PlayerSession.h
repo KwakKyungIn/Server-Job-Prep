@@ -4,8 +4,8 @@
 class PlayerSession : public PacketSession
 {
 public:
-	PlayerSession() {}
-	virtual ~PlayerSession() {}
+	PlayerSession() {}; // 생성자 추가 (ID 발급용)
+	virtual ~PlayerSession() {};
 
 	virtual void OnConnected() override;
 	virtual void OnDisconnected() override;

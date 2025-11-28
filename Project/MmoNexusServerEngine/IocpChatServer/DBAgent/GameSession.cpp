@@ -1,6 +1,6 @@
 ﻿#include "pch.h"
 #include "GameSession.h"
-#include "DBAgentPacketHandler.h" // 핸들러는 이거 하나 쓴다
+#include "DBAgentPacketHandler.h"
 
 void GameSession::OnConnected()
 {
@@ -15,7 +15,8 @@ void GameSession::OnDisconnected()
 void GameSession::OnRecvPacket(BYTE* buffer, int32 len)
 {
 	PacketSessionRef session = GetPacketSessionRef();
-	// GameServer가 보낸 요청(REQ)을 처리한다.
+
+	// GameServer가 보낸 요청(S2S_REQ_LOGIN 등)을 처리한다.
 	DBAgentPacketHandler::HandlePacket(session, buffer, len);
 }
 

@@ -1,6 +1,6 @@
 #pragma once
 #include <string>
-
+#include <atomic>
 // 1. 설정 데이터 구조체 정의
 struct ServerConfig
 {
@@ -18,6 +18,7 @@ extern class ThreadManager* GThreadManager;
 extern class Memory* GMemory;
 extern class SendBufferManager* GSendBufferManager;
 extern class DeadLockProfiler* GDeadLockProfiler;
+extern std::atomic<bool> GIsRunning;
 //extern class DBConnectionPool* GDBConnectionPool;
 
 // 4. CoreGlobal 클래스 선언
