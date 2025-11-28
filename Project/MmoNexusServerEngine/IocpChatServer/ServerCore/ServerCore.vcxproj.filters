@@ -99,6 +99,9 @@
     <ClInclude Include="BufferWriter.h">
       <Filter>Utils</Filter>
     </ClInclude>
+    <ClInclude Include="Crc32.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CorePch.cpp">
@@ -165,6 +168,9 @@
       <Filter>Utils</Filter>
     </ClCompile>
     <ClCompile Include="BufferWriter.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="Crc32.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
   </ItemGroup>

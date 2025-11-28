@@ -2,7 +2,7 @@
 #include "Session.h"
 #include "SocketUtils.h"
 #include "Service.h"
-
+#include "Crc32.h"
 static std::atomic<uint64> GSessionIdDistributor = 1;
 
 // ==============================
@@ -43,6 +43,24 @@ void Session::Send(SendBufferRef sendBuffer)
 	if (IsConnected() == false)
 		return;
 
+	// ============================================================
+	// [GIGACHAD INJECTION] 보안 헤더 작성 (Seq + CRC)
+	// 큐에 넣기 전에 최종적으로 패킷을 완성한다.
+	// ============================================================
+	BYTE* buffer = sendBuffer->Buffer();
+	PacketHeader* header = reinterpret_cast<PacketHeader*>(buffer);
+
+	// 1. Seq 번호표 발급 및 부착 (Atomic)
+	header->seq = GenerateSendSeq();
+
+	// 2. CRC 초기화 및 계산
+	header->crc = 0; // 계산 전 0으로 클리어
+
+	// [Policy] Header 제외, Body(Payload) 부분만 CRC 계산
+	// (만약 Seq 변조까지 막고 싶으면 포함 범위를 조정하면 됨)
+	header->crc = Crc32::Compute(buffer + sizeof(PacketHeader), header->size - sizeof(PacketHeader));
+	// ============================================================
+
 	bool registerSend = false;
 	const int32 sz = static_cast<int32>(sendBuffer->WriteSize());
 
@@ -81,7 +99,6 @@ void Session::Send(SendBufferRef sendBuffer)
 	if (registerSend)
 		RegisterSend();
 }
-
 // ------------------------------
 // Connect() : 클라이언트 모드 연결 시도
 // ------------------------------

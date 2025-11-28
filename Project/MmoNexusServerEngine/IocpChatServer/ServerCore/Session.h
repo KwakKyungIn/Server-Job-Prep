@@ -37,8 +37,18 @@ public:
 	SessionRef GetSessionRef() { return static_pointer_cast<Session>(shared_from_this()); }
 
 	// [Gigachad] Base Level Session ID
-	// 모든 세션(Client, DB, Chat)은 태어날 때 고유 ID를 부여받는다.
 	uint64 GetSessionId() { return _sessionId; }
+
+	// -------- Security (Moved Up from PacketSession) --------
+	// 부모 클래스인 Session에서 관리해야 Send() 함수에서 접근 가능함
+	uint32 GenerateSendSeq() { return _sendSeq.fetch_add(1); }
+
+	bool CheckRecvSeq(uint32 seq)
+	{
+		if (seq <= _recvSeq) return false;
+		_recvSeq = seq;
+		return true;
+	}
 
 	// -------- Heartbeat --------
 	uint64 GetLastSendTime() { return _lastSendTime; }
@@ -88,6 +98,10 @@ private:
 	Atomic<uint64> _lastSendTime = 0;
 	Atomic<uint64> _lastRecvTime = 0;
 
+	// [Gigachad] Security Variables
+	std::atomic<uint32> _sendSeq = 0;
+	uint32 _recvSeq = 0;
+
 private:
 	USE_LOCK;
 	RecvBuffer _recvBuffer;
@@ -106,6 +120,8 @@ struct PacketHeader
 {
 	uint16 size;
 	uint16 id;
+	uint32 crc;
+	uint32 seq;
 };
 
 class PacketSession : public Session
