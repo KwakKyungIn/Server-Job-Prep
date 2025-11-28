@@ -99,7 +99,7 @@ private:
 	Atomic<uint64> _lastRecvTime = 0;
 
 	// [Gigachad] Security Variables
-	std::atomic<uint32> _sendSeq = 0;
+	std::atomic<uint32> _sendSeq = 1;
 	uint32 _recvSeq = 0;
 
 private:
