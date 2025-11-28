@@ -1,5 +1,11 @@
-#✅ Visual Studio 쓰레기
+# ==============================================================================
+# [PROJECT NEXUS ENGINE] Unified .gitignore
+# Server (C++) + Client (Unity)
+# ==============================================================================
 
+# ------------------------------------------------------------------------------
+# ✅ [Visual Studio & C++ Server Core]
+# ------------------------------------------------------------------------------
 .vs/
 *.user
 *.suo
@@ -15,41 +21,82 @@
 *.lastbuildstate
 *.FileListAbsolute.txt
 
-#✅ 컴파일러 산출물 (바이너리 절대 금지)
-
+# ------------------------------------------------------------------------------
+# ✅ [Compiler Output] (바이너리 절대 금지)
+# ------------------------------------------------------------------------------
 *.exe
-*.dll
 *.lib
 *.exp
 *.pdb
 
+# [CRITICAL] Unity Plugins 예외 처리
+# 기본적으로 *.dll은 무시하지만, 유니티 Assets 폴더 안의 dll(플러그인)은 올려야 함.
+*.dll
+!Assets/**/Plugins/**/*.dll
+!**/Assets/Plugins/**/*.dll
 
-#✅ 자동 생성되는 임시 DB / 브라우징 파일
-
+# ------------------------------------------------------------------------------
+# ✅ [Temporary / Generated Files]
+# ------------------------------------------------------------------------------
 *.ipdb
 *.iobj
+*.recipe
 
-#✅ 빌드 폴더 — ⚠️ 산출물 저장 안 함 (주석 해제됨)
+# [Server Config] (보안상 로컬에만 두는 설정 파일)
+ServerConfig.json
 
+# [Build Folders]
 Debug/
 Release/
 x64/
 ARM64/
 
-#✅ 무조건 제외해야 하는 것
-
-*.recipe
-ServerConfig.json
-
-#✅ 파이썬 생성기 부산물 (각자 빌드해라)
-
-pycache/
+# ------------------------------------------------------------------------------
+# ✅ [Python Tools]
+# ------------------------------------------------------------------------------
+__pycache__/
 *.spec
 build/
 dist/
 
-#✅ NuGet 패키지 폴더 (자동 복원되므로 올리지 마라)
-
+# ------------------------------------------------------------------------------
+# ✅ [NuGet]
+# ------------------------------------------------------------------------------
 packages/
 
-#error eba
+# ==============================================================================
+# ✅ [UNITY CLIENT SPECIAL] (여기가 핵심이다)
+# ==============================================================================
+
+# [Unity System Generated] - 절대 올리지 마라. 용량 폭발의 주범.
+/Project/MmoNexusServerEngine/IocpChatServer/Client/[Ll]ibrary/
+/Project/MmoNexusServerEngine/IocpChatServer/Client/[Tt]emp/
+/Project/MmoNexusServerEngine/IocpChatServer/Client/[Oo]bj/
+/Project/MmoNexusServerEngine/IocpChatServer/Client/[Bb]uild/
+/Project/MmoNexusServerEngine/IocpChatServer/Client/[Bb]uilds/
+/Project/MmoNexusServerEngine/IocpChatServer/Client/[Ll]ogs/
+/Project/MmoNexusServerEngine/IocpChatServer/Client/[Uu]ser[Ss]ettings/
+
+# [Unity IDE Generated] - VS/Rider가 생성하는 껍데기 파일들
+*.csproj
+*.unityproj
+*.sln
+*.tmp
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.opendb
+*.VC.db
+
+# [OS Generated]
+.DS_Store
+Thumbs.db
+
+# [Memory Dumps]
+*.dmp
+
+# ==============================================================================
+# End of .gitignore
+# ==============================================================================

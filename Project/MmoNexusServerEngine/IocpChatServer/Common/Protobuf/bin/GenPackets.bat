@@ -87,11 +87,11 @@ XCOPY /Y ServerPacketHandler.h "../../../DummyClient"
 :: --- Unity Client (C#) ---
 :: [중요] 유니티 프로젝트 경로가 확정되면 아래 경로를 수정해서 주석 해제할 것
 :: 현재는 일단 생성된 파일 확인용으로 둠
-:: SET UNITY_PATH="../../../NexusClient/Assets/Scripts/Packet"
-:: IF NOT EXIST %UNITY_PATH% MKDIR %UNITY_PATH%
-:: XCOPY /Y Enum.cs %UNITY_PATH%
-:: XCOPY /Y Struct.cs %UNITY_PATH%
-:: XCOPY /Y Protocol.cs %UNITY_PATH%
+SET UNITY_PATH="../../../Client/Assets/Scripts/Packet"
+IF NOT EXIST %UNITY_PATH% MKDIR %UNITY_PATH%
+XCOPY /Y Enum.cs %UNITY_PATH%
+XCOPY /Y Struct.cs %UNITY_PATH%
+XCOPY /Y Protocol.cs %UNITY_PATH%
 
 :: =============================================================
 :: 4. 청소
@@ -99,9 +99,6 @@ XCOPY /Y ServerPacketHandler.h "../../../DummyClient"
 DEL /Q /F *.pb.h
 DEL /Q /F *.pb.cc
 DEL /Q /F *.h
-:: C# 파일은 유니티로 복사 후 지우는 게 정석이지만, 
-:: 지금은 복사 경로가 주석 처리되어 있으니 확인을 위해 남겨두거나 지우거나 선택해라.
-:: 일단은 지우지 않고 남겨둔다. (확인용)
-:: DEL /Q /F *.cs
+DEL /Q /F *.cs
 
 PAUSE
