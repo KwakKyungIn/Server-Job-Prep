@@ -1,8 +1,9 @@
 ﻿#include "pch.h"
 #include "S2SPacketHandler.h"
-#include "ClientPacketHandler.h" // 클라에게 보낼 패킷 생성용
-#include "GameSessionManager.h"  // 유저 찾기용
+#include "ClientPacketHandler.h" 
+#include "GameSessionManager.h" 
 #include "PlayerSession.h"
+#include "Job.h" // [NEW]
 
 PacketHandlerFunc S2SPacketHandler::GPacketHandler[UINT16_MAX];
 
@@ -11,41 +12,50 @@ bool S2SPacketHandler::Handle_INVALID(PacketSessionRef& session, BYTE* buffer, i
 	return false;
 }
 
-// [DB -> Game] 로그인 결과 도착 (여기서 클라에게 최종 응답)
+// [DB -> Game] 로그인 결과 도착
 bool S2SPacketHandler::Handle_S2S_RES_LOGIN(PacketSessionRef& session, Protocol::S2S_RES_LOGIN& pkt)
 {
-	// 1. 왕복 티켓 확인 (Context Recovery)
+	// 1. 왕복 티켓 확인
 	uint64 userSessionId = pkt.playersessionid();
 
-	// 2. 대기 중이던 유저 찾기 (O(logN))
-	auto playerSession = GameSessionManager::GSessionManager->Find(userSessionId);
+	// 2. 유저 찾기 (ReadLock 걸고 찾음 - 매니저 내부구현에 따라 다름)
+	// 찾은 후에는 Reference Count가 올라가서 삭제되지 않음.
+	auto playerSession = static_pointer_cast<PlayerSession>(GameSessionManager::GSessionManager->Find(userSessionId));
+
 	if (playerSession == nullptr)
 	{
-		// 유저가 로그인 요청 후 못 참고 나감 (종종 발생)
 		std::cout << "💀 [FAIL] Session Not Found! ID: " << userSessionId << std::endl;
-
 		return true;
 	}
 
-	// 3. 클라에게 보낼 패킷 구성
-	Protocol::S_LOGIN_RES resPkt;
-	resPkt.set_success(pkt.success());
-	resPkt.set_playerid(pkt.playerid()); // DB에서 발급받은 UID (캐릭터 ID)
+	// 3. Job 생성 (해당 유저의 잡큐에 넣는다)
+	playerSession->PushJob(ObjectPool<Job>::MakeShared([playerSession, pkt]()
+		{
+			// --- [Logic Thread Area] ---
 
-	// 4. 유저에게 최종 전송
-	auto sendBuffer = ClientPacketHandler::MakeSendBuffer(resPkt);
-	playerSession->Send(sendBuffer);
+			// [상태 변경] 이제 여기서 플레이어 변수를 마음껏 수정해도 된다.
+			// 예: playerSession->SetPlayerId(pkt.playerid()); 
+			// 예: playerSession->SetStat(...);
 
-	// [Log] 성공 여부 출력
-	if (pkt.success())
-		std::cout << "[Login Success] SessionID: " << userSessionId << " -> PlayerID: " << pkt.playerid() << std::endl;
-	else
-		std::cout << "[Login Failed] SessionID: " << userSessionId << std::endl;
+			// [응답 전송]
+			Protocol::S_LOGIN_RES resPkt;
+			resPkt.set_success(pkt.success());
+			resPkt.set_playerid(pkt.playerid());
+
+			auto sendBuffer = ClientPacketHandler::MakeSendBuffer(resPkt);
+			playerSession->Send(sendBuffer);
+
+			// [Log]
+			if (pkt.success())
+				std::cout << "✅ [Login Success] SessionID: " << playerSession->GetSessionId() << " -> PlayerID: " << pkt.playerid() << std::endl;
+			else
+				std::cout << "❌ [Login Failed] SessionID: " << playerSession->GetSessionId() << std::endl;
+		}));
 
 	return true;
 }
 
-// [Chat -> Game] 채팅 전송 결과
+// ... (나머지 핸들러도 동일한 패턴으로 Job핑하면 됨)
 bool S2SPacketHandler::Handle_S2S_RES_BROADCAST_CHAT(PacketSessionRef& session, Protocol::S2S_RES_BROADCAST_CHAT& pkt)
 {
 	return true;

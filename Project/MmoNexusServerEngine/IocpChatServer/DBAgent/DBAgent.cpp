@@ -51,18 +51,30 @@ int main()
 	ServerServiceRef service = MakeShared<ServerService>(
 		NetAddress(L"127.0.0.1", 7778),
 		MakeShared<IocpCore>(),
-		MakeShared<GameSession>,
+		MakeShared<GameSession>, // 잡큐가 장착된 세션
 		100
 	);
 
 	ASSERT_CRASH(service->Start());
 	std::cout << "✅ [DBAgent] Listening on Port 7778... (Press Ctrl+C to quit)" << std::endl;
 
-	// 4. 스레드 런칭
-	for (int32 i = 0; i < std::thread::hardware_concurrency(); i++)
+	// 4. 스레드 런칭 (Hybrid Architecture)
+	// [CRITICAL Change] IOCP만 돌리면 안 되고, JobQueue도 돌려야 한다!
+	int32 threadCount = std::thread::hardware_concurrency();
+	if (threadCount < 2) threadCount = 2;
+
+	// 전략: 반반 나눈다. 
+	// (DB 쿼리가 느리기 때문에 로직 스레드가 넉넉해야 병목이 안 생긴다)
+	int32 networkThreadCount = threadCount / 2;
+	int32 logicThreadCount = threadCount - networkThreadCount;
+
+	std::cout << "🚀 [System] Worker Threads -> Network: " << networkThreadCount
+		<< " | Logic(DB): " << logicThreadCount << std::endl;
+
+	// 4-1. 네트워크 스레드 (패킷 수신 -> Job 생성)
+	for (int32 i = 0; i < networkThreadCount; i++)
 	{
 		GThreadManager->Launch([=]() {
-			// [CHANGE] GIsRunning 체크
 			while (GIsRunning)
 			{
 				service->GetIocpCore()->Dispatch(10);
@@ -70,16 +82,23 @@ int main()
 			});
 	}
 
-	// [CHANGE] 메인 스레드는 이제 그냥 대기만 하는 게 아니라,
-	// 주기적으로 Heartbeat 검사를 한다.
+	// 4-2. 로직(DB) 스레드 (Job 꺼내서 SQL 실행)
+	// 이 친구들이 없으면 DB 처리가 영원히 안 된다.
+	for (int32 i = 0; i < logicThreadCount; i++)
+	{
+		GThreadManager->Launch([=]() {
+			ThreadManager::DoGlobalQueueWork();
+			});
+	}
 
+	// [CHANGE] 메인 스레드: 주기적 Heartbeat 체크
 	while (GIsRunning)
 	{
-		// 1초에 한 번씩 검사 (너무 자주 할 필요 없음)
+		// 1초에 한 번씩 검사
 		std::this_thread::sleep_for(std::chrono::seconds(3));
 
 		// 서비스들의 상태 체크
-		service->CheckHeartbeat();   // 끊기면 재접속 시도!
+		service->CheckHeartbeat();
 	}
 
 	// 5. 대기 및 종료

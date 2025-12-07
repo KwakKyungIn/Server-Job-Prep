@@ -47,6 +47,60 @@ PROTOBUF_NAMESPACE_OPEN
 PROTOBUF_NAMESPACE_CLOSE
 namespace Protocol {
 
+enum MoveState : int {
+  MOVE_IDLE = 0,
+  MOVE_RUN = 1,
+  MOVE_JUMP = 2,
+  MOVE_SKILL = 3,
+  MoveState_INT_MIN_SENTINEL_DO_NOT_USE_ = std::numeric_limits<int32_t>::min(),
+  MoveState_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits<int32_t>::max()
+};
+bool MoveState_IsValid(int value);
+constexpr MoveState MoveState_MIN = MOVE_IDLE;
+constexpr MoveState MoveState_MAX = MOVE_SKILL;
+constexpr int MoveState_ARRAYSIZE = MoveState_MAX + 1;
+
+const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* MoveState_descriptor();
+template<typename T>
+inline const std::string& MoveState_Name(T enum_t_value) {
+  static_assert(::std::is_same<T, MoveState>::value ||
+    ::std::is_integral<T>::value,
+    "Incorrect type passed to function MoveState_Name.");
+  return ::PROTOBUF_NAMESPACE_ID::internal::NameOfEnum(
+    MoveState_descriptor(), enum_t_value);
+}
+inline bool MoveState_Parse(
+    ::PROTOBUF_NAMESPACE_ID::ConstStringParam name, MoveState* value) {
+  return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<MoveState>(
+    MoveState_descriptor(), name, value);
+}
+enum PlayerType : int {
+  PLAYER_NONE = 0,
+  PLAYER_KNIGHT = 1,
+  PLAYER_MAGE = 2,
+  PLAYER_ARCHER = 3,
+  PlayerType_INT_MIN_SENTINEL_DO_NOT_USE_ = std::numeric_limits<int32_t>::min(),
+  PlayerType_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits<int32_t>::max()
+};
+bool PlayerType_IsValid(int value);
+constexpr PlayerType PlayerType_MIN = PLAYER_NONE;
+constexpr PlayerType PlayerType_MAX = PLAYER_ARCHER;
+constexpr int PlayerType_ARRAYSIZE = PlayerType_MAX + 1;
+
+const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* PlayerType_descriptor();
+template<typename T>
+inline const std::string& PlayerType_Name(T enum_t_value) {
+  static_assert(::std::is_same<T, PlayerType>::value ||
+    ::std::is_integral<T>::value,
+    "Incorrect type passed to function PlayerType_Name.");
+  return ::PROTOBUF_NAMESPACE_ID::internal::NameOfEnum(
+    PlayerType_descriptor(), enum_t_value);
+}
+inline bool PlayerType_Parse(
+    ::PROTOBUF_NAMESPACE_ID::ConstStringParam name, PlayerType* value) {
+  return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<PlayerType>(
+    PlayerType_descriptor(), name, value);
+}
 enum ConnectStatus : int {
   CONNECT_OK = 0,
   CONNECT_FAIL = 1,
@@ -152,31 +206,6 @@ inline bool FriendStatus_Parse(
   return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<FriendStatus>(
     FriendStatus_descriptor(), name, value);
 }
-enum AdminActionResult : int {
-  ACTION_OK = 0,
-  ACTION_FAIL = 1,
-  AdminActionResult_INT_MIN_SENTINEL_DO_NOT_USE_ = std::numeric_limits<int32_t>::min(),
-  AdminActionResult_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits<int32_t>::max()
-};
-bool AdminActionResult_IsValid(int value);
-constexpr AdminActionResult AdminActionResult_MIN = ACTION_OK;
-constexpr AdminActionResult AdminActionResult_MAX = ACTION_FAIL;
-constexpr int AdminActionResult_ARRAYSIZE = AdminActionResult_MAX + 1;
-
-const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* AdminActionResult_descriptor();
-template<typename T>
-inline const std::string& AdminActionResult_Name(T enum_t_value) {
-  static_assert(::std::is_same<T, AdminActionResult>::value ||
-    ::std::is_integral<T>::value,
-    "Incorrect type passed to function AdminActionResult_Name.");
-  return ::PROTOBUF_NAMESPACE_ID::internal::NameOfEnum(
-    AdminActionResult_descriptor(), enum_t_value);
-}
-inline bool AdminActionResult_Parse(
-    ::PROTOBUF_NAMESPACE_ID::ConstStringParam name, AdminActionResult* value) {
-  return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<AdminActionResult>(
-    AdminActionResult_descriptor(), name, value);
-}
 // ===================================================================
 
 
@@ -199,6 +228,16 @@ inline bool AdminActionResult_Parse(
 
 PROTOBUF_NAMESPACE_OPEN
 
+template <> struct is_proto_enum< ::Protocol::MoveState> : ::std::true_type {};
+template <>
+inline const EnumDescriptor* GetEnumDescriptor< ::Protocol::MoveState>() {
+  return ::Protocol::MoveState_descriptor();
+}
+template <> struct is_proto_enum< ::Protocol::PlayerType> : ::std::true_type {};
+template <>
+inline const EnumDescriptor* GetEnumDescriptor< ::Protocol::PlayerType>() {
+  return ::Protocol::PlayerType_descriptor();
+}
 template <> struct is_proto_enum< ::Protocol::ConnectStatus> : ::std::true_type {};
 template <>
 inline const EnumDescriptor* GetEnumDescriptor< ::Protocol::ConnectStatus>() {
@@ -218,11 +257,6 @@ template <> struct is_proto_enum< ::Protocol::FriendStatus> : ::std::true_type {
 template <>
 inline const EnumDescriptor* GetEnumDescriptor< ::Protocol::FriendStatus>() {
   return ::Protocol::FriendStatus_descriptor();
-}
-template <> struct is_proto_enum< ::Protocol::AdminActionResult> : ::std::true_type {};
-template <>
-inline const EnumDescriptor* GetEnumDescriptor< ::Protocol::AdminActionResult>() {
-  return ::Protocol::AdminActionResult_descriptor();
 }
 
 PROTOBUF_NAMESPACE_CLOSE

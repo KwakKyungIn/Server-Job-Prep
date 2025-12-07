@@ -24,6 +24,8 @@ public:
     static void InitTLS();
     static void DestroyTLS();
 
+    static void DoGlobalQueueWork();
+
 private:
     Mutex            _lock;       // 쓰레드 리스트 보호용 락
     vector<thread>   _threads;    // 생성된 쓰레드 목록

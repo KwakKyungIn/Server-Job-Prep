@@ -60,14 +60,35 @@ int main()
 
 	std::cout << "✅ [ChatServer] Running... (Press Ctrl+C to quit)" << std::endl;
 
-	// 6. 스레드 런칭
-	for (int32 i = 0; i < std::thread::hardware_concurrency(); i++)
+	// 6. 스레드 런칭 (Hybrid Architecture)
+	// [CHANGE] 모든 스레드가 IO만 하지 않고, 로직(Job)도 처리하도록 분리
+	int32 threadCount = std::thread::hardware_concurrency();
+	if (threadCount < 2) threadCount = 2;
+
+	int32 networkThreadCount = threadCount / 2;
+	int32 logicThreadCount = threadCount - networkThreadCount;
+
+	std::cout << "🚀 [System] Worker Threads -> Network: " << networkThreadCount
+		<< " | Logic(Job): " << logicThreadCount << std::endl;
+
+	// 6-1. Network Workers (IO 담당)
+	for (int32 i = 0; i < networkThreadCount; i++)
 	{
 		GThreadManager->Launch([=]() {
 			while (GIsRunning)
 			{
-				gameService->GetIocpCore()->Dispatch(10);
+				// gameService와 dbService가 core를 공유하므로 이걸로 충분함
+				core->Dispatch(10);
 			}
+			});
+	}
+
+	// 6-2. Logic Workers (JobQueue 담당)
+	// [ESSENTIAL] 얘네가 없으면 패킷만 쌓이고 처리가 안 됨
+	for (int32 i = 0; i < logicThreadCount; i++)
+	{
+		GThreadManager->Launch([=]() {
+			ThreadManager::DoGlobalQueueWork();
 			});
 	}
 

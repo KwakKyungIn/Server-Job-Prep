@@ -24,24 +24,58 @@ namespace Protocol {
     static EnumReflection() {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
-            "CgpFbnVtLnByb3RvEghQcm90b2NvbCpICg1Db25uZWN0U3RhdHVzEg4KCkNP",
-            "Tk5FQ1RfT0sQABIQCgxDT05ORUNUX0ZBSUwQARIVChFDT05ORUNUX1JFQ09O",
-            "TkVDVBACKjwKCFJvb21UeXBlEhAKDFJPT01fUFJJVkFURRAAEg4KClJPT01f",
-            "R1JPVVAQARIOCgpST09NX0dVSUxEEAIqQAoOUHJlc2VuY2VTdGF0dXMSCwoH",
-            "T0ZGTElORRAAEgoKBk9OTElORRABEgsKB0lOX0dBTUUQAhIICgRBV0FZEAMq",
-            "NgoMRnJpZW5kU3RhdHVzEgsKB1BFTkRJTkcQABIMCghBQ0NFUFRFRBABEgsK",
-            "B0JMT0NLRUQQAiozChFBZG1pbkFjdGlvblJlc3VsdBINCglBQ1RJT05fT0sQ",
-            "ABIPCgtBQ1RJT05fRkFJTBABYgZwcm90bzM="));
+            "CgpFbnVtLnByb3RvEghQcm90b2NvbCpHCglNb3ZlU3RhdGUSDQoJTU9WRV9J",
+            "RExFEAASDAoITU9WRV9SVU4QARINCglNT1ZFX0pVTVAQAhIOCgpNT1ZFX1NL",
+            "SUxMEAMqVAoKUGxheWVyVHlwZRIPCgtQTEFZRVJfTk9ORRAAEhEKDVBMQVlF",
+            "Ul9LTklHSFQQARIPCgtQTEFZRVJfTUFHRRACEhEKDVBMQVlFUl9BUkNIRVIQ",
+            "AypICg1Db25uZWN0U3RhdHVzEg4KCkNPTk5FQ1RfT0sQABIQCgxDT05ORUNU",
+            "X0ZBSUwQARIVChFDT05ORUNUX1JFQ09OTkVDVBACKjwKCFJvb21UeXBlEhAK",
+            "DFJPT01fUFJJVkFURRAAEg4KClJPT01fR1JPVVAQARIOCgpST09NX0dVSUxE",
+            "EAIqQAoOUHJlc2VuY2VTdGF0dXMSCwoHT0ZGTElORRAAEgoKBk9OTElORRAB",
+            "EgsKB0lOX0dBTUUQAhIICgRBV0FZEAMqNgoMRnJpZW5kU3RhdHVzEgsKB1BF",
+            "TkRJTkcQABIMCghBQ0NFUFRFRBABEgsKB0JMT0NLRUQQAmIGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
-          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Protocol.ConnectStatus), typeof(global::Protocol.RoomType), typeof(global::Protocol.PresenceStatus), typeof(global::Protocol.FriendStatus), typeof(global::Protocol.AdminActionResult), }, null, null));
+          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Protocol.MoveState), typeof(global::Protocol.PlayerType), typeof(global::Protocol.ConnectStatus), typeof(global::Protocol.RoomType), typeof(global::Protocol.PresenceStatus), typeof(global::Protocol.FriendStatus), }, null, null));
     }
     #endregion
 
   }
   #region Enums
   /// <summary>
-  /// ===== 연결/세션 관련 =====
+  /// ===== [Game Logic] 플레이어 행동 상태 =====
+  /// </summary>
+  public enum MoveState {
+    /// <summary>
+    /// 대기
+    /// </summary>
+    [pbr::OriginalName("MOVE_IDLE")] MoveIdle = 0,
+    /// <summary>
+    /// 달리기
+    /// </summary>
+    [pbr::OriginalName("MOVE_RUN")] MoveRun = 1,
+    /// <summary>
+    /// 점프
+    /// </summary>
+    [pbr::OriginalName("MOVE_JUMP")] MoveJump = 2,
+    /// <summary>
+    /// 스킬 사용 중
+    /// </summary>
+    [pbr::OriginalName("MOVE_SKILL")] MoveSkill = 3,
+  }
+
+  /// <summary>
+  /// ===== [Game Logic] 플레이어 직업 타입 =====
+  /// </summary>
+  public enum PlayerType {
+    [pbr::OriginalName("PLAYER_NONE")] PlayerNone = 0,
+    [pbr::OriginalName("PLAYER_KNIGHT")] PlayerKnight = 1,
+    [pbr::OriginalName("PLAYER_MAGE")] PlayerMage = 2,
+    [pbr::OriginalName("PLAYER_ARCHER")] PlayerArcher = 3,
+  }
+
+  /// <summary>
+  /// ===== [Network] 연결 상태 =====
   /// </summary>
   public enum ConnectStatus {
     [pbr::OriginalName("CONNECT_OK")] ConnectOk = 0,
@@ -50,7 +84,7 @@ namespace Protocol {
   }
 
   /// <summary>
-  /// ===== 채팅 룸 관련 =====
+  /// ===== [Chat] 채팅 룸 타입 =====
   /// </summary>
   public enum RoomType {
     /// <summary>
@@ -68,7 +102,7 @@ namespace Protocol {
   }
 
   /// <summary>
-  /// ===== Presence 상태 =====
+  /// ===== [Social] Presence 상태 =====
   /// </summary>
   public enum PresenceStatus {
     [pbr::OriginalName("OFFLINE")] Offline = 0,
@@ -78,20 +112,12 @@ namespace Protocol {
   }
 
   /// <summary>
-  /// ===== 친구 요청 상태 =====
+  /// ===== [Social] 친구 요청 상태 =====
   /// </summary>
   public enum FriendStatus {
     [pbr::OriginalName("PENDING")] Pending = 0,
     [pbr::OriginalName("ACCEPTED")] Accepted = 1,
     [pbr::OriginalName("BLOCKED")] Blocked = 2,
-  }
-
-  /// <summary>
-  /// ===== 관리자 명령 결과 =====
-  /// </summary>
-  public enum AdminActionResult {
-    [pbr::OriginalName("ACTION_OK")] ActionOk = 0,
-    [pbr::OriginalName("ACTION_FAIL")] ActionFail = 1,
   }
 
   #endregion

@@ -22,26 +22,29 @@ namespace _pbi = _pb::internal;
 
 namespace Protocol {
 }  // namespace Protocol
-static const ::_pb::EnumDescriptor* file_level_enum_descriptors_Enum_2eproto[5];
+static const ::_pb::EnumDescriptor* file_level_enum_descriptors_Enum_2eproto[6];
 static constexpr ::_pb::ServiceDescriptor const** file_level_service_descriptors_Enum_2eproto = nullptr;
 const uint32_t TableStruct_Enum_2eproto::offsets[1] = {};
 static constexpr ::_pbi::MigrationSchema* schemas = nullptr;
 static constexpr ::_pb::Message* const* file_default_instances = nullptr;
 
 const char descriptor_table_protodef_Enum_2eproto[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) =
-  "\n\nEnum.proto\022\010Protocol*H\n\rConnectStatus\022"
-  "\016\n\nCONNECT_OK\020\000\022\020\n\014CONNECT_FAIL\020\001\022\025\n\021CON"
-  "NECT_RECONNECT\020\002*<\n\010RoomType\022\020\n\014ROOM_PRI"
-  "VATE\020\000\022\016\n\nROOM_GROUP\020\001\022\016\n\nROOM_GUILD\020\002*@"
-  "\n\016PresenceStatus\022\013\n\007OFFLINE\020\000\022\n\n\006ONLINE\020"
-  "\001\022\013\n\007IN_GAME\020\002\022\010\n\004AWAY\020\003*6\n\014FriendStatus"
-  "\022\013\n\007PENDING\020\000\022\014\n\010ACCEPTED\020\001\022\013\n\007BLOCKED\020\002"
-  "*3\n\021AdminActionResult\022\r\n\tACTION_OK\020\000\022\017\n\013"
-  "ACTION_FAIL\020\001b\006proto3"
+  "\n\nEnum.proto\022\010Protocol*G\n\tMoveState\022\r\n\tM"
+  "OVE_IDLE\020\000\022\014\n\010MOVE_RUN\020\001\022\r\n\tMOVE_JUMP\020\002\022"
+  "\016\n\nMOVE_SKILL\020\003*T\n\nPlayerType\022\017\n\013PLAYER_"
+  "NONE\020\000\022\021\n\rPLAYER_KNIGHT\020\001\022\017\n\013PLAYER_MAGE"
+  "\020\002\022\021\n\rPLAYER_ARCHER\020\003*H\n\rConnectStatus\022\016"
+  "\n\nCONNECT_OK\020\000\022\020\n\014CONNECT_FAIL\020\001\022\025\n\021CONN"
+  "ECT_RECONNECT\020\002*<\n\010RoomType\022\020\n\014ROOM_PRIV"
+  "ATE\020\000\022\016\n\nROOM_GROUP\020\001\022\016\n\nROOM_GUILD\020\002*@\n"
+  "\016PresenceStatus\022\013\n\007OFFLINE\020\000\022\n\n\006ONLINE\020\001"
+  "\022\013\n\007IN_GAME\020\002\022\010\n\004AWAY\020\003*6\n\014FriendStatus\022"
+  "\013\n\007PENDING\020\000\022\014\n\010ACCEPTED\020\001\022\013\n\007BLOCKED\020\002b"
+  "\006proto3"
   ;
 static ::_pbi::once_flag descriptor_table_Enum_2eproto_once;
 const ::_pbi::DescriptorTable descriptor_table_Enum_2eproto = {
-    false, false, 341, descriptor_table_protodef_Enum_2eproto,
+    false, false, 447, descriptor_table_protodef_Enum_2eproto,
     "Enum.proto",
     &descriptor_table_Enum_2eproto_once, nullptr, 0, 0,
     schemas, file_default_instances, TableStruct_Enum_2eproto::offsets,
@@ -55,9 +58,41 @@ PROTOBUF_ATTRIBUTE_WEAK const ::_pbi::DescriptorTable* descriptor_table_Enum_2ep
 // Force running AddDescriptors() at dynamic initialization time.
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 static ::_pbi::AddDescriptorsRunner dynamic_init_dummy_Enum_2eproto(&descriptor_table_Enum_2eproto);
 namespace Protocol {
-const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* ConnectStatus_descriptor() {
+const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* MoveState_descriptor() {
   ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&descriptor_table_Enum_2eproto);
   return file_level_enum_descriptors_Enum_2eproto[0];
+}
+bool MoveState_IsValid(int value) {
+  switch (value) {
+    case 0:
+    case 1:
+    case 2:
+    case 3:
+      return true;
+    default:
+      return false;
+  }
+}
+
+const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* PlayerType_descriptor() {
+  ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&descriptor_table_Enum_2eproto);
+  return file_level_enum_descriptors_Enum_2eproto[1];
+}
+bool PlayerType_IsValid(int value) {
+  switch (value) {
+    case 0:
+    case 1:
+    case 2:
+    case 3:
+      return true;
+    default:
+      return false;
+  }
+}
+
+const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* ConnectStatus_descriptor() {
+  ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&descriptor_table_Enum_2eproto);
+  return file_level_enum_descriptors_Enum_2eproto[2];
 }
 bool ConnectStatus_IsValid(int value) {
   switch (value) {
@@ -72,7 +107,7 @@ bool ConnectStatus_IsValid(int value) {
 
 const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* RoomType_descriptor() {
   ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&descriptor_table_Enum_2eproto);
-  return file_level_enum_descriptors_Enum_2eproto[1];
+  return file_level_enum_descriptors_Enum_2eproto[3];
 }
 bool RoomType_IsValid(int value) {
   switch (value) {
@@ -87,7 +122,7 @@ bool RoomType_IsValid(int value) {
 
 const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* PresenceStatus_descriptor() {
   ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&descriptor_table_Enum_2eproto);
-  return file_level_enum_descriptors_Enum_2eproto[2];
+  return file_level_enum_descriptors_Enum_2eproto[4];
 }
 bool PresenceStatus_IsValid(int value) {
   switch (value) {
@@ -103,27 +138,13 @@ bool PresenceStatus_IsValid(int value) {
 
 const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* FriendStatus_descriptor() {
   ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&descriptor_table_Enum_2eproto);
-  return file_level_enum_descriptors_Enum_2eproto[3];
+  return file_level_enum_descriptors_Enum_2eproto[5];
 }
 bool FriendStatus_IsValid(int value) {
   switch (value) {
     case 0:
     case 1:
     case 2:
-      return true;
-    default:
-      return false;
-  }
-}
-
-const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* AdminActionResult_descriptor() {
-  ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&descriptor_table_Enum_2eproto);
-  return file_level_enum_descriptors_Enum_2eproto[4];
-}
-bool AdminActionResult_IsValid(int value) {
-  switch (value) {
-    case 0:
-    case 1:
       return true;
     default:
       return false;

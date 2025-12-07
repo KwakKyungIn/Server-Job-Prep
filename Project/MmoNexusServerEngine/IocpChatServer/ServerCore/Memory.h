@@ -62,3 +62,4 @@ shared_ptr<Type> MakeShared(Args&&... args)
 {
     return shared_ptr<Type>{ xnew<Type>(forward<Args>(args)...), xdelete<Type> };
 }
+

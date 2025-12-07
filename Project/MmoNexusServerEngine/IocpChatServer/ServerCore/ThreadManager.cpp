@@ -2,6 +2,9 @@
 #include "ThreadManager.h"
 #include "CoreTLS.h"
 #include "CoreGlobal.h"
+#include "GlobalQueue.h" // [NEW] 필수
+#include "JobQueue.h"
+
 
 /*--------------------------------
         ThreadManager
@@ -62,4 +65,35 @@ void ThreadManager::InitTLS()
 void ThreadManager::DestroyTLS()
 {
     // 현재는 정리할 리소스 없음 (확장 가능)
+}
+
+// [NEW] 워커 스레드가 실행할 메인 루프
+void ThreadManager::DoGlobalQueueWork()
+{
+    while (true) // 혹은 while (GIsRunning)
+    {
+        // 1. GlobalQueue에서 일감이 있는 JobQueue를 꺼내온다
+        uint64 now = ::GetTickCount64();
+
+        // GGlobalQueue가 nullptr면 크래시 나니까 방어 코드 (초반 초기화 이슈 방지)
+        if (GGlobalQueue == nullptr)
+        {
+            this_thread::sleep_for(std::chrono::milliseconds(10));
+            continue;
+        }
+
+        shared_ptr<JobQueue> jobQueue = GGlobalQueue->Pop();
+
+        // 2. 일감이 없으면? 
+        if (jobQueue == nullptr)
+        {
+            // 잠깐 쉬었다가 다시 확인 (CPU 과점유 방지)
+            this_thread::sleep_for(std::chrono::milliseconds(10));
+            continue;
+        }
+
+        // 3. 일감이 있으면 실행한다.
+        // Execute 내부에서 큐에 쌓인 Job들을 처리함
+        jobQueue->Execute();
+    }
 }

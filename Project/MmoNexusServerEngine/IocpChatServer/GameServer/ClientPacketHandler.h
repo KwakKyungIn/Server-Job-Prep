@@ -11,11 +11,17 @@ public:
 	{
 		PKT_C_LOGIN_REQ = 1000,
 		PKT_S_LOGIN_RES = 1001,
-		PKT_C_CHAT_REQ = 1002,
-		PKT_S_CHAT_RES = 1003,
-		PKT_S_CHAT_NTF = 1004,
-		PKT_S_HEART_BEAT_RES = 1005,
-		PKT_C_HEART_BEAT_REQ = 1006,
+		PKT_C_ENTER_GAME_REQ = 1002,
+		PKT_S_ENTER_GAME_RES = 1003,
+		PKT_C_MOVE = 1004,
+		PKT_S_MOVE = 1005,
+		PKT_S_SPAWN = 1006,
+		PKT_S_DESPAWN = 1007,
+		PKT_C_CHAT_REQ = 1008,
+		PKT_S_CHAT_RES = 1009,
+		PKT_S_CHAT_NTF = 1010,
+		PKT_S_HEART_BEAT_RES = 1011,
+		PKT_C_HEART_BEAT_REQ = 1012,
 	};
 
 	static void Init()
@@ -23,6 +29,8 @@ public:
 		for (int32 i = 0; i < UINT16_MAX; i++)
 			GPacketHandler[i] = Handle_INVALID;
 		GPacketHandler[PKT_C_LOGIN_REQ] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::C_LOGIN_REQ>(Handle_C_LOGIN_REQ, session, buffer, len); };
+		GPacketHandler[PKT_C_ENTER_GAME_REQ] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::C_ENTER_GAME_REQ>(Handle_C_ENTER_GAME_REQ, session, buffer, len); };
+		GPacketHandler[PKT_C_MOVE] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::C_MOVE>(Handle_C_MOVE, session, buffer, len); };
 		GPacketHandler[PKT_C_CHAT_REQ] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::C_CHAT_REQ>(Handle_C_CHAT_REQ, session, buffer, len); };
 		GPacketHandler[PKT_C_HEART_BEAT_REQ] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::C_HEART_BEAT_REQ>(Handle_C_HEART_BEAT_REQ, session, buffer, len); };
 	}
@@ -33,6 +41,10 @@ public:
 		return GPacketHandler[header->id](session, buffer, len);
 	}
 	static SendBufferRef MakeSendBuffer(Protocol::S_LOGIN_RES& pkt) { return MakeSendBuffer(pkt, PKT_S_LOGIN_RES); }
+	static SendBufferRef MakeSendBuffer(Protocol::S_ENTER_GAME_RES& pkt) { return MakeSendBuffer(pkt, PKT_S_ENTER_GAME_RES); }
+	static SendBufferRef MakeSendBuffer(Protocol::S_MOVE& pkt) { return MakeSendBuffer(pkt, PKT_S_MOVE); }
+	static SendBufferRef MakeSendBuffer(Protocol::S_SPAWN& pkt) { return MakeSendBuffer(pkt, PKT_S_SPAWN); }
+	static SendBufferRef MakeSendBuffer(Protocol::S_DESPAWN& pkt) { return MakeSendBuffer(pkt, PKT_S_DESPAWN); }
 	static SendBufferRef MakeSendBuffer(Protocol::S_CHAT_RES& pkt) { return MakeSendBuffer(pkt, PKT_S_CHAT_RES); }
 	static SendBufferRef MakeSendBuffer(Protocol::S_CHAT_NTF& pkt) { return MakeSendBuffer(pkt, PKT_S_CHAT_NTF); }
 	static SendBufferRef MakeSendBuffer(Protocol::S_HEART_BEAT_RES& pkt) { return MakeSendBuffer(pkt, PKT_S_HEART_BEAT_RES); }
@@ -41,6 +53,8 @@ public:
 	static PacketHandlerFunc GPacketHandler[UINT16_MAX];
 	static bool Handle_INVALID(PacketSessionRef& session, BYTE* buffer, int32 len);
 	static bool Handle_C_LOGIN_REQ(PacketSessionRef& session, Protocol::C_LOGIN_REQ& pkt);
+	static bool Handle_C_ENTER_GAME_REQ(PacketSessionRef& session, Protocol::C_ENTER_GAME_REQ& pkt);
+	static bool Handle_C_MOVE(PacketSessionRef& session, Protocol::C_MOVE& pkt);
 	static bool Handle_C_CHAT_REQ(PacketSessionRef& session, Protocol::C_CHAT_REQ& pkt);
 	static bool Handle_C_HEART_BEAT_REQ(PacketSessionRef& session, Protocol::C_HEART_BEAT_REQ& pkt);
 

@@ -161,8 +161,11 @@
     <ClInclude Include="CoreTLS.h" />
     <ClInclude Include="Crc32.h" />
     <ClInclude Include="DeadLockProfiler.h" />
+    <ClInclude Include="GlobalQueue.h" />
     <ClInclude Include="IocpCore.h" />
     <ClInclude Include="IocpEvent.h" />
+    <ClInclude Include="Job.h" />
+    <ClInclude Include="JobQueue.h" />
     <ClInclude Include="Listener.h" />
     <ClInclude Include="Lock.h" />
     <ClInclude Include="Memory.h" />
@@ -189,8 +192,10 @@
     <ClCompile Include="CoreTLS.cpp" />
     <ClCompile Include="Crc32.cpp" />
     <ClCompile Include="DeadLockProfiler.cpp" />
+    <ClCompile Include="GlobalQueue.cpp" />
     <ClCompile Include="IocpCore.cpp" />
     <ClCompile Include="IocpEvent.cpp" />
+    <ClCompile Include="JobQueue.cpp" />
     <ClCompile Include="Listener.cpp" />
     <ClCompile Include="Lock.cpp" />
     <ClCompile Include="Memory.cpp" />

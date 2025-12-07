@@ -1,7 +1,8 @@
 using Google.Protobuf;
-using Protocol; // [수정] 네임스페이스 변경
+using Protocol;
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 public class PacketManager
 {
@@ -15,19 +16,16 @@ public class PacketManager
 		Register();
 	}
 
-	// [수정] ServerSession을 전역으로 사용
 	Dictionary<ushort, Action<ServerSession, ArraySegment<byte>, ushort>> _onRecv = new Dictionary<ushort, Action<ServerSession, ArraySegment<byte>, ushort>>();
 	Dictionary<ushort, Action<ServerSession, IMessage>> _handler = new Dictionary<ushort, Action<ServerSession, IMessage>>();
 
-	// [GIGACHAD FIX] MsgId를 외부 Enum.cs에 의존하지 않고 내부에서 정의함.
-	// 이렇게 하면 파이썬 파서가 넘겨준 이름(S_LOGIN_RES 등)과 100% 일치함.
 	public enum MsgId : ushort
 	{
 	{%- for pkt in parser.total_pkt %}
 		{{pkt.name}} = {{pkt.id}},
 	{%- endfor %}
 	}
-		
+
 	public void Register()
 	{
 {%- for pkt in parser.recv_pkt %}
@@ -83,7 +81,11 @@ public class PacketManager
 
 		Action<ServerSession, IMessage> action = null;
 		if (_handler.TryGetValue(id, out action))
-			action.Invoke(session, pkt);
+		{
+			// [GIGACHAD FIX] IO Thread -> Main Thread Queue Toss!
+			// 패킷 조립(Deserialize)은 여기서 끝내고, 로직 실행(Handler)은 메인 스레드 큐로 넘긴다.
+			NetworkManager.Instance.PushPacket(() => action.Invoke(session, pkt));
+		}
 	}
 
 	public Action<ServerSession, IMessage> GetPacketHandler(ushort id)

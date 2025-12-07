@@ -1,7 +1,8 @@
 using Google.Protobuf;
-using Protocol; // [수정] 네임스페이스 변경
+using Protocol;
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 public class PacketManager
 {
@@ -15,27 +16,38 @@ public class PacketManager
 		Register();
 	}
 
-	// [수정] ServerSession을 전역으로 사용
 	Dictionary<ushort, Action<ServerSession, ArraySegment<byte>, ushort>> _onRecv = new Dictionary<ushort, Action<ServerSession, ArraySegment<byte>, ushort>>();
 	Dictionary<ushort, Action<ServerSession, IMessage>> _handler = new Dictionary<ushort, Action<ServerSession, IMessage>>();
 
-	// [GIGACHAD FIX] MsgId를 외부 Enum.cs에 의존하지 않고 내부에서 정의함.
-	// 이렇게 하면 파이썬 파서가 넘겨준 이름(S_LOGIN_RES 등)과 100% 일치함.
 	public enum MsgId : ushort
 	{
 		C_LOGIN_REQ = 1000,
 		S_LOGIN_RES = 1001,
-		C_CHAT_REQ = 1002,
-		S_CHAT_RES = 1003,
-		S_CHAT_NTF = 1004,
-		S_HEART_BEAT_RES = 1005,
-		C_HEART_BEAT_REQ = 1006,
+		C_ENTER_GAME_REQ = 1002,
+		S_ENTER_GAME_RES = 1003,
+		C_MOVE = 1004,
+		S_MOVE = 1005,
+		S_SPAWN = 1006,
+		S_DESPAWN = 1007,
+		C_CHAT_REQ = 1008,
+		S_CHAT_RES = 1009,
+		S_CHAT_NTF = 1010,
+		S_HEART_BEAT_RES = 1011,
+		C_HEART_BEAT_REQ = 1012,
 	}
-		
+
 	public void Register()
 	{
 		_onRecv.Add((ushort)MsgId.S_LOGIN_RES, MakePacket<S_LOGIN_RES>);
 		_handler.Add((ushort)MsgId.S_LOGIN_RES, PacketHandler.S_LOGIN_RESHandler);
+		_onRecv.Add((ushort)MsgId.S_ENTER_GAME_RES, MakePacket<S_ENTER_GAME_RES>);
+		_handler.Add((ushort)MsgId.S_ENTER_GAME_RES, PacketHandler.S_ENTER_GAME_RESHandler);
+		_onRecv.Add((ushort)MsgId.S_MOVE, MakePacket<S_MOVE>);
+		_handler.Add((ushort)MsgId.S_MOVE, PacketHandler.S_MOVEHandler);
+		_onRecv.Add((ushort)MsgId.S_SPAWN, MakePacket<S_SPAWN>);
+		_handler.Add((ushort)MsgId.S_SPAWN, PacketHandler.S_SPAWNHandler);
+		_onRecv.Add((ushort)MsgId.S_DESPAWN, MakePacket<S_DESPAWN>);
+		_handler.Add((ushort)MsgId.S_DESPAWN, PacketHandler.S_DESPAWNHandler);
 		_onRecv.Add((ushort)MsgId.S_CHAT_RES, MakePacket<S_CHAT_RES>);
 		_handler.Add((ushort)MsgId.S_CHAT_RES, PacketHandler.S_CHAT_RESHandler);
 		_onRecv.Add((ushort)MsgId.S_CHAT_NTF, MakePacket<S_CHAT_NTF>);
@@ -91,7 +103,11 @@ public class PacketManager
 
 		Action<ServerSession, IMessage> action = null;
 		if (_handler.TryGetValue(id, out action))
-			action.Invoke(session, pkt);
+		{
+			// [GIGACHAD FIX] IO Thread -> Main Thread Queue Toss!
+			// 패킷 조립(Deserialize)은 여기서 끝내고, 로직 실행(Handler)은 메인 스레드 큐로 넘긴다.
+			NetworkManager.Instance.PushPacket(() => action.Invoke(session, pkt));
+		}
 	}
 
 	public Action<ServerSession, IMessage> GetPacketHandler(ushort id)

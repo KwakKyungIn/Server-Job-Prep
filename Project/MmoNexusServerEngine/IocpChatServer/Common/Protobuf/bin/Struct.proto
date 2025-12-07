@@ -1,40 +1,36 @@
 syntax = "proto3";
 package Protocol;
+
 import "Enum.proto";
 
-// ===== 플레이어 =====
+// ===== 공용 위치 정보 =====
+message PositionInfo {
+    float x = 1;
+    float y = 2;
+    float z = 3;
+    float yaw = 4;       // 바라보는 방향 (Rotation Y)
+    MoveState state = 5; // IDLE, RUN, JUMP 등
+}
+
+// ===== 플레이어 정보 (Login, Spawn 시 사용) =====
 message PlayerInfo {
-    int64 playerId = 1;
+    uint64 playerId = 1;
     string name = 2;
-    PresenceStatus presence = 3;
+    PlayerType type = 3;
+    PositionInfo posInfo = 4; // 위치 정보 포함
+    // 추후 StatInfo statInfo = 5; 등 추가
 }
 
-// ===== 채팅 메시지 =====
-message ChatMessage {
-    int64 messageId = 1;    // 서버가 부여하는 시퀀스
-    int64 senderId = 2;
-    string message = 3;
-    int64 timestamp = 4;
-}
-
-// ===== 채팅 방 =====
+// ===== 방/맵 정보 =====
+// 채팅방 개념을 게임 맵 개념으로 확장
 message RoomInfo {
-    int64 roomId = 1;
-    RoomType type = 2;
-    string roomName = 3;
-    repeated PlayerInfo members = 4;
+    int32 roomId = 1; // 맵 ID or 인스턴스 ID
+    repeated PlayerInfo players = 2; // 현재 맵에 있는 유저들
 }
 
-// ===== 친구 =====
-message FriendInfo {
-    int64 friendId = 1;
+// ===== (구) 채팅 메시지 (필요하면 유지) =====
+message ChatMessage {
+    uint64 senderId = 1;
     string name = 2;
-    FriendStatus status = 3;
-    PresenceStatus presence = 4;
-}
-
-// ===== Reconnect =====
-message PendingMessage {
-    int64 messageId = 1;
-    ChatMessage chat = 2;
+    string message = 3;
 }

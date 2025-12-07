@@ -196,6 +196,8 @@
     <ClCompile Include="Enum.pb.cc">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="GameMap.cpp" />
+    <ClCompile Include="GameRoom.cpp" />
     <ClCompile Include="GameServer.cpp" />
     <ClCompile Include="GameSessionManager.cpp" />
     <ClCompile Include="pch.cpp">
@@ -218,6 +220,8 @@
     <ClInclude Include="ClientPacketHandler.h" />
     <ClInclude Include="DBSession.h" />
     <ClInclude Include="Enum.pb.h" />
+    <ClInclude Include="GameMap.h" />
+    <ClInclude Include="GameRoom.h" />
     <ClInclude Include="GameSessionManager.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="PlayerSession.h" />
@@ -227,6 +231,7 @@
     <ClInclude Include="Struct.pb.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\Common\Protobuf\bin\Enum.proto" />
     <None Include="..\Common\Protobuf\bin\GenPackets.bat" />
     <None Include="..\Common\Protobuf\bin\Protocol.proto" />
     <None Include="..\Common\Protobuf\bin\Protocol_S2S.proto" />

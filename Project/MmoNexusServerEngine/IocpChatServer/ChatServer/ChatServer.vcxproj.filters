@@ -19,9 +19,6 @@
     <Filter Include="DBSession">
       <UniqueIdentifier>{67947d78-4476-4299-a514-ee2648d45ba1}</UniqueIdentifier>
     </Filter>
-    <Filter Include="GameContents">
-      <UniqueIdentifier>{0cd555c4-b35b-4327-bda7-d99791831d11}</UniqueIdentifier>
-    </Filter>
     <Filter Include="GameSession">
       <UniqueIdentifier>{ce38593c-79f2-4546-bb79-3c832e60209e}</UniqueIdentifier>
     </Filter>
@@ -41,15 +38,6 @@
     </ClCompile>
     <ClCompile Include="Struct.pb.cc">
       <Filter>Protocol</Filter>
-    </ClCompile>
-    <ClCompile Include="Player.cpp">
-      <Filter>GameContents</Filter>
-    </ClCompile>
-    <ClCompile Include="Room.cpp">
-      <Filter>GameContents</Filter>
-    </ClCompile>
-    <ClCompile Include="RoomManager.cpp">
-      <Filter>Main</Filter>
     </ClCompile>
     <ClCompile Include="Protocol_S2S.pb.cc">
       <Filter>Protocol</Filter>
@@ -79,21 +67,6 @@
     </ClInclude>
     <ClInclude Include="Enum.pb.h">
       <Filter>Protocol</Filter>
-    </ClInclude>
-    <ClInclude Include="Player.h">
-      <Filter>GameContents</Filter>
-    </ClInclude>
-    <ClInclude Include="Room.h">
-      <Filter>GameContents</Filter>
-    </ClInclude>
-    <ClInclude Include="RoomManager.h">
-      <Filter>Main</Filter>
-    </ClInclude>
-    <ClInclude Include="Log.h">
-      <Filter>Log</Filter>
-    </ClInclude>
-    <ClInclude Include="JobQueue.h">
-      <Filter>GameContents</Filter>
     </ClInclude>
     <ClInclude Include="Protocol_S2S.pb.h">
       <Filter>Protocol</Filter>

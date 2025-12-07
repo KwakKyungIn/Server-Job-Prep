@@ -22,6 +22,9 @@
     <Filter Include="Session_DB">
       <UniqueIdentifier>{a38f4221-a55b-41c9-a5c1-d11a1aeff83d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="GameContents">
+      <UniqueIdentifier>{a1b74ba9-df74-432b-aa08-401bd67610f0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GameServer.cpp">
@@ -58,6 +61,12 @@
       <Filter>Protocol</Filter>
     </ClCompile>
     <ClCompile Include="GameSessionManager.cpp" />
+    <ClCompile Include="GameMap.cpp">
+      <Filter>GameContents</Filter>
+    </ClCompile>
+    <ClCompile Include="GameRoom.cpp">
+      <Filter>GameContents</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -91,6 +100,12 @@
       <Filter>Protocol</Filter>
     </ClInclude>
     <ClInclude Include="GameSessionManager.h" />
+    <ClInclude Include="GameMap.h">
+      <Filter>GameContents</Filter>
+    </ClInclude>
+    <ClInclude Include="GameRoom.h">
+      <Filter>GameContents</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="ServerConfig.json" />
@@ -104,6 +119,9 @@
       <Filter>Protocol</Filter>
     </None>
     <None Include="..\Common\Protobuf\bin\GenPackets.bat">
+      <Filter>Protocol</Filter>
+    </None>
+    <None Include="..\Common\Protobuf\bin\Enum.proto">
       <Filter>Protocol</Filter>
     </None>
   </ItemGroup>

@@ -75,16 +75,38 @@ int main()
 	std::cout << "   - Connecting to DB on 7778" << std::endl;
 	std::cout << "   - Connecting to Chat on 7779" << std::endl;
 
-	// 8. 스레드 런칭
-	for (int32 i = 0; i < std::thread::hardware_concurrency(); i++)
+	// 8. 스레드 런칭 (Hybrid Mode)
+	// [수정됨] IO 담당 스레드와 로직 담당 스레드를 분리한다.
+
+	int32 threadCount = std::thread::hardware_concurrency();
+	if (threadCount < 2) threadCount = 2; // 최소 2개는 보장
+
+	// 전략: 절반은 네트워크(IO), 절반은 로직(Job)
+	// (MMO 특성상 로직 스레드가 더 필요할 수 있지만, 일단 5:5로 시작)
+	int32 networkThreadCount = threadCount / 2;
+	int32 logicThreadCount = threadCount - networkThreadCount;
+
+	std::cout << "🚀 [System] Worker Threads -> Network(IOCP): " << networkThreadCount
+		<< " | Logic(Job): " << logicThreadCount << std::endl;
+
+	// 8-1. 네트워크 스레드 (IOCP Dispatch Only)
+	for (int32 i = 0; i < networkThreadCount; i++)
 	{
 		GThreadManager->Launch([=]() {
-			// [수정] 무한루프 대신 GIsRunning 확인
 			while (GIsRunning)
 			{
-				// 타임아웃을 10ms 줘서 깃발 확인할 틈을 준다.
+				// IO 처리 (기존 역할)
 				core->Dispatch(10);
 			}
+			});
+	}
+
+	// 8-2. 로직 스레드 (JobQueue Execute Only)
+	for (int32 i = 0; i < logicThreadCount; i++)
+	{
+		GThreadManager->Launch([=]() {
+			// 로직 처리 (새로운 역할)
+			ThreadManager::DoGlobalQueueWork();
 			});
 	}
 

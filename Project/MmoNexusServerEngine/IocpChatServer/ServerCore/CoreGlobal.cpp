@@ -5,6 +5,7 @@
 #include "DeadLockProfiler.h"
 #include "SocketUtils.h"
 #include "SendBuffer.h"
+#include "GlobalQueue.h"
 
 //  JSON 라이브러리 필수
 #include <fstream>
@@ -19,6 +20,7 @@ ThreadManager* GThreadManager = nullptr;
 Memory* GMemory = nullptr;
 SendBufferManager* GSendBufferManager = nullptr;
 DeadLockProfiler* GDeadLockProfiler = nullptr;
+GlobalQueue* GGlobalQueue = nullptr;
 std::atomic<bool> GIsRunning = true;
 //DBConnectionPool* GDBConnectionPool = nullptr;
 
@@ -58,6 +60,7 @@ CoreGlobal::CoreGlobal()
 	GMemory = new Memory();
 	GSendBufferManager = new SendBufferManager();
 	GDeadLockProfiler = new DeadLockProfiler();
+	GGlobalQueue = new GlobalQueue();
 	//GDBConnectionPool = new DBConnectionPool();
 
 	// [Step 3] 소켓 라이브러리 초기화
@@ -73,6 +76,7 @@ CoreGlobal::~CoreGlobal()
 	delete GMemory;
 	delete GSendBufferManager;
 	delete GDeadLockProfiler;
+	delete GGlobalQueue;
 	//delete GDBConnectionPool;
 
 	// 소켓 라이브러리 정리

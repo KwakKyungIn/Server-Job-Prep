@@ -6,8 +6,8 @@ using Protocol;
 
 public class NexusClient : MonoBehaviour
 {
-    // C++의 g_isLoggedIn 역할
-    bool _isLoggedIn = false;
+    // UI 상태 제어 (로그인 화면 -> 게임/채팅 화면)
+    bool _isGameEntered = false;
 
     // UI 변수들
     string _inputName = "KwakPpiPpi_Unity";
@@ -17,51 +17,68 @@ public class NexusClient : MonoBehaviour
 
     void Start()
     {
-        // PacketHandler의 이벤트에 내 함수를 등록 (구독)
-        PacketHandler.OnLoginResult = HandleLoginResult;
-        PacketHandler.OnChatMsg = HandleChatMsg;
+        // [Event Subscription] 패킷 핸들러 이벤트 구독
+        PacketHandler.OnLoginResult += HandleLoginResult;
+        PacketHandler.OnEnterGame += HandleEnterGame; // [New] 입장 완료 이벤트
+        PacketHandler.OnChatMsg += HandleChatMsg;
     }
 
     void OnDestroy()
     {
-        // 파괴될 때 구독 해제 (메모리 누수 방지)
-        PacketHandler.OnLoginResult = null;
-        PacketHandler.OnChatMsg = null;
+        // 구독 해제 (습관화해라)
+        PacketHandler.OnLoginResult -= HandleLoginResult;
+        PacketHandler.OnEnterGame -= HandleEnterGame;
+        PacketHandler.OnChatMsg -= HandleChatMsg;
     }
 
     // [Callback] 로그인 결과 처리
     void HandleLoginResult(bool success)
     {
-        _isLoggedIn = success;
         if (success)
-            _chatLog += ">> System: Login Success!\n";
+        {
+            _chatLog += ">> System: Login Success! Requesting Enter Game...\n";
+            // [Core Logic] 로그인 성공했으면 바로 게임 입장 요청
+            SendEnterGamePacket();
+        }
         else
-            _chatLog += ">> System: Login Failed!\n";
+        {
+            _chatLog += ">> System: Login Failed! Check Server.\n";
+        }
+    }
+
+    // [Callback] 게임 입장 결과 (캐릭터 스폰 시점)
+    void HandleEnterGame(S_ENTER_GAME_RES pkt)
+    {
+        if (pkt.Success)
+        {
+            _isGameEntered = true; // UI 전환
+            _chatLog += ">> System: Entered Game! You can move now (WASD).\n";
+        }
     }
 
     // [Callback] 채팅 수신 처리
     void HandleChatMsg(string msg)
     {
         _chatLog += msg + "\n";
-        _scrollPos.y = Mathf.Infinity; // 스크롤 맨 아래로
+        _scrollPos.y = Mathf.Infinity;
     }
 
-    // [GUI] 옛날 방식 코드 UI (빠른 테스트용)
+    // [GUI] 테스트용 UI
     private void OnGUI()
     {
-        // 1. 로그인 전 화면
-        if (_isLoggedIn == false)
+        // 1. 게임 입장 전 (로그인 화면)
+        if (_isGameEntered == false)
         {
-            GUI.Box(new Rect(Screen.width / 2 - 100, Screen.height / 2 - 50, 200, 100), "Login");
+            GUI.Box(new Rect(Screen.width / 2 - 100, Screen.height / 2 - 50, 200, 100), "Nexus Login");
 
             _inputName = GUI.TextField(new Rect(Screen.width / 2 - 90, Screen.height / 2 - 20, 180, 20), _inputName);
 
-            if (GUI.Button(new Rect(Screen.width / 2 - 50, Screen.height / 2 + 10, 100, 30), "Connect & Login"))
+            if (GUI.Button(new Rect(Screen.width / 2 - 50, Screen.height / 2 + 10, 100, 30), "Login & Start"))
             {
                 SendLoginPacket();
             }
         }
-        // 2. 로그인 후 채팅 화면
+        // 2. 게임 입장 후 (채팅 + 로그)
         else
         {
             // 채팅 로그 영역
@@ -79,7 +96,7 @@ public class NexusClient : MonoBehaviour
                 if (string.IsNullOrEmpty(_inputChat) == false)
                 {
                     SendChatPacket();
-                    _inputChat = ""; // 입력창 비우기
+                    _inputChat = "";
                 }
             }
             GUILayout.EndHorizontal();
@@ -87,18 +104,27 @@ public class NexusClient : MonoBehaviour
         }
     }
 
-    // [Packet Send] 로그인 패킷 발사
+    // [Packet Send] 1. 로그인 요청
     void SendLoginPacket()
     {
         C_LOGIN_REQ packet = new C_LOGIN_REQ();
         packet.Name = _inputName;
 
-        // PacketManager.MsgId를 이용해 ID 자동 매핑
+        // [FIX] PacketId 인자 추가
         NetworkManager.Instance.Send(packet, (ushort)PacketManager.MsgId.C_LOGIN_REQ);
         Debug.Log($"[Client] Try Login: {_inputName}");
     }
 
-    // [Packet Send] 채팅 패킷 발사
+    // [Packet Send] 2. 게임 입장 요청
+    void SendEnterGamePacket()
+    {
+        C_ENTER_GAME_REQ packet = new C_ENTER_GAME_REQ();
+        packet.PlayerIndex = 0; // 첫 번째 슬롯 캐릭터 선택 (일단 고정)
+
+        NetworkManager.Instance.Send(packet, (ushort)PacketManager.MsgId.C_ENTER_GAME_REQ);
+    }
+
+    // [Packet Send] 채팅
     void SendChatPacket()
     {
         C_CHAT_REQ packet = new C_CHAT_REQ();
