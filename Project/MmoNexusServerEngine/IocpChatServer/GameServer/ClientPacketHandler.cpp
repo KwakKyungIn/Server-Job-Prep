@@ -28,11 +28,17 @@ bool ClientPacketHandler::Handle_C_ENTER_GAME_REQ(PacketSessionRef& session, Pro
 	if (GTestRoom == nullptr)
 	{
 		GTestRoom = MakeShared<GameRoom>();
-		GTestRoom->Init(1, 100, 100);
-		printf("[SERVER] GTestRoom Initialized (100x100 Grid).\n");
+
+		// [GIGACHAD SETTING]
+		// MapSize: 100x100
+		// ZoneSize: 10 (매우 작게 설정하여 조금만 움직여도 Zone 변경이 일어나게 함)
+		// -> 10x10 = 총 100개의 Zone이 생성됨.
+		GTestRoom->Init(1, 100, 100, 10);
+
+		printf("[SERVER] GTestRoom Initialized (100x100 Grid, ZoneSize: 10). Ready for AOI Test.\n");
 	}
 
-	// 2. [Validation] (생략: DB 정보 대조 등)
+	// 2. [Validation] (생략)
 
 	// 3. [Data Setup] 응답 패킷 및 세션 데이터 구성
 	{
@@ -46,13 +52,12 @@ bool ClientPacketHandler::Handle_C_ENTER_GAME_REQ(PacketSessionRef& session, Pro
 		myInfo->set_playerid(assignedId);
 		myInfo->set_name("TestPlayer_" + std::to_string(assignedId));
 
-		// 스폰 좌표 설정 (벽이 없는 (50, 0, 50) 위치)
+		// 스폰 좌표 설정 (벽이 없는 (50, 0, 50) 위치 - 맵 정중앙)
 		myInfo->mutable_posinfo()->set_x(50.0f);
 		myInfo->mutable_posinfo()->set_y(0.0f);
 		myInfo->mutable_posinfo()->set_z(50.0f);
 
 		// [CRITICAL] 패킷 보내기 전에 서버 세션에도 정보를 저장해야 함!
-		// 그래야 GameRoom에서 "누가(ID)" 들어왔는지 식별 가능.
 		playerSession->SetPlayerInfo(*myInfo);
 
 		playerSession->Send(MakeSendBuffer(resPkt));
@@ -60,7 +65,6 @@ bool ClientPacketHandler::Handle_C_ENTER_GAME_REQ(PacketSessionRef& session, Pro
 	}
 
 	// 4. [Core Logic] 룸 입장 (Async Job)
-	// 로직 스레드(JobQueue)에게 입장 처리를 위임
 	GTestRoom->PushJob(&GameRoom::Enter, playerSession);
 
 	return true;
@@ -77,7 +81,6 @@ bool ClientPacketHandler::Handle_C_MOVE(PacketSessionRef& session, Protocol::C_M
 		return false;
 
 	// 2. [Async Job] 룸에게 이동 처리 위임
-	// 좌표 검증 및 브로드캐스팅은 룸 스레드에서 순차적으로 실행됨
 	room->PushJob(&GameRoom::HandleMove, playerSession, pkt);
 
 	return true;

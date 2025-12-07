@@ -76,8 +76,15 @@ public class PacketManager
 	void MakePacket<T>(ServerSession session, ArraySegment<byte> buffer, ushort id) where T : IMessage, new()
 	{
 		T pkt = new T();
-		// Header(12) Skip
-		pkt.MergeFrom(buffer.Array, buffer.Offset + 12, buffer.Count - 12);
+		
+		// [GIGACHAD FIX] 중요! buffer.Count가 아니라 헤더에 적힌 진짜 사이즈를 믿어야 한다.
+		// TCP 패킷이 뭉쳐서 왔을 때(Sticky), 뒤에 붙은 데이터까지 읽지 않도록 차단.
+		ushort size = BitConverter.ToUInt16(buffer.Array, buffer.Offset);
+		int headerSize = 12;
+		int payloadSize = size - headerSize;
+
+		// 정확히 payloadSize만큼만 파싱 -> Invalid Tag 에러 해결
+		pkt.MergeFrom(buffer.Array, buffer.Offset + 12, payloadSize);
 
 		Action<ServerSession, IMessage> action = null;
 		if (_handler.TryGetValue(id, out action))

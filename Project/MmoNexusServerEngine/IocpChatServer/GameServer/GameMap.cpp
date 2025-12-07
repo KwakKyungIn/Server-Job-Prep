@@ -34,9 +34,9 @@ void GameMap::Init(int32 mapId, int32 sizeX, int32 sizeY)
 bool GameMap::CanGo(const Protocol::PositionInfo& posInfo)
 {
 	// Unity 좌표(Float) -> 서버 그리드(Int) 변환
-	// 소수점 버림 처리 (Floor)
+	// Unity(x, y, z) -> Server(x, z) 매핑 (y는 높이이므로 무시)
 	int32 x = static_cast<int32>(posInfo.x());
-	int32 y = static_cast<int32>(posInfo.z()); // Unity Z = Server Y
+	int32 y = static_cast<int32>(posInfo.z());
 
 	// 1. 맵 범위 체크
 	if (x < _minX || x >= _maxX) return false;
@@ -44,5 +44,8 @@ bool GameMap::CanGo(const Protocol::PositionInfo& posInfo)
 
 	// 2. 충돌체(벽) 체크
 	// 0이면 Pass, 1이면 Block
-	return _collision[y][x] == 0;
+	// 배열 인덱스는 [y][x] 순서임에 주의
+	if (_collision[y][x] == 1) return false;
+
+	return true;
 }
