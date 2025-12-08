@@ -17,6 +17,14 @@ enum PlayerType {
     PLAYER_ARCHER = 3;
 }
 
+// ===== [Item] 아이템 타입 (NEW) =====
+enum ItemType {
+    ITEM_TYPE_NONE = 0;
+    ITEM_TYPE_WEAPON = 1;      // 무기
+    ITEM_TYPE_ARMOR = 2;       // 방어구
+    ITEM_TYPE_CONSUMABLE = 3;  // 소비 아이템 (포션 등)
+}
+
 // ===== [Network] 연결 상태 =====
 enum ConnectStatus {
     CONNECT_OK = 0;

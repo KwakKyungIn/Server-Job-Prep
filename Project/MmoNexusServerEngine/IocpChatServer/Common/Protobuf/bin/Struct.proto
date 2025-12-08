@@ -18,7 +18,49 @@ message PlayerInfo {
     string name = 2;
     PlayerType type = 3;
     PositionInfo posInfo = 4; // 위치 정보 포함
-    // 추후 StatInfo statInfo = 5; 등 추가
+    StatInfo statInfo = 5;
+}
+
+// ===== [Item] 아이템 정보 구조체 (NEW) =====
+message ItemInfo {
+    uint64 itemUid = 1;      // DB의 item_uid (BIGINT)
+    int32 templateId = 2;    // 아이템 종류 ID (DataSheet ID)
+    int32 count = 3;         // 개수
+    int32 slot = 4;          // 인벤토리 슬롯 번호
+    bool isEquipped = 5;     // 장착 여부
+}
+
+message StatInfo {
+    int32 level = 1;
+    int32 hp = 2;
+    int32 maxHp = 3;
+    int32 attack = 4;
+    int32 defense = 5;
+    int32 speed = 6;
+    int64 totalExp = 7; // 경험치
+}
+
+// ============================================================
+// [TEMPLATE DATA] (SHARED)
+// 클라: 툴팁 표시용 / 서버: 로직 계산용
+// ============================================================
+
+message StatTemplateInfo {
+    int32 level = 1;
+    int32 maxHp = 2;
+    int32 attack = 3;
+    int32 defense = 4;
+    int32 speed = 5;
+    int64 totalExp = 6;
+}
+
+message ItemTemplateInfo {
+    int32 templateId = 1;
+    string name = 2;
+    int32 itemType = 3;
+    int32 attackBonus = 4;
+    int32 defenseBonus = 5;
+    int32 hpBonus = 6;
 }
 
 // ===== 방/맵 정보 =====

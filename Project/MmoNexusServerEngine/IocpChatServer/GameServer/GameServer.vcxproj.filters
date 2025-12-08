@@ -60,7 +60,6 @@
     <ClCompile Include="Struct.pb.cc">
       <Filter>Protocol</Filter>
     </ClCompile>
-    <ClCompile Include="GameSessionManager.cpp" />
     <ClCompile Include="GameMap.cpp">
       <Filter>GameContents</Filter>
     </ClCompile>
@@ -68,6 +67,12 @@
       <Filter>GameContents</Filter>
     </ClCompile>
     <ClCompile Include="Player.cpp">
+      <Filter>GameContents</Filter>
+    </ClCompile>
+    <ClCompile Include="DataManager.cpp">
+      <Filter>GameContents</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSessionManager.cpp">
       <Filter>GameContents</Filter>
     </ClCompile>
   </ItemGroup>
@@ -102,7 +107,6 @@
     <ClInclude Include="Struct.pb.h">
       <Filter>Protocol</Filter>
     </ClInclude>
-    <ClInclude Include="GameSessionManager.h" />
     <ClInclude Include="GameMap.h">
       <Filter>GameContents</Filter>
     </ClInclude>
@@ -110,6 +114,12 @@
       <Filter>GameContents</Filter>
     </ClInclude>
     <ClInclude Include="Player.h">
+      <Filter>GameContents</Filter>
+    </ClInclude>
+    <ClInclude Include="DataManager.h">
+      <Filter>GameContents</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSessionManager.h">
       <Filter>GameContents</Filter>
     </ClInclude>
   </ItemGroup>

@@ -37,6 +37,51 @@ message S2S_REQ_BROADCAST_CHAT {
     // 전송 실패 로그 등을 위해 남겨둔다.
 }
 
+// ============================================================
+// [PLAYER DATA LOADING] (NEW)
+// ============================================================
+
+// [REQ] GameServer -> DBAgent: "이 유저의 레벨, HP, Exp 내놔"
+message S2S_REQ_LOAD_PLAYER_DATA {
+    uint64 playerId = 1;
+    uint64 gameSessionId = 2; // 왕복 티켓
+}
+
+// [RES] DBAgent -> GameServer: "찾아왔다"
+message S2S_RES_LOAD_PLAYER_DATA {
+    bool success = 1;
+    uint64 playerId = 2;
+    StatInfo statInfo = 3;    // DB에서 긁어온 스탯 정보
+    uint64 gameSessionId = 4; // 왕복 티켓 반환
+}
+
+
+
+// [Item & Inventory]
+message S2S_REQ_ITEMS_LOAD {
+    uint64 playerId = 1;
+    uint64 gameSessionId = 2; // 누구한테 답장해줄지 추적용
+}
+
+message S2S_RES_ITEMS_LOAD {
+    uint64 playerId = 1;
+    bool success = 2;
+    repeated ItemInfo items = 3; // DB에서 긁어온 아이템 리스트
+    uint64 gameSessionId = 4;
+}
+
+message S2S_REQ_LOAD_GAME_DATA {
+    // 인자 없음
+}
+
+// [RES] DBAgent -> GameServer: "여기 있다"
+message S2S_RES_LOAD_GAME_DATA {
+    bool success = 1;
+    // Struct.proto에 정의된 타입을 그대로 사용
+    repeated StatTemplateInfo stats = 2; 
+    repeated ItemTemplateInfo items = 3;
+}
+
 // ChatServer -> GameServer : "뿌렸어 (혹은 실패했어)"
 message S2S_RES_BROADCAST_CHAT {
     bool success = 1;

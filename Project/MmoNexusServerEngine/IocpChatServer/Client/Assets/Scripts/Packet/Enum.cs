@@ -28,15 +28,18 @@ namespace Protocol {
             "RExFEAASDAoITU9WRV9SVU4QARINCglNT1ZFX0pVTVAQAhIOCgpNT1ZFX1NL",
             "SUxMEAMqVAoKUGxheWVyVHlwZRIPCgtQTEFZRVJfTk9ORRAAEhEKDVBMQVlF",
             "Ul9LTklHSFQQARIPCgtQTEFZRVJfTUFHRRACEhEKDVBMQVlFUl9BUkNIRVIQ",
-            "AypICg1Db25uZWN0U3RhdHVzEg4KCkNPTk5FQ1RfT0sQABIQCgxDT05ORUNU",
-            "X0ZBSUwQARIVChFDT05ORUNUX1JFQ09OTkVDVBACKjwKCFJvb21UeXBlEhAK",
-            "DFJPT01fUFJJVkFURRAAEg4KClJPT01fR1JPVVAQARIOCgpST09NX0dVSUxE",
-            "EAIqQAoOUHJlc2VuY2VTdGF0dXMSCwoHT0ZGTElORRAAEgoKBk9OTElORRAB",
-            "EgsKB0lOX0dBTUUQAhIICgRBV0FZEAMqNgoMRnJpZW5kU3RhdHVzEgsKB1BF",
-            "TkRJTkcQABIMCghBQ0NFUFRFRBABEgsKB0JMT0NLRUQQAmIGcHJvdG8z"));
+            "AypjCghJdGVtVHlwZRISCg5JVEVNX1RZUEVfTk9ORRAAEhQKEElURU1fVFlQ",
+            "RV9XRUFQT04QARITCg9JVEVNX1RZUEVfQVJNT1IQAhIYChRJVEVNX1RZUEVf",
+            "Q09OU1VNQUJMRRADKkgKDUNvbm5lY3RTdGF0dXMSDgoKQ09OTkVDVF9PSxAA",
+            "EhAKDENPTk5FQ1RfRkFJTBABEhUKEUNPTk5FQ1RfUkVDT05ORUNUEAIqPAoI",
+            "Um9vbVR5cGUSEAoMUk9PTV9QUklWQVRFEAASDgoKUk9PTV9HUk9VUBABEg4K",
+            "ClJPT01fR1VJTEQQAipACg5QcmVzZW5jZVN0YXR1cxILCgdPRkZMSU5FEAAS",
+            "CgoGT05MSU5FEAESCwoHSU5fR0FNRRACEggKBEFXQVkQAyo2CgxGcmllbmRT",
+            "dGF0dXMSCwoHUEVORElORxAAEgwKCEFDQ0VQVEVEEAESCwoHQkxPQ0tFRBAC",
+            "YgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
-          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Protocol.MoveState), typeof(global::Protocol.PlayerType), typeof(global::Protocol.ConnectStatus), typeof(global::Protocol.RoomType), typeof(global::Protocol.PresenceStatus), typeof(global::Protocol.FriendStatus), }, null, null));
+          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Protocol.MoveState), typeof(global::Protocol.PlayerType), typeof(global::Protocol.ItemType), typeof(global::Protocol.ConnectStatus), typeof(global::Protocol.RoomType), typeof(global::Protocol.PresenceStatus), typeof(global::Protocol.FriendStatus), }, null, null));
     }
     #endregion
 
@@ -72,6 +75,25 @@ namespace Protocol {
     [pbr::OriginalName("PLAYER_KNIGHT")] PlayerKnight = 1,
     [pbr::OriginalName("PLAYER_MAGE")] PlayerMage = 2,
     [pbr::OriginalName("PLAYER_ARCHER")] PlayerArcher = 3,
+  }
+
+  /// <summary>
+  /// ===== [Item] 아이템 타입 (NEW) =====
+  /// </summary>
+  public enum ItemType {
+    [pbr::OriginalName("ITEM_TYPE_NONE")] None = 0,
+    /// <summary>
+    /// 무기
+    /// </summary>
+    [pbr::OriginalName("ITEM_TYPE_WEAPON")] Weapon = 1,
+    /// <summary>
+    /// 방어구
+    /// </summary>
+    [pbr::OriginalName("ITEM_TYPE_ARMOR")] Armor = 2,
+    /// <summary>
+    /// 소비 아이템 (포션 등)
+    /// </summary>
+    [pbr::OriginalName("ITEM_TYPE_CONSUMABLE")] Consumable = 3,
   }
 
   /// <summary>

@@ -50,6 +50,50 @@ message S_DESPAWN {
 }
 
 // ============================================================
+// [ITEM & INVENTORY] (NEW SECTION)
+// ============================================================
+
+// 1. 인벤토리 전체 로딩 (게임 접속 직후 서버 -> 클라)
+message S_ITEM_LIST {
+    repeated ItemInfo items = 1;
+}
+
+// 2. 아이템 장착/사용 요청 (클라 -> 서버)
+// 장비면 장착/해제, 포션이면 사용. 서버가 판단한다.
+message C_USE_ITEM {
+    uint64 itemUid = 1;
+}
+
+// 3. 아이템 정보 갱신 통보 (서버 -> 클라)
+// 아이템 획득, 사용(개수 감소), 장착 상태 변경 시 사용
+message S_CHANGE_ITEM {
+    ItemInfo item = 1; 
+}
+
+// 4. 아이템 삭제 통보 (서버 -> 클라)
+// 포션을 다 썼거나 아이템을 버렸을 때
+message S_REMOVE_ITEM {
+    uint64 itemUid = 1;
+}
+
+message C_EQUIP_ITEM {
+    uint64 itemUid = 1;      // 어떤 아이템을?
+    int32 slotIndex = 2;     // 몇 번 슬롯에 있는 거? (검증용)
+    bool equip = 3;          // true: 장착, false: 해제
+}
+
+message S_EQUIP_ITEM {
+    uint64 itemUid = 1;
+    bool equipped = 2;
+    int32 slotIndex = 3; // [NEW] 몇 번 슬롯인지 알려줌 (UI 갱신용)
+}
+
+// [Stat Sync] 스탯 변경 알림 (장비 장착, 레벨업, 버프 등)
+message S_CHANGE_STAT {
+    StatInfo statInfo = 1;
+}
+
+// ============================================================
 // [CHAT] 
 // ============================================================
 message C_CHAT_REQ {
@@ -64,6 +108,8 @@ message S_CHAT_NTF {
     uint64 playerId = 1;
     string message = 2;
 }
+
+
 
 // ============================================================
 // [HEARTBEAT]

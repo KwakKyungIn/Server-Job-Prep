@@ -10,7 +10,7 @@ public class NexusClient : MonoBehaviour
     bool _isGameEntered = false;
 
     // UI 변수들
-    string _inputName = "KwakPpiPpi_Unity";
+    string _inputName = "KwakPpiPpi";
     string _inputChat = "";
     string _chatLog = "";
     Vector2 _scrollPos;

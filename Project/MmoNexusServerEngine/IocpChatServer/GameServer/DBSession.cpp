@@ -9,6 +9,13 @@ void DBSession::OnConnected()
 {
 	G_DBSession = static_pointer_cast<PacketSession>(shared_from_this());
 	std::cout << "✅ [GameServer] Connected To DBAgent!" << std::endl;
+
+	// [GIGACHAD TRIGGER] 접속하자마자 기획 데이터 로딩 요청 발사
+	Protocol::S2S_REQ_LOAD_GAME_DATA pkt;
+	auto sendBuffer = S2SPacketHandler::MakeSendBuffer(pkt);
+	Send(sendBuffer);
+
+	std::cout << "🚀 [GameServer] Request Loading Game Data..." << std::endl;
 }
 
 void DBSession::OnDisconnected()

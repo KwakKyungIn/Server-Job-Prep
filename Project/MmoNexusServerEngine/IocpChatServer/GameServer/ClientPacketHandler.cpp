@@ -1,7 +1,8 @@
-#include "pch.h"
+ï»¿#include "pch.h"
 #include "ClientPacketHandler.h"
 #include "S2SPacketHandler.h" 
 #include "PlayerSession.h"
+#include "Player.h"
 #include "GameSessionManager.h"
 #include "Job.h" 
 #include "GameRoom.h" 
@@ -11,7 +12,7 @@ extern shared_ptr<PacketSession> G_DBSession;
 
 PacketHandlerFunc ClientPacketHandler::GPacketHandler[UINT16_MAX];
 
-// [Test] ÀÓ½Ã Å×½ºÆ®¿ë 1¹ø¹æ (Lazy Initialization¿ë nullptr ÃÊ±âÈ­)
+// [Test] ì„ì‹œ í…ŒìŠ¤íŠ¸ìš© 1ë²ˆë°© (Lazy Initializationìš© nullptr ì´ˆê¸°í™”)
 shared_ptr<GameRoom> GTestRoom = nullptr;
 
 bool ClientPacketHandler::Handle_INVALID(PacketSessionRef& session, BYTE* buffer, int32 len)
@@ -19,84 +20,153 @@ bool ClientPacketHandler::Handle_INVALID(PacketSessionRef& session, BYTE* buffer
 	return false;
 }
 
-// [GAME ENTRY] °ÔÀÓ ÀÔÀå ¿äÃ» (·Î±×ÀÎ ÈÄ Ä³¸¯ÅÍ ¼±ÅÃ ¿Ï·á ½ÃÁ¡)
+// [GAME ENTRY] ê²Œì„ ì…ì¥ ìš”ì²­ (ë¡œê·¸ì¸ í›„ ìºë¦­í„° ì„ íƒ ì™„ë£Œ ì‹œì )
 bool ClientPacketHandler::Handle_C_ENTER_GAME_REQ(PacketSessionRef& session, Protocol::C_ENTER_GAME_REQ& pkt)
 {
 	PlayerSessionRef playerSession = static_pointer_cast<PlayerSession>(session);
 
-	// 1. [Lazy Init] ·ëÀÌ ¾øÀ¸¸é »ı¼º (¼­¹ö ÄÑÁö°í ÃÖÃÊ 1È¸¸¸ ½ÇÇàµÊ)
+	// 1. [Lazy Init] ë£¸ ìƒì„±
 	if (GTestRoom == nullptr)
 	{
 		GTestRoom = MakeShared<GameRoom>();
-
-		// [GIGACHAD SETTING]
-		// MapSize: 100x100
-		// ZoneSize: 10 (¸Å¿ì ÀÛ°Ô ¼³Á¤ÇÏ¿© Á¶±İ¸¸ ¿òÁ÷¿©µµ Zone º¯°æÀÌ ÀÏ¾î³ª°Ô ÇÔ)
-		// -> 10x10 = ÃÑ 100°³ÀÇ ZoneÀÌ »ı¼ºµÊ.
 		GTestRoom->Init(1, 100, 100, 10);
-
-		printf("[SERVER] GTestRoom Initialized (100x100 Grid, ZoneSize: 10). Ready for AOI Test.\n");
+		printf("[SERVER] GTestRoom Initialized (100x100 Grid, ZoneSize: 10).\n");
 	}
 
-	// 2. [Validation] (»ı·«)
+	// 2. [Refactoring] Player ê°ì²´ ê°€ì ¸ì˜¤ê¸° (ë¡œê·¸ì¸ ì‹œ ìƒì„±ë¨)
+	auto player = playerSession->GetPlayer();
+	if (player == nullptr)
+	{
+		// í”Œë ˆì´ì–´ ê°ì²´ê°€ ì—†ìœ¼ë©´ ì§„í–‰ ë¶ˆê°€ (ë¡œê·¸ì¸ ì‹¤íŒ¨ ìƒíƒœ)
+		return true;
+	}
 
-	// 3. [Data Setup] ÀÀ´ä ÆĞÅ¶ ¹× ¼¼¼Ç µ¥ÀÌÅÍ ±¸¼º
+	// 3. [Data Setup]
 	{
 		Protocol::S_ENTER_GAME_RES resPkt;
 		resPkt.set_success(true);
 
-		// ÇÃ·¹ÀÌ¾î Á¤º¸ »ı¼º
-		Protocol::PlayerInfo* myInfo = resPkt.mutable_myplayer();
-		uint64 assignedId = playerSession->GetSessionId(); // ÀÓ½Ã ID
+		// [ì¤‘ìš”] ì„¸ì…˜ì´ ì•„ë‹ˆë¼ 'Player ê°ì²´'ì˜ ë°ì´í„°ë¥¼ ìˆ˜ì •í•´ì•¼ í•¨
+		Protocol::PlayerInfo* myInfo = player->GetPlayerInfo();
 
-		myInfo->set_playerid(assignedId);
-		myInfo->set_name("TestPlayer_" + std::to_string(assignedId));
+		// DBì—ì„œ ë¡œë“œëœ ì •ë³´ê°€ ì—†ë‹¤ë©´ ì„ì‹œê°’ ì„¸íŒ… (ìˆë‹¤ë©´ ì´ ë¶€ë¶„ì€ ìƒëµ ê°€ëŠ¥)
+		// í˜„ì¬ëŠ” í…ŒìŠ¤íŠ¸ë¥¼ ìœ„í•´ ì¢Œí‘œì™€ ì´ë¦„ì„ ê°•ì œë¡œ ë®ì–´ì”Œì›€
+		uint64 assignedId = playerSession->GetSessionId();
+		if (myInfo->playerid() == 0) myInfo->set_playerid(assignedId);
+		if (myInfo->name().empty()) myInfo->set_name("TestPlayer_" + std::to_string(assignedId));
 
-		// ½ºÆù ÁÂÇ¥ ¼³Á¤ (º®ÀÌ ¾ø´Â (50, 0, 50) À§Ä¡ - ¸Ê Á¤Áß¾Ó)
-		myInfo->mutable_posinfo()->set_x(50.0f);
-		myInfo->mutable_posinfo()->set_y(0.0f);
-		myInfo->mutable_posinfo()->set_z(50.0f);
+		// ìŠ¤í° ì¢Œí‘œ ì„¤ì • (50, 0, 50)
+		auto posInfo = myInfo->mutable_posinfo();
+		posInfo->set_x(50.0f);
+		posInfo->set_y(0.0f);
+		posInfo->set_z(50.0f);
 
-		// [CRITICAL] ÆĞÅ¶ º¸³»±â Àü¿¡ ¼­¹ö ¼¼¼Ç¿¡µµ Á¤º¸¸¦ ÀúÀåÇØ¾ß ÇÔ!
-		playerSession->SetPlayerInfo(*myInfo);
+		// í´ë¼ì´ì–¸íŠ¸ì—ê²Œ ë³´ë‚¼ ì •ë³´ ë³µì‚¬
+		resPkt.mutable_myplayer()->CopyFrom(*myInfo);
 
 		playerSession->Send(MakeSendBuffer(resPkt));
-		printf("[SERVER] Player %llu Enter Game Success.\n", assignedId);
+		printf("[SERVER] Player %llu Enter Game Success.\n", myInfo->playerid());
 	}
 
-	// 4. [Core Logic] ·ë ÀÔÀå (Async Job)
+	// 4. [Core Logic] ë£¸ ì…ì¥ (Async Job)
 	GTestRoom->PushJob(&GameRoom::Enter, playerSession);
 
 	return true;
 }
-
-// [MOVE] ÀÌµ¿ ¿äÃ»
+// [MOVE] ì´ë™ ìš”ì²­
 bool ClientPacketHandler::Handle_C_MOVE(PacketSessionRef& session, Protocol::C_MOVE& pkt)
 {
 	PlayerSessionRef playerSession = static_pointer_cast<PlayerSession>(session);
 
-	// 1. ÇöÀç À¯Àú°¡ ÀÖ´Â ¹æ È®ÀÎ
+	// 1. í˜„ì¬ ìœ ì €ê°€ ìˆëŠ” ë°© í™•ì¸
 	shared_ptr<GameRoom> room = playerSession->GetRoom();
 	if (room == nullptr)
 		return false;
 
-	// 2. [Async Job] ·ë¿¡°Ô ÀÌµ¿ Ã³¸® À§ÀÓ
+	// 2. [Async Job] ë£¸ì—ê²Œ ì´ë™ ì²˜ë¦¬ ìœ„ì„
 	room->PushJob(&GameRoom::HandleMove, playerSession, pkt);
 
 	return true;
 }
 
-// [LOGIN] ÀÎÁõ ¿äÃ»
+bool ClientPacketHandler::Handle_C_USE_ITEM(PacketSessionRef& session, Protocol::C_USE_ITEM& pkt)
+{
+	return false;
+}
+
+// [ClientPacketHandler.cpp]
+
+bool ClientPacketHandler::Handle_C_EQUIP_ITEM(PacketSessionRef& session, Protocol::C_EQUIP_ITEM& pkt)
+{
+	PlayerSessionRef playerSession = static_pointer_cast<PlayerSession>(session);
+
+	// 1. Player ê²€ì¦
+	auto player = playerSession->GetPlayer();
+	if (player == nullptr) return false;
+
+	// 2. ì•„ì´í…œ ì°¾ê¸° (ë©”ëª¨ë¦¬ì—ì„œ ê²€ìƒ‰)
+	// Playerì˜ _items ë²¡í„°ë¥¼ ìˆœíšŒí•˜ë©° UIDë¡œ ì°¾ìŒ
+	Protocol::ItemInfo* targetItem = nullptr;
+
+	// ì£¼ì˜: GetItems()ëŠ” vector&ë¥¼ ë°˜í™˜í•´ì•¼ ìˆ˜ì • ê°€ëŠ¥
+	auto& items = player->GetItems();
+	for (auto& item : items)
+	{
+		if (item.itemuid() == pkt.itemuid())
+		{
+			targetItem = &item;
+			break;
+		}
+	}
+
+	// ì•„ì´í…œì´ ì—†ê±°ë‚˜, ì†Œìœ ê¶Œì´ ì—†ìœ¼ë©´ íŒ¨ìŠ¤
+	if (targetItem == nullptr)
+		return false;
+
+	// TODO: ì¥ì°© ê°€ëŠ¥í•œ ë¶€ìœ„ì¸ì§€, ë ˆë²¨ ì œí•œì€ ì—†ëŠ”ì§€ ë“± ê²€ì¦ ë¡œì§ í•„ìš” (ì§€ê¸ˆì€ ìƒëµ)
+
+	// 3. ìƒíƒœ ë³€ê²½ (Toggle í˜¹ì€ íŒ¨í‚· ê°’ ë”°ë¥´ê¸°)
+	// íŒ¨í‚·ì— equip=true/falseê°€ ì˜¤ë¯€ë¡œ ê·¸ê±¸ ë”°ë¥¸ë‹¤.
+	targetItem->set_isequipped(pkt.equip());
+
+	// 4. [Core Logic] ìŠ¤íƒ¯ ì¬ê³„ì‚°
+	// ì—¬ê¸°ì„œ DataManagerë¥¼ í†µí•´ ê³µê²©ë ¥/ë°©ì–´ë ¥ì´ ê°±ì‹ ë¨
+	player->RefreshStats();
+
+	// 5. ê²°ê³¼ ì „ì†¡ A (ì¥ì°© ìƒíƒœ ë³€ê²½ ì•Œë¦¼)
+	{
+		Protocol::S_EQUIP_ITEM resPkt;
+		resPkt.set_itemuid(pkt.itemuid());
+		resPkt.set_equipped(pkt.equip());
+		resPkt.set_slotindex(pkt.slotindex()); // í˜¹ì‹œ í•„ìš”í•˜ë©´
+
+		playerSession->Send(MakeSendBuffer(resPkt));
+	}
+
+	// 6. ê²°ê³¼ ì „ì†¡ B (ë³€ê²½ëœ ìŠ¤íƒ¯ ì•Œë¦¼)
+	{
+		Protocol::S_CHANGE_STAT statPkt;
+		statPkt.mutable_statinfo()->CopyFrom(*player->GetStatInfo());
+
+		playerSession->Send(MakeSendBuffer(statPkt));
+	}
+
+	std::cout << "âš”ï¸ [Equip] ItemUID: " << pkt.itemuid() << " Equipped: " << pkt.equip() << std::endl;
+
+	return true;
+}
+
+// [LOGIN] ì¸ì¦ ìš”ì²­
 bool ClientPacketHandler::Handle_C_LOGIN_REQ(PacketSessionRef& session, Protocol::C_LOGIN_REQ& pkt)
 {
 	PlayerSessionRef playerSession = static_pointer_cast<PlayerSession>(session);
 
-	// DB Ã³¸®´Â ¿À·¡ °É¸®¹Ç·Î º°µµ JobÀ¸·Î ºĞ¸®ÇÏ¿© ½ÇÇà
+	// DB ì²˜ë¦¬ëŠ” ì˜¤ë˜ ê±¸ë¦¬ë¯€ë¡œ ë³„ë„ Jobìœ¼ë¡œ ë¶„ë¦¬í•˜ì—¬ ì‹¤í–‰
 	playerSession->PushJob(ObjectPool<Job>::MakeShared([playerSession, pkt]()
 		{
 			uint64 mySessionId = playerSession->GetSessionId();
 
-			// S2S ÆĞÅ¶ »ı¼º -> DBAgent·Î Àü¼Û
+			// S2S íŒ¨í‚· ìƒì„± -> DBAgentë¡œ ì „ì†¡
 			Protocol::S2S_REQ_LOGIN s2sPkt;
 			s2sPkt.set_playersessionid(mySessionId);
 			s2sPkt.set_name(pkt.name());
@@ -111,15 +181,15 @@ bool ClientPacketHandler::Handle_C_LOGIN_REQ(PacketSessionRef& session, Protocol
 	return true;
 }
 
-// [CHAT] Ã¤ÆÃ ¿äÃ»
+// [CHAT] ì±„íŒ… ìš”ì²­
 bool ClientPacketHandler::Handle_C_CHAT_REQ(PacketSessionRef& session, Protocol::C_CHAT_REQ& pkt)
 {
 	PlayerSessionRef playerSession = static_pointer_cast<PlayerSession>(session);
 
-	// Ã¤ÆÃµµ ¼øÂ÷ Ã³¸®¸¦ À§ÇØ JobQueue »ç¿ë
+	// ì±„íŒ…ë„ ìˆœì°¨ ì²˜ë¦¬ë¥¼ ìœ„í•´ JobQueue ì‚¬ìš©
 	playerSession->PushJob(ObjectPool<Job>::MakeShared([playerSession, pkt]()
 		{
-			// TODO: ChatServer ¿¬°á È®ÀÎ ¹× Àü¼Û ·ÎÁ÷
+			// TODO: ChatServer ì—°ê²° í™•ì¸ ë° ì „ì†¡ ë¡œì§
 		}));
 
 	return true;

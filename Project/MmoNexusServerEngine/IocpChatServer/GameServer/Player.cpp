@@ -1,11 +1,12 @@
-#include "pch.h"
+ï»¿#include "pch.h"
 #include "Player.h"
-#include "PlayerSession.h" // Session ±â´ÉÀ» ¾²·Á¸é Æ÷ÇÔ
+#include "PlayerSession.h" // Session ê¸°ëŠ¥ì„ ì“°ë ¤ë©´ í¬í•¨
 #include "GameRoom.h"
+#include "DataManager.h"
 
 Player::Player()
 {
-	// [Safety] ±âº» ÃÊ±âÈ­ (Init È£Ãâ Àü Á¢±Ù ¹æÁö¿ë)
+	// [Safety] ê¸°ë³¸ ì´ˆê¸°í™” (Init í˜¸ì¶œ ì „ ì ‘ê·¼ ë°©ì§€ìš©)
 	_playerInfo.set_playerid(0);
 	_playerInfo.set_name("Uninitialized");
 	_playerInfo.set_type(Protocol::PLAYER_NONE);
@@ -20,16 +21,16 @@ Player::Player()
 
 Player::~Player()
 {
-	// µğ¹ö±ë¿ë ¼Ò¸êÀÚ ·Î±×
+	// ë””ë²„ê¹…ìš© ì†Œë©¸ì ë¡œê·¸
 	// printf("~Player Destructed ID: %llu\n", GetPlayerId());
 }
 
 void Player::Init(const Protocol::PlayerInfo& info)
 {
-	// [Deep Copy] ¼¼¼Ç(DB) µ¥ÀÌÅÍ¸¦ ³» ·ÎÄÃ µ¥ÀÌÅÍ·Î º¹»ç
+	// [Deep Copy] ì„¸ì…˜(DB) ë°ì´í„°ë¥¼ ë‚´ ë¡œì»¬ ë°ì´í„°ë¡œ ë³µì‚¬
 	_playerInfo.CopyFrom(info);
 
-	// [Data Correction] ÇÊ¼ö µ¥ÀÌÅÍ°¡ ºñ¾îÀÖÀ» °æ¿ì¸¦ ´ëºñÇÑ ¹æ¾î ÄÚµå
+	// [Data Correction] í•„ìˆ˜ ë°ì´í„°ê°€ ë¹„ì–´ìˆì„ ê²½ìš°ë¥¼ ëŒ€ë¹„í•œ ë°©ì–´ ì½”ë“œ
 	if (_playerInfo.has_posinfo() == false)
 	{
 		Protocol::PositionInfo* pos = _playerInfo.mutable_posinfo();
@@ -41,7 +42,55 @@ void Player::Init(const Protocol::PlayerInfo& info)
 	}
 }
 
+void Player::RefreshStats()
+{
+	// 1. ê¸°ë³¸ ì •ë³´ ê°€ì ¸ì˜¤ê¸°
+	Protocol::StatInfo* stat = GetStatInfo();
+
+	// [DataManager] 1-1. ë ˆë²¨ì— ë§ëŠ” ê¸°ë³¸ ìŠ¤íƒ¯(Base Stat) ì¡°íšŒ
+	const Protocol::StatTemplateInfo* baseStat = DataManager::Instance()->GetStatTemplate(stat->level());
+	if (baseStat == nullptr)
+	{
+		// ë°ì´í„°ê°€ ì—†ìœ¼ë©´ ë¹„ìƒìš© ê¸°ë³¸ê°’ (í˜¹ì€ 1ë ˆë²¨ë¡œ ê°•ì œ)
+		// ì‹¤ì œë¡  ë¡œê·¸ ì°ê³  ì²˜ë¦¬í•´ì•¼ í•¨
+		return;
+	}
+
+	// 1-2. ê¸°ë³¸ ìŠ¤íƒ¯ ì ìš© (Reset)
+	stat->set_maxhp(baseStat->maxhp());
+	stat->set_attack(baseStat->attack());
+	stat->set_defense(baseStat->defense());
+	stat->set_speed(baseStat->speed());
+	stat->set_totalexp(baseStat->totalexp()); // í•„ìš”í•˜ë©´
+
+	// 2. ì¥ì°© ì•„ì´í…œ ìŠ¤íƒ¯ í•©ì‚° (Item Bonus)
+	for (const auto& item : _items)
+	{
+		// ì¥ì°© ì¤‘ì¸ ì•„ì´í…œë§Œ ê³„ì‚°
+		if (item.isequipped())
+		{
+			// [DataManager] 2-1. ì•„ì´í…œ í…œí”Œë¦¿ ì •ë³´ ì¡°íšŒ
+			const Protocol::ItemTemplateInfo* itemData = DataManager::Instance()->GetItemTemplate(item.templateid());
+			if (itemData)
+			{
+				// 2-2. ìŠ¤íƒ¯ ë”í•˜ê¸°
+				stat->set_maxhp(stat->maxhp() + itemData->hpbonus());
+				stat->set_attack(stat->attack() + itemData->attackbonus());
+				stat->set_defense(stat->defense() + itemData->defensebonus());
+				// Speed ë“± ë‹¤ë¥¸ ì˜µì…˜ì´ ìˆë‹¤ë©´ ì—¬ê¸°ì„œ ì¶”ê°€
+			}
+		}
+	}
+
+	// 3. ì²´ë ¥ ë³´ì • (ìµœëŒ€ ì²´ë ¥ì´ ì¤„ì–´ë“¤ì—ˆì„ ë•Œ í˜„ì¬ ì²´ë ¥ì´ ì˜¤ë²„ë˜ì§€ ì•Šê²Œ)
+	if (stat->hp() > stat->maxhp())
+		stat->set_hp(stat->maxhp());
+
+	// [Log] ë””ë²„ê¹…ìš© (ë‚˜ì¤‘ì— ì‚­ì œ)
+	std::cout << "ğŸ’ª [Stat Refresh] HP:" << stat->maxhp() << " ATK:" << stat->attack() << " DEF:" << stat->defense() << std::endl;
+}
+
 void Player::Update()
 {
-	// TODO: ÄğÅ¸ÀÓ °è»ê, ¹öÇÁ Ã³¸® µî ÇÁ·¹ÀÓ ´ÜÀ§ ·ÎÁ÷
+	// TODO: ì¿¨íƒ€ì„ ê³„ì‚°, ë²„í”„ ì²˜ë¦¬ ë“± í”„ë ˆì„ ë‹¨ìœ„ ë¡œì§
 }

@@ -17,11 +17,18 @@ public:
 		PKT_S_MOVE = 1005,
 		PKT_S_SPAWN = 1006,
 		PKT_S_DESPAWN = 1007,
-		PKT_C_CHAT_REQ = 1008,
-		PKT_S_CHAT_RES = 1009,
-		PKT_S_CHAT_NTF = 1010,
-		PKT_S_HEART_BEAT_RES = 1011,
-		PKT_C_HEART_BEAT_REQ = 1012,
+		PKT_S_ITEM_LIST = 1008,
+		PKT_C_USE_ITEM = 1009,
+		PKT_S_CHANGE_ITEM = 1010,
+		PKT_S_REMOVE_ITEM = 1011,
+		PKT_C_EQUIP_ITEM = 1012,
+		PKT_S_EQUIP_ITEM = 1013,
+		PKT_S_CHANGE_STAT = 1014,
+		PKT_C_CHAT_REQ = 1015,
+		PKT_S_CHAT_RES = 1016,
+		PKT_S_CHAT_NTF = 1017,
+		PKT_S_HEART_BEAT_RES = 1018,
+		PKT_C_HEART_BEAT_REQ = 1019,
 	};
 
 	static void Init()
@@ -33,6 +40,11 @@ public:
 		GPacketHandler[PKT_S_MOVE] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S_MOVE>(Handle_S_MOVE, session, buffer, len); };
 		GPacketHandler[PKT_S_SPAWN] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S_SPAWN>(Handle_S_SPAWN, session, buffer, len); };
 		GPacketHandler[PKT_S_DESPAWN] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S_DESPAWN>(Handle_S_DESPAWN, session, buffer, len); };
+		GPacketHandler[PKT_S_ITEM_LIST] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S_ITEM_LIST>(Handle_S_ITEM_LIST, session, buffer, len); };
+		GPacketHandler[PKT_S_CHANGE_ITEM] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S_CHANGE_ITEM>(Handle_S_CHANGE_ITEM, session, buffer, len); };
+		GPacketHandler[PKT_S_REMOVE_ITEM] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S_REMOVE_ITEM>(Handle_S_REMOVE_ITEM, session, buffer, len); };
+		GPacketHandler[PKT_S_EQUIP_ITEM] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S_EQUIP_ITEM>(Handle_S_EQUIP_ITEM, session, buffer, len); };
+		GPacketHandler[PKT_S_CHANGE_STAT] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S_CHANGE_STAT>(Handle_S_CHANGE_STAT, session, buffer, len); };
 		GPacketHandler[PKT_S_CHAT_RES] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S_CHAT_RES>(Handle_S_CHAT_RES, session, buffer, len); };
 		GPacketHandler[PKT_S_CHAT_NTF] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S_CHAT_NTF>(Handle_S_CHAT_NTF, session, buffer, len); };
 		GPacketHandler[PKT_S_HEART_BEAT_RES] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S_HEART_BEAT_RES>(Handle_S_HEART_BEAT_RES, session, buffer, len); };
@@ -46,6 +58,8 @@ public:
 	static SendBufferRef MakeSendBuffer(Protocol::C_LOGIN_REQ& pkt) { return MakeSendBuffer(pkt, PKT_C_LOGIN_REQ); }
 	static SendBufferRef MakeSendBuffer(Protocol::C_ENTER_GAME_REQ& pkt) { return MakeSendBuffer(pkt, PKT_C_ENTER_GAME_REQ); }
 	static SendBufferRef MakeSendBuffer(Protocol::C_MOVE& pkt) { return MakeSendBuffer(pkt, PKT_C_MOVE); }
+	static SendBufferRef MakeSendBuffer(Protocol::C_USE_ITEM& pkt) { return MakeSendBuffer(pkt, PKT_C_USE_ITEM); }
+	static SendBufferRef MakeSendBuffer(Protocol::C_EQUIP_ITEM& pkt) { return MakeSendBuffer(pkt, PKT_C_EQUIP_ITEM); }
 	static SendBufferRef MakeSendBuffer(Protocol::C_CHAT_REQ& pkt) { return MakeSendBuffer(pkt, PKT_C_CHAT_REQ); }
 	static SendBufferRef MakeSendBuffer(Protocol::C_HEART_BEAT_REQ& pkt) { return MakeSendBuffer(pkt, PKT_C_HEART_BEAT_REQ); }
 
@@ -57,6 +71,11 @@ public:
 	static bool Handle_S_MOVE(PacketSessionRef& session, Protocol::S_MOVE& pkt);
 	static bool Handle_S_SPAWN(PacketSessionRef& session, Protocol::S_SPAWN& pkt);
 	static bool Handle_S_DESPAWN(PacketSessionRef& session, Protocol::S_DESPAWN& pkt);
+	static bool Handle_S_ITEM_LIST(PacketSessionRef& session, Protocol::S_ITEM_LIST& pkt);
+	static bool Handle_S_CHANGE_ITEM(PacketSessionRef& session, Protocol::S_CHANGE_ITEM& pkt);
+	static bool Handle_S_REMOVE_ITEM(PacketSessionRef& session, Protocol::S_REMOVE_ITEM& pkt);
+	static bool Handle_S_EQUIP_ITEM(PacketSessionRef& session, Protocol::S_EQUIP_ITEM& pkt);
+	static bool Handle_S_CHANGE_STAT(PacketSessionRef& session, Protocol::S_CHANGE_STAT& pkt);
 	static bool Handle_S_CHAT_RES(PacketSessionRef& session, Protocol::S_CHAT_RES& pkt);
 	static bool Handle_S_CHAT_NTF(PacketSessionRef& session, Protocol::S_CHAT_NTF& pkt);
 	static bool Handle_S_HEART_BEAT_RES(PacketSessionRef& session, Protocol::S_HEART_BEAT_RES& pkt);

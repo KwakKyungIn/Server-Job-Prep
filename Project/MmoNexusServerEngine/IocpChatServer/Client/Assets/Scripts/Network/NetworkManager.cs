@@ -40,6 +40,8 @@ public class NetworkManager : MonoBehaviour
         IPAddress ipAddr = IPAddress.Parse(ip);
         IPEndPoint endPoint = new IPEndPoint(ipAddr, port);
 
+        InventoryManager.Instance.Init();
+
         Debug.Log($"[NetworkManager] Try Connect to Server... ({ip}:{port})");
 
         // ServerSession이 IPEndPoint를 받도록 수정했으므로 맞춰서 넘겨준다.

@@ -192,6 +192,7 @@
   <ItemGroup>
     <ClCompile Include="ChatSession.cpp" />
     <ClCompile Include="ClientPacketHandler.cpp" />
+    <ClCompile Include="DataManager.cpp" />
     <ClCompile Include="DBSession.cpp" />
     <ClCompile Include="Enum.pb.cc">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
@@ -219,6 +220,7 @@
   <ItemGroup>
     <ClInclude Include="ChatSession.h" />
     <ClInclude Include="ClientPacketHandler.h" />
+    <ClInclude Include="DataManager.h" />
     <ClInclude Include="DBSession.h" />
     <ClInclude Include="Enum.pb.h" />
     <ClInclude Include="GameMap.h" />

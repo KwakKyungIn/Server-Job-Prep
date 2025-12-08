@@ -21,11 +21,9 @@ void GameRoom::Init(int32 mapId, int32 sizeX, int32 sizeY, int32 zoneSize)
 
 	// [Spatial Partitioning Init]
 	_zoneCellSize = zoneSize;
-	// 맵 크기를 Zone 크기로 나누어 격자 개수 계산 (올림 처리)
 	_gridSizeX = (sizeX + zoneSize - 1) / zoneSize;
 	_gridSizeY = (sizeY + zoneSize - 1) / zoneSize;
 
-	// 1차원 배열로 2D 격자 할당
 	_zones.resize(_gridSizeX * _gridSizeY);
 
 	printf("[GameRoom] Init MapId: %d, Grid: %dx%d, CellSize: %d\n", mapId, _gridSizeX, _gridSizeY, zoneSize);
@@ -38,23 +36,24 @@ void GameRoom::Update()
 
 void GameRoom::Enter(PlayerSessionRef session)
 {
-	// 중복 입장 체크
-	if (_players.find(session->GetPlayerId()) != _players.end())
+	// [Refactoring] 세션은 단지 통로일 뿐, 주인공은 Player다.
+	// 로그인 단계에서 이미 생성된 Player 객체를 가져온다.
+	PlayerRef player = session->GetPlayer();
+	if (player == nullptr)
 		return;
 
-	// 1. Player 객체 생성 및 세션 연결 (Wrapper 패턴)
-	PlayerRef player = MakeShared<Player>();
-	player->SetSession(session);
-	// PlayerSession이 들고 있는 정보로 초기화 (DB에서 로드된 정보 등)
-	// [주의] PlayerSession에 GetPlayerInfo()가 구현되어 있어야 함
-	player->Init(*session->GetPlayerInfo());
+	// 중복 입장 체크
+	if (_players.find(player->GetPlayerId()) != _players.end())
+		return;
 
-	session->SetRoom(shared_from_this());
+	// 1. 방 설정 (Session이 아니라 Player가 방을 기억함)
+	player->SetRoom(shared_from_this());
 
 	// 2. 전체 명단 등록
 	_players.insert({ player->GetPlayerId(), player });
 
 	// 3. [AOI] Zone 진입 처리
+	// PlayerInfo는 이제 player 객체가 들고 있으므로 바로 접근 가능
 	int32 zoneIndex = GetZoneIndex(*player->GetPosInfo());
 	player->SetZoneIndex(zoneIndex);
 	_zones[zoneIndex].players.insert(player);
@@ -66,7 +65,6 @@ void GameRoom::Enter(PlayerSessionRef session)
 		*pInfo = *player->GetPlayerInfo();
 		SendBufferRef sendBuffer = ClientPacketHandler::MakeSendBuffer(spawnPkt);
 
-		// 나 자신을 포함한 주변 Zone 유저들에게 전송 (단, 나한테는 안 보냄)
 		Vector<Zone*> nearbyZones;
 		GetNearbyZones(zoneIndex, nearbyZones);
 
@@ -90,7 +88,7 @@ void GameRoom::Enter(PlayerSessionRef session)
 		{
 			for (const PlayerRef& other : zone->players)
 			{
-				if (other != player) // 나는 제외
+				if (other != player)
 				{
 					Protocol::PlayerInfo* pInfo = spawnPkt.add_players();
 					*pInfo = *other->GetPlayerInfo();
@@ -110,11 +108,15 @@ void GameRoom::Enter(PlayerSessionRef session)
 
 void GameRoom::Leave(PlayerSessionRef session)
 {
-	uint64 playerId = session->GetPlayerId();
-	auto it = _players.find(playerId);
-	if (it == _players.end()) return;
+	// 세션에서 플레이어 정보를 가져옴
+	PlayerRef player = session->GetPlayer();
+	if (player == nullptr) return;
 
-	PlayerRef player = it->second;
+	uint64 playerId = player->GetPlayerId();
+
+	// 명단 체크
+	if (_players.find(playerId) == _players.end()) return;
+
 	int32 zoneIndex = player->GetZoneIndex();
 
 	// 1. Zone에서 제거
@@ -125,7 +127,9 @@ void GameRoom::Leave(PlayerSessionRef session)
 
 	// 2. 전체 명단 제거
 	_players.erase(playerId);
-	session->SetRoom(nullptr);
+
+	// [Refactoring] 방 정보 해제 (Player에게 알림)
+	player->SetRoom(nullptr);
 
 	// 3. [Broadcast] 주변 유저들에게 "나 나갔음" 알림 (S_DESPAWN)
 	{
@@ -133,7 +137,6 @@ void GameRoom::Leave(PlayerSessionRef session)
 		despawnPkt.add_playerids(playerId);
 		SendBufferRef sendBuffer = ClientPacketHandler::MakeSendBuffer(despawnPkt);
 
-		// 주변 Zone에 뿌림 (나가는 사람은 이미 Zone/Map에서 빠졌으므로 exceptId 체크 불필요)
 		BroadcastToZone(sendBuffer, zoneIndex, 0);
 	}
 
@@ -142,11 +145,14 @@ void GameRoom::Leave(PlayerSessionRef session)
 
 void GameRoom::HandleMove(PlayerSessionRef session, Protocol::C_MOVE pkt)
 {
-	uint64 playerId = session->GetPlayerId();
-	auto it = _players.find(playerId);
-	if (it == _players.end()) return;
+	// [Refactoring] Session -> Player 접근
+	PlayerRef player = session->GetPlayer();
+	if (player == nullptr) return;
 
-	PlayerRef player = it->second;
+	uint64 playerId = player->GetPlayerId();
+
+	// 방에 없는 유저라면 무시
+	if (_players.find(playerId) == _players.end()) return;
 
 	// 1. [Validation]
 	if (_map->CanGo(pkt.posinfo()) == false)
@@ -156,11 +162,10 @@ void GameRoom::HandleMove(PlayerSessionRef session, Protocol::C_MOVE pkt)
 	int32 oldZoneIndex = player->GetZoneIndex();
 	int32 newZoneIndex = GetZoneIndex(pkt.posinfo());
 
-	// 3. [Update] 정보 갱신
+	// 3. [Update] 정보 갱신 (Player 객체 내부 데이터 수정)
 	player->SetPosInfo(pkt.posinfo());
-	
 
-	// [Case A] 같은 Zone 내 이동 (가장 빈번함 -> 최적화)
+	// [Case A] 같은 Zone 내 이동
 	if (oldZoneIndex == newZoneIndex)
 	{
 		Protocol::S_MOVE movePkt;
@@ -168,34 +173,30 @@ void GameRoom::HandleMove(PlayerSessionRef session, Protocol::C_MOVE pkt)
 		*movePkt.mutable_posinfo() = pkt.posinfo();
 		SendBufferRef sendBuffer = ClientPacketHandler::MakeSendBuffer(movePkt);
 
-		// 주변 9개 존에 S_MOVE 전송 (나 제외)
 		BroadcastToZone(sendBuffer, newZoneIndex, playerId);
 	}
-	// [Case B] Zone 변경 발생 (정밀 제어 필요)
+	// [Case B] Zone 변경 발생
 	else
 	{
-		// 1. Zone Index 목록 구하기
 		Vector<int32> oldZones;
 		GetNearbyZoneIndices(oldZoneIndex, oldZones);
-		std::sort(oldZones.begin(), oldZones.end()); // 집합 연산을 위해 정렬 필수
+		std::sort(oldZones.begin(), oldZones.end());
 
 		Vector<int32> newZones;
 		GetNearbyZoneIndices(newZoneIndex, newZones);
 		std::sort(newZones.begin(), newZones.end());
 
-		// 2. [Despawn Group] (Old - New) : 이제 안 보이게 될 애들
+		// (Old - New) : Despawn Group
 		{
 			Vector<int32> removedZones;
 			std::set_difference(oldZones.begin(), oldZones.end(),
 				newZones.begin(), newZones.end(),
 				std::back_inserter(removedZones));
 
-			// 다른 플레이어들에게 "나(A)가 사라졌어" 알림
 			Protocol::S_DESPAWN despawnPkt;
 			despawnPkt.add_playerids(playerId);
 			SendBufferRef sendBuffer = ClientPacketHandler::MakeSendBuffer(despawnPkt);
 
-			// 나(A)에게 "그들이 사라졌어" 알릴 패킷
 			Protocol::S_DESPAWN despawnToMePkt;
 
 			for (int32 zoneIdx : removedZones)
@@ -205,16 +206,12 @@ void GameRoom::HandleMove(PlayerSessionRef session, Protocol::C_MOVE pkt)
 				{
 					if (p->GetPlayerId() != playerId)
 					{
-						// 그들에게 나를 Despawn
 						p->GetSession()->Send(sendBuffer);
-
-						// 나에게도 그들을 Despawn
 						despawnToMePkt.add_playerids(p->GetPlayerId());
 					}
 				}
 			}
 
-			// 나에게 사라진 플레이어들 정보 전송
 			if (despawnToMePkt.playerids_size() > 0)
 			{
 				SendBufferRef despawnToMeBuffer = ClientPacketHandler::MakeSendBuffer(despawnToMePkt);
@@ -222,20 +219,18 @@ void GameRoom::HandleMove(PlayerSessionRef session, Protocol::C_MOVE pkt)
 			}
 		}
 
-		// 3. [Spawn Group] (New - Old) : 새로 보게 될 애들
+		// (New - Old) : Spawn Group
 		{
 			Vector<int32> addedZones;
 			std::set_difference(newZones.begin(), newZones.end(),
 				oldZones.begin(), oldZones.end(),
 				std::back_inserter(addedZones));
 
-			// 다른 플레이어들에게 "나(A)가 왔어" 알림
 			Protocol::S_SPAWN mySpawnPkt;
 			auto* myInfo = mySpawnPkt.add_players();
 			*myInfo = *player->GetPlayerInfo();
 			SendBufferRef mySpawnBuffer = ClientPacketHandler::MakeSendBuffer(mySpawnPkt);
 
-			// 나(A)에게 "거기 누가 있어" 알릴 패킷
 			Protocol::S_SPAWN othersSpawnPkt;
 
 			for (int32 zoneIdx : addedZones)
@@ -245,17 +240,13 @@ void GameRoom::HandleMove(PlayerSessionRef session, Protocol::C_MOVE pkt)
 				{
 					if (p->GetPlayerId() != playerId)
 					{
-						// 그들에게 나를 Spawn
 						p->GetSession()->Send(mySpawnBuffer);
-
-						// 나에게 보낼 정보에 그들을 추가
 						auto* otherInfo = othersSpawnPkt.add_players();
 						*otherInfo = *p->GetPlayerInfo();
 					}
 				}
 			}
 
-			// 나에게 새로 보이는 플레이어들 정보 전송
 			if (othersSpawnPkt.players_size() > 0)
 			{
 				SendBufferRef othersSpawnBuffer = ClientPacketHandler::MakeSendBuffer(othersSpawnPkt);
@@ -263,7 +254,7 @@ void GameRoom::HandleMove(PlayerSessionRef session, Protocol::C_MOVE pkt)
 			}
 		}
 
-		// 4. [Move Group] (Old ∩ New) : 계속 같이 있는 애들 (여기에만 S_MOVE 전송!)
+		// (Old ∩ New) : Move Group
 		{
 			Vector<int32> commonZones;
 			std::set_intersection(oldZones.begin(), oldZones.end(),
@@ -286,7 +277,7 @@ void GameRoom::HandleMove(PlayerSessionRef session, Protocol::C_MOVE pkt)
 			}
 		}
 
-		// 5. 서버 내 Zone 이동 처리
+		// 서버 내 Zone 이동 반영
 		_zones[oldZoneIndex].players.erase(player);
 		_zones[newZoneIndex].players.insert(player);
 		player->SetZoneIndex(newZoneIndex);
@@ -321,9 +312,8 @@ void GameRoom::GetNearbyZoneIndices(int32 zoneIndex, Vector<int32>& outIndices)
 int32 GameRoom::GetZoneIndex(const Protocol::PositionInfo& posInfo)
 {
 	int32 x = static_cast<int32>(posInfo.x());
-	int32 y = static_cast<int32>(posInfo.z()); // Unity Z = Server Y
+	int32 y = static_cast<int32>(posInfo.z());
 
-	// 범위 초과 방지 (Clamp)
 	int32 minX = _map->GetMinX();
 	int32 minY = _map->GetMinY();
 	int32 maxX = _map->GetMaxX();
@@ -334,7 +324,6 @@ int32 GameRoom::GetZoneIndex(const Protocol::PositionInfo& posInfo)
 	if (y < minY) y = minY;
 	if (y >= maxY) y = maxY - 1;
 
-	// 인덱스 계산
 	int32 zoneX = (x - minX) / _zoneCellSize;
 	int32 zoneY = (y - minY) / _zoneCellSize;
 
@@ -344,22 +333,17 @@ int32 GameRoom::GetZoneIndex(const Protocol::PositionInfo& posInfo)
 void GameRoom::GetNearbyZones(int32 zoneIndex, Vector<Zone*>& outZones)
 {
 	outZones.clear();
-
-	if (zoneIndex < 0 || zoneIndex >= _zones.size())
-		return;
+	if (zoneIndex < 0 || zoneIndex >= _zones.size()) return;
 
 	int32 x = zoneIndex % _gridSizeX;
 	int32 y = zoneIndex / _gridSizeX;
 
-	// 9-Grid Logic (상하좌우 및 대각선 포함)
 	for (int32 dy = -1; dy <= 1; dy++)
 	{
 		for (int32 dx = -1; dx <= 1; dx++)
 		{
 			int32 nx = x + dx;
 			int32 ny = y + dy;
-
-			// 유효한 Grid 좌표인지 확인
 			if (nx >= 0 && nx < _gridSizeX && ny >= 0 && ny < _gridSizeY)
 			{
 				int32 index = ny * _gridSizeX + nx;
@@ -379,7 +363,6 @@ void GameRoom::BroadcastToZone(SendBufferRef sendBuffer, int32 zoneIndex, uint64
 		for (const PlayerRef& p : zone->players)
 		{
 			if (p->GetPlayerId() == exceptId) continue;
-
 			p->GetSession()->Send(sendBuffer);
 		}
 	}
@@ -387,12 +370,10 @@ void GameRoom::BroadcastToZone(SendBufferRef sendBuffer, int32 zoneIndex, uint64
 
 void GameRoom::Broadcast(SendBufferRef sendBuffer, uint64 exceptId)
 {
-	// 전체 유저에게 전송 (채팅 등)
 	for (auto& item : _players)
 	{
 		PlayerRef p = item.second;
 		if (p->GetPlayerId() == exceptId) continue;
-
 		p->GetSession()->Send(sendBuffer);
 	}
 }

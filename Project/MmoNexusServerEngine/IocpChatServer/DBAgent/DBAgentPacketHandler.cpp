@@ -50,11 +50,11 @@ bool DBAgentPacketHandler::Handle_S2S_REQ_LOGIN(PacketSessionRef& session, Proto
 				SQLLEN nameLen = SQL_NTS; // Null Terminated String
 
 				// [Step 3] 출력 데이터 준비
-				int32 outId = 0;
+				int64 outId = 0;
 				SQLLEN outIdLen = 0;
 
 				// [Step 4] 쿼리 준비 (Prepare)
-				if (conn->Prepare(L"SELECT id FROM Player WHERE name = ?"))
+				if (conn->Prepare(L"SELECT playerId FROM Players WHERE name = ?"))
 				{
 					// [Step 5] 파라미터 바인딩
 					conn->BindParam(1, SQL_C_WCHAR, SQL_WVARCHAR, (wbName.size() + 1) * sizeof(WCHAR), (SQLPOINTER)wbName.c_str(), &nameLen);
@@ -102,10 +102,259 @@ bool DBAgentPacketHandler::Handle_S2S_REQ_LOGIN(PacketSessionRef& session, Proto
 	return true;
 }
 
+// [Game -> DB] 아이템 로딩 요청 처리
+bool DBAgentPacketHandler::Handle_S2S_REQ_ITEMS_LOAD(PacketSessionRef& session, Protocol::S2S_REQ_ITEMS_LOAD& pkt)
+{
+	shared_ptr<GameSession> gameSession = static_pointer_cast<GameSession>(session);
+
+	gameSession->PushJob(ObjectPool<Job>::MakeShared([gameSession, pkt]()
+		{
+			DBConnection* conn = GDBConnectionPool->Pop();
+			if (conn == nullptr) return;
+
+			Protocol::S2S_RES_ITEMS_LOAD resPkt;
+			resPkt.set_playerid(pkt.playerid());
+			resPkt.set_gamesessionid(pkt.gamesessionid()); // 왕복 티켓
+			resPkt.set_success(false);
+
+			{
+				conn->Unbind();
+
+				// [Input] Owner ID 바인딩
+				int32 ownerId = (int64)pkt.playerid(); // PlayerID가 DB에서 INT인지 BIGINT인지 확인 필요. 네 DB 설계상 FK는 INT였으면 casting.
+				// ※ 주의: 네 Player 테이블 ID가 BIGINT라면 여기도 int64로 받아야 함. 
+				// 아까 스키마에서 owner_id INT라고 했지만, 네가 BIGINT로 바꿨다고 했으니 아래처럼 수정한다.
+				int64 dbOwnerId = (int64)pkt.playerid();
+
+				// [Output] 결과를 담을 변수들
+				int64 outItemUid = 0;
+				int32 outTemplateId = 0;
+				int32 outSlot = 0;
+				int32 outCount = 0;
+				unsigned char outEquipped = 0; // BIT 타입은 unsigned char로 받음
+				int32 outEnchant = 0;
+
+				SQLLEN len = 0;
+
+				// [Query]
+				if (conn->Prepare(L"SELECT item_uid, template_id, slot_index, count, is_equipped, enchant_level FROM ITEMS WHERE owner_id = ?"))
+				{
+					conn->BindParam(1, SQL_C_SBIGINT, SQL_BIGINT, sizeof(int64), &dbOwnerId, &len);
+
+					// 결과 바인딩 (순서 중요)
+					conn->BindCol(1, SQL_C_SBIGINT, sizeof(int64), &outItemUid, &len);
+					conn->BindCol(2, SQL_C_SLONG, sizeof(int32), &outTemplateId, &len);
+					conn->BindCol(3, SQL_C_SLONG, sizeof(int32), &outSlot, &len);
+					conn->BindCol(4, SQL_C_SLONG, sizeof(int32), &outCount, &len);
+					conn->BindCol(5, SQL_C_BIT, sizeof(unsigned char), &outEquipped, &len);
+					conn->BindCol(6, SQL_C_SLONG, sizeof(int32), &outEnchant, &len);
+
+					if (conn->Execute())
+					{
+						resPkt.set_success(true);
+
+						// Loop 돌면서 모든 아이템 획득
+						while (conn->Fetch())
+						{
+							Protocol::ItemInfo* item = resPkt.add_items();
+							item->set_itemuid(outItemUid);
+							item->set_templateid(outTemplateId);
+							item->set_slot(outSlot);
+							item->set_count(outCount);
+							item->set_isequipped(outEquipped != 0);
+							// Enchant는 ItemInfo 구조체에 없다면 추가 필요, 일단은 스킵하거나 구조체 수정.
+							// 구조체에 enchant가 없다면 생략.
+						}
+						std::cout << "✅ [DB] Loaded Items for Player: " << pkt.playerid() << " Count: " << resPkt.items_size() << std::endl;
+					}
+				}
+			}
+
+			GDBConnectionPool->Push(conn);
+
+			auto sendBuffer = DBAgentPacketHandler::MakeSendBuffer(resPkt);
+			gameSession->Send(sendBuffer);
+		}));
+
+	return true;
+}
+
+
+// [Game -> DB] 기획 데이터(Stat/Item Template) 로딩 요청
+bool DBAgentPacketHandler::Handle_S2S_REQ_LOAD_GAME_DATA(PacketSessionRef& session, Protocol::S2S_REQ_LOAD_GAME_DATA& pkt)
+{
+	// [Note] 로직 스레드에서 DB 작업 수행
+	shared_ptr<GameSession> gameSession = static_pointer_cast<GameSession>(session);
+
+	gameSession->PushJob(ObjectPool<Job>::MakeShared([gameSession, pkt]()
+		{
+			DBConnection* conn = GDBConnectionPool->Pop();
+			if (conn == nullptr) return;
+
+			Protocol::S2S_RES_LOAD_GAME_DATA resPkt;
+			resPkt.set_success(false);
+
+			// 1. STAT_TEMPLATE 로딩
+			{
+				// [Clean Up] 이전 바인딩 초기화
+				conn->Unbind();
+
+				// [Output]
+				int32 level = 0, maxHp = 0, attack = 0, defense = 0, speed = 0;
+				int64 totalExp = 0;
+				SQLLEN len = 0;
+
+				// [Query]
+				if (conn->Prepare(L"SELECT level, max_hp, attack, defense, speed, total_exp FROM STAT_TEMPLATE"))
+				{
+					conn->BindCol(1, SQL_C_SLONG, sizeof(int32), &level, &len);
+					conn->BindCol(2, SQL_C_SLONG, sizeof(int32), &maxHp, &len);
+					conn->BindCol(3, SQL_C_SLONG, sizeof(int32), &attack, &len);
+					conn->BindCol(4, SQL_C_SLONG, sizeof(int32), &defense, &len);
+					conn->BindCol(5, SQL_C_SLONG, sizeof(int32), &speed, &len);
+					conn->BindCol(6, SQL_C_SBIGINT, sizeof(int64), &totalExp, &len);
+
+					if (conn->Execute())
+					{
+						while (conn->Fetch())
+						{
+							auto* statData = resPkt.add_stats();
+							statData->set_level(level);
+							statData->set_maxhp(maxHp);
+							statData->set_attack(attack);
+							statData->set_defense(defense);
+							statData->set_speed(speed);
+							statData->set_totalexp(totalExp);
+						}
+						std::cout << "📘 [DB] Loaded Stat Templates: " << resPkt.stats_size() << std::endl;
+					}
+				}
+			}
+
+			// 2. ITEM_TEMPLATE 로딩
+			{
+				// [Clean Up] 필수!
+				conn->Unbind();
+
+				// [Output]
+				int32 templateId = 0, itemType = 0, atkBonus = 0, defBonus = 0, hpBonus = 0;
+				WCHAR nameBuffer[100] = { 0 }; // 이름은 문자열 처리 필요
+				SQLLEN len = 0;
+
+				// [Query]
+				if (conn->Prepare(L"SELECT template_id, name, item_type, attack_bonus, defense_bonus, hp_bonus FROM ITEM_TEMPLATE"))
+				{
+					conn->BindCol(1, SQL_C_SLONG, sizeof(int32), &templateId, &len);
+					conn->BindCol(2, SQL_C_WCHAR, sizeof(nameBuffer), nameBuffer, &len); // WCHAR로 받음
+					conn->BindCol(3, SQL_C_SLONG, sizeof(int32), &itemType, &len);
+					conn->BindCol(4, SQL_C_SLONG, sizeof(int32), &atkBonus, &len);
+					conn->BindCol(5, SQL_C_SLONG, sizeof(int32), &defBonus, &len);
+					conn->BindCol(6, SQL_C_SLONG, sizeof(int32), &hpBonus, &len);
+
+					if (conn->Execute())
+					{
+						while (conn->Fetch())
+						{
+							auto* itemData = resPkt.add_items();
+							itemData->set_templateid(templateId);
+
+							// WCHAR -> string (Simple Conversion)
+							std::wstring ws(nameBuffer);
+							std::string s(ws.begin(), ws.end());
+							itemData->set_name(s);
+
+							itemData->set_itemtype(itemType);
+							itemData->set_attackbonus(atkBonus);
+							itemData->set_defensebonus(defBonus);
+							itemData->set_hpbonus(hpBonus);
+						}
+						std::cout << "⚔️ [DB] Loaded Item Templates: " << resPkt.items_size() << std::endl;
+					}
+				}
+			}
+
+			// 3. 결과 전송
+			resPkt.set_success(true);
+			GDBConnectionPool->Push(conn);
+
+			auto sendBuffer = DBAgentPacketHandler::MakeSendBuffer(resPkt);
+			gameSession->Send(sendBuffer);
+		}));
+
+	return true;
+}
+
 // [Game -> DB] 채팅 중계 요청? DB는 중계 안 함.
 bool DBAgentPacketHandler::Handle_S2S_REQ_BROADCAST_CHAT(PacketSessionRef& session, Protocol::S2S_REQ_BROADCAST_CHAT& pkt)
 {
 	// DB는 채팅을 뿌리는 곳이 아님. 로그 저장용이라면 모를까.
+	return true;
+}
+
+
+bool DBAgentPacketHandler::Handle_S2S_REQ_LOAD_PLAYER_DATA(PacketSessionRef& session, Protocol::S2S_REQ_LOAD_PLAYER_DATA& pkt)
+{
+	shared_ptr<GameSession> gameSession = static_pointer_cast<GameSession>(session);
+
+	gameSession->PushJob(ObjectPool<Job>::MakeShared([gameSession, pkt]()
+		{
+			DBConnection* conn = GDBConnectionPool->Pop();
+			if (conn == nullptr) return;
+
+			Protocol::S2S_RES_LOAD_PLAYER_DATA resPkt;
+			resPkt.set_success(false);
+			resPkt.set_playerid(pkt.playerid());
+			resPkt.set_gamesessionid(pkt.gamesessionid());
+
+			{
+				conn->Unbind();
+
+				// [Input]
+				int64 dbPlayerId = (int64)pkt.playerid();
+				SQLLEN len = 0;
+
+				// [Output]
+				int32 level = 1;
+				int32 hp = 100;
+				int64 totalExp = 0;
+
+				// [Query]
+				if (conn->Prepare(L"SELECT level, hp, total_exp FROM PLAYERS WHERE playerId = ?"))
+				{
+					conn->BindParam(1, SQL_C_SBIGINT, SQL_BIGINT, sizeof(int64), &dbPlayerId, &len);
+
+					conn->BindCol(1, SQL_C_SLONG, sizeof(int32), &level, &len);
+					conn->BindCol(2, SQL_C_SLONG, sizeof(int32), &hp, &len);
+					conn->BindCol(3, SQL_C_SBIGINT, sizeof(int64), &totalExp, &len);
+
+					if (conn->Execute())
+					{
+						if (conn->Fetch())
+						{
+							resPkt.set_success(true);
+
+							// 결과 패킷에 담기
+							Protocol::StatInfo* info = resPkt.mutable_statinfo();
+							info->set_level(level);
+							info->set_hp(hp);
+							info->set_totalexp(totalExp);
+
+							// MaxHp 등은 어차피 GameServer가 Template 보고 다시 계산함.
+							// 여기서는 DB에 저장된 "현재 상태"만 넘김.
+						}
+					}
+				}
+			}
+
+			GDBConnectionPool->Push(conn);
+
+			auto sendBuffer = DBAgentPacketHandler::MakeSendBuffer(resPkt);
+			gameSession->Send(sendBuffer);
+
+			if (resPkt.success())
+				std::cout << "👤 [DB] Loaded Player Data (Lv." << resPkt.statinfo().level() << ") ID: " << pkt.playerid() << std::endl;
+		}));
+
 	return true;
 }
 
@@ -118,3 +367,5 @@ bool DBAgentPacketHandler::Handle_S2S_REQ_HEART_BEAT(PacketSessionRef& session, 
 
 	return true;
 }
+
+

@@ -29,11 +29,18 @@ public class PacketManager
 		S_MOVE = 1005,
 		S_SPAWN = 1006,
 		S_DESPAWN = 1007,
-		C_CHAT_REQ = 1008,
-		S_CHAT_RES = 1009,
-		S_CHAT_NTF = 1010,
-		S_HEART_BEAT_RES = 1011,
-		C_HEART_BEAT_REQ = 1012,
+		S_ITEM_LIST = 1008,
+		C_USE_ITEM = 1009,
+		S_CHANGE_ITEM = 1010,
+		S_REMOVE_ITEM = 1011,
+		C_EQUIP_ITEM = 1012,
+		S_EQUIP_ITEM = 1013,
+		S_CHANGE_STAT = 1014,
+		C_CHAT_REQ = 1015,
+		S_CHAT_RES = 1016,
+		S_CHAT_NTF = 1017,
+		S_HEART_BEAT_RES = 1018,
+		C_HEART_BEAT_REQ = 1019,
 	}
 
 	public void Register()
@@ -48,6 +55,16 @@ public class PacketManager
 		_handler.Add((ushort)MsgId.S_SPAWN, PacketHandler.S_SPAWNHandler);
 		_onRecv.Add((ushort)MsgId.S_DESPAWN, MakePacket<S_DESPAWN>);
 		_handler.Add((ushort)MsgId.S_DESPAWN, PacketHandler.S_DESPAWNHandler);
+		_onRecv.Add((ushort)MsgId.S_ITEM_LIST, MakePacket<S_ITEM_LIST>);
+		_handler.Add((ushort)MsgId.S_ITEM_LIST, PacketHandler.S_ITEM_LISTHandler);
+		_onRecv.Add((ushort)MsgId.S_CHANGE_ITEM, MakePacket<S_CHANGE_ITEM>);
+		_handler.Add((ushort)MsgId.S_CHANGE_ITEM, PacketHandler.S_CHANGE_ITEMHandler);
+		_onRecv.Add((ushort)MsgId.S_REMOVE_ITEM, MakePacket<S_REMOVE_ITEM>);
+		_handler.Add((ushort)MsgId.S_REMOVE_ITEM, PacketHandler.S_REMOVE_ITEMHandler);
+		_onRecv.Add((ushort)MsgId.S_EQUIP_ITEM, MakePacket<S_EQUIP_ITEM>);
+		_handler.Add((ushort)MsgId.S_EQUIP_ITEM, PacketHandler.S_EQUIP_ITEMHandler);
+		_onRecv.Add((ushort)MsgId.S_CHANGE_STAT, MakePacket<S_CHANGE_STAT>);
+		_handler.Add((ushort)MsgId.S_CHANGE_STAT, PacketHandler.S_CHANGE_STATHandler);
 		_onRecv.Add((ushort)MsgId.S_CHAT_RES, MakePacket<S_CHAT_RES>);
 		_handler.Add((ushort)MsgId.S_CHAT_RES, PacketHandler.S_CHAT_RESHandler);
 		_onRecv.Add((ushort)MsgId.S_CHAT_NTF, MakePacket<S_CHAT_NTF>);
