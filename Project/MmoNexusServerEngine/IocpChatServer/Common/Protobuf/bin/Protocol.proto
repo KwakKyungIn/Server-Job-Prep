@@ -34,19 +34,21 @@ message C_MOVE {
 }
 
 message S_MOVE {
-    uint64 playerId = 1;
+    uint64 objectId = 1;
     PositionInfo posInfo = 2; // 누가 어디로 갔는지
 }
+
+
 
 // ============================================================
 // [GAME LOGIC - VISIBILITY] (Spawn/Despawn)
 // ============================================================
 message S_SPAWN {
     repeated PlayerInfo players = 1; // 내 시야에 들어온 플레이어들
+    repeated MonsterInfo monsters = 2; //몬스터 목록 추가
 }
-
 message S_DESPAWN {
-    repeated uint64 playerIds = 1; // 내 시야에서 사라진 플레이어들 (ID만)
+    repeated uint64 objectIds = 1; // 내 시야에서 사라진 플레이어들 (ID만)
 }
 
 // ============================================================

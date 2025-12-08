@@ -10,6 +10,7 @@ message PositionInfo {
     float z = 3;
     float yaw = 4;       // 바라보는 방향 (Rotation Y)
     MoveState state = 5; // IDLE, RUN, JUMP 등
+    ActionState actionState = 6;
 }
 
 // ===== 플레이어 정보 (Login, Spawn 시 사용) =====
@@ -19,6 +20,15 @@ message PlayerInfo {
     PlayerType type = 3;
     PositionInfo posInfo = 4; // 위치 정보 포함
     StatInfo statInfo = 5;
+}
+
+// ==========================몬스터 정보==================================
+message MonsterInfo {
+  uint64 objectId = 1;      // [New] 서버에서 발급한 고유 ID
+  int32 templateId = 2;
+  string name = 3;
+  PositionInfo posInfo = 4;
+  StatInfo statInfo = 5;
 }
 
 // ===== [Item] 아이템 정보 구조체 (NEW) =====

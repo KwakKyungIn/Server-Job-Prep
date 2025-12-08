@@ -209,7 +209,7 @@ Transform:
   m_GameObject: {fileID: 330585543}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: -10}
+  m_LocalPosition: {x: 50, y: 1, z: 40}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -361,6 +361,8 @@ MonoBehaviour:
   MyPlayerPrefab: {fileID: 7762758984857956340, guid: 7442a58d27f8a644b8b97b886b4d4e99,
     type: 3}
   OtherPlayerPrefab: {fileID: 7762758984857956340, guid: 7442a58d27f8a644b8b97b886b4d4e99,
+    type: 3}
+  MonsterPrefab: {fileID: 12782520425007398, guid: 79cf69b414d950d43a7df33d3d200dd4,
     type: 3}
 --- !u!114 &354217700
 MonoBehaviour:
@@ -657,8 +659,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 500, y: 200}
+  m_AnchoredPosition: {x: 0, y: -200}
+  m_SizeDelta: {x: 500, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &693958927
 MonoBehaviour:

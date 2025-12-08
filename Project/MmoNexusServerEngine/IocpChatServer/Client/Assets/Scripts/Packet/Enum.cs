@@ -24,22 +24,26 @@ namespace Protocol {
     static EnumReflection() {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
-            "CgpFbnVtLnByb3RvEghQcm90b2NvbCpHCglNb3ZlU3RhdGUSDQoJTU9WRV9J",
-            "RExFEAASDAoITU9WRV9SVU4QARINCglNT1ZFX0pVTVAQAhIOCgpNT1ZFX1NL",
-            "SUxMEAMqVAoKUGxheWVyVHlwZRIPCgtQTEFZRVJfTk9ORRAAEhEKDVBMQVlF",
-            "Ul9LTklHSFQQARIPCgtQTEFZRVJfTUFHRRACEhEKDVBMQVlFUl9BUkNIRVIQ",
-            "AypjCghJdGVtVHlwZRISCg5JVEVNX1RZUEVfTk9ORRAAEhQKEElURU1fVFlQ",
-            "RV9XRUFQT04QARITCg9JVEVNX1RZUEVfQVJNT1IQAhIYChRJVEVNX1RZUEVf",
-            "Q09OU1VNQUJMRRADKkgKDUNvbm5lY3RTdGF0dXMSDgoKQ09OTkVDVF9PSxAA",
-            "EhAKDENPTk5FQ1RfRkFJTBABEhUKEUNPTk5FQ1RfUkVDT05ORUNUEAIqPAoI",
-            "Um9vbVR5cGUSEAoMUk9PTV9QUklWQVRFEAASDgoKUk9PTV9HUk9VUBABEg4K",
-            "ClJPT01fR1VJTEQQAipACg5QcmVzZW5jZVN0YXR1cxILCgdPRkZMSU5FEAAS",
-            "CgoGT05MSU5FEAESCwoHSU5fR0FNRRACEggKBEFXQVkQAyo2CgxGcmllbmRT",
-            "dGF0dXMSCwoHUEVORElORxAAEgwKCEFDQ0VQVEVEEAESCwoHQkxPQ0tFRBAC",
-            "YgZwcm90bzM="));
+            "CgpFbnVtLnByb3RvEghQcm90b2NvbCo3CglNb3ZlU3RhdGUSDQoJTU9WRV9J",
+            "RExFEAASDAoITU9WRV9SVU4QARINCglNT1ZFX0pVTVAQAipkCgtBY3Rpb25T",
+            "dGF0ZRIPCgtBQ1RJT05fSURMRRAAEhEKDUFDVElPTl9BVFRBQ0sQARIPCgtB",
+            "Q1RJT05fREVBRBACEhAKDEFDVElPTl9TS0lMTBADEg4KCkFDVElPTl9ISVQQ",
+            "BCpUCgpQbGF5ZXJUeXBlEg8KC1BMQVlFUl9OT05FEAASEQoNUExBWUVSX0tO",
+            "SUdIVBABEg8KC1BMQVlFUl9NQUdFEAISEQoNUExBWUVSX0FSQ0hFUhADKm8K",
+            "Ck9iamVjdFR5cGUSFAoQT0JKRUNUX1RZUEVfTk9ORRAAEhYKEk9CSkVDVF9U",
+            "WVBFX1BMQVlFUhABEhcKE09CSkVDVF9UWVBFX01PTlNURVIQAhIaChZPQkpF",
+            "Q1RfVFlQRV9QUk9KRUNUSUxFEAMqYwoISXRlbVR5cGUSEgoOSVRFTV9UWVBF",
+            "X05PTkUQABIUChBJVEVNX1RZUEVfV0VBUE9OEAESEwoPSVRFTV9UWVBFX0FS",
+            "TU9SEAISGAoUSVRFTV9UWVBFX0NPTlNVTUFCTEUQAypICg1Db25uZWN0U3Rh",
+            "dHVzEg4KCkNPTk5FQ1RfT0sQABIQCgxDT05ORUNUX0ZBSUwQARIVChFDT05O",
+            "RUNUX1JFQ09OTkVDVBACKjwKCFJvb21UeXBlEhAKDFJPT01fUFJJVkFURRAA",
+            "Eg4KClJPT01fR1JPVVAQARIOCgpST09NX0dVSUxEEAIqQAoOUHJlc2VuY2VT",
+            "dGF0dXMSCwoHT0ZGTElORRAAEgoKBk9OTElORRABEgsKB0lOX0dBTUUQAhII",
+            "CgRBV0FZEAMqNgoMRnJpZW5kU3RhdHVzEgsKB1BFTkRJTkcQABIMCghBQ0NF",
+            "UFRFRBABEgsKB0JMT0NLRUQQAmIGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
-          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Protocol.MoveState), typeof(global::Protocol.PlayerType), typeof(global::Protocol.ItemType), typeof(global::Protocol.ConnectStatus), typeof(global::Protocol.RoomType), typeof(global::Protocol.PresenceStatus), typeof(global::Protocol.FriendStatus), }, null, null));
+          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Protocol.MoveState), typeof(global::Protocol.ActionState), typeof(global::Protocol.PlayerType), typeof(global::Protocol.ObjectType), typeof(global::Protocol.ItemType), typeof(global::Protocol.ConnectStatus), typeof(global::Protocol.RoomType), typeof(global::Protocol.PresenceStatus), typeof(global::Protocol.FriendStatus), }, null, null));
     }
     #endregion
 
@@ -50,7 +54,7 @@ namespace Protocol {
   /// </summary>
   public enum MoveState {
     /// <summary>
-    /// 대기
+    /// 정지
     /// </summary>
     [pbr::OriginalName("MOVE_IDLE")] MoveIdle = 0,
     /// <summary>
@@ -61,10 +65,32 @@ namespace Protocol {
     /// 점프
     /// </summary>
     [pbr::OriginalName("MOVE_JUMP")] MoveJump = 2,
+  }
+
+  /// <summary>
+  /// [New] 행동 상태 정의
+  /// </summary>
+  public enum ActionState {
     /// <summary>
-    /// 스킬 사용 중
+    /// 아무것도 안 함 (평온)
     /// </summary>
-    [pbr::OriginalName("MOVE_SKILL")] MoveSkill = 3,
+    [pbr::OriginalName("ACTION_IDLE")] ActionIdle = 0,
+    /// <summary>
+    /// 기본 공격
+    /// </summary>
+    [pbr::OriginalName("ACTION_ATTACK")] ActionAttack = 1,
+    /// <summary>
+    /// 사망
+    /// </summary>
+    [pbr::OriginalName("ACTION_DEAD")] ActionDead = 2,
+    /// <summary>
+    /// 스킬 사용
+    /// </summary>
+    [pbr::OriginalName("ACTION_SKILL")] ActionSkill = 3,
+    /// <summary>
+    /// 피격 (경직)
+    /// </summary>
+    [pbr::OriginalName("ACTION_HIT")] ActionHit = 4,
   }
 
   /// <summary>
@@ -75,6 +101,13 @@ namespace Protocol {
     [pbr::OriginalName("PLAYER_KNIGHT")] PlayerKnight = 1,
     [pbr::OriginalName("PLAYER_MAGE")] PlayerMage = 2,
     [pbr::OriginalName("PLAYER_ARCHER")] PlayerArcher = 3,
+  }
+
+  public enum ObjectType {
+    [pbr::OriginalName("OBJECT_TYPE_NONE")] None = 0,
+    [pbr::OriginalName("OBJECT_TYPE_PLAYER")] Player = 1,
+    [pbr::OriginalName("OBJECT_TYPE_MONSTER")] Monster = 2,
+    [pbr::OriginalName("OBJECT_TYPE_PROJECTILE")] Projectile = 3,
   }
 
   /// <summary>

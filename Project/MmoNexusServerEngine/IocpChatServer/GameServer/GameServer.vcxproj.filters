@@ -25,6 +25,9 @@
     <Filter Include="GameContents">
       <UniqueIdentifier>{a1b74ba9-df74-432b-aa08-401bd67610f0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Manager">
+      <UniqueIdentifier>{ad7a092f-a2e6-4cee-a1b7-16547c77d20a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GameServer.cpp">
@@ -70,9 +73,15 @@
       <Filter>GameContents</Filter>
     </ClCompile>
     <ClCompile Include="DataManager.cpp">
-      <Filter>GameContents</Filter>
+      <Filter>Manager</Filter>
     </ClCompile>
     <ClCompile Include="GameSessionManager.cpp">
+      <Filter>Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="Creature.cpp">
+      <Filter>GameContents</Filter>
+    </ClCompile>
+    <ClCompile Include="Monster.cpp">
       <Filter>GameContents</Filter>
     </ClCompile>
   </ItemGroup>
@@ -117,11 +126,18 @@
       <Filter>GameContents</Filter>
     </ClInclude>
     <ClInclude Include="DataManager.h">
-      <Filter>GameContents</Filter>
+      <Filter>Manager</Filter>
     </ClInclude>
     <ClInclude Include="GameSessionManager.h">
+      <Filter>Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="Creature.h">
       <Filter>GameContents</Filter>
     </ClInclude>
+    <ClInclude Include="Monster.h">
+      <Filter>GameContents</Filter>
+    </ClInclude>
+    <ClInclude Include="ObjectUtils.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ServerConfig.json" />

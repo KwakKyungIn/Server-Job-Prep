@@ -7,15 +7,16 @@ public class ObjectManager : MonoBehaviour
 {
     public static ObjectManager Instance { get; private set; }
 
-    // [My Player ID] ulong으로 정확하게 선언
     public static ulong MyPlayerId { get; set; }
 
-    // [Storage] Dictionary 키를 ulong으로 변경 (Protobuf PlayerId와 일치)
-    Dictionary<ulong, GameObject> _players = new Dictionary<ulong, GameObject>();
+    // [GIGACHAD Refactoring] 플레이어만 담는 게 아니라 몬스터도 담아야 함.
+    // 이름도 _objects로 변경. (PlayerId, MonsterId 모두 ulong으로 통합 관리)
+    Dictionary<ulong, GameObject> _objects = new Dictionary<ulong, GameObject>();
 
-    // [Resources] 유니티 에디터에서 연결할 프리팹
+    // [Resources]
     public GameObject MyPlayerPrefab;
     public GameObject OtherPlayerPrefab;
+    public GameObject MonsterPrefab; // [New] 몬스터용 프리팹 연결 필요
 
     void Awake()
     {
@@ -24,60 +25,71 @@ public class ObjectManager : MonoBehaviour
 
     void Start()
     {
-        // [Event Subscription] 패킷 핸들러 이벤트 구독
         PacketHandler.OnEnterGame += OnEnterGame;
         PacketHandler.OnSpawn += OnSpawn;
         PacketHandler.OnDespawn += OnDespawn;
         PacketHandler.OnMove += OnMove;
     }
 
-    // 1. 내 캐릭터 입장 (S_ENTER_GAME_RES)
+    // 1. 내 캐릭터 입장
     void OnEnterGame(S_ENTER_GAME_RES pkt)
     {
         if (pkt.Success == false) return;
 
-        MyPlayerId = pkt.MyPlayer.PlayerId; // ulong으로 바로 받음
+        MyPlayerId = pkt.MyPlayer.PlayerId;
 
-        // 나를 생성 (MyPlayerPrefab 사용)
+        // 나를 생성
         Spawn(pkt.MyPlayer, true);
     }
 
-    // 2. 다른 플레이어 출현 (S_SPAWN)
+    // 2. 다른 객체(플레이어 + 몬스터) 출현
     void OnSpawn(S_SPAWN pkt)
     {
-        foreach (PlayerInfo player in pkt.Players)
+        // 2-1. 플레이어 처리
+        if (pkt.Players != null)
         {
-            if (player.PlayerId == MyPlayerId) continue; // ulong끼리 비교
-            Spawn(player, false);
+            foreach (PlayerInfo player in pkt.Players)
+            {
+                if (player.PlayerId == MyPlayerId) continue;
+                Spawn(player, false);
+            }
+        }
+
+        // 2-2. [New] 몬스터 처리
+        if (pkt.Monsters != null)
+        {
+            foreach (MonsterInfo monster in pkt.Monsters)
+            {
+                SpawnMonster(monster);
+            }
         }
     }
 
-    // 3. 플레이어 사라짐 (S_DESPAWN)
+    // 3. 객체 사라짐 (S_DESPAWN)
     void OnDespawn(S_DESPAWN pkt)
     {
-        // PlayerIds는 ulong 리스트이므로, 키도 ulong으로 찾는다.
-        foreach (ulong id in pkt.PlayerIds)
+        // [Modify] PacketHandler 수정에 맞춰 ObjectIds 사용
+        foreach (ulong id in pkt.ObjectIds)
         {
-            if (_players.ContainsKey(id))
+            if (_objects.ContainsKey(id))
             {
-                Destroy(_players[id]);
-                _players.Remove(id);
+                Destroy(_objects[id]);
+                _objects.Remove(id);
             }
         }
     }
 
     // 4. 이동 패킷 처리 (S_MOVE)
-    // ObjectManager.cs - OnMove 함수 내부
     void OnMove(S_MOVE pkt)
     {
-        // 1. 받은 패킷의 ID와 내 ID가 같은가?
-        Debug.Log($"[S_MOVE] Recv ID: {pkt.PlayerId}, My ID: {MyPlayerId}. Self? {pkt.PlayerId == MyPlayerId}");
-        if (pkt.PlayerId == MyPlayerId) return;
+        // [Modify] PlayerId -> ObjectId
+        if (pkt.ObjectId == MyPlayerId) return;
 
-        // 2. 이 ID가 Dictionary에 있는가?
-        if (_players.TryGetValue(pkt.PlayerId, out GameObject go))
+        // Dictionary(_objects)에서 찾기
+        if (_objects.TryGetValue(pkt.ObjectId, out GameObject go))
         {
-            Debug.Log($"[S_MOVE] Found Player ID: {pkt.PlayerId}. Moving!");
+            // 플레이어든 몬스터든 PlayerController(혹은 BaseController)를 가지고 있다고 가정
+            // 움직임 동기화 로직은 동일하니까.
             PlayerController pc = go.GetComponent<PlayerController>();
             if (pc != null)
             {
@@ -86,16 +98,16 @@ public class ObjectManager : MonoBehaviour
         }
         else
         {
-            // [CRITICAL] 여기에 찍혔다면 Spawn 자체가 안 됐다는 뜻이다.
-            Debug.LogError($"[S_MOVE] ERROR: Player ID {pkt.PlayerId} not found in ObjectManager!");
+            // 시야 문제 등으로 인해 스폰 패킷보다 이동 패킷이 먼저 올 수도 있음 (UDP라면)
+            // 하지만 TCP라면 순서 보장되므로 로직 에러일 가능성 높음
+            // Debug.LogError($"[S_MOVE] Object ID {pkt.ObjectId} not found!");
         }
     }
 
-    // [Internal Spawn Logic]
+    // [Helper] 플레이어 생성
     void Spawn(PlayerInfo info, bool isMine)
     {
-        // [FIX] ulong 키로 ContainsKey 체크
-        if (_players.ContainsKey(info.PlayerId)) return;
+        if (_objects.ContainsKey(info.PlayerId)) return;
 
         GameObject go = null;
         Vector3 pos = new Vector3(info.PosInfo.X, info.PosInfo.Y, info.PosInfo.Z);
@@ -103,16 +115,35 @@ public class ObjectManager : MonoBehaviour
         if (isMine)
         {
             go = Instantiate(MyPlayerPrefab, pos, Quaternion.identity);
-            go.AddComponent<MyPlayerController>();
+            go.AddComponent<MyPlayerController>(); // 내 컨트롤러
         }
         else
         {
             go = Instantiate(OtherPlayerPrefab, pos, Quaternion.identity);
-            go.AddComponent<PlayerController>();
+            go.AddComponent<PlayerController>(); // 타인 컨트롤러 (보간 이동)
         }
 
         go.name = $"Player_{info.PlayerId}_{info.Name}";
-        // [FIX] ulong 키로 Add
-        _players.Add(info.PlayerId, go);
+        _objects.Add(info.PlayerId, go);
+    }
+
+    // [Helper] 몬스터 생성 (New)
+    void SpawnMonster(MonsterInfo info)
+    {
+        // Object ID 중복 체크
+        if (_objects.ContainsKey(info.ObjectId)) return; // MonsterInfo에도 ObjectId 필드가 있어야 함 (Struct.proto 확인)
+
+        Vector3 pos = new Vector3(info.PosInfo.X, info.PosInfo.Y, info.PosInfo.Z);
+
+        // 몬스터 프리팹 생성
+        GameObject go = Instantiate(MonsterPrefab, pos, Quaternion.identity);
+
+        // 몬스터도 이동해야 하므로 PlayerController(이동 담당)를 붙여준다.
+        // 나중에는 MonsterController를 따로 만드는 게 정석.
+        if (go.GetComponent<PlayerController>() == null)
+            go.AddComponent<PlayerController>();
+
+        go.name = $"Monster_{info.TemplateId}_{info.ObjectId}";
+        _objects.Add(info.ObjectId, go);
     }
 }

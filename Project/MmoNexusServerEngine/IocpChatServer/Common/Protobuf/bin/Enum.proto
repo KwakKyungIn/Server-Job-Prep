@@ -3,10 +3,18 @@ package Protocol;
 
 // ===== [Game Logic] 플레이어 행동 상태 =====
 enum MoveState {
-    MOVE_IDLE = 0;      // 대기
-    MOVE_RUN = 1;       // 달리기
-    MOVE_JUMP = 2;      // 점프
-    MOVE_SKILL = 3;     // 스킬 사용 중
+    MOVE_IDLE = 0;    // 정지
+    MOVE_RUN = 1;     // 달리기
+    MOVE_JUMP = 2;    // 점프
+}
+
+// [New] 행동 상태 정의
+enum ActionState {
+    ACTION_IDLE = 0;   // 아무것도 안 함 (평온)
+    ACTION_ATTACK = 1; // 기본 공격
+    ACTION_DEAD = 2;   // 사망
+    ACTION_SKILL = 3;  // 스킬 사용
+    ACTION_HIT = 4;    // 피격 (경직)
 }
 
 // ===== [Game Logic] 플레이어 직업 타입 =====
@@ -17,6 +25,12 @@ enum PlayerType {
     PLAYER_ARCHER = 3;
 }
 
+enum ObjectType {
+  OBJECT_TYPE_NONE = 0;
+  OBJECT_TYPE_PLAYER = 1;
+  OBJECT_TYPE_MONSTER = 2;
+  OBJECT_TYPE_PROJECTILE = 3;
+}
 // ===== [Item] 아이템 타입 (NEW) =====
 enum ItemType {
     ITEM_TYPE_NONE = 0;

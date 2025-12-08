@@ -1,9 +1,10 @@
-#include "pch.h"
+ï»¿#include "pch.h"
 #include "GameRoom.h"
 #include "GameMap.h"
 #include "Player.h"
 #include "PlayerSession.h"
 #include "ClientPacketHandler.h"
+#include "Monster.h"
 
 GameRoom::GameRoom()
 {
@@ -27,38 +28,55 @@ void GameRoom::Init(int32 mapId, int32 sizeX, int32 sizeY, int32 zoneSize)
 	_zones.resize(_gridSizeX * _gridSizeY);
 
 	printf("[GameRoom] Init MapId: %d, Grid: %dx%d, CellSize: %d\n", mapId, _gridSizeX, _gridSizeY, zoneSize);
+
+
+
+
+
+	// [Test Spawn] í…ŒìŠ¤íŠ¸ìš© ëª¬ìŠ¤í„° 1ë§ˆë¦¬ ì†Œí™˜
+	// ë‚˜ì¤‘ì—” GenFile(ë°°ì¹˜ íŒŒì¼)ì´ë‚˜ DBì—ì„œ ì½ì–´ì„œ ë£¨í”„ ëŒë ¤ì•¼ í•¨
+	MonsterRef slime = ObjectPool<Monster>::MakeShared();
+	slime->Init(1); // í…œí”Œë¦¿ ID 1ë²ˆ (ìŠ¬ë¼ì„ í‚¹)
+
+	// ìœ„ì¹˜ ì„¤ì • (í”Œë ˆì´ì–´ ìŠ¤í° ìœ„ì¹˜ ê·¼ì²˜ì¸ 55, 0, 55 ì •ë„ë¡œ ì„¤ì •)
+	slime->GetPosInfo()->set_x(55.0f);
+	slime->GetPosInfo()->set_y(0.0f);
+	slime->GetPosInfo()->set_z(55.0f);
+	slime->GetPosInfo()->set_yaw(0.0f);
+
+	// ë°©ì— ì…ì¥ (ì´ë•Œ EnterMonsterê°€ í˜¸ì¶œë˜ë©´ì„œ Zoneì— ë“±ë¡ë¨)
+	EnterMonster(slime);
+
+	printf("ğŸ‘¾ [Test] Slime_King Spawned at (55, 0, 55)\n");
+
+
 }
 
 void GameRoom::Update()
 {
-	// TODO: ¸ó½ºÅÍ AI, ¸®½ºÆù ·ÎÁ÷ µî ÁÖ±âÀû ÀÛ¾÷
+	// ëª¬ìŠ¤í„° AI êµ¬ë™
+	for (auto& item : _monsters)
+	{
+		MonsterRef monster = item.second;
+		monster->Update();
+	}
 }
 
 void GameRoom::Enter(PlayerSessionRef session)
 {
-	// [Refactoring] ¼¼¼ÇÀº ´ÜÁö Åë·ÎÀÏ »Ó, ÁÖÀÎ°øÀº Player´Ù.
-	// ·Î±×ÀÎ ´Ü°è¿¡¼­ ÀÌ¹Ì »ı¼ºµÈ Player °´Ã¼¸¦ °¡Á®¿Â´Ù.
 	PlayerRef player = session->GetPlayer();
-	if (player == nullptr)
-		return;
+	if (player == nullptr) return;
 
-	// Áßº¹ ÀÔÀå Ã¼Å©
-	if (_players.find(player->GetPlayerId()) != _players.end())
-		return;
+	if (_players.find(player->GetPlayerId()) != _players.end()) return;
 
-	// 1. ¹æ ¼³Á¤ (SessionÀÌ ¾Æ´Ï¶ó Player°¡ ¹æÀ» ±â¾ïÇÔ)
 	player->SetRoom(shared_from_this());
-
-	// 2. ÀüÃ¼ ¸í´Ü µî·Ï
 	_players.insert({ player->GetPlayerId(), player });
 
-	// 3. [AOI] Zone ÁøÀÔ Ã³¸®
-	// PlayerInfo´Â ÀÌÁ¦ player °´Ã¼°¡ µé°í ÀÖÀ¸¹Ç·Î ¹Ù·Î Á¢±Ù °¡´É
 	int32 zoneIndex = GetZoneIndex(*player->GetPosInfo());
 	player->SetZoneIndex(zoneIndex);
 	_zones[zoneIndex].players.insert(player);
 
-	// 4. [Broadcast] ÁÖº¯ 9°³ Zone¿¡ "³»°¡ µé¾î¿ÔÀ½" ¾Ë¸² (S_SPAWN)
+	// 1. ì£¼ë³€ í”Œë ˆì´ì–´ë“¤ì—ê²Œ "ë‚˜(í”Œë ˆì´ì–´) ë“±ì¥" ì•Œë¦¼
 	{
 		Protocol::S_SPAWN spawnPkt;
 		Protocol::PlayerInfo* pInfo = spawnPkt.add_players();
@@ -78,14 +96,16 @@ void GameRoom::Enter(PlayerSessionRef session)
 		}
 	}
 
-	// 5. [To Me] ³ª¿¡°Ô "ÁÖº¯ À¯Àúµé Á¤º¸" ¾Ë¸² (S_SPAWN)
+	// 2. ë‚˜ì—ê²Œ "ì£¼ë³€ ì •ë³´(í”Œë ˆì´ì–´ + ëª¬ìŠ¤í„°)" ì•Œë¦¼
 	{
 		Vector<Zone*> nearbyZones;
 		GetNearbyZones(zoneIndex, nearbyZones);
 
 		Protocol::S_SPAWN spawnPkt;
+
 		for (Zone* zone : nearbyZones)
 		{
+			// í”Œë ˆì´ì–´ ì¶”ê°€
 			for (const PlayerRef& other : zone->players)
 			{
 				if (other != player)
@@ -94,47 +114,48 @@ void GameRoom::Enter(PlayerSessionRef session)
 					*pInfo = *other->GetPlayerInfo();
 				}
 			}
+			// [New] ëª¬ìŠ¤í„° ì¶”ê°€
+			for (const MonsterRef& monster : zone->monsters)
+			{
+				Protocol::MonsterInfo* mInfo = spawnPkt.add_monsters();
+				*mInfo = *monster->GetMonsterInfo();
+			}
 		}
 
-		if (spawnPkt.players_size() > 0)
+		// ì£¼ë³€ì— ë­ë¼ë„(í”Œë ˆì´ì–´ë“  ëª¬ìŠ¤í„°ë“ ) ìˆìœ¼ë©´ ì „ì†¡
+		if (spawnPkt.players_size() > 0 || spawnPkt.monsters_size() > 0)
 		{
 			SendBufferRef sendBuffer = ClientPacketHandler::MakeSendBuffer(spawnPkt);
 			session->Send(sendBuffer);
-
-			printf("[ROOM] Player %llu Entered Zone[%d]. Received %d neighbors.\n", player->GetPlayerId(), zoneIndex, spawnPkt.players_size());
 		}
 	}
 }
 
 void GameRoom::Leave(PlayerSessionRef session)
 {
-	// ¼¼¼Ç¿¡¼­ ÇÃ·¹ÀÌ¾î Á¤º¸¸¦ °¡Á®¿È
 	PlayerRef player = session->GetPlayer();
 	if (player == nullptr) return;
 
 	uint64 playerId = player->GetPlayerId();
 
-	// ¸í´Ü Ã¼Å©
 	if (_players.find(playerId) == _players.end()) return;
 
 	int32 zoneIndex = player->GetZoneIndex();
 
-	// 1. Zone¿¡¼­ Á¦°Å
+	// 1. Zoneì—ì„œ ì œê±°
 	if (zoneIndex >= 0 && zoneIndex < _zones.size())
 	{
 		_zones[zoneIndex].players.erase(player);
 	}
 
-	// 2. ÀüÃ¼ ¸í´Ü Á¦°Å
+	// 2. ì „ì²´ ëª…ë‹¨ ì œê±°
 	_players.erase(playerId);
-
-	// [Refactoring] ¹æ Á¤º¸ ÇØÁ¦ (Player¿¡°Ô ¾Ë¸²)
 	player->SetRoom(nullptr);
 
-	// 3. [Broadcast] ÁÖº¯ À¯Àúµé¿¡°Ô "³ª ³ª°¬À½" ¾Ë¸² (S_DESPAWN)
+	// 3. [Broadcast] ì£¼ë³€ ìœ ì €ë“¤ì—ê²Œ "ë‚˜ ë‚˜ê°”ìŒ" ì•Œë¦¼ (S_DESPAWN)
 	{
 		Protocol::S_DESPAWN despawnPkt;
-		despawnPkt.add_playerids(playerId);
+		despawnPkt.add_objectids(playerId);
 		SendBufferRef sendBuffer = ClientPacketHandler::MakeSendBuffer(despawnPkt);
 
 		BroadcastToZone(sendBuffer, zoneIndex, 0);
@@ -145,13 +166,11 @@ void GameRoom::Leave(PlayerSessionRef session)
 
 void GameRoom::HandleMove(PlayerSessionRef session, Protocol::C_MOVE pkt)
 {
-	// [Refactoring] Session -> Player Á¢±Ù
 	PlayerRef player = session->GetPlayer();
 	if (player == nullptr) return;
 
 	uint64 playerId = player->GetPlayerId();
 
-	// ¹æ¿¡ ¾ø´Â À¯Àú¶ó¸é ¹«½Ã
 	if (_players.find(playerId) == _players.end()) return;
 
 	// 1. [Validation]
@@ -162,20 +181,20 @@ void GameRoom::HandleMove(PlayerSessionRef session, Protocol::C_MOVE pkt)
 	int32 oldZoneIndex = player->GetZoneIndex();
 	int32 newZoneIndex = GetZoneIndex(pkt.posinfo());
 
-	// 3. [Update] Á¤º¸ °»½Å (Player °´Ã¼ ³»ºÎ µ¥ÀÌÅÍ ¼öÁ¤)
+	// 3. [Update] ì •ë³´ ê°±ì‹ 
 	player->SetPosInfo(pkt.posinfo());
 
-	// [Case A] °°Àº Zone ³» ÀÌµ¿
+	// [Case A] ê°™ì€ Zone ë‚´ ì´ë™
 	if (oldZoneIndex == newZoneIndex)
 	{
 		Protocol::S_MOVE movePkt;
-		movePkt.set_playerid(playerId);
+		movePkt.set_objectid(playerId);
 		*movePkt.mutable_posinfo() = pkt.posinfo();
 		SendBufferRef sendBuffer = ClientPacketHandler::MakeSendBuffer(movePkt);
 
 		BroadcastToZone(sendBuffer, newZoneIndex, playerId);
 	}
-	// [Case B] Zone º¯°æ ¹ß»ı
+	// [Case B] Zone ë³€ê²½ ë°œìƒ
 	else
 	{
 		Vector<int32> oldZones;
@@ -186,75 +205,94 @@ void GameRoom::HandleMove(PlayerSessionRef session, Protocol::C_MOVE pkt)
 		GetNearbyZoneIndices(newZoneIndex, newZones);
 		std::sort(newZones.begin(), newZones.end());
 
-		// (Old - New) : Despawn Group
+		// (Old - New) : Despawn Group (ì‚¬ë¼ì ¸ì•¼ í•  ë†ˆë“¤)
 		{
 			Vector<int32> removedZones;
 			std::set_difference(oldZones.begin(), oldZones.end(),
 				newZones.begin(), newZones.end(),
 				std::back_inserter(removedZones));
 
+			// ë‚˜ -> ë‹¤ë¥¸ ì‚¬ëŒë“¤ì—ê²Œ "ë‚˜ ì‚¬ë¼ì§" ì•Œë¦¼
 			Protocol::S_DESPAWN despawnPkt;
-			despawnPkt.add_playerids(playerId);
+			despawnPkt.add_objectids(playerId);
 			SendBufferRef sendBuffer = ClientPacketHandler::MakeSendBuffer(despawnPkt);
 
+			// ë‚˜ì—ê²Œ "ë„ˆë„¤ ì‚¬ë¼ì§" ì•Œë¦¼
 			Protocol::S_DESPAWN despawnToMePkt;
 
 			for (int32 zoneIdx : removedZones)
 			{
 				Zone& zone = _zones[zoneIdx];
+
+				// í•´ë‹¹ ì¡´ì— ìˆëŠ” í”Œë ˆì´ì–´ ì²˜ë¦¬
 				for (auto& p : zone.players)
 				{
 					if (p->GetPlayerId() != playerId)
 					{
-						p->GetSession()->Send(sendBuffer);
-						despawnToMePkt.add_playerids(p->GetPlayerId());
+						p->GetSession()->Send(sendBuffer); // ê±”ë„¤í•œí…Œ ë‚´ ì •ë³´ ì‚­ì œ ìš”ì²­
+						despawnToMePkt.add_objectids(p->GetPlayerId()); // ë‚´ ëª©ë¡ì— ê±”ë„¤ ì¶”ê°€
 					}
+				}
+				// [New] í•´ë‹¹ ì¡´ì— ìˆëŠ” ëª¬ìŠ¤í„° ì²˜ë¦¬
+				for (auto& m : zone.monsters)
+				{
+					despawnToMePkt.add_objectids(m->GetObjectId());
 				}
 			}
 
-			if (despawnToMePkt.playerids_size() > 0)
+			if (despawnToMePkt.objectids_size() > 0)
 			{
 				SendBufferRef despawnToMeBuffer = ClientPacketHandler::MakeSendBuffer(despawnToMePkt);
 				session->Send(despawnToMeBuffer);
 			}
 		}
 
-		// (New - Old) : Spawn Group
+		// (New - Old) : Spawn Group (ìƒˆë¡œ ë‚˜íƒ€ë‚  ë†ˆë“¤)
 		{
 			Vector<int32> addedZones;
 			std::set_difference(newZones.begin(), newZones.end(),
 				oldZones.begin(), oldZones.end(),
 				std::back_inserter(addedZones));
 
+			// ë‚˜ -> ë‹¤ë¥¸ ì‚¬ëŒë“¤ì—ê²Œ "ë‚˜ ë‚˜íƒ€ë‚¨"
 			Protocol::S_SPAWN mySpawnPkt;
 			auto* myInfo = mySpawnPkt.add_players();
 			*myInfo = *player->GetPlayerInfo();
 			SendBufferRef mySpawnBuffer = ClientPacketHandler::MakeSendBuffer(mySpawnPkt);
 
+			// ë‚˜ì—ê²Œ "ë„ˆë„¤ ë‚˜íƒ€ë‚¨" (í”Œë ˆì´ì–´ + ëª¬ìŠ¤í„°)
 			Protocol::S_SPAWN othersSpawnPkt;
 
 			for (int32 zoneIdx : addedZones)
 			{
 				Zone& zone = _zones[zoneIdx];
+
+				// í”Œë ˆì´ì–´ ì²˜ë¦¬
 				for (auto& p : zone.players)
 				{
 					if (p->GetPlayerId() != playerId)
 					{
-						p->GetSession()->Send(mySpawnBuffer);
+						p->GetSession()->Send(mySpawnBuffer); // ê±”ë„¤í•œí…Œ ë‚˜ ë³´ëƒ„
 						auto* otherInfo = othersSpawnPkt.add_players();
-						*otherInfo = *p->GetPlayerInfo();
+						*otherInfo = *p->GetPlayerInfo(); // ë‚´ ëª©ë¡ì— ê±”ë„¤ ì¶”ê°€
 					}
+				}
+				// [New] ëª¬ìŠ¤í„° ì²˜ë¦¬
+				for (auto& m : zone.monsters)
+				{
+					auto* mInfo = othersSpawnPkt.add_monsters();
+					*mInfo = *m->GetMonsterInfo();
 				}
 			}
 
-			if (othersSpawnPkt.players_size() > 0)
+			if (othersSpawnPkt.players_size() > 0 || othersSpawnPkt.monsters_size() > 0)
 			{
 				SendBufferRef othersSpawnBuffer = ClientPacketHandler::MakeSendBuffer(othersSpawnPkt);
 				session->Send(othersSpawnBuffer);
 			}
 		}
 
-		// (Old ¡û New) : Move Group
+		// (Old âˆ© New) : Move Group (ê°™ì´ ì´ë™ ì¤‘ì¸ ë†ˆë“¤)
 		{
 			Vector<int32> commonZones;
 			std::set_intersection(oldZones.begin(), oldZones.end(),
@@ -262,7 +300,7 @@ void GameRoom::HandleMove(PlayerSessionRef session, Protocol::C_MOVE pkt)
 				std::back_inserter(commonZones));
 
 			Protocol::S_MOVE movePkt;
-			movePkt.set_playerid(playerId);
+			movePkt.set_objectid(playerId);
 			*movePkt.mutable_posinfo() = pkt.posinfo();
 			SendBufferRef sendBuffer = ClientPacketHandler::MakeSendBuffer(movePkt);
 
@@ -277,14 +315,90 @@ void GameRoom::HandleMove(PlayerSessionRef session, Protocol::C_MOVE pkt)
 			}
 		}
 
-		// ¼­¹ö ³» Zone ÀÌµ¿ ¹İ¿µ
+		// ì„œë²„ ë‚´ Zone ì´ë™ ë°˜ì˜
 		_zones[oldZoneIndex].players.erase(player);
 		_zones[newZoneIndex].players.insert(player);
 		player->SetZoneIndex(newZoneIndex);
 	}
 }
 
-// [Helper Impl]
+void GameRoom::EnterMonster(MonsterRef monster)
+{
+	if (monster == nullptr) return;
+
+	if (_monsters.find(monster->GetObjectId()) != _monsters.end())
+		return;
+
+	_monsters.insert({ monster->GetObjectId(), monster });
+	monster->SetRoom(shared_from_this());
+
+	int32 zoneIndex = GetZoneIndex(*monster->GetPosInfo());
+	monster->SetZoneIndex(zoneIndex);
+	_zones[zoneIndex].monsters.insert(monster);
+
+	// ì£¼ë³€ ìœ ì €ë“¤ì—ê²Œ ëª¬ìŠ¤í„° ìŠ¤í° ì•Œë¦¼
+	{
+		Protocol::S_SPAWN spawnPkt;
+		Protocol::MonsterInfo* mInfo = spawnPkt.add_monsters();
+		*mInfo = *monster->GetMonsterInfo();
+
+		SendBufferRef sendBuffer = ClientPacketHandler::MakeSendBuffer(spawnPkt);
+		BroadcastToZone(sendBuffer, zoneIndex);
+	}
+}
+
+void GameRoom::LeaveMonster(uint64 objectId)
+{
+	auto it = _monsters.find(objectId);
+	if (it == _monsters.end()) return;
+
+	MonsterRef monster = it->second;
+	int32 zoneIndex = monster->GetZoneIndex();
+
+	if (zoneIndex >= 0 && zoneIndex < _zones.size())
+		_zones[zoneIndex].monsters.erase(monster);
+
+	_monsters.erase(objectId);
+	monster->SetRoom(nullptr);
+
+	// ì£¼ë³€ ìœ ì €ë“¤ì—ê²Œ ëª¬ìŠ¤í„° ì‚¬ë¼ì§ ì•Œë¦¼
+	{
+		Protocol::S_DESPAWN despawnPkt;
+		despawnPkt.add_objectids(objectId); // ì—¬ê¸°ëŠ” ë³€ê²½ëœ ì´ë¦„ ê·¸ëŒ€ë¡œ ì‚¬ìš©
+		SendBufferRef sendBuffer = ClientPacketHandler::MakeSendBuffer(despawnPkt);
+		BroadcastToZone(sendBuffer, zoneIndex);
+	}
+}
+
+PlayerRef GameRoom::FindNearestPlayer(Protocol::PositionInfo* pos, float range)
+{
+	int32 zoneIndex = GetZoneIndex(*pos);
+	Vector<Zone*> zones;
+	GetNearbyZones(zoneIndex, zones);
+
+	PlayerRef target = nullptr;
+	float minDistSqr = range * range;
+
+	for (Zone* zone : zones)
+	{
+		for (const PlayerRef& player : zone->players)
+		{
+			float dx = player->GetPosInfo()->x() - pos->x();
+			float dy = player->GetPosInfo()->z() - pos->z();
+			float distSqr = dx * dx + dy * dy;
+
+			if (distSqr < minDistSqr)
+			{
+				minDistSqr = distSqr;
+				target = player;
+			}
+		}
+	}
+
+	return target;
+}
+
+// Helper í•¨ìˆ˜ë“¤
 void GameRoom::GetNearbyZoneIndices(int32 zoneIndex, Vector<int32>& outIndices)
 {
 	outIndices.clear();
@@ -307,7 +421,6 @@ void GameRoom::GetNearbyZoneIndices(int32 zoneIndex, Vector<int32>& outIndices)
 		}
 	}
 }
-
 
 int32 GameRoom::GetZoneIndex(const Protocol::PositionInfo& posInfo)
 {
