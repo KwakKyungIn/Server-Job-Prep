@@ -6,7 +6,7 @@
 #include "SocketUtils.h"
 #include "SendBuffer.h"
 #include "GlobalQueue.h"
-
+#include "RedisManager.h"
 //  JSON 라이브러리 필수
 #include <fstream>
 #include <iostream>
@@ -22,6 +22,7 @@ SendBufferManager* GSendBufferManager = nullptr;
 DeadLockProfiler* GDeadLockProfiler = nullptr;
 GlobalQueue* GGlobalQueue = nullptr;
 std::atomic<bool> GIsRunning = true;
+RedisManager* GRedisManager = nullptr; // 정의
 //DBConnectionPool* GDBConnectionPool = nullptr;
 
 ServerConfig GServerConfig; // 설정값 담을 전역 변수
@@ -32,6 +33,9 @@ ServerConfig GServerConfig; // 설정값 담을 전역 변수
 
 CoreGlobal::CoreGlobal()
 {
+	// [Step 3] 소켓 라이브러리 초기화
+	SocketUtils::Init();
+
 	// [Step 1] Config Load (매니저 초기화보다 먼저 실행되어야 함)
 	std::ifstream file("ServerConfig.json");
 	if (file.is_open())
@@ -63,8 +67,12 @@ CoreGlobal::CoreGlobal()
 	GGlobalQueue = new GlobalQueue();
 	//GDBConnectionPool = new DBConnectionPool();
 
-	// [Step 3] 소켓 라이브러리 초기화
-	SocketUtils::Init();
+	//[GIGACHAD ADD] Redis 생성
+	GRedisManager = new RedisManager();
+
+	// [GIGACHAD ADD] Redis 연결 (일단 로컬호스트)
+	// 실제론 Config에서 읽어와야 하지만 지금은 하드코딩
+	GRedisManager->Connect("127.0.0.1", 6379);
 
 	std::cout << "CoreGlobal Initialized" << std::endl;
 }
@@ -77,6 +85,7 @@ CoreGlobal::~CoreGlobal()
 	delete GSendBufferManager;
 	delete GDeadLockProfiler;
 	delete GGlobalQueue;
+	delete GRedisManager;
 	//delete GDBConnectionPool;
 
 	// 소켓 라이브러리 정리

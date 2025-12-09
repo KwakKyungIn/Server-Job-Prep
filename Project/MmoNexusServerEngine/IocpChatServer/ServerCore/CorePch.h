@@ -22,3 +22,5 @@ using namespace std;
 #include "Memory.h"
 #include "SendBuffer.h"
 #include "Session.h"
+
+#include <cpp_redis/cpp_redis>

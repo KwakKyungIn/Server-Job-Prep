@@ -20,6 +20,8 @@ extern class SendBufferManager* GSendBufferManager;
 extern class DeadLockProfiler* GDeadLockProfiler;
 extern class GlobalQueue* GGlobalQueue;
 extern std::atomic<bool> GIsRunning;
+// 추가
+extern class RedisManager* GRedisManager;
 //extern class DBConnectionPool* GDBConnectionPool;
 
 // 4. CoreGlobal 클래스 선언

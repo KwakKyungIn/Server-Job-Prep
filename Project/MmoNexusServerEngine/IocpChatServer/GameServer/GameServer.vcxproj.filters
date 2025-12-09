@@ -137,7 +137,9 @@
     <ClInclude Include="Monster.h">
       <Filter>GameContents</Filter>
     </ClInclude>
-    <ClInclude Include="ObjectUtils.h" />
+    <ClInclude Include="ObjectUtils.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="ServerConfig.json" />
