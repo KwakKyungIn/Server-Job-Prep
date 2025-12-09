@@ -45,10 +45,14 @@ namespace Protocol {
             "dGFsRXhwGAYgASgDIoIBChBJdGVtVGVtcGxhdGVJbmZvEhIKCnRlbXBsYXRl",
             "SWQYASABKAUSDAoEbmFtZRgCIAEoCRIQCghpdGVtVHlwZRgDIAEoBRITCgth",
             "dHRhY2tCb251cxgEIAEoBRIUCgxkZWZlbnNlQm9udXMYBSABKAUSDwoHaHBC",
-            "b251cxgGIAEoBSJBCghSb29tSW5mbxIOCgZyb29tSWQYASABKAUSJQoHcGxh",
-            "eWVycxgCIAMoCzIULlByb3RvY29sLlBsYXllckluZm8iPgoLQ2hhdE1lc3Nh",
-            "Z2USEAoIc2VuZGVySWQYASABKAQSDAoEbmFtZRgCIAEoCRIPCgdtZXNzYWdl",
-            "GAMgASgJYgZwcm90bzM="));
+            "b251cxgGIAEoBSK8AQoRU2tpbGxUZW1wbGF0ZUluZm8SDwoHc2tpbGxJZBgB",
+            "IAEoBRIMCgRuYW1lGAIgASgJEhAKCGNvb2xkb3duGAMgASgFEg4KBmRhbWFn",
+            "ZRgEIAEoBRImCglza2lsbFR5cGUYBSABKA4yEy5Qcm90b2NvbC5Ta2lsbFR5",
+            "cGUSDQoFcmFuZ2UYBiABKAISDgoGcmFkaXVzGAcgASgCEg0KBWFuZ2xlGAgg",
+            "ASgCEhAKCGVmZmVjdElkGAkgASgFIkEKCFJvb21JbmZvEg4KBnJvb21JZBgB",
+            "IAEoBRIlCgdwbGF5ZXJzGAIgAygLMhQuUHJvdG9jb2wuUGxheWVySW5mbyI+",
+            "CgtDaGF0TWVzc2FnZRIQCghzZW5kZXJJZBgBIAEoBBIMCgRuYW1lGAIgASgJ",
+            "Eg8KB21lc3NhZ2UYAyABKAliBnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Protocol.EnumReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
@@ -59,6 +63,7 @@ namespace Protocol {
             new pbr::GeneratedClrTypeInfo(typeof(global::Protocol.StatInfo), global::Protocol.StatInfo.Parser, new[]{ "Level", "Hp", "MaxHp", "Attack", "Defense", "Speed", "TotalExp" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Protocol.StatTemplateInfo), global::Protocol.StatTemplateInfo.Parser, new[]{ "Level", "MaxHp", "Attack", "Defense", "Speed", "TotalExp" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Protocol.ItemTemplateInfo), global::Protocol.ItemTemplateInfo.Parser, new[]{ "TemplateId", "Name", "ItemType", "AttackBonus", "DefenseBonus", "HpBonus" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Protocol.SkillTemplateInfo), global::Protocol.SkillTemplateInfo.Parser, new[]{ "SkillId", "Name", "Cooldown", "Damage", "SkillType", "Range", "Radius", "Angle", "EffectId" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Protocol.RoomInfo), global::Protocol.RoomInfo.Parser, new[]{ "RoomId", "Players" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Protocol.ChatMessage), global::Protocol.ChatMessage.Parser, new[]{ "SenderId", "Name", "Message" }, null, null, null, null)
           }));
@@ -2690,6 +2695,515 @@ namespace Protocol {
   }
 
   /// <summary>
+  ///=====스킬 관련========
+  /// </summary>
+  public sealed partial class SkillTemplateInfo : pb::IMessage<SkillTemplateInfo>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
+    private static readonly pb::MessageParser<SkillTemplateInfo> _parser = new pb::MessageParser<SkillTemplateInfo>(() => new SkillTemplateInfo());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pb::MessageParser<SkillTemplateInfo> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::Protocol.StructReflection.Descriptor.MessageTypes[7]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public SkillTemplateInfo() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public SkillTemplateInfo(SkillTemplateInfo other) : this() {
+      skillId_ = other.skillId_;
+      name_ = other.name_;
+      cooldown_ = other.cooldown_;
+      damage_ = other.damage_;
+      skillType_ = other.skillType_;
+      range_ = other.range_;
+      radius_ = other.radius_;
+      angle_ = other.angle_;
+      effectId_ = other.effectId_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public SkillTemplateInfo Clone() {
+      return new SkillTemplateInfo(this);
+    }
+
+    /// <summary>Field number for the "skillId" field.</summary>
+    public const int SkillIdFieldNumber = 1;
+    private int skillId_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int SkillId {
+      get { return skillId_; }
+      set {
+        skillId_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "name" field.</summary>
+    public const int NameFieldNumber = 2;
+    private string name_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public string Name {
+      get { return name_; }
+      set {
+        name_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "cooldown" field.</summary>
+    public const int CooldownFieldNumber = 3;
+    private int cooldown_;
+    /// <summary>
+    /// 쿨타임 (ms 단위 추천)
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int Cooldown {
+      get { return cooldown_; }
+      set {
+        cooldown_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "damage" field.</summary>
+    public const int DamageFieldNumber = 4;
+    private int damage_;
+    /// <summary>
+    /// 데미지 계수 (또는 고정 데미지)
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int Damage {
+      get { return damage_; }
+      set {
+        damage_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "skillType" field.</summary>
+    public const int SkillTypeFieldNumber = 5;
+    private global::Protocol.SkillType skillType_ = global::Protocol.SkillType.SkillNone;
+    /// <summary>
+    /// 판정 타입
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::Protocol.SkillType SkillType {
+      get { return skillType_; }
+      set {
+        skillType_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "range" field.</summary>
+    public const int RangeFieldNumber = 6;
+    private float range_;
+    /// <summary>
+    /// [Hitbox Data]
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public float Range {
+      get { return range_; }
+      set {
+        range_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "radius" field.</summary>
+    public const int RadiusFieldNumber = 7;
+    private float radius_;
+    /// <summary>
+    /// 폭발 반경 (원형/부채꼴 반지름)
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public float Radius {
+      get { return radius_; }
+      set {
+        radius_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "angle" field.</summary>
+    public const int AngleFieldNumber = 8;
+    private float angle_;
+    /// <summary>
+    /// 부채꼴 각도 (Cone 타입일 때만 사용)
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public float Angle {
+      get { return angle_; }
+      set {
+        angle_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "effectId" field.</summary>
+    public const int EffectIdFieldNumber = 9;
+    private int effectId_;
+    /// <summary>
+    /// 필요하면 이펙트 ID, 애니메이션 이름 등도 추가 가능
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int EffectId {
+      get { return effectId_; }
+      set {
+        effectId_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override bool Equals(object other) {
+      return Equals(other as SkillTemplateInfo);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool Equals(SkillTemplateInfo other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (SkillId != other.SkillId) return false;
+      if (Name != other.Name) return false;
+      if (Cooldown != other.Cooldown) return false;
+      if (Damage != other.Damage) return false;
+      if (SkillType != other.SkillType) return false;
+      if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(Range, other.Range)) return false;
+      if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(Radius, other.Radius)) return false;
+      if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(Angle, other.Angle)) return false;
+      if (EffectId != other.EffectId) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (SkillId != 0) hash ^= SkillId.GetHashCode();
+      if (Name.Length != 0) hash ^= Name.GetHashCode();
+      if (Cooldown != 0) hash ^= Cooldown.GetHashCode();
+      if (Damage != 0) hash ^= Damage.GetHashCode();
+      if (SkillType != global::Protocol.SkillType.SkillNone) hash ^= SkillType.GetHashCode();
+      if (Range != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(Range);
+      if (Radius != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(Radius);
+      if (Angle != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(Angle);
+      if (EffectId != 0) hash ^= EffectId.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
+      if (SkillId != 0) {
+        output.WriteRawTag(8);
+        output.WriteInt32(SkillId);
+      }
+      if (Name.Length != 0) {
+        output.WriteRawTag(18);
+        output.WriteString(Name);
+      }
+      if (Cooldown != 0) {
+        output.WriteRawTag(24);
+        output.WriteInt32(Cooldown);
+      }
+      if (Damage != 0) {
+        output.WriteRawTag(32);
+        output.WriteInt32(Damage);
+      }
+      if (SkillType != global::Protocol.SkillType.SkillNone) {
+        output.WriteRawTag(40);
+        output.WriteEnum((int) SkillType);
+      }
+      if (Range != 0F) {
+        output.WriteRawTag(53);
+        output.WriteFloat(Range);
+      }
+      if (Radius != 0F) {
+        output.WriteRawTag(61);
+        output.WriteFloat(Radius);
+      }
+      if (Angle != 0F) {
+        output.WriteRawTag(69);
+        output.WriteFloat(Angle);
+      }
+      if (EffectId != 0) {
+        output.WriteRawTag(72);
+        output.WriteInt32(EffectId);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (SkillId != 0) {
+        output.WriteRawTag(8);
+        output.WriteInt32(SkillId);
+      }
+      if (Name.Length != 0) {
+        output.WriteRawTag(18);
+        output.WriteString(Name);
+      }
+      if (Cooldown != 0) {
+        output.WriteRawTag(24);
+        output.WriteInt32(Cooldown);
+      }
+      if (Damage != 0) {
+        output.WriteRawTag(32);
+        output.WriteInt32(Damage);
+      }
+      if (SkillType != global::Protocol.SkillType.SkillNone) {
+        output.WriteRawTag(40);
+        output.WriteEnum((int) SkillType);
+      }
+      if (Range != 0F) {
+        output.WriteRawTag(53);
+        output.WriteFloat(Range);
+      }
+      if (Radius != 0F) {
+        output.WriteRawTag(61);
+        output.WriteFloat(Radius);
+      }
+      if (Angle != 0F) {
+        output.WriteRawTag(69);
+        output.WriteFloat(Angle);
+      }
+      if (EffectId != 0) {
+        output.WriteRawTag(72);
+        output.WriteInt32(EffectId);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int CalculateSize() {
+      int size = 0;
+      if (SkillId != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(SkillId);
+      }
+      if (Name.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(Name);
+      }
+      if (Cooldown != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Cooldown);
+      }
+      if (Damage != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Damage);
+      }
+      if (SkillType != global::Protocol.SkillType.SkillNone) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) SkillType);
+      }
+      if (Range != 0F) {
+        size += 1 + 4;
+      }
+      if (Radius != 0F) {
+        size += 1 + 4;
+      }
+      if (Angle != 0F) {
+        size += 1 + 4;
+      }
+      if (EffectId != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(EffectId);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(SkillTemplateInfo other) {
+      if (other == null) {
+        return;
+      }
+      if (other.SkillId != 0) {
+        SkillId = other.SkillId;
+      }
+      if (other.Name.Length != 0) {
+        Name = other.Name;
+      }
+      if (other.Cooldown != 0) {
+        Cooldown = other.Cooldown;
+      }
+      if (other.Damage != 0) {
+        Damage = other.Damage;
+      }
+      if (other.SkillType != global::Protocol.SkillType.SkillNone) {
+        SkillType = other.SkillType;
+      }
+      if (other.Range != 0F) {
+        Range = other.Range;
+      }
+      if (other.Radius != 0F) {
+        Radius = other.Radius;
+      }
+      if (other.Angle != 0F) {
+        Angle = other.Angle;
+      }
+      if (other.EffectId != 0) {
+        EffectId = other.EffectId;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 8: {
+            SkillId = input.ReadInt32();
+            break;
+          }
+          case 18: {
+            Name = input.ReadString();
+            break;
+          }
+          case 24: {
+            Cooldown = input.ReadInt32();
+            break;
+          }
+          case 32: {
+            Damage = input.ReadInt32();
+            break;
+          }
+          case 40: {
+            SkillType = (global::Protocol.SkillType) input.ReadEnum();
+            break;
+          }
+          case 53: {
+            Range = input.ReadFloat();
+            break;
+          }
+          case 61: {
+            Radius = input.ReadFloat();
+            break;
+          }
+          case 69: {
+            Angle = input.ReadFloat();
+            break;
+          }
+          case 72: {
+            EffectId = input.ReadInt32();
+            break;
+          }
+        }
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 8: {
+            SkillId = input.ReadInt32();
+            break;
+          }
+          case 18: {
+            Name = input.ReadString();
+            break;
+          }
+          case 24: {
+            Cooldown = input.ReadInt32();
+            break;
+          }
+          case 32: {
+            Damage = input.ReadInt32();
+            break;
+          }
+          case 40: {
+            SkillType = (global::Protocol.SkillType) input.ReadEnum();
+            break;
+          }
+          case 53: {
+            Range = input.ReadFloat();
+            break;
+          }
+          case 61: {
+            Radius = input.ReadFloat();
+            break;
+          }
+          case 69: {
+            Angle = input.ReadFloat();
+            break;
+          }
+          case 72: {
+            EffectId = input.ReadInt32();
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
+  }
+
+  /// <summary>
   /// ===== 방/맵 정보 =====
   /// 채팅방 개념을 게임 맵 개념으로 확장
   /// </summary>
@@ -2707,7 +3221,7 @@ namespace Protocol {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Protocol.StructReflection.Descriptor.MessageTypes[7]; }
+      get { return global::Protocol.StructReflection.Descriptor.MessageTypes[8]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2931,7 +3445,7 @@ namespace Protocol {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Protocol.StructReflection.Descriptor.MessageTypes[8]; }
+      get { return global::Protocol.StructReflection.Descriptor.MessageTypes[9]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]

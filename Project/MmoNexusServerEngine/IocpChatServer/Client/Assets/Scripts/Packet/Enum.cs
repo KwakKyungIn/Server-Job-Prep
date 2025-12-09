@@ -34,16 +34,19 @@ namespace Protocol {
             "WVBFX1BMQVlFUhABEhcKE09CSkVDVF9UWVBFX01PTlNURVIQAhIaChZPQkpF",
             "Q1RfVFlQRV9QUk9KRUNUSUxFEAMqYwoISXRlbVR5cGUSEgoOSVRFTV9UWVBF",
             "X05PTkUQABIUChBJVEVNX1RZUEVfV0VBUE9OEAESEwoPSVRFTV9UWVBFX0FS",
-            "TU9SEAISGAoUSVRFTV9UWVBFX0NPTlNVTUFCTEUQAypICg1Db25uZWN0U3Rh",
-            "dHVzEg4KCkNPTk5FQ1RfT0sQABIQCgxDT05ORUNUX0ZBSUwQARIVChFDT05O",
-            "RUNUX1JFQ09OTkVDVBACKjwKCFJvb21UeXBlEhAKDFJPT01fUFJJVkFURRAA",
-            "Eg4KClJPT01fR1JPVVAQARIOCgpST09NX0dVSUxEEAIqQAoOUHJlc2VuY2VT",
-            "dGF0dXMSCwoHT0ZGTElORRAAEgoKBk9OTElORRABEgsKB0lOX0dBTUUQAhII",
-            "CgRBV0FZEAMqNgoMRnJpZW5kU3RhdHVzEgsKB1BFTkRJTkcQABIMCghBQ0NF",
-            "UFRFRBABEgsKB0JMT0NLRUQQAmIGcHJvdG8z"));
+            "TU9SEAISGAoUSVRFTV9UWVBFX0NPTlNVTUFCTEUQAyptCglTa2lsbFR5cGUS",
+            "DgoKU0tJTExfTk9ORRAAEg4KClNLSUxMX0FVVE8QARIUChBTS0lMTF9QUk9K",
+            "RUNUSUxFEAISFQoRU0tJTExfQVJFQV9DSVJDTEUQAxITCg9TS0lMTF9BUkVB",
+            "X0NPTkUQBCpICg1Db25uZWN0U3RhdHVzEg4KCkNPTk5FQ1RfT0sQABIQCgxD",
+            "T05ORUNUX0ZBSUwQARIVChFDT05ORUNUX1JFQ09OTkVDVBACKjwKCFJvb21U",
+            "eXBlEhAKDFJPT01fUFJJVkFURRAAEg4KClJPT01fR1JPVVAQARIOCgpST09N",
+            "X0dVSUxEEAIqQAoOUHJlc2VuY2VTdGF0dXMSCwoHT0ZGTElORRAAEgoKBk9O",
+            "TElORRABEgsKB0lOX0dBTUUQAhIICgRBV0FZEAMqNgoMRnJpZW5kU3RhdHVz",
+            "EgsKB1BFTkRJTkcQABIMCghBQ0NFUFRFRBABEgsKB0JMT0NLRUQQAmIGcHJv",
+            "dG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
-          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Protocol.MoveState), typeof(global::Protocol.ActionState), typeof(global::Protocol.PlayerType), typeof(global::Protocol.ObjectType), typeof(global::Protocol.ItemType), typeof(global::Protocol.ConnectStatus), typeof(global::Protocol.RoomType), typeof(global::Protocol.PresenceStatus), typeof(global::Protocol.FriendStatus), }, null, null));
+          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Protocol.MoveState), typeof(global::Protocol.ActionState), typeof(global::Protocol.PlayerType), typeof(global::Protocol.ObjectType), typeof(global::Protocol.ItemType), typeof(global::Protocol.SkillType), typeof(global::Protocol.ConnectStatus), typeof(global::Protocol.RoomType), typeof(global::Protocol.PresenceStatus), typeof(global::Protocol.FriendStatus), }, null, null));
     }
     #endregion
 
@@ -127,6 +130,29 @@ namespace Protocol {
     /// 소비 아이템 (포션 등)
     /// </summary>
     [pbr::OriginalName("ITEM_TYPE_CONSUMABLE")] Consumable = 3,
+  }
+
+  /// <summary>
+  ///======[Skill] 스킬관련=========
+  /// </summary>
+  public enum SkillType {
+    [pbr::OriginalName("SKILL_NONE")] SkillNone = 0,
+    /// <summary>
+    /// 평타 (단일 타겟)
+    /// </summary>
+    [pbr::OriginalName("SKILL_AUTO")] SkillAuto = 1,
+    /// <summary>
+    /// 투사체 (화살, 파이어볼)
+    /// </summary>
+    [pbr::OriginalName("SKILL_PROJECTILE")] SkillProjectile = 2,
+    /// <summary>
+    /// 원형 범위 (자폭, 주변 광역기)
+    /// </summary>
+    [pbr::OriginalName("SKILL_AREA_CIRCLE")] SkillAreaCircle = 3,
+    /// <summary>
+    /// 부채꼴 (전방 브레스)
+    /// </summary>
+    [pbr::OriginalName("SKILL_AREA_CONE")] SkillAreaCone = 4,
   }
 
   /// <summary>

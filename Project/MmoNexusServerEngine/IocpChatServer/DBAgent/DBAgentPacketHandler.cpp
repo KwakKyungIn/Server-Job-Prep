@@ -180,10 +180,9 @@ bool DBAgentPacketHandler::Handle_S2S_REQ_ITEMS_LOAD(PacketSessionRef& session, 
 }
 
 
-// [Game -> DB] 기획 데이터(Stat/Item Template) 로딩 요청
+// [Game -> DB] 기획 데이터(Stat/Item/Skill Template) 로딩 요청
 bool DBAgentPacketHandler::Handle_S2S_REQ_LOAD_GAME_DATA(PacketSessionRef& session, Protocol::S2S_REQ_LOAD_GAME_DATA& pkt)
 {
-	// [Note] 로직 스레드에서 DB 작업 수행
 	shared_ptr<GameSession> gameSession = static_pointer_cast<GameSession>(session);
 
 	gameSession->PushJob(ObjectPool<Job>::MakeShared([gameSession, pkt]()
@@ -194,17 +193,15 @@ bool DBAgentPacketHandler::Handle_S2S_REQ_LOAD_GAME_DATA(PacketSessionRef& sessi
 			Protocol::S2S_RES_LOAD_GAME_DATA resPkt;
 			resPkt.set_success(false);
 
+			// ==========================================================
 			// 1. STAT_TEMPLATE 로딩
+			// ==========================================================
 			{
-				// [Clean Up] 이전 바인딩 초기화
 				conn->Unbind();
-
-				// [Output]
 				int32 level = 0, maxHp = 0, attack = 0, defense = 0, speed = 0;
 				int64 totalExp = 0;
 				SQLLEN len = 0;
 
-				// [Query]
 				if (conn->Prepare(L"SELECT level, max_hp, attack, defense, speed, total_exp FROM STAT_TEMPLATE"))
 				{
 					conn->BindCol(1, SQL_C_SLONG, sizeof(int32), &level, &len);
@@ -231,21 +228,19 @@ bool DBAgentPacketHandler::Handle_S2S_REQ_LOAD_GAME_DATA(PacketSessionRef& sessi
 				}
 			}
 
+			// ==========================================================
 			// 2. ITEM_TEMPLATE 로딩
+			// ==========================================================
 			{
-				// [Clean Up] 필수!
 				conn->Unbind();
-
-				// [Output]
 				int32 templateId = 0, itemType = 0, atkBonus = 0, defBonus = 0, hpBonus = 0;
-				WCHAR nameBuffer[100] = { 0 }; // 이름은 문자열 처리 필요
+				WCHAR nameBuffer[100] = { 0 };
 				SQLLEN len = 0;
 
-				// [Query]
 				if (conn->Prepare(L"SELECT template_id, name, item_type, attack_bonus, defense_bonus, hp_bonus FROM ITEM_TEMPLATE"))
 				{
 					conn->BindCol(1, SQL_C_SLONG, sizeof(int32), &templateId, &len);
-					conn->BindCol(2, SQL_C_WCHAR, sizeof(nameBuffer), nameBuffer, &len); // WCHAR로 받음
+					conn->BindCol(2, SQL_C_WCHAR, sizeof(nameBuffer), nameBuffer, &len);
 					conn->BindCol(3, SQL_C_SLONG, sizeof(int32), &itemType, &len);
 					conn->BindCol(4, SQL_C_SLONG, sizeof(int32), &atkBonus, &len);
 					conn->BindCol(5, SQL_C_SLONG, sizeof(int32), &defBonus, &len);
@@ -257,12 +252,9 @@ bool DBAgentPacketHandler::Handle_S2S_REQ_LOAD_GAME_DATA(PacketSessionRef& sessi
 						{
 							auto* itemData = resPkt.add_items();
 							itemData->set_templateid(templateId);
-
-							// WCHAR -> string (Simple Conversion)
 							std::wstring ws(nameBuffer);
 							std::string s(ws.begin(), ws.end());
 							itemData->set_name(s);
-
 							itemData->set_itemtype(itemType);
 							itemData->set_attackbonus(atkBonus);
 							itemData->set_defensebonus(defBonus);
@@ -273,7 +265,61 @@ bool DBAgentPacketHandler::Handle_S2S_REQ_LOAD_GAME_DATA(PacketSessionRef& sessi
 				}
 			}
 
-			// 3. 결과 전송
+			// ==========================================================
+			// 3. SKILL_TEMPLATE 로딩 [NEW]
+			// ==========================================================
+			{
+				conn->Unbind(); // 필수!
+
+				// [Output Variables]
+				int32 skillId = 0, cooldown = 0, damage = 0, skillType = 0, effectId = 0;
+				float range = 0.0f, radius = 0.0f, angle = 0.0f;
+				WCHAR nameBuffer[100] = { 0 };
+				SQLLEN len = 0;
+
+				// [Query]
+				if (conn->Prepare(L"SELECT skill_id, name, cooldown, damage, skill_type, attack_range, radius, angle, effect_id FROM SKILL_TEMPLATE"))
+				{
+					conn->BindCol(1, SQL_C_SLONG, sizeof(int32), &skillId, &len);
+					conn->BindCol(2, SQL_C_WCHAR, sizeof(nameBuffer), nameBuffer, &len);
+					conn->BindCol(3, SQL_C_SLONG, sizeof(int32), &cooldown, &len);
+					conn->BindCol(4, SQL_C_SLONG, sizeof(int32), &damage, &len);
+					conn->BindCol(5, SQL_C_SLONG, sizeof(int32), &skillType, &len);
+
+					// [Note] float -> SQL_C_FLOAT
+					conn->BindCol(6, SQL_C_FLOAT, sizeof(float), &range, &len);
+					conn->BindCol(7, SQL_C_FLOAT, sizeof(float), &radius, &len);
+					conn->BindCol(8, SQL_C_FLOAT, sizeof(float), &angle, &len);
+					conn->BindCol(9, SQL_C_SLONG, sizeof(int32), &effectId, &len);
+
+					if (conn->Execute())
+					{
+						while (conn->Fetch())
+						{
+							auto* skillData = resPkt.add_skills();
+							skillData->set_skillid(skillId);
+
+							std::wstring ws(nameBuffer);
+							std::string s(ws.begin(), ws.end());
+							skillData->set_name(s);
+
+							skillData->set_cooldown(cooldown);
+							skillData->set_damage(damage);
+
+							// Enum casting (int -> Enum)
+							skillData->set_skilltype(static_cast<Protocol::SkillType>(skillType));
+
+							skillData->set_range(range);
+							skillData->set_radius(radius);
+							skillData->set_angle(angle);
+							skillData->set_effectid(effectId);
+						}
+						std::cout << "🔥 [DB] Loaded Skill Templates: " << resPkt.skills_size() << std::endl;
+					}
+				}
+			}
+
+			// 4. 결과 전송
 			resPkt.set_success(true);
 			GDBConnectionPool->Push(conn);
 
@@ -283,7 +329,6 @@ bool DBAgentPacketHandler::Handle_S2S_REQ_LOAD_GAME_DATA(PacketSessionRef& sessi
 
 	return true;
 }
-
 // [Game -> DB] 채팅 중계 요청? DB는 중계 안 함.
 bool DBAgentPacketHandler::Handle_S2S_REQ_BROADCAST_CHAT(PacketSessionRef& session, Protocol::S2S_REQ_BROADCAST_CHAT& pkt)
 {

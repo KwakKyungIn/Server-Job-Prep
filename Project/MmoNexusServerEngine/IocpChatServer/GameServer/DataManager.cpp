@@ -3,9 +3,9 @@
 
 void DataManager::LoadFromPacket(const Protocol::S2S_RES_LOAD_GAME_DATA& pkt)
 {
-	// 기존 데이터 클리어 (리로드 대비)
 	_statTemplates.clear();
 	_itemTemplates.clear();
+	_skillTemplates.clear(); // [New] 초기화
 
 	// 1. Stat Template 로딩
 	for (const auto& stat : pkt.stats())
@@ -19,8 +19,15 @@ void DataManager::LoadFromPacket(const Protocol::S2S_RES_LOAD_GAME_DATA& pkt)
 		_itemTemplates[item.templateid()] = item;
 	}
 
+	// 3. [New] Skill Template 로딩
+	for (const auto& skill : pkt.skills())
+	{
+		_skillTemplates[skill.skillid()] = skill;
+	}
+
 	std::cout << "📚 [DataManager] Load Complete. Stats: " << _statTemplates.size()
-		<< ", Items: " << _itemTemplates.size() << std::endl;
+		<< ", Items: " << _itemTemplates.size()
+		<< ", Skills: " << _skillTemplates.size() << std::endl;
 }
 
 const Protocol::StatTemplateInfo* DataManager::GetStatTemplate(int32 level)
@@ -35,6 +42,15 @@ const Protocol::ItemTemplateInfo* DataManager::GetItemTemplate(int32 templateId)
 {
 	auto it = _itemTemplates.find(templateId);
 	if (it == _itemTemplates.end())
+		return nullptr;
+	return &(it->second);
+}
+
+// [New] 스킬 정보 조회 구현
+const Protocol::SkillTemplateInfo* DataManager::GetSkillTemplate(int32 skillId)
+{
+	auto it = _skillTemplates.find(skillId);
+	if (it == _skillTemplates.end())
 		return nullptr;
 	return &(it->second);
 }

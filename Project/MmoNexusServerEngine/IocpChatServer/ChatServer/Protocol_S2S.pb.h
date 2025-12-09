@@ -1556,6 +1556,7 @@ class S2S_RES_LOAD_GAME_DATA final :
   enum : int {
     kStatsFieldNumber = 2,
     kItemsFieldNumber = 3,
+    kSkillsFieldNumber = 4,
     kSuccessFieldNumber = 1,
   };
   // repeated .Protocol.StatTemplateInfo stats = 2;
@@ -1594,6 +1595,24 @@ class S2S_RES_LOAD_GAME_DATA final :
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::Protocol::ItemTemplateInfo >&
       items() const;
 
+  // repeated .Protocol.SkillTemplateInfo skills = 4;
+  int skills_size() const;
+  private:
+  int _internal_skills_size() const;
+  public:
+  void clear_skills();
+  ::Protocol::SkillTemplateInfo* mutable_skills(int index);
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::Protocol::SkillTemplateInfo >*
+      mutable_skills();
+  private:
+  const ::Protocol::SkillTemplateInfo& _internal_skills(int index) const;
+  ::Protocol::SkillTemplateInfo* _internal_add_skills();
+  public:
+  const ::Protocol::SkillTemplateInfo& skills(int index) const;
+  ::Protocol::SkillTemplateInfo* add_skills();
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::Protocol::SkillTemplateInfo >&
+      skills() const;
+
   // bool success = 1;
   void clear_success();
   bool success() const;
@@ -1613,6 +1632,7 @@ class S2S_RES_LOAD_GAME_DATA final :
   struct Impl_ {
     ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::Protocol::StatTemplateInfo > stats_;
     ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::Protocol::ItemTemplateInfo > items_;
+    ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::Protocol::SkillTemplateInfo > skills_;
     bool success_;
     mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   };
@@ -2710,6 +2730,43 @@ inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::Protocol::ItemTemplate
 S2S_RES_LOAD_GAME_DATA::items() const {
   // @@protoc_insertion_point(field_list:Protocol.S2S_RES_LOAD_GAME_DATA.items)
   return _impl_.items_;
+}
+
+// repeated .Protocol.SkillTemplateInfo skills = 4;
+inline int S2S_RES_LOAD_GAME_DATA::_internal_skills_size() const {
+  return _impl_.skills_.size();
+}
+inline int S2S_RES_LOAD_GAME_DATA::skills_size() const {
+  return _internal_skills_size();
+}
+inline ::Protocol::SkillTemplateInfo* S2S_RES_LOAD_GAME_DATA::mutable_skills(int index) {
+  // @@protoc_insertion_point(field_mutable:Protocol.S2S_RES_LOAD_GAME_DATA.skills)
+  return _impl_.skills_.Mutable(index);
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::Protocol::SkillTemplateInfo >*
+S2S_RES_LOAD_GAME_DATA::mutable_skills() {
+  // @@protoc_insertion_point(field_mutable_list:Protocol.S2S_RES_LOAD_GAME_DATA.skills)
+  return &_impl_.skills_;
+}
+inline const ::Protocol::SkillTemplateInfo& S2S_RES_LOAD_GAME_DATA::_internal_skills(int index) const {
+  return _impl_.skills_.Get(index);
+}
+inline const ::Protocol::SkillTemplateInfo& S2S_RES_LOAD_GAME_DATA::skills(int index) const {
+  // @@protoc_insertion_point(field_get:Protocol.S2S_RES_LOAD_GAME_DATA.skills)
+  return _internal_skills(index);
+}
+inline ::Protocol::SkillTemplateInfo* S2S_RES_LOAD_GAME_DATA::_internal_add_skills() {
+  return _impl_.skills_.Add();
+}
+inline ::Protocol::SkillTemplateInfo* S2S_RES_LOAD_GAME_DATA::add_skills() {
+  ::Protocol::SkillTemplateInfo* _add = _internal_add_skills();
+  // @@protoc_insertion_point(field_add:Protocol.S2S_RES_LOAD_GAME_DATA.skills)
+  return _add;
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::Protocol::SkillTemplateInfo >&
+S2S_RES_LOAD_GAME_DATA::skills() const {
+  // @@protoc_insertion_point(field_list:Protocol.S2S_RES_LOAD_GAME_DATA.skills)
+  return _impl_.skills_;
 }
 
 // -------------------------------------------------------------------

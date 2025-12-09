@@ -17,18 +17,21 @@ public:
 		PKT_S_MOVE = 1005,
 		PKT_S_SPAWN = 1006,
 		PKT_S_DESPAWN = 1007,
-		PKT_S_ITEM_LIST = 1008,
-		PKT_C_USE_ITEM = 1009,
-		PKT_S_CHANGE_ITEM = 1010,
-		PKT_S_REMOVE_ITEM = 1011,
-		PKT_C_EQUIP_ITEM = 1012,
-		PKT_S_EQUIP_ITEM = 1013,
-		PKT_S_CHANGE_STAT = 1014,
-		PKT_C_CHAT_REQ = 1015,
-		PKT_S_CHAT_RES = 1016,
-		PKT_S_CHAT_NTF = 1017,
-		PKT_S_HEART_BEAT_RES = 1018,
-		PKT_C_HEART_BEAT_REQ = 1019,
+		PKT_C_SKILL = 1008,
+		PKT_S_SKILL = 1009,
+		PKT_S_CHANGE_HP = 1010,
+		PKT_S_ITEM_LIST = 1011,
+		PKT_C_USE_ITEM = 1012,
+		PKT_S_CHANGE_ITEM = 1013,
+		PKT_S_REMOVE_ITEM = 1014,
+		PKT_C_EQUIP_ITEM = 1015,
+		PKT_S_EQUIP_ITEM = 1016,
+		PKT_S_CHANGE_STAT = 1017,
+		PKT_C_CHAT_REQ = 1018,
+		PKT_S_CHAT_RES = 1019,
+		PKT_S_CHAT_NTF = 1020,
+		PKT_S_HEART_BEAT_RES = 1021,
+		PKT_C_HEART_BEAT_REQ = 1022,
 	};
 
 	static void Init()
@@ -38,6 +41,7 @@ public:
 		GPacketHandler[PKT_C_LOGIN_REQ] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::C_LOGIN_REQ>(Handle_C_LOGIN_REQ, session, buffer, len); };
 		GPacketHandler[PKT_C_ENTER_GAME_REQ] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::C_ENTER_GAME_REQ>(Handle_C_ENTER_GAME_REQ, session, buffer, len); };
 		GPacketHandler[PKT_C_MOVE] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::C_MOVE>(Handle_C_MOVE, session, buffer, len); };
+		GPacketHandler[PKT_C_SKILL] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::C_SKILL>(Handle_C_SKILL, session, buffer, len); };
 		GPacketHandler[PKT_C_USE_ITEM] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::C_USE_ITEM>(Handle_C_USE_ITEM, session, buffer, len); };
 		GPacketHandler[PKT_C_EQUIP_ITEM] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::C_EQUIP_ITEM>(Handle_C_EQUIP_ITEM, session, buffer, len); };
 		GPacketHandler[PKT_C_CHAT_REQ] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::C_CHAT_REQ>(Handle_C_CHAT_REQ, session, buffer, len); };
@@ -54,6 +58,8 @@ public:
 	static SendBufferRef MakeSendBuffer(Protocol::S_MOVE& pkt) { return MakeSendBuffer(pkt, PKT_S_MOVE); }
 	static SendBufferRef MakeSendBuffer(Protocol::S_SPAWN& pkt) { return MakeSendBuffer(pkt, PKT_S_SPAWN); }
 	static SendBufferRef MakeSendBuffer(Protocol::S_DESPAWN& pkt) { return MakeSendBuffer(pkt, PKT_S_DESPAWN); }
+	static SendBufferRef MakeSendBuffer(Protocol::S_SKILL& pkt) { return MakeSendBuffer(pkt, PKT_S_SKILL); }
+	static SendBufferRef MakeSendBuffer(Protocol::S_CHANGE_HP& pkt) { return MakeSendBuffer(pkt, PKT_S_CHANGE_HP); }
 	static SendBufferRef MakeSendBuffer(Protocol::S_ITEM_LIST& pkt) { return MakeSendBuffer(pkt, PKT_S_ITEM_LIST); }
 	static SendBufferRef MakeSendBuffer(Protocol::S_CHANGE_ITEM& pkt) { return MakeSendBuffer(pkt, PKT_S_CHANGE_ITEM); }
 	static SendBufferRef MakeSendBuffer(Protocol::S_REMOVE_ITEM& pkt) { return MakeSendBuffer(pkt, PKT_S_REMOVE_ITEM); }
@@ -69,6 +75,7 @@ public:
 	static bool Handle_C_LOGIN_REQ(PacketSessionRef& session, Protocol::C_LOGIN_REQ& pkt);
 	static bool Handle_C_ENTER_GAME_REQ(PacketSessionRef& session, Protocol::C_ENTER_GAME_REQ& pkt);
 	static bool Handle_C_MOVE(PacketSessionRef& session, Protocol::C_MOVE& pkt);
+	static bool Handle_C_SKILL(PacketSessionRef& session, Protocol::C_SKILL& pkt);
 	static bool Handle_C_USE_ITEM(PacketSessionRef& session, Protocol::C_USE_ITEM& pkt);
 	static bool Handle_C_EQUIP_ITEM(PacketSessionRef& session, Protocol::C_EQUIP_ITEM& pkt);
 	static bool Handle_C_CHAT_REQ(PacketSessionRef& session, Protocol::C_CHAT_REQ& pkt);

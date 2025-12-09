@@ -5,6 +5,8 @@
 #include "PlayerSession.h"
 #include "ClientPacketHandler.h"
 #include "Monster.h"
+#include "DataManager.h"
+#include "ObjectUtils.h"
 
 GameRoom::GameRoom()
 {
@@ -466,6 +468,78 @@ void GameRoom::GetNearbyZones(int32 zoneIndex, Vector<Zone*>& outZones)
 	}
 }
 
+void GameRoom::HandleSkill(std::shared_ptr<Creature> attacker, int32 skillId)
+{
+	if (attacker == nullptr) return;
+
+	// 1. 데이터 검증
+	const Protocol::SkillTemplateInfo* skillData = DataManager::Instance()->GetSkillTemplate(skillId);
+	if (skillData == nullptr) return;
+
+	// 방 검증
+	if (attacker->GetRoom() != shared_from_this()) return;
+
+	Protocol::SkillType type = skillData->skilltype();
+	float range = skillData->range();
+	int32 damage = skillData->damage();
+
+	bool isMonster = (attacker->GetObjectType() == Protocol::OBJECT_TYPE_MONSTER);
+
+	// 2. 타겟 탐색 (Broad Phase)
+	int32 zoneIndex = GetZoneIndex(*attacker->GetPosInfo()); // 여기서 에러나면 GetZoneIndex가 멤버 함수인지 확인
+	Vector<Zone*> zones;
+	GetNearbyZones(zoneIndex, zones);
+
+	Vector<std::shared_ptr<Creature>> victims;
+	for (Zone* zone : zones)
+	{
+		if (isMonster)
+		{
+			for (auto& p : zone->players) victims.push_back(p);
+		}
+		else
+		{
+			for (auto& m : zone->monsters) victims.push_back(m);
+		}
+	}
+
+	// 3. 판정 (Narrow Phase)
+	for (auto& victim : victims)
+	{
+		if (victim->GetStatInfo()->hp() <= 0) continue;
+
+		bool isHit = false;
+
+		switch (type)
+		{
+		case Protocol::SKILL_AUTO:
+		{
+			if (ObjectUtils::CheckCircle(*attacker->GetPosInfo(), range, *victim->GetPosInfo()))
+			{
+				isHit = true;
+			}
+		}
+		break;
+		// ... (다른 케이스들) ...
+		}
+
+		if (isHit)
+		{
+			victim->OnDamaged(attacker, damage);
+
+			Protocol::S_CHANGE_HP changePkt;
+			changePkt.set_objectid(victim->GetObjectId());
+			changePkt.set_attackerid(attacker->GetObjectId());
+			changePkt.set_currenthp(victim->GetStatInfo()->hp());
+			changePkt.set_damage(damage);
+
+			SendBufferRef sendBuffer = ClientPacketHandler::MakeSendBuffer(changePkt);
+			BroadcastToZone(sendBuffer, zoneIndex);
+
+			if (type == Protocol::SKILL_AUTO) break;
+		}
+	}
+}
 void GameRoom::BroadcastToZone(SendBufferRef sendBuffer, int32 zoneIndex, uint64 exceptId)
 {
 	Vector<Zone*> nearbyZones;

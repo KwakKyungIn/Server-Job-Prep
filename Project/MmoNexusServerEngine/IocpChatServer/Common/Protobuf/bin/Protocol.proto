@@ -51,6 +51,23 @@ message S_DESPAWN {
     repeated uint64 objectIds = 1; // 내 시야에서 사라진 플레이어들 (ID만)
 }
 
+// [Combat]
+message C_SKILL {
+    int32 skillId = 1; // 1:평타, 2:파이어볼...
+}
+
+message S_SKILL {
+    uint64 objectId = 1; // 누가?
+    int32 skillId = 2;   // 무슨 스킬을?
+}
+
+message S_CHANGE_HP {
+    uint64 objectId = 1; // 맞은 놈
+    uint64 attackerId = 2; // 때린 놈
+    int32 currentHp = 3; // 남은 체력
+    int32 damage = 4;    // 깎인 체력 (데미지 폰트용)
+}
+
 // ============================================================
 // [ITEM & INVENTORY] (NEW SECTION)
 // ============================================================

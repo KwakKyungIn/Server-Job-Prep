@@ -145,6 +145,27 @@ struct ItemTemplateInfoDefaultTypeInternal {
   };
 };
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 ItemTemplateInfoDefaultTypeInternal _ItemTemplateInfo_default_instance_;
+PROTOBUF_CONSTEXPR SkillTemplateInfo::SkillTemplateInfo(
+    ::_pbi::ConstantInitialized): _impl_{
+    /*decltype(_impl_.name_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}
+  , /*decltype(_impl_.skillid_)*/0
+  , /*decltype(_impl_.cooldown_)*/0
+  , /*decltype(_impl_.damage_)*/0
+  , /*decltype(_impl_.skilltype_)*/0
+  , /*decltype(_impl_.range_)*/0
+  , /*decltype(_impl_.radius_)*/0
+  , /*decltype(_impl_.angle_)*/0
+  , /*decltype(_impl_.effectid_)*/0
+  , /*decltype(_impl_._cached_size_)*/{}} {}
+struct SkillTemplateInfoDefaultTypeInternal {
+  PROTOBUF_CONSTEXPR SkillTemplateInfoDefaultTypeInternal()
+      : _instance(::_pbi::ConstantInitialized{}) {}
+  ~SkillTemplateInfoDefaultTypeInternal() {}
+  union {
+    SkillTemplateInfo _instance;
+  };
+};
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 SkillTemplateInfoDefaultTypeInternal _SkillTemplateInfo_default_instance_;
 PROTOBUF_CONSTEXPR RoomInfo::RoomInfo(
     ::_pbi::ConstantInitialized): _impl_{
     /*decltype(_impl_.players_)*/{}
@@ -175,7 +196,7 @@ struct ChatMessageDefaultTypeInternal {
 };
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 ChatMessageDefaultTypeInternal _ChatMessage_default_instance_;
 }  // namespace Protocol
-static ::_pb::Metadata file_level_metadata_Struct_2eproto[9];
+static ::_pb::Metadata file_level_metadata_Struct_2eproto[10];
 static constexpr ::_pb::EnumDescriptor const** file_level_enum_descriptors_Struct_2eproto = nullptr;
 static constexpr ::_pb::ServiceDescriptor const** file_level_service_descriptors_Struct_2eproto = nullptr;
 
@@ -263,6 +284,21 @@ const uint32_t TableStruct_Struct_2eproto::offsets[] PROTOBUF_SECTION_VARIABLE(p
   PROTOBUF_FIELD_OFFSET(::Protocol::ItemTemplateInfo, _impl_.defensebonus_),
   PROTOBUF_FIELD_OFFSET(::Protocol::ItemTemplateInfo, _impl_.hpbonus_),
   ~0u,  // no _has_bits_
+  PROTOBUF_FIELD_OFFSET(::Protocol::SkillTemplateInfo, _internal_metadata_),
+  ~0u,  // no _extensions_
+  ~0u,  // no _oneof_case_
+  ~0u,  // no _weak_field_map_
+  ~0u,  // no _inlined_string_donated_
+  PROTOBUF_FIELD_OFFSET(::Protocol::SkillTemplateInfo, _impl_.skillid_),
+  PROTOBUF_FIELD_OFFSET(::Protocol::SkillTemplateInfo, _impl_.name_),
+  PROTOBUF_FIELD_OFFSET(::Protocol::SkillTemplateInfo, _impl_.cooldown_),
+  PROTOBUF_FIELD_OFFSET(::Protocol::SkillTemplateInfo, _impl_.damage_),
+  PROTOBUF_FIELD_OFFSET(::Protocol::SkillTemplateInfo, _impl_.skilltype_),
+  PROTOBUF_FIELD_OFFSET(::Protocol::SkillTemplateInfo, _impl_.range_),
+  PROTOBUF_FIELD_OFFSET(::Protocol::SkillTemplateInfo, _impl_.radius_),
+  PROTOBUF_FIELD_OFFSET(::Protocol::SkillTemplateInfo, _impl_.angle_),
+  PROTOBUF_FIELD_OFFSET(::Protocol::SkillTemplateInfo, _impl_.effectid_),
+  ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(::Protocol::RoomInfo, _internal_metadata_),
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
@@ -288,8 +324,9 @@ static const ::_pbi::MigrationSchema schemas[] PROTOBUF_SECTION_VARIABLE(protode
   { 45, -1, -1, sizeof(::Protocol::StatInfo)},
   { 58, -1, -1, sizeof(::Protocol::StatTemplateInfo)},
   { 70, -1, -1, sizeof(::Protocol::ItemTemplateInfo)},
-  { 82, -1, -1, sizeof(::Protocol::RoomInfo)},
-  { 90, -1, -1, sizeof(::Protocol::ChatMessage)},
+  { 82, -1, -1, sizeof(::Protocol::SkillTemplateInfo)},
+  { 97, -1, -1, sizeof(::Protocol::RoomInfo)},
+  { 105, -1, -1, sizeof(::Protocol::ChatMessage)},
 };
 
 static const ::_pb::Message* const file_default_instances[] = {
@@ -300,6 +337,7 @@ static const ::_pb::Message* const file_default_instances[] = {
   &::Protocol::_StatInfo_default_instance_._instance,
   &::Protocol::_StatTemplateInfo_default_instance_._instance,
   &::Protocol::_ItemTemplateInfo_default_instance_._instance,
+  &::Protocol::_SkillTemplateInfo_default_instance_._instance,
   &::Protocol::_RoomInfo_default_instance_._instance,
   &::Protocol::_ChatMessage_default_instance_._instance,
 };
@@ -328,20 +366,25 @@ const char descriptor_table_protodef_Struct_2eproto[] PROTOBUF_SECTION_VARIABLE(
   " \001(\005\022\020\n\010totalExp\030\006 \001(\003\"\202\001\n\020ItemTemplateI"
   "nfo\022\022\n\ntemplateId\030\001 \001(\005\022\014\n\004name\030\002 \001(\t\022\020\n"
   "\010itemType\030\003 \001(\005\022\023\n\013attackBonus\030\004 \001(\005\022\024\n\014"
-  "defenseBonus\030\005 \001(\005\022\017\n\007hpBonus\030\006 \001(\005\"A\n\010R"
-  "oomInfo\022\016\n\006roomId\030\001 \001(\005\022%\n\007players\030\002 \003(\013"
-  "2\024.Protocol.PlayerInfo\">\n\013ChatMessage\022\020\n"
-  "\010senderId\030\001 \001(\004\022\014\n\004name\030\002 \001(\t\022\017\n\007message"
-  "\030\003 \001(\tb\006proto3"
+  "defenseBonus\030\005 \001(\005\022\017\n\007hpBonus\030\006 \001(\005\"\274\001\n\021"
+  "SkillTemplateInfo\022\017\n\007skillId\030\001 \001(\005\022\014\n\004na"
+  "me\030\002 \001(\t\022\020\n\010cooldown\030\003 \001(\005\022\016\n\006damage\030\004 \001"
+  "(\005\022&\n\tskillType\030\005 \001(\0162\023.Protocol.SkillTy"
+  "pe\022\r\n\005range\030\006 \001(\002\022\016\n\006radius\030\007 \001(\002\022\r\n\005ang"
+  "le\030\010 \001(\002\022\020\n\010effectId\030\t \001(\005\"A\n\010RoomInfo\022\016"
+  "\n\006roomId\030\001 \001(\005\022%\n\007players\030\002 \003(\0132\024.Protoc"
+  "ol.PlayerInfo\">\n\013ChatMessage\022\020\n\010senderId"
+  "\030\001 \001(\004\022\014\n\004name\030\002 \001(\t\022\017\n\007message\030\003 \001(\tb\006p"
+  "roto3"
   ;
 static const ::_pbi::DescriptorTable* const descriptor_table_Struct_2eproto_deps[1] = {
   &::descriptor_table_Enum_2eproto,
 };
 static ::_pbi::once_flag descriptor_table_Struct_2eproto_once;
 const ::_pbi::DescriptorTable descriptor_table_Struct_2eproto = {
-    false, false, 1094, descriptor_table_protodef_Struct_2eproto,
+    false, false, 1285, descriptor_table_protodef_Struct_2eproto,
     "Struct.proto",
-    &descriptor_table_Struct_2eproto_once, descriptor_table_Struct_2eproto_deps, 1, 9,
+    &descriptor_table_Struct_2eproto_once, descriptor_table_Struct_2eproto_deps, 1, 10,
     schemas, file_default_instances, TableStruct_Struct_2eproto::offsets,
     file_level_metadata_Struct_2eproto, file_level_enum_descriptors_Struct_2eproto,
     file_level_service_descriptors_Struct_2eproto,
@@ -2666,6 +2709,452 @@ void ItemTemplateInfo::InternalSwap(ItemTemplateInfo* other) {
 
 // ===================================================================
 
+class SkillTemplateInfo::_Internal {
+ public:
+};
+
+SkillTemplateInfo::SkillTemplateInfo(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                         bool is_message_owned)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
+  SharedCtor(arena, is_message_owned);
+  // @@protoc_insertion_point(arena_constructor:Protocol.SkillTemplateInfo)
+}
+SkillTemplateInfo::SkillTemplateInfo(const SkillTemplateInfo& from)
+  : ::PROTOBUF_NAMESPACE_ID::Message() {
+  SkillTemplateInfo* const _this = this; (void)_this;
+  new (&_impl_) Impl_{
+      decltype(_impl_.name_){}
+    , decltype(_impl_.skillid_){}
+    , decltype(_impl_.cooldown_){}
+    , decltype(_impl_.damage_){}
+    , decltype(_impl_.skilltype_){}
+    , decltype(_impl_.range_){}
+    , decltype(_impl_.radius_){}
+    , decltype(_impl_.angle_){}
+    , decltype(_impl_.effectid_){}
+    , /*decltype(_impl_._cached_size_)*/{}};
+
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  _impl_.name_.InitDefault();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+    _impl_.name_.Set("", GetArenaForAllocation());
+  #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (!from._internal_name().empty()) {
+    _this->_impl_.name_.Set(from._internal_name(), 
+      _this->GetArenaForAllocation());
+  }
+  ::memcpy(&_impl_.skillid_, &from._impl_.skillid_,
+    static_cast<size_t>(reinterpret_cast<char*>(&_impl_.effectid_) -
+    reinterpret_cast<char*>(&_impl_.skillid_)) + sizeof(_impl_.effectid_));
+  // @@protoc_insertion_point(copy_constructor:Protocol.SkillTemplateInfo)
+}
+
+inline void SkillTemplateInfo::SharedCtor(
+    ::_pb::Arena* arena, bool is_message_owned) {
+  (void)arena;
+  (void)is_message_owned;
+  new (&_impl_) Impl_{
+      decltype(_impl_.name_){}
+    , decltype(_impl_.skillid_){0}
+    , decltype(_impl_.cooldown_){0}
+    , decltype(_impl_.damage_){0}
+    , decltype(_impl_.skilltype_){0}
+    , decltype(_impl_.range_){0}
+    , decltype(_impl_.radius_){0}
+    , decltype(_impl_.angle_){0}
+    , decltype(_impl_.effectid_){0}
+    , /*decltype(_impl_._cached_size_)*/{}
+  };
+  _impl_.name_.InitDefault();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+    _impl_.name_.Set("", GetArenaForAllocation());
+  #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+}
+
+SkillTemplateInfo::~SkillTemplateInfo() {
+  // @@protoc_insertion_point(destructor:Protocol.SkillTemplateInfo)
+  if (auto *arena = _internal_metadata_.DeleteReturnArena<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>()) {
+  (void)arena;
+    return;
+  }
+  SharedDtor();
+}
+
+inline void SkillTemplateInfo::SharedDtor() {
+  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
+  _impl_.name_.Destroy();
+}
+
+void SkillTemplateInfo::SetCachedSize(int size) const {
+  _impl_._cached_size_.Set(size);
+}
+
+void SkillTemplateInfo::Clear() {
+// @@protoc_insertion_point(message_clear_start:Protocol.SkillTemplateInfo)
+  uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  _impl_.name_.ClearToEmpty();
+  ::memset(&_impl_.skillid_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&_impl_.effectid_) -
+      reinterpret_cast<char*>(&_impl_.skillid_)) + sizeof(_impl_.effectid_));
+  _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+}
+
+const char* SkillTemplateInfo::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
+#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
+  while (!ctx->Done(&ptr)) {
+    uint32_t tag;
+    ptr = ::_pbi::ReadTag(ptr, &tag);
+    switch (tag >> 3) {
+      // int32 skillId = 1;
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 8)) {
+          _impl_.skillid_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
+          CHK_(ptr);
+        } else
+          goto handle_unusual;
+        continue;
+      // string name = 2;
+      case 2:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 18)) {
+          auto str = _internal_mutable_name();
+          ptr = ::_pbi::InlineGreedyStringParser(str, ptr, ctx);
+          CHK_(ptr);
+          CHK_(::_pbi::VerifyUTF8(str, "Protocol.SkillTemplateInfo.name"));
+        } else
+          goto handle_unusual;
+        continue;
+      // int32 cooldown = 3;
+      case 3:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 24)) {
+          _impl_.cooldown_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
+          CHK_(ptr);
+        } else
+          goto handle_unusual;
+        continue;
+      // int32 damage = 4;
+      case 4:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 32)) {
+          _impl_.damage_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
+          CHK_(ptr);
+        } else
+          goto handle_unusual;
+        continue;
+      // .Protocol.SkillType skillType = 5;
+      case 5:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 40)) {
+          uint64_t val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          CHK_(ptr);
+          _internal_set_skilltype(static_cast<::Protocol::SkillType>(val));
+        } else
+          goto handle_unusual;
+        continue;
+      // float range = 6;
+      case 6:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 53)) {
+          _impl_.range_ = ::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<float>(ptr);
+          ptr += sizeof(float);
+        } else
+          goto handle_unusual;
+        continue;
+      // float radius = 7;
+      case 7:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 61)) {
+          _impl_.radius_ = ::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<float>(ptr);
+          ptr += sizeof(float);
+        } else
+          goto handle_unusual;
+        continue;
+      // float angle = 8;
+      case 8:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 69)) {
+          _impl_.angle_ = ::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<float>(ptr);
+          ptr += sizeof(float);
+        } else
+          goto handle_unusual;
+        continue;
+      // int32 effectId = 9;
+      case 9:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 72)) {
+          _impl_.effectid_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
+          CHK_(ptr);
+        } else
+          goto handle_unusual;
+        continue;
+      default:
+        goto handle_unusual;
+    }  // switch
+  handle_unusual:
+    if ((tag == 0) || ((tag & 7) == 4)) {
+      CHK_(ptr);
+      ctx->SetLastTag(tag);
+      goto message_done;
+    }
+    ptr = UnknownFieldParse(
+        tag,
+        _internal_metadata_.mutable_unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(),
+        ptr, ctx);
+    CHK_(ptr != nullptr);
+  }  // while
+message_done:
+  return ptr;
+failure:
+  ptr = nullptr;
+  goto message_done;
+#undef CHK_
+}
+
+uint8_t* SkillTemplateInfo::_InternalSerialize(
+    uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+  // @@protoc_insertion_point(serialize_to_array_start:Protocol.SkillTemplateInfo)
+  uint32_t cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  // int32 skillId = 1;
+  if (this->_internal_skillid() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteInt32ToArray(1, this->_internal_skillid(), target);
+  }
+
+  // string name = 2;
+  if (!this->_internal_name().empty()) {
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+      this->_internal_name().data(), static_cast<int>(this->_internal_name().length()),
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
+      "Protocol.SkillTemplateInfo.name");
+    target = stream->WriteStringMaybeAliased(
+        2, this->_internal_name(), target);
+  }
+
+  // int32 cooldown = 3;
+  if (this->_internal_cooldown() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteInt32ToArray(3, this->_internal_cooldown(), target);
+  }
+
+  // int32 damage = 4;
+  if (this->_internal_damage() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteInt32ToArray(4, this->_internal_damage(), target);
+  }
+
+  // .Protocol.SkillType skillType = 5;
+  if (this->_internal_skilltype() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteEnumToArray(
+      5, this->_internal_skilltype(), target);
+  }
+
+  // float range = 6;
+  static_assert(sizeof(uint32_t) == sizeof(float), "Code assumes uint32_t and float are the same size.");
+  float tmp_range = this->_internal_range();
+  uint32_t raw_range;
+  memcpy(&raw_range, &tmp_range, sizeof(tmp_range));
+  if (raw_range != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteFloatToArray(6, this->_internal_range(), target);
+  }
+
+  // float radius = 7;
+  static_assert(sizeof(uint32_t) == sizeof(float), "Code assumes uint32_t and float are the same size.");
+  float tmp_radius = this->_internal_radius();
+  uint32_t raw_radius;
+  memcpy(&raw_radius, &tmp_radius, sizeof(tmp_radius));
+  if (raw_radius != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteFloatToArray(7, this->_internal_radius(), target);
+  }
+
+  // float angle = 8;
+  static_assert(sizeof(uint32_t) == sizeof(float), "Code assumes uint32_t and float are the same size.");
+  float tmp_angle = this->_internal_angle();
+  uint32_t raw_angle;
+  memcpy(&raw_angle, &tmp_angle, sizeof(tmp_angle));
+  if (raw_angle != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteFloatToArray(8, this->_internal_angle(), target);
+  }
+
+  // int32 effectId = 9;
+  if (this->_internal_effectid() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteInt32ToArray(9, this->_internal_effectid(), target);
+  }
+
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    target = ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance), target, stream);
+  }
+  // @@protoc_insertion_point(serialize_to_array_end:Protocol.SkillTemplateInfo)
+  return target;
+}
+
+size_t SkillTemplateInfo::ByteSizeLong() const {
+// @@protoc_insertion_point(message_byte_size_start:Protocol.SkillTemplateInfo)
+  size_t total_size = 0;
+
+  uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  // string name = 2;
+  if (!this->_internal_name().empty()) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+        this->_internal_name());
+  }
+
+  // int32 skillId = 1;
+  if (this->_internal_skillid() != 0) {
+    total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(this->_internal_skillid());
+  }
+
+  // int32 cooldown = 3;
+  if (this->_internal_cooldown() != 0) {
+    total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(this->_internal_cooldown());
+  }
+
+  // int32 damage = 4;
+  if (this->_internal_damage() != 0) {
+    total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(this->_internal_damage());
+  }
+
+  // .Protocol.SkillType skillType = 5;
+  if (this->_internal_skilltype() != 0) {
+    total_size += 1 +
+      ::_pbi::WireFormatLite::EnumSize(this->_internal_skilltype());
+  }
+
+  // float range = 6;
+  static_assert(sizeof(uint32_t) == sizeof(float), "Code assumes uint32_t and float are the same size.");
+  float tmp_range = this->_internal_range();
+  uint32_t raw_range;
+  memcpy(&raw_range, &tmp_range, sizeof(tmp_range));
+  if (raw_range != 0) {
+    total_size += 1 + 4;
+  }
+
+  // float radius = 7;
+  static_assert(sizeof(uint32_t) == sizeof(float), "Code assumes uint32_t and float are the same size.");
+  float tmp_radius = this->_internal_radius();
+  uint32_t raw_radius;
+  memcpy(&raw_radius, &tmp_radius, sizeof(tmp_radius));
+  if (raw_radius != 0) {
+    total_size += 1 + 4;
+  }
+
+  // float angle = 8;
+  static_assert(sizeof(uint32_t) == sizeof(float), "Code assumes uint32_t and float are the same size.");
+  float tmp_angle = this->_internal_angle();
+  uint32_t raw_angle;
+  memcpy(&raw_angle, &tmp_angle, sizeof(tmp_angle));
+  if (raw_angle != 0) {
+    total_size += 1 + 4;
+  }
+
+  // int32 effectId = 9;
+  if (this->_internal_effectid() != 0) {
+    total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(this->_internal_effectid());
+  }
+
+  return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
+}
+
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData SkillTemplateInfo::_class_data_ = {
+    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSourceCheck,
+    SkillTemplateInfo::MergeImpl
+};
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*SkillTemplateInfo::GetClassData() const { return &_class_data_; }
+
+
+void SkillTemplateInfo::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
+  auto* const _this = static_cast<SkillTemplateInfo*>(&to_msg);
+  auto& from = static_cast<const SkillTemplateInfo&>(from_msg);
+  // @@protoc_insertion_point(class_specific_merge_from_start:Protocol.SkillTemplateInfo)
+  GOOGLE_DCHECK_NE(&from, _this);
+  uint32_t cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  if (!from._internal_name().empty()) {
+    _this->_internal_set_name(from._internal_name());
+  }
+  if (from._internal_skillid() != 0) {
+    _this->_internal_set_skillid(from._internal_skillid());
+  }
+  if (from._internal_cooldown() != 0) {
+    _this->_internal_set_cooldown(from._internal_cooldown());
+  }
+  if (from._internal_damage() != 0) {
+    _this->_internal_set_damage(from._internal_damage());
+  }
+  if (from._internal_skilltype() != 0) {
+    _this->_internal_set_skilltype(from._internal_skilltype());
+  }
+  static_assert(sizeof(uint32_t) == sizeof(float), "Code assumes uint32_t and float are the same size.");
+  float tmp_range = from._internal_range();
+  uint32_t raw_range;
+  memcpy(&raw_range, &tmp_range, sizeof(tmp_range));
+  if (raw_range != 0) {
+    _this->_internal_set_range(from._internal_range());
+  }
+  static_assert(sizeof(uint32_t) == sizeof(float), "Code assumes uint32_t and float are the same size.");
+  float tmp_radius = from._internal_radius();
+  uint32_t raw_radius;
+  memcpy(&raw_radius, &tmp_radius, sizeof(tmp_radius));
+  if (raw_radius != 0) {
+    _this->_internal_set_radius(from._internal_radius());
+  }
+  static_assert(sizeof(uint32_t) == sizeof(float), "Code assumes uint32_t and float are the same size.");
+  float tmp_angle = from._internal_angle();
+  uint32_t raw_angle;
+  memcpy(&raw_angle, &tmp_angle, sizeof(tmp_angle));
+  if (raw_angle != 0) {
+    _this->_internal_set_angle(from._internal_angle());
+  }
+  if (from._internal_effectid() != 0) {
+    _this->_internal_set_effectid(from._internal_effectid());
+  }
+  _this->_internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+}
+
+void SkillTemplateInfo::CopyFrom(const SkillTemplateInfo& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:Protocol.SkillTemplateInfo)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool SkillTemplateInfo::IsInitialized() const {
+  return true;
+}
+
+void SkillTemplateInfo::InternalSwap(SkillTemplateInfo* other) {
+  using std::swap;
+  auto* lhs_arena = GetArenaForAllocation();
+  auto* rhs_arena = other->GetArenaForAllocation();
+  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::InternalSwap(
+      &_impl_.name_, lhs_arena,
+      &other->_impl_.name_, rhs_arena
+  );
+  ::PROTOBUF_NAMESPACE_ID::internal::memswap<
+      PROTOBUF_FIELD_OFFSET(SkillTemplateInfo, _impl_.effectid_)
+      + sizeof(SkillTemplateInfo::_impl_.effectid_)
+      - PROTOBUF_FIELD_OFFSET(SkillTemplateInfo, _impl_.skillid_)>(
+          reinterpret_cast<char*>(&_impl_.skillid_),
+          reinterpret_cast<char*>(&other->_impl_.skillid_));
+}
+
+::PROTOBUF_NAMESPACE_ID::Metadata SkillTemplateInfo::GetMetadata() const {
+  return ::_pbi::AssignDescriptors(
+      &descriptor_table_Struct_2eproto_getter, &descriptor_table_Struct_2eproto_once,
+      file_level_metadata_Struct_2eproto[7]);
+}
+
+// ===================================================================
+
 class RoomInfo::_Internal {
  public:
 };
@@ -2873,7 +3362,7 @@ void RoomInfo::InternalSwap(RoomInfo* other) {
 ::PROTOBUF_NAMESPACE_ID::Metadata RoomInfo::GetMetadata() const {
   return ::_pbi::AssignDescriptors(
       &descriptor_table_Struct_2eproto_getter, &descriptor_table_Struct_2eproto_once,
-      file_level_metadata_Struct_2eproto[7]);
+      file_level_metadata_Struct_2eproto[8]);
 }
 
 // ===================================================================
@@ -3153,7 +3642,7 @@ void ChatMessage::InternalSwap(ChatMessage* other) {
 ::PROTOBUF_NAMESPACE_ID::Metadata ChatMessage::GetMetadata() const {
   return ::_pbi::AssignDescriptors(
       &descriptor_table_Struct_2eproto_getter, &descriptor_table_Struct_2eproto_once,
-      file_level_metadata_Struct_2eproto[8]);
+      file_level_metadata_Struct_2eproto[9]);
 }
 
 // @@protoc_insertion_point(namespace_scope)
@@ -3186,6 +3675,10 @@ Arena::CreateMaybeMessage< ::Protocol::StatTemplateInfo >(Arena* arena) {
 template<> PROTOBUF_NOINLINE ::Protocol::ItemTemplateInfo*
 Arena::CreateMaybeMessage< ::Protocol::ItemTemplateInfo >(Arena* arena) {
   return Arena::CreateMessageInternal< ::Protocol::ItemTemplateInfo >(arena);
+}
+template<> PROTOBUF_NOINLINE ::Protocol::SkillTemplateInfo*
+Arena::CreateMaybeMessage< ::Protocol::SkillTemplateInfo >(Arena* arena) {
+  return Arena::CreateMessageInternal< ::Protocol::SkillTemplateInfo >(arena);
 }
 template<> PROTOBUF_NOINLINE ::Protocol::RoomInfo*
 Arena::CreateMaybeMessage< ::Protocol::RoomInfo >(Arena* arena) {

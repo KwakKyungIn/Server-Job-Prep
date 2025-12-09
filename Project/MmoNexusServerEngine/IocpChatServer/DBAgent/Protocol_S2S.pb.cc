@@ -140,6 +140,7 @@ PROTOBUF_CONSTEXPR S2S_RES_LOAD_GAME_DATA::S2S_RES_LOAD_GAME_DATA(
     ::_pbi::ConstantInitialized): _impl_{
     /*decltype(_impl_.stats_)*/{}
   , /*decltype(_impl_.items_)*/{}
+  , /*decltype(_impl_.skills_)*/{}
   , /*decltype(_impl_.success_)*/false
   , /*decltype(_impl_._cached_size_)*/{}} {}
 struct S2S_RES_LOAD_GAME_DATADefaultTypeInternal {
@@ -269,6 +270,7 @@ const uint32_t TableStruct_Protocol_5fS2S_2eproto::offsets[] PROTOBUF_SECTION_VA
   PROTOBUF_FIELD_OFFSET(::Protocol::S2S_RES_LOAD_GAME_DATA, _impl_.success_),
   PROTOBUF_FIELD_OFFSET(::Protocol::S2S_RES_LOAD_GAME_DATA, _impl_.stats_),
   PROTOBUF_FIELD_OFFSET(::Protocol::S2S_RES_LOAD_GAME_DATA, _impl_.items_),
+  PROTOBUF_FIELD_OFFSET(::Protocol::S2S_RES_LOAD_GAME_DATA, _impl_.skills_),
   ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(::Protocol::S2S_RES_BROADCAST_CHAT, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -299,9 +301,9 @@ static const ::_pbi::MigrationSchema schemas[] PROTOBUF_SECTION_VARIABLE(protode
   { 52, -1, -1, sizeof(::Protocol::S2S_RES_ITEMS_LOAD)},
   { 62, -1, -1, sizeof(::Protocol::S2S_REQ_LOAD_GAME_DATA)},
   { 68, -1, -1, sizeof(::Protocol::S2S_RES_LOAD_GAME_DATA)},
-  { 77, -1, -1, sizeof(::Protocol::S2S_RES_BROADCAST_CHAT)},
-  { 84, -1, -1, sizeof(::Protocol::S2S_RES_HEART_BEAT)},
-  { 90, -1, -1, sizeof(::Protocol::S2S_REQ_HEART_BEAT)},
+  { 78, -1, -1, sizeof(::Protocol::S2S_RES_BROADCAST_CHAT)},
+  { 85, -1, -1, sizeof(::Protocol::S2S_RES_HEART_BEAT)},
+  { 91, -1, -1, sizeof(::Protocol::S2S_REQ_HEART_BEAT)},
 };
 
 static const ::_pb::Message* const file_default_instances[] = {
@@ -336,13 +338,14 @@ const char descriptor_table_protodef_Protocol_5fS2S_2eproto[] PROTOBUF_SECTION_V
   "\"q\n\022S2S_RES_ITEMS_LOAD\022\020\n\010playerId\030\001 \001(\004"
   "\022\017\n\007success\030\002 \001(\010\022!\n\005items\030\003 \003(\0132\022.Proto"
   "col.ItemInfo\022\025\n\rgameSessionId\030\004 \001(\004\"\030\n\026S"
-  "2S_REQ_LOAD_GAME_DATA\"\177\n\026S2S_RES_LOAD_GA"
-  "ME_DATA\022\017\n\007success\030\001 \001(\010\022)\n\005stats\030\002 \003(\0132"
-  "\032.Protocol.StatTemplateInfo\022)\n\005items\030\003 \003"
-  "(\0132\032.Protocol.ItemTemplateInfo\")\n\026S2S_RE"
-  "S_BROADCAST_CHAT\022\017\n\007success\030\001 \001(\010\"\024\n\022S2S"
-  "_RES_HEART_BEAT\"\024\n\022S2S_REQ_HEART_BEATb\006p"
-  "roto3"
+  "2S_REQ_LOAD_GAME_DATA\"\254\001\n\026S2S_RES_LOAD_G"
+  "AME_DATA\022\017\n\007success\030\001 \001(\010\022)\n\005stats\030\002 \003(\013"
+  "2\032.Protocol.StatTemplateInfo\022)\n\005items\030\003 "
+  "\003(\0132\032.Protocol.ItemTemplateInfo\022+\n\006skill"
+  "s\030\004 \003(\0132\033.Protocol.SkillTemplateInfo\")\n\026"
+  "S2S_RES_BROADCAST_CHAT\022\017\n\007success\030\001 \001(\010\""
+  "\024\n\022S2S_RES_HEART_BEAT\"\024\n\022S2S_REQ_HEART_B"
+  "EATb\006proto3"
   ;
 static const ::_pbi::DescriptorTable* const descriptor_table_Protocol_5fS2S_2eproto_deps[2] = {
   &::descriptor_table_Enum_2eproto,
@@ -350,7 +353,7 @@ static const ::_pbi::DescriptorTable* const descriptor_table_Protocol_5fS2S_2epr
 };
 static ::_pbi::once_flag descriptor_table_Protocol_5fS2S_2eproto_once;
 const ::_pbi::DescriptorTable descriptor_table_Protocol_5fS2S_2eproto = {
-    false, false, 885, descriptor_table_protodef_Protocol_5fS2S_2eproto,
+    false, false, 931, descriptor_table_protodef_Protocol_5fS2S_2eproto,
     "Protocol_S2S.proto",
     &descriptor_table_Protocol_5fS2S_2eproto_once, descriptor_table_Protocol_5fS2S_2eproto_deps, 2, 12,
     schemas, file_default_instances, TableStruct_Protocol_5fS2S_2eproto::offsets,
@@ -2138,6 +2141,9 @@ void S2S_RES_LOAD_GAME_DATA::clear_stats() {
 void S2S_RES_LOAD_GAME_DATA::clear_items() {
   _impl_.items_.Clear();
 }
+void S2S_RES_LOAD_GAME_DATA::clear_skills() {
+  _impl_.skills_.Clear();
+}
 S2S_RES_LOAD_GAME_DATA::S2S_RES_LOAD_GAME_DATA(::PROTOBUF_NAMESPACE_ID::Arena* arena,
                          bool is_message_owned)
   : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
@@ -2150,6 +2156,7 @@ S2S_RES_LOAD_GAME_DATA::S2S_RES_LOAD_GAME_DATA(const S2S_RES_LOAD_GAME_DATA& fro
   new (&_impl_) Impl_{
       decltype(_impl_.stats_){from._impl_.stats_}
     , decltype(_impl_.items_){from._impl_.items_}
+    , decltype(_impl_.skills_){from._impl_.skills_}
     , decltype(_impl_.success_){}
     , /*decltype(_impl_._cached_size_)*/{}};
 
@@ -2165,6 +2172,7 @@ inline void S2S_RES_LOAD_GAME_DATA::SharedCtor(
   new (&_impl_) Impl_{
       decltype(_impl_.stats_){arena}
     , decltype(_impl_.items_){arena}
+    , decltype(_impl_.skills_){arena}
     , decltype(_impl_.success_){false}
     , /*decltype(_impl_._cached_size_)*/{}
   };
@@ -2183,6 +2191,7 @@ inline void S2S_RES_LOAD_GAME_DATA::SharedDtor() {
   GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.stats_.~RepeatedPtrField();
   _impl_.items_.~RepeatedPtrField();
+  _impl_.skills_.~RepeatedPtrField();
 }
 
 void S2S_RES_LOAD_GAME_DATA::SetCachedSize(int size) const {
@@ -2197,6 +2206,7 @@ void S2S_RES_LOAD_GAME_DATA::Clear() {
 
   _impl_.stats_.Clear();
   _impl_.items_.Clear();
+  _impl_.skills_.Clear();
   _impl_.success_ = false;
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
@@ -2238,6 +2248,19 @@ const char* S2S_RES_LOAD_GAME_DATA::_InternalParse(const char* ptr, ::_pbi::Pars
             CHK_(ptr);
             if (!ctx->DataAvailable(ptr)) break;
           } while (::PROTOBUF_NAMESPACE_ID::internal::ExpectTag<26>(ptr));
+        } else
+          goto handle_unusual;
+        continue;
+      // repeated .Protocol.SkillTemplateInfo skills = 4;
+      case 4:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 34)) {
+          ptr -= 1;
+          do {
+            ptr += 1;
+            ptr = ctx->ParseMessage(_internal_add_skills(), ptr);
+            CHK_(ptr);
+            if (!ctx->DataAvailable(ptr)) break;
+          } while (::PROTOBUF_NAMESPACE_ID::internal::ExpectTag<34>(ptr));
         } else
           goto handle_unusual;
         continue;
@@ -2292,6 +2315,14 @@ uint8_t* S2S_RES_LOAD_GAME_DATA::_InternalSerialize(
         InternalWriteMessage(3, repfield, repfield.GetCachedSize(), target, stream);
   }
 
+  // repeated .Protocol.SkillTemplateInfo skills = 4;
+  for (unsigned i = 0,
+      n = static_cast<unsigned>(this->_internal_skills_size()); i < n; i++) {
+    const auto& repfield = this->_internal_skills(i);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
+        InternalWriteMessage(4, repfield, repfield.GetCachedSize(), target, stream);
+  }
+
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
     target = ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance), target, stream);
@@ -2322,6 +2353,13 @@ size_t S2S_RES_LOAD_GAME_DATA::ByteSizeLong() const {
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
   }
 
+  // repeated .Protocol.SkillTemplateInfo skills = 4;
+  total_size += 1UL * this->_internal_skills_size();
+  for (const auto& msg : this->_impl_.skills_) {
+    total_size +=
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
+  }
+
   // bool success = 1;
   if (this->_internal_success() != 0) {
     total_size += 1 + 1;
@@ -2347,6 +2385,7 @@ void S2S_RES_LOAD_GAME_DATA::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg,
 
   _this->_impl_.stats_.MergeFrom(from._impl_.stats_);
   _this->_impl_.items_.MergeFrom(from._impl_.items_);
+  _this->_impl_.skills_.MergeFrom(from._impl_.skills_);
   if (from._internal_success() != 0) {
     _this->_internal_set_success(from._internal_success());
   }
@@ -2369,6 +2408,7 @@ void S2S_RES_LOAD_GAME_DATA::InternalSwap(S2S_RES_LOAD_GAME_DATA* other) {
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   _impl_.stats_.InternalSwap(&other->_impl_.stats_);
   _impl_.items_.InternalSwap(&other->_impl_.items_);
+  _impl_.skills_.InternalSwap(&other->_impl_.skills_);
   swap(_impl_.success_, other->_impl_.success_);
 }
 

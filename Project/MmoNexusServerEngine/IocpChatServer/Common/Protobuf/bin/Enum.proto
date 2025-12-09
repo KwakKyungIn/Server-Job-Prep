@@ -39,6 +39,14 @@ enum ItemType {
     ITEM_TYPE_CONSUMABLE = 3;  // 소비 아이템 (포션 등)
 }
 
+//======[Skill] 스킬관련=========
+enum SkillType {
+    SKILL_NONE = 0;
+    SKILL_AUTO = 1;       // 평타 (단일 타겟)
+    SKILL_PROJECTILE = 2; // 투사체 (화살, 파이어볼)
+    SKILL_AREA_CIRCLE = 3; // 원형 범위 (자폭, 주변 광역기)
+    SKILL_AREA_CONE = 4;   // 부채꼴 (전방 브레스)
+}
 // ===== [Network] 연결 상태 =====
 enum ConnectStatus {
     CONNECT_OK = 0;

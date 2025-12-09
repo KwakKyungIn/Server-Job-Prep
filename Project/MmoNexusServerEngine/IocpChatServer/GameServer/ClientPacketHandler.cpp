@@ -181,6 +181,25 @@ bool ClientPacketHandler::Handle_C_LOGIN_REQ(PacketSessionRef& session, Protocol
 	return true;
 }
 
+bool ClientPacketHandler::Handle_C_SKILL(PacketSessionRef& session, Protocol::C_SKILL& pkt)
+{
+	PlayerSessionRef playerSession = static_pointer_cast<PlayerSession>(session);
+	PlayerRef player = playerSession->GetPlayer();
+	if (player == nullptr) return false;
+
+	if (player->GetStatInfo()->hp() <= 0) return false;
+
+	auto room = player->GetRoom();
+	if (room == nullptr) return false;
+
+	// [Success] 이제 이 람다식은 GameRoom::PushJob(std::function<void()>) 으로 연결된다.
+	room->PushJob([room, player, pkt]()
+		{
+			player->UseSkill(pkt.skillid());
+		});
+
+	return true;
+}
 // [CHAT] 채팅 요청
 bool ClientPacketHandler::Handle_C_CHAT_REQ(PacketSessionRef& session, Protocol::C_CHAT_REQ& pkt)
 {

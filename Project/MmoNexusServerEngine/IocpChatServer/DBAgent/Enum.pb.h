@@ -182,6 +182,34 @@ inline bool ItemType_Parse(
   return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<ItemType>(
     ItemType_descriptor(), name, value);
 }
+enum SkillType : int {
+  SKILL_NONE = 0,
+  SKILL_AUTO = 1,
+  SKILL_PROJECTILE = 2,
+  SKILL_AREA_CIRCLE = 3,
+  SKILL_AREA_CONE = 4,
+  SkillType_INT_MIN_SENTINEL_DO_NOT_USE_ = std::numeric_limits<int32_t>::min(),
+  SkillType_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits<int32_t>::max()
+};
+bool SkillType_IsValid(int value);
+constexpr SkillType SkillType_MIN = SKILL_NONE;
+constexpr SkillType SkillType_MAX = SKILL_AREA_CONE;
+constexpr int SkillType_ARRAYSIZE = SkillType_MAX + 1;
+
+const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* SkillType_descriptor();
+template<typename T>
+inline const std::string& SkillType_Name(T enum_t_value) {
+  static_assert(::std::is_same<T, SkillType>::value ||
+    ::std::is_integral<T>::value,
+    "Incorrect type passed to function SkillType_Name.");
+  return ::PROTOBUF_NAMESPACE_ID::internal::NameOfEnum(
+    SkillType_descriptor(), enum_t_value);
+}
+inline bool SkillType_Parse(
+    ::PROTOBUF_NAMESPACE_ID::ConstStringParam name, SkillType* value) {
+  return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<SkillType>(
+    SkillType_descriptor(), name, value);
+}
 enum ConnectStatus : int {
   CONNECT_OK = 0,
   CONNECT_FAIL = 1,
@@ -333,6 +361,11 @@ template <> struct is_proto_enum< ::Protocol::ItemType> : ::std::true_type {};
 template <>
 inline const EnumDescriptor* GetEnumDescriptor< ::Protocol::ItemType>() {
   return ::Protocol::ItemType_descriptor();
+}
+template <> struct is_proto_enum< ::Protocol::SkillType> : ::std::true_type {};
+template <>
+inline const EnumDescriptor* GetEnumDescriptor< ::Protocol::SkillType>() {
+  return ::Protocol::SkillType_descriptor();
 }
 template <> struct is_proto_enum< ::Protocol::ConnectStatus> : ::std::true_type {};
 template <>

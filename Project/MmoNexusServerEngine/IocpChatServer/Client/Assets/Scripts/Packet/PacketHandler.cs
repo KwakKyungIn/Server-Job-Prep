@@ -19,6 +19,10 @@ public class PacketHandler
     public static Action<ItemInfo> OnUpdateItem;
     public static Action<ulong> OnRemoveItem;
 
+    // [New] 전투 관련 이벤트
+    public static Action<S_SKILL> OnSkill;         // 누가 스킬 씀
+    public static Action<S_CHANGE_HP> OnChangeHp;  // 누가 데미지 입음
+
     public static Action<S_EQUIP_ITEM> OnEquipItem;
     public static Action<StatInfo> OnChangeStat;
 
@@ -141,7 +145,24 @@ public class PacketHandler
         if (OnChangeStat != null)
             OnChangeStat.Invoke(pkt.StatInfo);
     }
+    public static void S_SKILLHandler(ServerSession session, IMessage packet)
+    {
+        S_SKILL pkt = packet as S_SKILL;
+        // Debug.Log($"[Skill] Object {pkt.ObjectId} used Skill {pkt.SkillId}");
 
+        if (OnSkill != null)
+            OnSkill.Invoke(pkt);
+    }
+
+    // [New] 체력 변경 알림 (데미지 폰트, 사망 처리용)
+    public static void S_CHANGE_HPHandler(ServerSession session, IMessage packet)
+    {
+        S_CHANGE_HP pkt = packet as S_CHANGE_HP;
+        Debug.Log($"🩸 [Hit] Target: {pkt.ObjectId} Dmg: {pkt.Damage} HP: {pkt.CurrentHp}");
+
+        if (OnChangeHp != null)
+            OnChangeHp.Invoke(pkt);
+    }
     public static void S_CHAT_RESHandler(ServerSession session, IMessage packet)
     {
     }

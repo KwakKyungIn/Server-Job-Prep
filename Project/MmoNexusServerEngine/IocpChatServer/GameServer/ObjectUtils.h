@@ -1,6 +1,9 @@
 #pragma once
 #include "Protocol.pb.h"
 #include <math.h>
+#include <algorithm> // [New] min, max 등 안전장치용
+
+#define PI 3.14159265f // [New] 원주율 정의
 
 struct Vector3
 {
@@ -42,6 +45,9 @@ struct Vector3
 		y /= len;
 		z /= len;
 	}
+
+	// [New] 내적 (Dot Product) - 두 벡터의 방향 일치도 계산
+	float Dot(const Vector3& other) const { return x * other.x + y * other.y + z * other.z; }
 };
 
 class ObjectUtils
@@ -69,5 +75,41 @@ public:
 		Vector3 dir = vTo - vFrom;
 		dir.Normalize();
 		return dir;
+	}
+
+	// ==========================================================
+	// [New] Hitbox Logic (기존 코드 영향 없음)
+	// ==========================================================
+
+	// 1. 원형 판정 (Circle)
+	static bool CheckCircle(const Protocol::PositionInfo& center, float radius, const Protocol::PositionInfo& target)
+	{
+		float distSqr = DistSqr(center, target);
+		return distSqr <= (radius * radius);
+	}
+
+	// 2. 부채꼴 판정 (Fan/Cone)
+	// viewDir: 시선 방향 (정규화 필수)
+	static bool CheckFan(const Protocol::PositionInfo& center, const Vector3& viewDir, float range, float angle, const Protocol::PositionInfo& target)
+	{
+		// 1) 거리 체크
+		if (CheckCircle(center, range, target) == false)
+			return false;
+
+		// 2) 각도 체크 (내적)
+		Vector3 dirToTarget = GetDirection(center, target);
+		float dot = viewDir.Dot(dirToTarget); // 내적 계산
+
+		// 부채꼴 각도의 절반보다 내적값이 크면(각도가 작으면) 히트
+		float cosTheta = cosf((angle / 2.0f) * (PI / 180.0f));
+
+		return dot >= cosTheta;
+	}
+
+	// [Helper] Yaw(회전값) -> 방향 벡터 변환
+	static Vector3 GetVectorFromYaw(float yaw)
+	{
+		float rad = yaw * (PI / 180.0f);
+		return Vector3(sinf(rad), 0, cosf(rad)); // Y축 회전 기준 (X, Z 평면)
 	}
 };

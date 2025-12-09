@@ -80,6 +80,7 @@ message S2S_RES_LOAD_GAME_DATA {
     // Struct.proto에 정의된 타입을 그대로 사용
     repeated StatTemplateInfo stats = 2; 
     repeated ItemTemplateInfo items = 3;
+    repeated SkillTemplateInfo skills = 4;
 }
 
 // ChatServer -> GameServer : "뿌렸어 (혹은 실패했어)"

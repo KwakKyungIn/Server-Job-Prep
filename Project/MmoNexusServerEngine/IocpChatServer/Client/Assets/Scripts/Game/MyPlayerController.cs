@@ -1,77 +1,114 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using Protocol;
 using System.Collections;
-using System.Collections.Generic; // [ÇÊ¼ö] Dictionary »ç¿ëÀ» À§ÇØ Ãß°¡
+using System.Collections.Generic;
 
 public class MyPlayerController : MonoBehaviour
 {
     float _speed = 5.0f;
     Vector3 _lastSentPos;
 
+    // [New] ìƒíƒœ ê´€ë¦¬ìš©
+    bool _isDead = false;
+    bool _isAttacking = false;
+
     void Start()
     {
         StartCoroutine(CoSendPacket());
+
+        // [New] í”¼ê²© ì´ë²¤íŠ¸ êµ¬ë… (ë‚´ê°€ ì£½ì—ˆëŠ”ì§€ í™•ì¸)
+        PacketHandler.OnChangeHp += OnChangeHp;
+    }
+
+    // [New] ì´ë²¤íŠ¸ í•´ì œ (ìŠµê´€ ë“¤ì´ê¸°)
+    void OnDestroy()
+    {
+        PacketHandler.OnChangeHp -= OnChangeHp;
+    }
+
+    // [New] í”¼ê²© í•¸ë“¤ëŸ¬
+    void OnChangeHp(S_CHANGE_HP pkt)
+    {
+        // ë‚´ ì•„ì´ë””ë‘ ë§ëŠ”ì§€ í™•ì¸
+        if (pkt.ObjectId == ObjectManager.MyPlayerId)
+        {
+            if (pkt.CurrentHp <= 0)
+            {
+                _isDead = true;
+                Debug.Log("ğŸ’€ [Die] You are dead!");
+                // ì—¬ê¸°ì„œ ì• ë‹ˆë©”ì´ì…˜ ì²˜ë¦¬ (GetComponent<Animator>().SetTrigger("Die");)
+            }
+        }
     }
 
     void Update()
     {
+        // [New] ì£½ì—ˆìœ¼ë©´ ì¡°ì‘ ë¶ˆê°€
+        if (_isDead) return;
+
         // ============================================================
-        // [TEST] EÅ°¸¦ ´©¸£¸é ÀÎº¥Åä¸®ÀÇ Ã¹ ¹øÂ° ¾ÆÀÌÅÛÀ» ÀåÂø/ÇØÁ¦ÇÑ´Ù.
+        // [ATTACK] ìŠ¤í˜ì´ìŠ¤ë°” ì…ë ¥
+        // ============================================================
+        if (Input.GetKeyDown(KeyCode.Space) && _isAttacking == false)
+        {
+            Debug.Log("âš”ï¸ [Input] Spacebar -> Attack!");
+
+            C_SKILL skillPkt = new C_SKILL();
+            skillPkt.SkillId = 1; // 1ë²ˆ = í‰íƒ€
+
+            // íŒ¨í‚· ì „ì†¡
+            NetworkManager.Instance.Send(skillPkt, (ushort)PacketManager.MsgId.C_SKILL);
+
+            // (ì„ íƒ) í´ë¼ë‹¨ ì¿¨íƒ€ì„ ì²˜ë¦¬ë‚˜ ì• ë‹ˆë©”ì´ì…˜ ì„ í–‰ ì‹¤í–‰
+            // _isAttacking = true;
+            // Invoke("ResetAttack", 0.5f); 
+        }
+
+        // ============================================================
+        // [Item Test] Eí‚¤
         // ============================================================
         if (Input.GetKeyDown(KeyCode.E))
         {
+            // ... (ê¸°ì¡´ ì•„ì´í…œ ì¥ì°© ë¡œì§ ìœ ì§€) ...
             var allItems = InventoryManager.Instance.GetAllItems();
-
             if (allItems.Count > 0)
             {
-                // 1. Ã¹ ¹øÂ° ¾ÆÀÌÅÛ Ã£±â (Dictionary¶ó ¼ø¼­´Â º¸Àå ¾È µÇÁö¸¸ Å×½ºÆ®¿ëÀ¸·Ğ ÃæºĞ)
                 var enumerator = allItems.GetEnumerator();
                 enumerator.MoveNext();
                 ItemInfo item = enumerator.Current.Value;
-
-                Debug.Log($"[Test] Request Equip/Unequip Item: {item.TemplateId} (UID: {item.ItemUid}) CurrentState: {item.IsEquipped}");
-
-                // 2. ÆĞÅ¶ »ı¼º
                 C_EQUIP_ITEM pkt = new C_EQUIP_ITEM();
                 pkt.ItemUid = item.ItemUid;
                 pkt.SlotIndex = item.Slot;
-                pkt.Equip = !item.IsEquipped; // Åä±Û (ÀåÂø ÁßÀÌ¸é ÇØÁ¦, ¾Æ´Ï¸é ÀåÂø)
-
-                // 3. Àü¼Û
+                pkt.Equip = !item.IsEquipped;
                 NetworkManager.Instance.Send(pkt, (ushort)PacketManager.MsgId.C_EQUIP_ITEM);
-            }
-            else
-            {
-                Debug.Log("[Test] ÀÎº¥Åä¸®°¡ ºñ¾îÀÖ½À´Ï´Ù. DB¿¡ ¾ÆÀÌÅÛÀ» ³Ö¾ú³ª¿ä?");
             }
         }
 
         // ============================================================
-        // [Input Handling] (±âÁ¸ ÀÌµ¿ ·ÎÁ÷)
+        // [Movement]
         // ============================================================
         float h = Input.GetAxis("Horizontal");
         float v = Input.GetAxis("Vertical");
 
-        // ÀÔ·ÂÀÌ ¾øÀ¸¸é ÆĞ½º (EÅ° Ã¼Å©´Â À§¿¡¼­ ÇßÀ¸´Ï ¸®ÅÏÇØµµ µÊ)
         if (h == 0 && v == 0) return;
 
-        // [Movement]
         Vector3 dir = new Vector3(h, 0, v).normalized;
         transform.position += dir * _speed * Time.deltaTime;
 
-        // [Rotation]
         if (dir != Vector3.zero)
         {
             transform.rotation = Quaternion.LookRotation(dir);
         }
     }
 
-    // [Network] 0.2ÃÊ¸¶´Ù À§Ä¡ ÆĞÅ¶ Àü¼Û
     IEnumerator CoSendPacket()
     {
         while (true)
         {
             yield return new WaitForSeconds(0.2f);
+
+            // ì£½ì—ˆìœ¼ë©´ ì´ë™ íŒ¨í‚· ì•ˆ ë³´ëƒ„
+            if (_isDead) continue;
 
             if (Vector3.Distance(transform.position, _lastSentPos) > 0.1f)
             {
@@ -84,7 +121,6 @@ public class MyPlayerController : MonoBehaviour
                 movePkt.PosInfo.State = MoveState.MoveRun;
 
                 NetworkManager.Instance.Send(movePkt, (ushort)PacketManager.MsgId.C_MOVE);
-
                 _lastSentPos = transform.position;
             }
         }

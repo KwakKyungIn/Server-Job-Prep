@@ -33,6 +33,12 @@ public:
 	virtual void			OnDamaged(std::shared_ptr<Creature> attacker, int32 damage);
 	virtual void			OnDead(std::shared_ptr<Creature> attacker);
 
+	// 스킬 사용 가능 여부 체크 (쿨타임, 상태이상 등)
+	bool CanUseSkill(int32 skillId);
+
+	// 스킬 실행 (실제 로직)
+	void UseSkill(int32 skillId);
+
 protected:
 	// [Identity]
 	uint64					_objectId = 0;
@@ -44,6 +50,9 @@ protected:
 
 	std::weak_ptr<GameRoom> _room;
 	int32					_zoneIndex = -1;
+
+	// Key: SkillID, Value: 다음 사용 가능 시간 (Tick)
+	std::map<int32, uint64> _cooldowns;
 
 private:
 	// ID 발급기 (스레드 안전)

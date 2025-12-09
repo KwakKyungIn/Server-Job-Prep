@@ -19,8 +19,13 @@ public:
 	const Protocol::StatTemplateInfo* GetStatTemplate(int32 level);
 	const Protocol::ItemTemplateInfo* GetItemTemplate(int32 templateId);
 
+	//  스킬 정보 조회
+	const Protocol::SkillTemplateInfo* GetSkillTemplate(int32 skillId);
 private:
 	// 빠른 검색을 위한 Map (Key: ID, Value: Data)
 	std::map<int32, Protocol::StatTemplateInfo> _statTemplates;
 	std::map<int32, Protocol::ItemTemplateInfo> _itemTemplates;
+
+	// [New] 스킬 데이터 저장소
+	std::map<int32, Protocol::SkillTemplateInfo> _skillTemplates;
 };

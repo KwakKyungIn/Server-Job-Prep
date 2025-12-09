@@ -5,16 +5,15 @@
 class GameMap;
 class Player;
 class Monster;
+class Creature;
 
 using GameMapRef = std::shared_ptr<GameMap>;
 using PlayerRef = std::shared_ptr<Player>;
 using MonsterRef = std::shared_ptr<Monster>;
 
-// [Spatial Partitioning]
-// 맵을 격자(Grid)로 쪼갠 하나의 구역
 struct Zone
 {
-	Set<PlayerRef> players; // 이 구역에 위치한 플레이어 목록
+	Set<PlayerRef> players;
 	Set<MonsterRef> monsters;
 };
 
@@ -24,19 +23,34 @@ public:
 	GameRoom();
 	virtual ~GameRoom();
 
-	// zoneSize: 격자 한 칸의 크기 (기본 50 추천)
 	void Init(int32 mapId, int32 sizeX, int32 sizeY, int32 zoneSize = 50);
 	void Update();
 
-	// [Interface] 외부에서 Job을 넣는 함수
-	template<typename F, typename... Args>
-	void PushJob(F func, Args&&... args)
+public:
+	// =========================================================
+	// [Job System] GIGACHAD FIX (Conflict Resolved)
+	// =========================================================
+
+	// 1. [Lambda] 인자가 1개인 경우 (람다 객체 하나만 던질 때)
+	// 사용: room->PushJob([=](){ player->UseSkill(1); });
+	template<typename F>
+	void PushJob(F&& job)
 	{
-		_jobQueue->Push(MakeShared<Job>(shared_from_this(), func, std::forward<Args>(args)...));
+		_jobQueue->Push(MakeShared<Job>(std::forward<F>(job)));
+	}
+
+	// 2. [Member Function] 인자가 2개 이상인 경우 (기존 코드 호환)
+	// 사용: room->PushJob(&GameRoom::Enter, session);
+	// F: 함수 포인터, A: 첫 번째 인자, Args: 나머지 인자들
+	template<typename F, typename A, typename... Args>
+	void PushJob(F func, A&& arg, Args&&... args)
+	{
+		// 여기서는 shared_from_this()를 Owner로 자동으로 넣어준다.
+		_jobQueue->Push(MakeShared<Job>(shared_from_this(), func, std::forward<A>(arg), std::forward<Args>(args)...));
 	}
 
 public:
-	// [Content Logic] JobQueue 안에서 순차 실행됨 (Lock 불필요)
+	// [Content Logic]
 	void Enter(PlayerSessionRef session);
 	void Leave(PlayerSessionRef session);
 	void HandleMove(PlayerSessionRef session, Protocol::C_MOVE pkt);
@@ -45,34 +59,28 @@ public:
 	void LeaveMonster(uint64 objectId);
 
 	PlayerRef FindNearestPlayer(Protocol::PositionInfo* pos, float range);
-
 	GameMapRef GetMap() { return _map; }
 
-
-	// Zone 기반 전송 (나를 제외한 해당 Zone 유저들에게 전송)
 	void  BroadcastToZone(SendBufferRef sendBuffer, int32 zoneIndex, uint64 exceptId = 0);
-
-	// 전체 전송 (공지사항, 전체 채팅 등 특수 목적)
 	void  Broadcast(SendBufferRef sendBuffer, uint64 exceptId = 0);
 
+	//======스킬 판정====
+	void HandleSkill(std::shared_ptr<Creature> attacker, int32 skillId);
+
 private:
-	// [AOI Helpers]
 	int32 GetZoneIndex(const Protocol::PositionInfo& posInfo);
 	void  GetNearbyZones(int32 zoneIndex, Vector<Zone*>& outZones);
-
 	void  GetNearbyZoneIndices(int32 zoneIndex, Vector<int32>& outIndices);
 
 private:
 	shared_ptr<GameMap> _map;
 	shared_ptr<JobQueue> _jobQueue;
 
-	// 전체 플레이어 Lookup 용 (ID -> 객체)
 	Map<uint64, PlayerRef> _players;
 	Map<uint64, MonsterRef> _monsters;
 
-	// [Spatial Management]
-	Vector<Zone> _zones;    // 1차원 배열로 관리하는 2D 격자
-	int32 _gridSizeX = 0;   // X축 Zone 개수
-	int32 _gridSizeY = 0;   // Y축 Zone 개수
-	int32 _zoneCellSize = 0; // Zone 한 칸의 길이
+	Vector<Zone> _zones;
+	int32 _gridSizeX = 0;
+	int32 _gridSizeY = 0;
+	int32 _zoneCellSize = 0;
 };
