@@ -4,92 +4,64 @@
 #include "Listener.h"
 #include <functional>
 
-// ==============================
-// ServiceType
-// - 어떤 타입의 서비스인지 구분 (Server/Client)
-// ==============================
 enum class ServiceType : uint8
 {
 	Server,
 	Client
 };
 
-// 세션 생성 팩토리 (콜백)
-// - 구체적인 Session 타입은 외부에서 지정
 using SessionFactory = function<SessionRef(void)>;
 
-// ==============================
-// Service
-// - 서버/클라 공통 기반 클래스
-// - 세션 생성, 관리, 브로드캐스트 담당
-// - enable_shared_from_this → 자기 자신 참조 안전
-// ==============================
+// [NEW] 연결 성공 시 호출될 콜백 함수 타입 정의
+using ConnectCallback = function<void(SessionRef)>;
+
 class Service : public enable_shared_from_this<Service>
 {
 public:
 	Service(ServiceType type, NetAddress address, IocpCoreRef core, SessionFactory factory, int32 maxSessionCount = 1);
 	virtual ~Service();
 
-	// 서비스 시작 (순수 가상 → Server/Client가 구현)
 	virtual bool Start() abstract;
-
-	// 세션 팩토리가 유효한지 검사
 	bool CanStart() { return _sessionFactory != nullptr; }
 
-	// 서비스 종료 (가상 함수)
 	virtual void CloseService();
-
-	// 세션 팩토리 교체
 	void SetSessionFactory(SessionFactory func) { _sessionFactory = func; }
 
-	// 모든 세션에 브로드캐스트
+	// [NEW] 연결 콜백 설정 함수
+	void SetConnectCallback(ConnectCallback func) { _connectCallback = func; }
+
 	void Broadcast(SendBufferRef sendBuffer);
-
-	// 세션 생성 (팩토리 + IOCP 등록)
 	SessionRef CreateSession();
-
-	// 세션 등록 (연결 성공 시)
 	void AddSession(SessionRef session);
-
-	// 세션 해제 (연결 종료 시)
 	void ReleaseSession(SessionRef session);
 
-	// 현재 세션 수
 	int32 GetCurrentSessionCount() { return _sessionCount; }
-
-	// 최대 세션 수
 	int32 GetMaxSessionCount() { return _maxSessionCount; }
 
-	// [ADD] 주기적 검사 함수 (Heartbeat & Reconnect)
-	// 모든 메인 루프에서 이걸 호출해줘야 한다.
 	virtual void CheckHeartbeat();
 
 public:
-	// 서비스 타입 (Server/Client)
 	ServiceType GetServiceType() { return _type; }
-
-	// 서비스의 네트워크 주소
 	NetAddress GetNetAddress() { return _netAddress; }
-
-	// IOCP Core 참조 반환
 	IocpCoreRef& GetIocpCore() { return _iocpCore; }
 
 protected:
-	USE_LOCK;                 // 세션 컨테이너 보호용 락
-	ServiceType _type;        // 서비스 타입
-	NetAddress _netAddress;   // 서비스 주소(IP, Port)
-	IocpCoreRef _iocpCore;    // IOCP Core 핸들
+	USE_LOCK;
+	ServiceType _type;
+	NetAddress _netAddress;
+	IocpCoreRef _iocpCore;
 
-	Set<SessionRef> _sessions;      // 현재 접속 중인 세션 목록
-	int32 _sessionCount = 0;        // 현재 세션 수
-	int32 _maxSessionCount = 0;     // 최대 세션 수
-	SessionFactory _sessionFactory; // 세션 생성 콜백
+	Set<SessionRef> _sessions;
+	int32 _sessionCount = 0;
+	int32 _maxSessionCount = 0;
+	SessionFactory _sessionFactory;
+
+	// [NEW] 연결 콜백 저장 변수
+	ConnectCallback _connectCallback;
 };
 
 // ==============================
 // ClientService
-// - 클라이언트 역할 서비스
-// - N개의 세션을 만들고 Connect 시도
 // ==============================
 class ClientService : public Service
 {
@@ -98,15 +70,11 @@ public:
 	virtual ~ClientService() {}
 
 	virtual bool Start() override;
-
-	// [ADD] 클라는 여기서 '재접속' 로직을 추가한다.
-	virtual void CheckHeartbeat() override;
+	virtual void CheckHeartbeat() override; // 재접속 로직
 };
 
 // ==============================
 // ServerService
-// - 서버 역할 서비스
-// - Listener 생성하여 AcceptEx 루프 시작
 // ==============================
 class ServerService : public Service
 {
@@ -118,5 +86,5 @@ public:
 	virtual void CloseService() override;
 
 private:
-	ListenerRef _listener = nullptr; // AcceptEx 전담 리스너
+	ListenerRef _listener = nullptr;
 };

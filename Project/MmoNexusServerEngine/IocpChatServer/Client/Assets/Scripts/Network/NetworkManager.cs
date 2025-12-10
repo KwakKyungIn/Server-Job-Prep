@@ -7,13 +7,10 @@ using Google.Protobuf;
 
 public class NetworkManager : MonoBehaviour
 {
-    // [Singleton]
     static NetworkManager _instance;
     public static NetworkManager Instance { get { return _instance; } }
 
     ServerSession _session = new ServerSession();
-
-    // [GIGACHAD FIX] 메인 스레드 처리를 위한 작업 큐
     Queue<Action> _packetQueue = new Queue<Action>();
     object _lock = new object();
 
@@ -22,7 +19,7 @@ public class NetworkManager : MonoBehaviour
         if (_instance == null)
         {
             _instance = this;
-            DontDestroyOnLoad(gameObject); // 씬 이동해도 유지
+            DontDestroyOnLoad(gameObject);
         }
         else
         {
@@ -32,31 +29,17 @@ public class NetworkManager : MonoBehaviour
 
     void Start()
     {
-        // [GIGACHAD FIX] Back to Basic.
-        // 복잡한 DNS 조회 없이, 네가 원하던 대로 127.0.0.1로 직결한다.
         string ip = "127.0.0.1";
-        int port = 7777;
-
-        IPAddress ipAddr = IPAddress.Parse(ip);
-        IPEndPoint endPoint = new IPEndPoint(ipAddr, port);
+        int port = 7775; // LoginServer Port
 
         InventoryManager.Instance.Init();
 
-        Debug.Log($"[NetworkManager] Try Connect to Server... ({ip}:{port})");
-
-        // ServerSession이 IPEndPoint를 받도록 수정했으므로 맞춰서 넘겨준다.
-        ConnectToServer(endPoint);
-    }
-
-    void ConnectToServer(IPEndPoint endPoint)
-    {
-        _session.Connect(endPoint);
+        Debug.Log($"[ConnectionDebug] 1. Start() - Initial Connect to LoginServer ({ip}:{port})");
+        Connect(ip, port);
     }
 
     void Update()
     {
-        // [Main Thread Dispatch]
-        // 큐에 쌓인 패킷 로직을 메인 스레드에서 처리 (UnityException 방지)
         List<Action> list = null;
         lock (_lock)
         {
@@ -83,13 +66,54 @@ public class NetworkManager : MonoBehaviour
         }
     }
 
-    // 패킷 전송
-    public void Send(IMessage packet, ushort packetId)
+    public void Connect(string ip, int port)
     {
-        _session.Send(packet, packetId);
+        IPAddress ipAddr = IPAddress.Parse(ip);
+        IPEndPoint endPoint = new IPEndPoint(ipAddr, port);
+        ConnectToServer(endPoint);
     }
 
-    // [External Interface] 외부(Session/Handler)에서 메인 스레드 작업을 요청할 때 사용
+    void ConnectToServer(IPEndPoint endPoint)
+    {
+        if (_session != null)
+            _session.Disconnect();
+
+        _session = new ServerSession();
+
+        Debug.Log($"[ConnectionDebug] Connecting to Server... {endPoint.Address}:{endPoint.Port}");
+        try
+        {
+            _session.Connect(endPoint);
+            Debug.Log($"[ConnectionDebug] Socket Connect Called.");
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"[ConnectionDebug] Connect Failed: {e}");
+        }
+    }
+
+    public void Disconnect()
+    {
+        if (_session != null)
+        {
+            _session.Disconnect();
+            Debug.Log("[ConnectionDebug] Disconnected by User/Logic.");
+        }
+    }
+
+    public void Send(IMessage packet, ushort packetId)
+    {
+        if (_session != null)
+        {
+            // Debug.Log($"[ConnectionDebug] Sending Packet ID: {packetId}");
+            _session.Send(packet, packetId);
+        }
+        else
+        {
+            Debug.LogError("[ConnectionDebug] Send Failed! Session is null or disconnected.");
+        }
+    }
+
     public void PushPacket(Action action)
     {
         lock (_lock)
@@ -100,6 +124,6 @@ public class NetworkManager : MonoBehaviour
 
     private void OnApplicationQuit()
     {
-        _session.Disconnect();
+        Disconnect();
     }
 }

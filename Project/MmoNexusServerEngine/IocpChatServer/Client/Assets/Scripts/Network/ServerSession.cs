@@ -1,20 +1,20 @@
-using System;
+ï»¿using System;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using UnityEngine;
 using Google.Protobuf;
-// using Packet; // PacketHeader ³×ÀÓ½ºÆäÀÌ½º°¡ ¾ø´Ù¸é Á¦°Å
+// using Packet; // PacketHeader ë„¤ì„ìŠ¤í˜ì´ìŠ¤ê°€ ì—†ë‹¤ë©´ ì œê±°
 
 public class ServerSession
 {
     Socket _socket;
     object _lock = new object();
 
-    // ¼ö½Å ¹öÆÛ
+    // ìˆ˜ì‹  ë²„í¼
     byte[] _recvBuffer = new byte[65535];
 
-    // [Security] Seq °ü¸®
+    // [Security] Seq ê´€ë¦¬
     uint _sendSeq = 0;
     uint _recvSeq = 0;
 
@@ -25,7 +25,7 @@ public class ServerSession
         return true;
     }
 
-    // [Modification] IPEndPoint¸¦ Á÷Á¢ ¹Şµµ·Ï º¯°æ
+    // [Modification] IPEndPointë¥¼ ì§ì ‘ ë°›ë„ë¡ ë³€ê²½
     public void Connect(IPEndPoint endPoint)
     {
         _socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
@@ -35,7 +35,7 @@ public class ServerSession
             _socket.Connect(endPoint);
             Debug.Log($"[ServerSession] Connected to {endPoint}");
 
-            // ¼ö½Å ´ë±â ½ÃÀÛ
+            // ìˆ˜ì‹  ëŒ€ê¸° ì‹œì‘
             _socket.BeginReceive(_recvBuffer, 0, _recvBuffer.Length, SocketFlags.None, OnRecv, null);
         }
         catch (Exception e)
@@ -44,7 +44,7 @@ public class ServerSession
         }
     }
 
-    // [GIGACHAD] ¾ÏÈ£È­ (XOR)
+    // [GIGACHAD] ì•”í˜¸í™” (XOR)
     void XorCrypt(byte[] buffer, int offset, int len)
     {
         byte xorKey = 0x5A;
@@ -56,32 +56,32 @@ public class ServerSession
 
     public void Send(IMessage packet, ushort packetId)
     {
-        // 1. [Body] Protobuf Á÷·ÄÈ­
+        // 1. [Body] Protobuf ì§ë ¬í™”
         int dataSize = packet.CalculateSize();
         byte[] bodyBytes = packet.ToByteArray();
 
-        // 2. [Body] ¾ÏÈ£È­ (Serialize -> Encrypt)
+        // 2. [Body] ì•”í˜¸í™” (Serialize -> Encrypt)
         XorCrypt(bodyBytes, 0, bodyBytes.Length);
 
-        // 3. [Total] ÃÖÁ¾ Àü¼Û ¹öÆÛ »ı¼º (Header 12 + Body)
+        // 3. [Total] ìµœì¢… ì „ì†¡ ë²„í¼ ìƒì„± (Header 12 + Body)
         byte[] sendBuffer = new byte[dataSize + 12];
 
-        // 4. [Header] ±âº» Á¤º¸ ÀÛ¼º (Size, ID)
+        // 4. [Header] ê¸°ë³¸ ì •ë³´ ì‘ì„± (Size, ID)
         Array.Copy(BitConverter.GetBytes((ushort)(dataSize + 12)), 0, sendBuffer, 0, 2);
         Array.Copy(BitConverter.GetBytes(packetId), 0, sendBuffer, 2, 2);
 
-        // 5. [Header] Seq ÇÒ´ç
+        // 5. [Header] Seq í• ë‹¹
         _sendSeq++;
         Array.Copy(BitConverter.GetBytes(_sendSeq), 0, sendBuffer, 8, 4);
 
-        // 6. [Body] ¾ÏÈ£È­µÈ ¹Ùµğ º¹»ç
+        // 6. [Body] ì•”í˜¸í™”ëœ ë°”ë”” ë³µì‚¬
         Array.Copy(bodyBytes, 0, sendBuffer, 12, dataSize);
 
-        // 7. [Header] CRC °è»ê
+        // 7. [Header] CRC ê³„ì‚°
         uint crc = Crc32.Compute(sendBuffer, 12, dataSize);
         Array.Copy(BitConverter.GetBytes(crc), 0, sendBuffer, 4, 4);
 
-        // 8. Àü¼Û
+        // 8. ì „ì†¡
         try
         {
             lock (_lock)
@@ -107,12 +107,38 @@ public class ServerSession
                 return;
             }
 
-            // [ÆĞÅ¶ Ã³¸®]
-            // ÁÖÀÇ: ¿©±â¼­ PacketManager¸¦ È£ÃâÇÏ¸é IO ½º·¹µå¿¡¼­ ½ÇÇàµÊ.
-            // PacketManager ³»ºÎ¿¡¼­ Handler¸¦ È£ÃâÇÒ ¶§ NetworkManager.PushPacketÀ» »ç¿ëÇØ¾ß ÇÔ.
-            PacketManager.Instance.OnRecvPacket(this, new ArraySegment<byte>(_recvBuffer, 0, recvLen));
+            // âœ… ìˆ˜ì •: ë²„í¼ì— ì—¬ëŸ¬ íŒ¨í‚·ì´ ìˆì„ ìˆ˜ ìˆìœ¼ë‹ˆ ë£¨í”„ ì²˜ë¦¬
+            int processedBytes = 0;
 
-            // ´Ù½Ã ¼ö½Å ´ë±â
+            while (processedBytes < recvLen)
+            {
+                int remainingBytes = recvLen - processedBytes;
+
+                // ìµœì†Œ í—¤ë” í¬ê¸° ì²´í¬
+                if (remainingBytes < 12)
+                {
+                    Debug.LogWarning($"[ServerSession] Incomplete packet header. Remaining: {remainingBytes} bytes");
+                    break;
+                }
+
+                // íŒ¨í‚· í¬ê¸° í™•ì¸
+                ushort packetSize = BitConverter.ToUInt16(_recvBuffer, processedBytes);
+
+                // íŒ¨í‚· ì „ì²´ê°€ ë„ì°©í–ˆëŠ”ì§€ í™•ì¸
+                if (remainingBytes < packetSize)
+                {
+                    Debug.LogWarning($"[ServerSession] Incomplete packet. Expected: {packetSize}, Got: {remainingBytes}");
+                    break;
+                }
+
+                // íŒ¨í‚· ì²˜ë¦¬
+                PacketManager.Instance.OnRecvPacket(this, new ArraySegment<byte>(_recvBuffer, processedBytes, packetSize));
+
+                // ë‹¤ìŒ íŒ¨í‚·ìœ¼ë¡œ ì´ë™
+                processedBytes += packetSize;
+            }
+
+            // ë‹¤ì‹œ ìˆ˜ì‹  ëŒ€ê¸°
             _socket.BeginReceive(_recvBuffer, 0, _recvBuffer.Length, SocketFlags.None, OnRecv, null);
         }
         catch (Exception e)
@@ -121,7 +147,6 @@ public class ServerSession
             Disconnect();
         }
     }
-
     public void Disconnect()
     {
         if (_socket != null)

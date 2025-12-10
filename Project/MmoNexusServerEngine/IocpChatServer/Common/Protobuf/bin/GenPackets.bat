@@ -55,6 +55,18 @@ XCOPY /Y Protocol_S2S.pb.h "..\..\..\GameServer"
 XCOPY /Y Protocol_S2S.pb.cc "..\..\..\GameServer"
 XCOPY /Y S2SPacketHandler.h "..\..\..\GameServer"
 
+:: --- LoginServer (NEW) ---
+XCOPY /Y Enum.pb.h "..\..\..\LoginServer"
+XCOPY /Y Enum.pb.cc "..\..\..\LoginServer"
+XCOPY /Y Struct.pb.h "..\..\..\LoginServer"
+XCOPY /Y Struct.pb.cc "..\..\..\LoginServer"
+XCOPY /Y Protocol.pb.h "..\..\..\LoginServer"
+XCOPY /Y Protocol.pb.cc "..\..\..\LoginServer"
+XCOPY /Y ClientPacketHandler.h "..\..\..\LoginServer"
+XCOPY /Y Protocol_S2S.pb.h "..\..\..\LoginServer"
+XCOPY /Y Protocol_S2S.pb.cc "..\..\..\LoginServer"
+XCOPY /Y S2SPacketHandler.h "..\..\..\LoginServer"
+
 :: --- ChatServer ---
 XCOPY /Y Enum.pb.h "..\..\..\ChatServer"
 XCOPY /Y Enum.pb.cc "..\..\..\ChatServer"

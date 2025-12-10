@@ -6,6 +6,7 @@
 #include "GameSessionManager.h"
 #include "Job.h" 
 #include "GameRoom.h" 
+#include "RedisManager.h"
 
 // Global DB Session Reference
 extern shared_ptr<PacketSession> G_DBSession;
@@ -21,71 +22,87 @@ bool ClientPacketHandler::Handle_INVALID(PacketSessionRef& session, BYTE* buffer
 }
 
 // [GAME ENTRY] 게임 입장 요청 (로그인 후 캐릭터 선택 완료 시점)
-bool ClientPacketHandler::Handle_C_ENTER_GAME_REQ(PacketSessionRef& session, Protocol::C_ENTER_GAME_REQ& pkt)
+bool ClientPacketHandler::Handle_C_ENTER_GAME(PacketSessionRef& session, Protocol::C_ENTER_GAME& pkt)
 {
 	PlayerSessionRef playerSession = static_pointer_cast<PlayerSession>(session);
 
-	// 1. [Lazy Init] 룸 생성
+	// 1. [Redis Check] 토큰 검증
+	std::string token = pkt.token();
+	std::string value = GRedisManager->Get(token); // Blocking Call
+
+	if (value.empty())
+	{
+		printf("❌ [EnterGame] Invalid Token: %s\n", token.c_str());
+		playerSession->Disconnect(L"Invalid Token");
+		return false;
+	}
+
+	uint64 playerId = std::stoull(value);
+	printf("✅ [EnterGame] Token Validated! PlayerID: %llu\n", playerId);
+
+	// 2. [Player Object] 생성
+	shared_ptr<Player> player = ObjectPool<Player>::MakeShared();
+
+	// [GIGACHAD FIX] Player::Init(const PlayerInfo& info) 시그니처 맞추기
+	{
+		Protocol::PlayerInfo tempInfo;
+		tempInfo.set_playerid(playerId);
+		tempInfo.set_name("Player_" + std::to_string(playerId)); // 임시 이름 (DB 로딩 전)
+
+		// 좌표 등은 Player::Init 내부에서 방어코드(_playerInfo.has_posinfo 체크)가 있으므로 생략 가능
+		// 하지만 확실하게 하기 위해 기본값 세팅
+		auto pos = tempInfo.mutable_posinfo();
+		pos->set_x(0); pos->set_y(0); pos->set_z(0);
+
+		player->Init(tempInfo);
+	}
+
+	// 세션과 플레이어 연결
+	playerSession->SetPlayer(player);
+	player->SetSession(playerSession);
+
+	// 3. [DB Loading] 데이터 로딩 요청 (비동기)
+	if (G_DBSession)
+	{
+		// 스탯 정보 로딩
+		Protocol::S2S_REQ_LOAD_PLAYER_DATA reqStat;
+		reqStat.set_playerid(playerId);
+		reqStat.set_gamesessionid(playerSession->GetSessionId());
+		G_DBSession->Send(S2SPacketHandler::MakeSendBuffer(reqStat));
+
+		// 아이템 정보 로딩
+		Protocol::S2S_REQ_ITEMS_LOAD reqItem;
+		reqItem.set_playerid(playerId);
+		reqItem.set_gamesessionid(playerSession->GetSessionId());
+		G_DBSession->Send(S2SPacketHandler::MakeSendBuffer(reqItem));
+	}
+
+	// 4. [Lazy Init] 룸 생성 (테스트용)
 	if (GTestRoom == nullptr)
 	{
 		GTestRoom = MakeShared<GameRoom>();
 		GTestRoom->Init(1, 100, 100, 10);
-		printf("[SERVER] GTestRoom Initialized (100x100 Grid, ZoneSize: 10).\n");
 	}
 
-	// 2. [Refactoring] Player 객체 가져오기 (로그인 시 생성됨)
-	auto player = playerSession->GetPlayer();
-	if (player == nullptr)
-	{
-		// 플레이어 객체가 없으면 진행 불가 (로그인 실패 상태)
-		return true;
-	}
-
-	// 3. [Data Setup]
-	{
-		Protocol::S_ENTER_GAME_RES resPkt;
-		resPkt.set_success(true);
-
-		// [중요] 세션이 아니라 'Player 객체'의 데이터를 수정해야 함
-		Protocol::PlayerInfo* myInfo = player->GetPlayerInfo();
-
-		// DB에서 로드된 정보가 없다면 임시값 세팅 (있다면 이 부분은 생략 가능)
-		// 현재는 테스트를 위해 좌표와 이름을 강제로 덮어씌움
-		uint64 assignedId = playerSession->GetSessionId();
-		if (myInfo->playerid() == 0) myInfo->set_playerid(assignedId);
-		if (myInfo->name().empty()) myInfo->set_name("TestPlayer_" + std::to_string(assignedId));
-
-		// 스폰 좌표 설정 (50, 0, 50)
-		auto posInfo = myInfo->mutable_posinfo();
-		posInfo->set_x(50.0f);
-		posInfo->set_y(0.0f);
-		posInfo->set_z(50.0f);
-
-		// 클라이언트에게 보낼 정보 복사
-		resPkt.mutable_myplayer()->CopyFrom(*myInfo);
-
-		playerSession->Send(MakeSendBuffer(resPkt));
-		printf("[SERVER] Player %llu Enter Game Success.\n", myInfo->playerid());
-	}
-
-	// 4. [Core Logic] 룸 입장 (Async Job)
-	GTestRoom->PushJob(&GameRoom::Enter, playerSession);
+	// 주의: 아직 방에 넣지 않음. 
+	// DB에서 데이터(좌표 등)가 로딩된 후(S2S_RES_LOAD_PLAYER_DATA)에 방에 넣는 것이 정석.
+	// 하지만 지금 구조상 바로 넣고 싶다면 여기서 GTestRoom->PushJob(&GameRoom::Enter, playerSession); 호출 가능.
+	// 일단 DB 로딩 완료 패킷 핸들러(S2SPacketHandler)에서 Enter 처리하는 것을 권장.
 
 	return true;
 }
+
+
+
 // [MOVE] 이동 요청
 bool ClientPacketHandler::Handle_C_MOVE(PacketSessionRef& session, Protocol::C_MOVE& pkt)
 {
 	PlayerSessionRef playerSession = static_pointer_cast<PlayerSession>(session);
+	auto player = playerSession->GetPlayer();
+	if (player == nullptr) return false;
 
-	// 1. 현재 유저가 있는 방 확인
-	shared_ptr<GameRoom> room = playerSession->GetRoom();
-	if (room == nullptr)
-		return false;
-
-	// 2. [Async Job] 룸에게 이동 처리 위임
-	room->PushJob(&GameRoom::HandleMove, playerSession, pkt);
-
+	auto room = player->GetRoom();
+	if (room) room->PushJob(&GameRoom::HandleMove, playerSession, pkt);
 	return true;
 }
 
@@ -157,29 +174,6 @@ bool ClientPacketHandler::Handle_C_EQUIP_ITEM(PacketSessionRef& session, Protoco
 }
 
 // [LOGIN] 인증 요청
-bool ClientPacketHandler::Handle_C_LOGIN_REQ(PacketSessionRef& session, Protocol::C_LOGIN_REQ& pkt)
-{
-	PlayerSessionRef playerSession = static_pointer_cast<PlayerSession>(session);
-
-	// DB 처리는 오래 걸리므로 별도 Job으로 분리하여 실행
-	playerSession->PushJob(ObjectPool<Job>::MakeShared([playerSession, pkt]()
-		{
-			uint64 mySessionId = playerSession->GetSessionId();
-
-			// S2S 패킷 생성 -> DBAgent로 전송
-			Protocol::S2S_REQ_LOGIN s2sPkt;
-			s2sPkt.set_playersessionid(mySessionId);
-			s2sPkt.set_name(pkt.name());
-
-			if (G_DBSession && G_DBSession->IsConnected())
-			{
-				auto sendBuffer = S2SPacketHandler::MakeSendBuffer(s2sPkt);
-				G_DBSession->Send(sendBuffer);
-			}
-		}));
-
-	return true;
-}
 
 bool ClientPacketHandler::Handle_C_SKILL(PacketSessionRef& session, Protocol::C_SKILL& pkt)
 {
@@ -217,4 +211,9 @@ bool ClientPacketHandler::Handle_C_CHAT_REQ(PacketSessionRef& session, Protocol:
 bool ClientPacketHandler::Handle_C_HEART_BEAT_REQ(PacketSessionRef& session, Protocol::C_HEART_BEAT_REQ& pkt)
 {
 	return true;
+}
+
+bool ClientPacketHandler::Handle_C_LOGIN(PacketSessionRef& session, Protocol::C_LOGIN& pkt)
+{
+	return false;
 }

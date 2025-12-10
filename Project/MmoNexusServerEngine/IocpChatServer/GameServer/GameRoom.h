@@ -57,6 +57,7 @@ public:
 
 	void EnterMonster(MonsterRef monster);
 	void LeaveMonster(uint64 objectId);
+	Zone& GetZone(int32 index) { return _zones[index]; }
 
 	PlayerRef FindNearestPlayer(Protocol::PositionInfo* pos, float range);
 	GameMapRef GetMap() { return _map; }
@@ -66,9 +67,9 @@ public:
 
 	//======스킬 판정====
 	void HandleSkill(std::shared_ptr<Creature> attacker, int32 skillId);
-
-private:
 	int32 GetZoneIndex(const Protocol::PositionInfo& posInfo);
+private:
+	
 	void  GetNearbyZones(int32 zoneIndex, Vector<Zone*>& outZones);
 	void  GetNearbyZoneIndices(int32 zoneIndex, Vector<int32>& outIndices);
 

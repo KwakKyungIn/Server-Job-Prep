@@ -25,39 +25,42 @@ namespace Protocol {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
             "Cg5Qcm90b2NvbC5wcm90bxIIUHJvdG9jb2waCkVudW0ucHJvdG8aDFN0cnVj",
-            "dC5wcm90byIbCgtDX0xPR0lOX1JFURIMCgRuYW1lGAEgASgJIlcKC1NfTE9H",
-            "SU5fUkVTEg8KB3N1Y2Nlc3MYASABKAgSEAoIcGxheWVySWQYAiABKAQSJQoH",
-            "cGxheWVycxgDIAMoCzIULlByb3RvY29sLlBsYXllckluZm8iJwoQQ19FTlRF",
-            "Ul9HQU1FX1JFURITCgtwbGF5ZXJJbmRleBgBIAEoBCJLChBTX0VOVEVSX0dB",
-            "TUVfUkVTEg8KB3N1Y2Nlc3MYASABKAgSJgoIbXlQbGF5ZXIYAiABKAsyFC5Q",
-            "cm90b2NvbC5QbGF5ZXJJbmZvIjEKBkNfTU9WRRInCgdwb3NJbmZvGAEgASgL",
-            "MhYuUHJvdG9jb2wuUG9zaXRpb25JbmZvIkMKBlNfTU9WRRIQCghvYmplY3RJ",
-            "ZBgBIAEoBBInCgdwb3NJbmZvGAIgASgLMhYuUHJvdG9jb2wuUG9zaXRpb25J",
-            "bmZvIlkKB1NfU1BBV04SJQoHcGxheWVycxgBIAMoCzIULlByb3RvY29sLlBs",
-            "YXllckluZm8SJwoIbW9uc3RlcnMYAiADKAsyFS5Qcm90b2NvbC5Nb25zdGVy",
-            "SW5mbyIeCglTX0RFU1BBV04SEQoJb2JqZWN0SWRzGAEgAygEIhoKB0NfU0tJ",
-            "TEwSDwoHc2tpbGxJZBgBIAEoBSIsCgdTX1NLSUxMEhAKCG9iamVjdElkGAEg",
-            "ASgEEg8KB3NraWxsSWQYAiABKAUiVgoLU19DSEFOR0VfSFASEAoIb2JqZWN0",
-            "SWQYASABKAQSEgoKYXR0YWNrZXJJZBgCIAEoBBIRCgljdXJyZW50SHAYAyAB",
-            "KAUSDgoGZGFtYWdlGAQgASgFIjAKC1NfSVRFTV9MSVNUEiEKBWl0ZW1zGAEg",
-            "AygLMhIuUHJvdG9jb2wuSXRlbUluZm8iHQoKQ19VU0VfSVRFTRIPCgdpdGVt",
-            "VWlkGAEgASgEIjEKDVNfQ0hBTkdFX0lURU0SIAoEaXRlbRgBIAEoCzISLlBy",
-            "b3RvY29sLkl0ZW1JbmZvIiAKDVNfUkVNT1ZFX0lURU0SDwoHaXRlbVVpZBgB",
-            "IAEoBCJBCgxDX0VRVUlQX0lURU0SDwoHaXRlbVVpZBgBIAEoBBIRCglzbG90",
-            "SW5kZXgYAiABKAUSDQoFZXF1aXAYAyABKAgiRAoMU19FUVVJUF9JVEVNEg8K",
-            "B2l0ZW1VaWQYASABKAQSEAoIZXF1aXBwZWQYAiABKAgSEQoJc2xvdEluZGV4",
-            "GAMgASgFIjUKDVNfQ0hBTkdFX1NUQVQSJAoIc3RhdEluZm8YASABKAsyEi5Q",
-            "cm90b2NvbC5TdGF0SW5mbyIdCgpDX0NIQVRfUkVREg8KB21lc3NhZ2UYASAB",
-            "KAkiHQoKU19DSEFUX1JFUxIPCgdzdWNjZXNzGAEgASgIIi8KClNfQ0hBVF9O",
-            "VEYSEAoIcGxheWVySWQYASABKAQSDwoHbWVzc2FnZRgCIAEoCSISChBTX0hF",
-            "QVJUX0JFQVRfUkVTIhIKEENfSEVBUlRfQkVBVF9SRVFiBnByb3RvMw=="));
+            "dC5wcm90byIrCgdDX0xPR0lOEg4KBnVzZXJJZBgBIAEoCRIQCghwYXNzd29y",
+            "ZBgCIAEoCSJTCgdTX0xPR0lOEg8KB3N1Y2Nlc3MYASABKAgSKAoKc2VydmVy",
+            "TGlzdBgCIAMoCzIULlByb3RvY29sLlNlcnZlckluZm8SDQoFdG9rZW4YAyAB",
+            "KAkiSAoKU2VydmVySW5mbxIMCgRuYW1lGAEgASgJEgoKAmlwGAIgASgJEgwK",
+            "BHBvcnQYAyABKAUSEgoKY29uZ2VzdGlvbhgEIAEoBSIdCgxDX0VOVEVSX0dB",
+            "TUUSDQoFdG9rZW4YASABKAkiRwoMU19FTlRFUl9HQU1FEg8KB3N1Y2Nlc3MY",
+            "ASABKAgSJgoIbXlQbGF5ZXIYAiABKAsyFC5Qcm90b2NvbC5QbGF5ZXJJbmZv",
+            "IjEKBkNfTU9WRRInCgdwb3NJbmZvGAEgASgLMhYuUHJvdG9jb2wuUG9zaXRp",
+            "b25JbmZvIkMKBlNfTU9WRRIQCghvYmplY3RJZBgBIAEoBBInCgdwb3NJbmZv",
+            "GAIgASgLMhYuUHJvdG9jb2wuUG9zaXRpb25JbmZvIlkKB1NfU1BBV04SJQoH",
+            "cGxheWVycxgBIAMoCzIULlByb3RvY29sLlBsYXllckluZm8SJwoIbW9uc3Rl",
+            "cnMYAiADKAsyFS5Qcm90b2NvbC5Nb25zdGVySW5mbyIeCglTX0RFU1BBV04S",
+            "EQoJb2JqZWN0SWRzGAEgAygEIhoKB0NfU0tJTEwSDwoHc2tpbGxJZBgBIAEo",
+            "BSIsCgdTX1NLSUxMEhAKCG9iamVjdElkGAEgASgEEg8KB3NraWxsSWQYAiAB",
+            "KAUiVgoLU19DSEFOR0VfSFASEAoIb2JqZWN0SWQYASABKAQSEgoKYXR0YWNr",
+            "ZXJJZBgCIAEoBBIRCgljdXJyZW50SHAYAyABKAUSDgoGZGFtYWdlGAQgASgF",
+            "IjAKC1NfSVRFTV9MSVNUEiEKBWl0ZW1zGAEgAygLMhIuUHJvdG9jb2wuSXRl",
+            "bUluZm8iHQoKQ19VU0VfSVRFTRIPCgdpdGVtVWlkGAEgASgEIjEKDVNfQ0hB",
+            "TkdFX0lURU0SIAoEaXRlbRgBIAEoCzISLlByb3RvY29sLkl0ZW1JbmZvIiAK",
+            "DVNfUkVNT1ZFX0lURU0SDwoHaXRlbVVpZBgBIAEoBCJBCgxDX0VRVUlQX0lU",
+            "RU0SDwoHaXRlbVVpZBgBIAEoBBIRCglzbG90SW5kZXgYAiABKAUSDQoFZXF1",
+            "aXAYAyABKAgiRAoMU19FUVVJUF9JVEVNEg8KB2l0ZW1VaWQYASABKAQSEAoI",
+            "ZXF1aXBwZWQYAiABKAgSEQoJc2xvdEluZGV4GAMgASgFIjUKDVNfQ0hBTkdF",
+            "X1NUQVQSJAoIc3RhdEluZm8YASABKAsyEi5Qcm90b2NvbC5TdGF0SW5mbyId",
+            "CgpDX0NIQVRfUkVREg8KB21lc3NhZ2UYASABKAkiHQoKU19DSEFUX1JFUxIP",
+            "CgdzdWNjZXNzGAEgASgIIi8KClNfQ0hBVF9OVEYSEAoIcGxheWVySWQYASAB",
+            "KAQSDwoHbWVzc2FnZRgCIAEoCSISChBTX0hFQVJUX0JFQVRfUkVTIhIKEENf",
+            "SEVBUlRfQkVBVF9SRVFiBnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Protocol.EnumReflection.Descriptor, global::Protocol.StructReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::Protocol.C_LOGIN_REQ), global::Protocol.C_LOGIN_REQ.Parser, new[]{ "Name" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Protocol.S_LOGIN_RES), global::Protocol.S_LOGIN_RES.Parser, new[]{ "Success", "PlayerId", "Players" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Protocol.C_ENTER_GAME_REQ), global::Protocol.C_ENTER_GAME_REQ.Parser, new[]{ "PlayerIndex" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Protocol.S_ENTER_GAME_RES), global::Protocol.S_ENTER_GAME_RES.Parser, new[]{ "Success", "MyPlayer" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Protocol.C_LOGIN), global::Protocol.C_LOGIN.Parser, new[]{ "UserId", "Password" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Protocol.S_LOGIN), global::Protocol.S_LOGIN.Parser, new[]{ "Success", "ServerList", "Token" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Protocol.ServerInfo), global::Protocol.ServerInfo.Parser, new[]{ "Name", "Ip", "Port", "Congestion" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Protocol.C_ENTER_GAME), global::Protocol.C_ENTER_GAME.Parser, new[]{ "Token" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Protocol.S_ENTER_GAME), global::Protocol.S_ENTER_GAME.Parser, new[]{ "Success", "MyPlayer" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Protocol.C_MOVE), global::Protocol.C_MOVE.Parser, new[]{ "PosInfo" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Protocol.S_MOVE), global::Protocol.S_MOVE.Parser, new[]{ "ObjectId", "PosInfo" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Protocol.S_SPAWN), global::Protocol.S_SPAWN.Parser, new[]{ "Players", "Monsters" }, null, null, null, null),
@@ -84,20 +87,19 @@ namespace Protocol {
   }
   #region Messages
   /// <summary>
-  /// ============================================================
-  /// [LOGIN]
-  /// ============================================================
+  /// 1. 로그인 요청 (Client -> LoginServer)
+  /// 기존 C_LOGIN_REQ 대체
   /// </summary>
-  public sealed partial class C_LOGIN_REQ : pb::IMessage<C_LOGIN_REQ>
+  public sealed partial class C_LOGIN : pb::IMessage<C_LOGIN>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
   #endif
   {
-    private static readonly pb::MessageParser<C_LOGIN_REQ> _parser = new pb::MessageParser<C_LOGIN_REQ>(() => new C_LOGIN_REQ());
+    private static readonly pb::MessageParser<C_LOGIN> _parser = new pb::MessageParser<C_LOGIN>(() => new C_LOGIN());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public static pb::MessageParser<C_LOGIN_REQ> Parser { get { return _parser; } }
+    public static pb::MessageParser<C_LOGIN> Parser { get { return _parser; } }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -113,7 +115,7 @@ namespace Protocol {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public C_LOGIN_REQ() {
+    public C_LOGIN() {
       OnConstruction();
     }
 
@@ -121,45 +123,62 @@ namespace Protocol {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public C_LOGIN_REQ(C_LOGIN_REQ other) : this() {
-      name_ = other.name_;
+    public C_LOGIN(C_LOGIN other) : this() {
+      userId_ = other.userId_;
+      password_ = other.password_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public C_LOGIN_REQ Clone() {
-      return new C_LOGIN_REQ(this);
+    public C_LOGIN Clone() {
+      return new C_LOGIN(this);
     }
 
-    /// <summary>Field number for the "name" field.</summary>
-    public const int NameFieldNumber = 1;
-    private string name_ = "";
+    /// <summary>Field number for the "userId" field.</summary>
+    public const int UserIdFieldNumber = 1;
+    private string userId_ = "";
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public string Name {
-      get { return name_; }
+    public string UserId {
+      get { return userId_; }
       set {
-        name_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        userId_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "password" field.</summary>
+    public const int PasswordFieldNumber = 2;
+    private string password_ = "";
+    /// <summary>
+    /// (일단 평문)
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public string Password {
+      get { return password_; }
+      set {
+        password_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
-      return Equals(other as C_LOGIN_REQ);
+      return Equals(other as C_LOGIN);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool Equals(C_LOGIN_REQ other) {
+    public bool Equals(C_LOGIN other) {
       if (ReferenceEquals(other, null)) {
         return false;
       }
       if (ReferenceEquals(other, this)) {
         return true;
       }
-      if (Name != other.Name) return false;
+      if (UserId != other.UserId) return false;
+      if (Password != other.Password) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -167,7 +186,8 @@ namespace Protocol {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
       int hash = 1;
-      if (Name.Length != 0) hash ^= Name.GetHashCode();
+      if (UserId.Length != 0) hash ^= UserId.GetHashCode();
+      if (Password.Length != 0) hash ^= Password.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -186,9 +206,13 @@ namespace Protocol {
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       output.WriteRawMessage(this);
     #else
-      if (Name.Length != 0) {
+      if (UserId.Length != 0) {
         output.WriteRawTag(10);
-        output.WriteString(Name);
+        output.WriteString(UserId);
+      }
+      if (Password.Length != 0) {
+        output.WriteRawTag(18);
+        output.WriteString(Password);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -200,9 +224,13 @@ namespace Protocol {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
-      if (Name.Length != 0) {
+      if (UserId.Length != 0) {
         output.WriteRawTag(10);
-        output.WriteString(Name);
+        output.WriteString(UserId);
+      }
+      if (Password.Length != 0) {
+        output.WriteRawTag(18);
+        output.WriteString(Password);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
@@ -214,8 +242,11 @@ namespace Protocol {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int CalculateSize() {
       int size = 0;
-      if (Name.Length != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeStringSize(Name);
+      if (UserId.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(UserId);
+      }
+      if (Password.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(Password);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -225,12 +256,15 @@ namespace Protocol {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public void MergeFrom(C_LOGIN_REQ other) {
+    public void MergeFrom(C_LOGIN other) {
       if (other == null) {
         return;
       }
-      if (other.Name.Length != 0) {
-        Name = other.Name;
+      if (other.UserId.Length != 0) {
+        UserId = other.UserId;
+      }
+      if (other.Password.Length != 0) {
+        Password = other.Password;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -248,7 +282,11 @@ namespace Protocol {
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 10: {
-            Name = input.ReadString();
+            UserId = input.ReadString();
+            break;
+          }
+          case 18: {
+            Password = input.ReadString();
             break;
           }
         }
@@ -267,7 +305,11 @@ namespace Protocol {
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
           case 10: {
-            Name = input.ReadString();
+            UserId = input.ReadString();
+            break;
+          }
+          case 18: {
+            Password = input.ReadString();
             break;
           }
         }
@@ -277,16 +319,20 @@ namespace Protocol {
 
   }
 
-  public sealed partial class S_LOGIN_RES : pb::IMessage<S_LOGIN_RES>
+  /// <summary>
+  /// 2. 로그인 응답 (LoginServer -> Client)
+  /// 기존 S_LOGIN_RES 대체
+  /// </summary>
+  public sealed partial class S_LOGIN : pb::IMessage<S_LOGIN>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
   #endif
   {
-    private static readonly pb::MessageParser<S_LOGIN_RES> _parser = new pb::MessageParser<S_LOGIN_RES>(() => new S_LOGIN_RES());
+    private static readonly pb::MessageParser<S_LOGIN> _parser = new pb::MessageParser<S_LOGIN>(() => new S_LOGIN());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public static pb::MessageParser<S_LOGIN_RES> Parser { get { return _parser; } }
+    public static pb::MessageParser<S_LOGIN> Parser { get { return _parser; } }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -302,7 +348,7 @@ namespace Protocol {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public S_LOGIN_RES() {
+    public S_LOGIN() {
       OnConstruction();
     }
 
@@ -310,17 +356,17 @@ namespace Protocol {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public S_LOGIN_RES(S_LOGIN_RES other) : this() {
+    public S_LOGIN(S_LOGIN other) : this() {
       success_ = other.success_;
-      playerId_ = other.playerId_;
-      players_ = other.players_.Clone();
+      serverList_ = other.serverList_.Clone();
+      token_ = other.token_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public S_LOGIN_RES Clone() {
-      return new S_LOGIN_RES(this);
+    public S_LOGIN Clone() {
+      return new S_LOGIN(this);
     }
 
     /// <summary>Field number for the "success" field.</summary>
@@ -335,44 +381,44 @@ namespace Protocol {
       }
     }
 
-    /// <summary>Field number for the "playerId" field.</summary>
-    public const int PlayerIdFieldNumber = 2;
-    private ulong playerId_;
+    /// <summary>Field number for the "serverList" field.</summary>
+    public const int ServerListFieldNumber = 2;
+    private static readonly pb::FieldCodec<global::Protocol.ServerInfo> _repeated_serverList_codec
+        = pb::FieldCodec.ForMessage(18, global::Protocol.ServerInfo.Parser);
+    private readonly pbc::RepeatedField<global::Protocol.ServerInfo> serverList_ = new pbc::RepeatedField<global::Protocol.ServerInfo>();
     /// <summary>
-    /// [Restore] 기존 코드 호환용 (메인 캐릭터 ID)
+    /// 접속 가능한 게임 서버 목록
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public ulong PlayerId {
-      get { return playerId_; }
-      set {
-        playerId_ = value;
-      }
+    public pbc::RepeatedField<global::Protocol.ServerInfo> ServerList {
+      get { return serverList_; }
     }
 
-    /// <summary>Field number for the "players" field.</summary>
-    public const int PlayersFieldNumber = 3;
-    private static readonly pb::FieldCodec<global::Protocol.PlayerInfo> _repeated_players_codec
-        = pb::FieldCodec.ForMessage(26, global::Protocol.PlayerInfo.Parser);
-    private readonly pbc::RepeatedField<global::Protocol.PlayerInfo> players_ = new pbc::RepeatedField<global::Protocol.PlayerInfo>();
+    /// <summary>Field number for the "token" field.</summary>
+    public const int TokenFieldNumber = 3;
+    private string token_ = "";
     /// <summary>
-    /// [New] 계정에 생성된 캐릭터 목록 (캐릭터 선택창용)
+    /// [핵심] 발급된 인증 토큰
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public pbc::RepeatedField<global::Protocol.PlayerInfo> Players {
-      get { return players_; }
+    public string Token {
+      get { return token_; }
+      set {
+        token_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
-      return Equals(other as S_LOGIN_RES);
+      return Equals(other as S_LOGIN);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool Equals(S_LOGIN_RES other) {
+    public bool Equals(S_LOGIN other) {
       if (ReferenceEquals(other, null)) {
         return false;
       }
@@ -380,8 +426,8 @@ namespace Protocol {
         return true;
       }
       if (Success != other.Success) return false;
-      if (PlayerId != other.PlayerId) return false;
-      if(!players_.Equals(other.players_)) return false;
+      if(!serverList_.Equals(other.serverList_)) return false;
+      if (Token != other.Token) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -390,8 +436,8 @@ namespace Protocol {
     public override int GetHashCode() {
       int hash = 1;
       if (Success != false) hash ^= Success.GetHashCode();
-      if (PlayerId != 0UL) hash ^= PlayerId.GetHashCode();
-      hash ^= players_.GetHashCode();
+      hash ^= serverList_.GetHashCode();
+      if (Token.Length != 0) hash ^= Token.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -414,11 +460,11 @@ namespace Protocol {
         output.WriteRawTag(8);
         output.WriteBool(Success);
       }
-      if (PlayerId != 0UL) {
-        output.WriteRawTag(16);
-        output.WriteUInt64(PlayerId);
+      serverList_.WriteTo(output, _repeated_serverList_codec);
+      if (Token.Length != 0) {
+        output.WriteRawTag(26);
+        output.WriteString(Token);
       }
-      players_.WriteTo(output, _repeated_players_codec);
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -433,11 +479,11 @@ namespace Protocol {
         output.WriteRawTag(8);
         output.WriteBool(Success);
       }
-      if (PlayerId != 0UL) {
-        output.WriteRawTag(16);
-        output.WriteUInt64(PlayerId);
+      serverList_.WriteTo(ref output, _repeated_serverList_codec);
+      if (Token.Length != 0) {
+        output.WriteRawTag(26);
+        output.WriteString(Token);
       }
-      players_.WriteTo(ref output, _repeated_players_codec);
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
       }
@@ -451,10 +497,10 @@ namespace Protocol {
       if (Success != false) {
         size += 1 + 1;
       }
-      if (PlayerId != 0UL) {
-        size += 1 + pb::CodedOutputStream.ComputeUInt64Size(PlayerId);
+      size += serverList_.CalculateSize(_repeated_serverList_codec);
+      if (Token.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(Token);
       }
-      size += players_.CalculateSize(_repeated_players_codec);
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
       }
@@ -463,17 +509,17 @@ namespace Protocol {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public void MergeFrom(S_LOGIN_RES other) {
+    public void MergeFrom(S_LOGIN other) {
       if (other == null) {
         return;
       }
       if (other.Success != false) {
         Success = other.Success;
       }
-      if (other.PlayerId != 0UL) {
-        PlayerId = other.PlayerId;
+      serverList_.Add(other.serverList_);
+      if (other.Token.Length != 0) {
+        Token = other.Token;
       }
-      players_.Add(other.players_);
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
 
@@ -493,12 +539,12 @@ namespace Protocol {
             Success = input.ReadBool();
             break;
           }
-          case 16: {
-            PlayerId = input.ReadUInt64();
+          case 18: {
+            serverList_.AddEntriesFrom(input, _repeated_serverList_codec);
             break;
           }
           case 26: {
-            players_.AddEntriesFrom(input, _repeated_players_codec);
+            Token = input.ReadString();
             break;
           }
         }
@@ -520,12 +566,12 @@ namespace Protocol {
             Success = input.ReadBool();
             break;
           }
-          case 16: {
-            PlayerId = input.ReadUInt64();
+          case 18: {
+            serverList_.AddEntriesFrom(ref input, _repeated_serverList_codec);
             break;
           }
           case 26: {
-            players_.AddEntriesFrom(ref input, _repeated_players_codec);
+            Token = input.ReadString();
             break;
           }
         }
@@ -535,16 +581,19 @@ namespace Protocol {
 
   }
 
-  public sealed partial class C_ENTER_GAME_REQ : pb::IMessage<C_ENTER_GAME_REQ>
+  /// <summary>
+  /// 3. 서버 정보 구조체
+  /// </summary>
+  public sealed partial class ServerInfo : pb::IMessage<ServerInfo>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
   #endif
   {
-    private static readonly pb::MessageParser<C_ENTER_GAME_REQ> _parser = new pb::MessageParser<C_ENTER_GAME_REQ>(() => new C_ENTER_GAME_REQ());
+    private static readonly pb::MessageParser<ServerInfo> _parser = new pb::MessageParser<ServerInfo>(() => new ServerInfo());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public static pb::MessageParser<C_ENTER_GAME_REQ> Parser { get { return _parser; } }
+    public static pb::MessageParser<ServerInfo> Parser { get { return _parser; } }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -560,7 +609,7 @@ namespace Protocol {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public C_ENTER_GAME_REQ() {
+    public ServerInfo() {
       OnConstruction();
     }
 
@@ -568,48 +617,99 @@ namespace Protocol {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public C_ENTER_GAME_REQ(C_ENTER_GAME_REQ other) : this() {
-      playerIndex_ = other.playerIndex_;
+    public ServerInfo(ServerInfo other) : this() {
+      name_ = other.name_;
+      ip_ = other.ip_;
+      port_ = other.port_;
+      congestion_ = other.congestion_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public C_ENTER_GAME_REQ Clone() {
-      return new C_ENTER_GAME_REQ(this);
+    public ServerInfo Clone() {
+      return new ServerInfo(this);
     }
 
-    /// <summary>Field number for the "playerIndex" field.</summary>
-    public const int PlayerIndexFieldNumber = 1;
-    private ulong playerIndex_;
+    /// <summary>Field number for the "name" field.</summary>
+    public const int NameFieldNumber = 1;
+    private string name_ = "";
     /// <summary>
-    /// 선택한 캐릭터 인덱스
+    /// "1채널"
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public ulong PlayerIndex {
-      get { return playerIndex_; }
+    public string Name {
+      get { return name_; }
       set {
-        playerIndex_ = value;
+        name_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "ip" field.</summary>
+    public const int IpFieldNumber = 2;
+    private string ip_ = "";
+    /// <summary>
+    /// "127.0.0.1"
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public string Ip {
+      get { return ip_; }
+      set {
+        ip_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "port" field.</summary>
+    public const int PortFieldNumber = 3;
+    private int port_;
+    /// <summary>
+    /// 7777
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int Port {
+      get { return port_; }
+      set {
+        port_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "congestion" field.</summary>
+    public const int CongestionFieldNumber = 4;
+    private int congestion_;
+    /// <summary>
+    /// 혼잡도
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int Congestion {
+      get { return congestion_; }
+      set {
+        congestion_ = value;
       }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
-      return Equals(other as C_ENTER_GAME_REQ);
+      return Equals(other as ServerInfo);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool Equals(C_ENTER_GAME_REQ other) {
+    public bool Equals(ServerInfo other) {
       if (ReferenceEquals(other, null)) {
         return false;
       }
       if (ReferenceEquals(other, this)) {
         return true;
       }
-      if (PlayerIndex != other.PlayerIndex) return false;
+      if (Name != other.Name) return false;
+      if (Ip != other.Ip) return false;
+      if (Port != other.Port) return false;
+      if (Congestion != other.Congestion) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -617,7 +717,10 @@ namespace Protocol {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
       int hash = 1;
-      if (PlayerIndex != 0UL) hash ^= PlayerIndex.GetHashCode();
+      if (Name.Length != 0) hash ^= Name.GetHashCode();
+      if (Ip.Length != 0) hash ^= Ip.GetHashCode();
+      if (Port != 0) hash ^= Port.GetHashCode();
+      if (Congestion != 0) hash ^= Congestion.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -636,9 +739,21 @@ namespace Protocol {
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       output.WriteRawMessage(this);
     #else
-      if (PlayerIndex != 0UL) {
-        output.WriteRawTag(8);
-        output.WriteUInt64(PlayerIndex);
+      if (Name.Length != 0) {
+        output.WriteRawTag(10);
+        output.WriteString(Name);
+      }
+      if (Ip.Length != 0) {
+        output.WriteRawTag(18);
+        output.WriteString(Ip);
+      }
+      if (Port != 0) {
+        output.WriteRawTag(24);
+        output.WriteInt32(Port);
+      }
+      if (Congestion != 0) {
+        output.WriteRawTag(32);
+        output.WriteInt32(Congestion);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -650,9 +765,21 @@ namespace Protocol {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
-      if (PlayerIndex != 0UL) {
-        output.WriteRawTag(8);
-        output.WriteUInt64(PlayerIndex);
+      if (Name.Length != 0) {
+        output.WriteRawTag(10);
+        output.WriteString(Name);
+      }
+      if (Ip.Length != 0) {
+        output.WriteRawTag(18);
+        output.WriteString(Ip);
+      }
+      if (Port != 0) {
+        output.WriteRawTag(24);
+        output.WriteInt32(Port);
+      }
+      if (Congestion != 0) {
+        output.WriteRawTag(32);
+        output.WriteInt32(Congestion);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
@@ -664,8 +791,17 @@ namespace Protocol {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int CalculateSize() {
       int size = 0;
-      if (PlayerIndex != 0UL) {
-        size += 1 + pb::CodedOutputStream.ComputeUInt64Size(PlayerIndex);
+      if (Name.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(Name);
+      }
+      if (Ip.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(Ip);
+      }
+      if (Port != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Port);
+      }
+      if (Congestion != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Congestion);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -675,12 +811,21 @@ namespace Protocol {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public void MergeFrom(C_ENTER_GAME_REQ other) {
+    public void MergeFrom(ServerInfo other) {
       if (other == null) {
         return;
       }
-      if (other.PlayerIndex != 0UL) {
-        PlayerIndex = other.PlayerIndex;
+      if (other.Name.Length != 0) {
+        Name = other.Name;
+      }
+      if (other.Ip.Length != 0) {
+        Ip = other.Ip;
+      }
+      if (other.Port != 0) {
+        Port = other.Port;
+      }
+      if (other.Congestion != 0) {
+        Congestion = other.Congestion;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -697,8 +842,20 @@ namespace Protocol {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
-          case 8: {
-            PlayerIndex = input.ReadUInt64();
+          case 10: {
+            Name = input.ReadString();
+            break;
+          }
+          case 18: {
+            Ip = input.ReadString();
+            break;
+          }
+          case 24: {
+            Port = input.ReadInt32();
+            break;
+          }
+          case 32: {
+            Congestion = input.ReadInt32();
             break;
           }
         }
@@ -716,8 +873,20 @@ namespace Protocol {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
-          case 8: {
-            PlayerIndex = input.ReadUInt64();
+          case 10: {
+            Name = input.ReadString();
+            break;
+          }
+          case 18: {
+            Ip = input.ReadString();
+            break;
+          }
+          case 24: {
+            Port = input.ReadInt32();
+            break;
+          }
+          case 32: {
+            Congestion = input.ReadInt32();
             break;
           }
         }
@@ -727,16 +896,21 @@ namespace Protocol {
 
   }
 
-  public sealed partial class S_ENTER_GAME_RES : pb::IMessage<S_ENTER_GAME_RES>
+  /// <summary>
+  /// 4. 게임 서버 입장 요청 (Client -> GameServer)
+  /// 기존 C_ENTER_GAME_REQ 대체
+  /// 더 이상 캐릭터 인덱스(PlayerIndex)를 보내지 않는다. (LoginServer에서 이미 결정했다고 가정하거나, 여기서 Token만 보냄)
+  /// </summary>
+  public sealed partial class C_ENTER_GAME : pb::IMessage<C_ENTER_GAME>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
   #endif
   {
-    private static readonly pb::MessageParser<S_ENTER_GAME_RES> _parser = new pb::MessageParser<S_ENTER_GAME_RES>(() => new S_ENTER_GAME_RES());
+    private static readonly pb::MessageParser<C_ENTER_GAME> _parser = new pb::MessageParser<C_ENTER_GAME>(() => new C_ENTER_GAME());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public static pb::MessageParser<S_ENTER_GAME_RES> Parser { get { return _parser; } }
+    public static pb::MessageParser<C_ENTER_GAME> Parser { get { return _parser; } }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -752,7 +926,7 @@ namespace Protocol {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public S_ENTER_GAME_RES() {
+    public C_ENTER_GAME() {
       OnConstruction();
     }
 
@@ -760,7 +934,203 @@ namespace Protocol {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public S_ENTER_GAME_RES(S_ENTER_GAME_RES other) : this() {
+    public C_ENTER_GAME(C_ENTER_GAME other) : this() {
+      token_ = other.token_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public C_ENTER_GAME Clone() {
+      return new C_ENTER_GAME(this);
+    }
+
+    /// <summary>Field number for the "token" field.</summary>
+    public const int TokenFieldNumber = 1;
+    private string token_ = "";
+    /// <summary>
+    /// [핵심] ID 대신 토큰으로 입장!
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public string Token {
+      get { return token_; }
+      set {
+        token_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override bool Equals(object other) {
+      return Equals(other as C_ENTER_GAME);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool Equals(C_ENTER_GAME other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (Token != other.Token) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (Token.Length != 0) hash ^= Token.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
+      if (Token.Length != 0) {
+        output.WriteRawTag(10);
+        output.WriteString(Token);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (Token.Length != 0) {
+        output.WriteRawTag(10);
+        output.WriteString(Token);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int CalculateSize() {
+      int size = 0;
+      if (Token.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(Token);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(C_ENTER_GAME other) {
+      if (other == null) {
+        return;
+      }
+      if (other.Token.Length != 0) {
+        Token = other.Token;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            Token = input.ReadString();
+            break;
+          }
+        }
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            Token = input.ReadString();
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
+  }
+
+  /// <summary>
+  /// 5. 입장 응답 (GameServer -> Client)
+  /// 기존 S_ENTER_GAME_RES 대체
+  /// </summary>
+  public sealed partial class S_ENTER_GAME : pb::IMessage<S_ENTER_GAME>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
+    private static readonly pb::MessageParser<S_ENTER_GAME> _parser = new pb::MessageParser<S_ENTER_GAME>(() => new S_ENTER_GAME());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pb::MessageParser<S_ENTER_GAME> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::Protocol.ProtocolReflection.Descriptor.MessageTypes[4]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public S_ENTER_GAME() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public S_ENTER_GAME(S_ENTER_GAME other) : this() {
       success_ = other.success_;
       myPlayer_ = other.myPlayer_ != null ? other.myPlayer_.Clone() : null;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
@@ -768,8 +1138,8 @@ namespace Protocol {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public S_ENTER_GAME_RES Clone() {
-      return new S_ENTER_GAME_RES(this);
+    public S_ENTER_GAME Clone() {
+      return new S_ENTER_GAME(this);
     }
 
     /// <summary>Field number for the "success" field.</summary>
@@ -788,7 +1158,7 @@ namespace Protocol {
     public const int MyPlayerFieldNumber = 2;
     private global::Protocol.PlayerInfo myPlayer_;
     /// <summary>
-    /// 내 캐릭터 정보 (좌표 포함)
+    /// 내 캐릭터 정보
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -802,12 +1172,12 @@ namespace Protocol {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
-      return Equals(other as S_ENTER_GAME_RES);
+      return Equals(other as S_ENTER_GAME);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool Equals(S_ENTER_GAME_RES other) {
+    public bool Equals(S_ENTER_GAME other) {
       if (ReferenceEquals(other, null)) {
         return false;
       }
@@ -893,7 +1263,7 @@ namespace Protocol {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public void MergeFrom(S_ENTER_GAME_RES other) {
+    public void MergeFrom(S_ENTER_GAME other) {
       if (other == null) {
         return;
       }
@@ -967,7 +1337,7 @@ namespace Protocol {
 
   /// <summary>
   /// ============================================================
-  /// [GAME LOGIC - MOVEMENT] (필수!)
+  /// [GAME LOGIC - MOVEMENT] (그대로 유지)
   /// ============================================================
   /// </summary>
   public sealed partial class C_MOVE : pb::IMessage<C_MOVE>
@@ -984,7 +1354,7 @@ namespace Protocol {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Protocol.ProtocolReflection.Descriptor.MessageTypes[4]; }
+      get { return global::Protocol.ProtocolReflection.Descriptor.MessageTypes[5]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1017,9 +1387,6 @@ namespace Protocol {
     /// <summary>Field number for the "posInfo" field.</summary>
     public const int PosInfoFieldNumber = 1;
     private global::Protocol.PositionInfo posInfo_;
-    /// <summary>
-    /// 내가 이동한 좌표와 상태
-    /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public global::Protocol.PositionInfo PosInfo {
@@ -1185,7 +1552,7 @@ namespace Protocol {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Protocol.ProtocolReflection.Descriptor.MessageTypes[5]; }
+      get { return global::Protocol.ProtocolReflection.Descriptor.MessageTypes[6]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1231,9 +1598,6 @@ namespace Protocol {
     /// <summary>Field number for the "posInfo" field.</summary>
     public const int PosInfoFieldNumber = 2;
     private global::Protocol.PositionInfo posInfo_;
-    /// <summary>
-    /// 누가 어디로 갔는지
-    /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public global::Protocol.PositionInfo PosInfo {
@@ -1411,7 +1775,7 @@ namespace Protocol {
 
   /// <summary>
   /// ============================================================
-  /// [GAME LOGIC - VISIBILITY] (Spawn/Despawn)
+  /// [GAME LOGIC - VISIBILITY] (그대로 유지)
   /// ============================================================
   /// </summary>
   public sealed partial class S_SPAWN : pb::IMessage<S_SPAWN>
@@ -1428,7 +1792,7 @@ namespace Protocol {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Protocol.ProtocolReflection.Descriptor.MessageTypes[6]; }
+      get { return global::Protocol.ProtocolReflection.Descriptor.MessageTypes[7]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1464,9 +1828,6 @@ namespace Protocol {
     private static readonly pb::FieldCodec<global::Protocol.PlayerInfo> _repeated_players_codec
         = pb::FieldCodec.ForMessage(10, global::Protocol.PlayerInfo.Parser);
     private readonly pbc::RepeatedField<global::Protocol.PlayerInfo> players_ = new pbc::RepeatedField<global::Protocol.PlayerInfo>();
-    /// <summary>
-    /// 내 시야에 들어온 플레이어들
-    /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::RepeatedField<global::Protocol.PlayerInfo> Players {
@@ -1478,9 +1839,6 @@ namespace Protocol {
     private static readonly pb::FieldCodec<global::Protocol.MonsterInfo> _repeated_monsters_codec
         = pb::FieldCodec.ForMessage(18, global::Protocol.MonsterInfo.Parser);
     private readonly pbc::RepeatedField<global::Protocol.MonsterInfo> monsters_ = new pbc::RepeatedField<global::Protocol.MonsterInfo>();
-    /// <summary>
-    ///몬스터 목록 추가
-    /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::RepeatedField<global::Protocol.MonsterInfo> Monsters {
@@ -1638,7 +1996,7 @@ namespace Protocol {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Protocol.ProtocolReflection.Descriptor.MessageTypes[7]; }
+      get { return global::Protocol.ProtocolReflection.Descriptor.MessageTypes[8]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1673,9 +2031,6 @@ namespace Protocol {
     private static readonly pb::FieldCodec<ulong> _repeated_objectIds_codec
         = pb::FieldCodec.ForUInt64(10);
     private readonly pbc::RepeatedField<ulong> objectIds_ = new pbc::RepeatedField<ulong>();
-    /// <summary>
-    /// 내 시야에서 사라진 플레이어들 (ID만)
-    /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::RepeatedField<ulong> ObjectIds {
@@ -1808,7 +2163,9 @@ namespace Protocol {
   }
 
   /// <summary>
-  /// [Combat]
+  /// ============================================================
+  /// [COMBAT] (그대로 유지)
+  /// ============================================================
   /// </summary>
   public sealed partial class C_SKILL : pb::IMessage<C_SKILL>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -1824,7 +2181,7 @@ namespace Protocol {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Protocol.ProtocolReflection.Descriptor.MessageTypes[8]; }
+      get { return global::Protocol.ProtocolReflection.Descriptor.MessageTypes[9]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1857,9 +2214,6 @@ namespace Protocol {
     /// <summary>Field number for the "skillId" field.</summary>
     public const int SkillIdFieldNumber = 1;
     private int skillId_;
-    /// <summary>
-    /// 1:평타, 2:파이어볼...
-    /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int SkillId {
@@ -2016,7 +2370,7 @@ namespace Protocol {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Protocol.ProtocolReflection.Descriptor.MessageTypes[9]; }
+      get { return global::Protocol.ProtocolReflection.Descriptor.MessageTypes[10]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2050,9 +2404,6 @@ namespace Protocol {
     /// <summary>Field number for the "objectId" field.</summary>
     public const int ObjectIdFieldNumber = 1;
     private ulong objectId_;
-    /// <summary>
-    /// 누가?
-    /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public ulong ObjectId {
@@ -2065,9 +2416,6 @@ namespace Protocol {
     /// <summary>Field number for the "skillId" field.</summary>
     public const int SkillIdFieldNumber = 2;
     private int skillId_;
-    /// <summary>
-    /// 무슨 스킬을?
-    /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int SkillId {
@@ -2248,7 +2596,7 @@ namespace Protocol {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Protocol.ProtocolReflection.Descriptor.MessageTypes[10]; }
+      get { return global::Protocol.ProtocolReflection.Descriptor.MessageTypes[11]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2284,9 +2632,6 @@ namespace Protocol {
     /// <summary>Field number for the "objectId" field.</summary>
     public const int ObjectIdFieldNumber = 1;
     private ulong objectId_;
-    /// <summary>
-    /// 맞은 놈
-    /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public ulong ObjectId {
@@ -2299,9 +2644,6 @@ namespace Protocol {
     /// <summary>Field number for the "attackerId" field.</summary>
     public const int AttackerIdFieldNumber = 2;
     private ulong attackerId_;
-    /// <summary>
-    /// 때린 놈
-    /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public ulong AttackerId {
@@ -2314,9 +2656,6 @@ namespace Protocol {
     /// <summary>Field number for the "currentHp" field.</summary>
     public const int CurrentHpFieldNumber = 3;
     private int currentHp_;
-    /// <summary>
-    /// 남은 체력
-    /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int CurrentHp {
@@ -2329,9 +2668,6 @@ namespace Protocol {
     /// <summary>Field number for the "damage" field.</summary>
     public const int DamageFieldNumber = 4;
     private int damage_;
-    /// <summary>
-    /// 깎인 체력 (데미지 폰트용)
-    /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int Damage {
@@ -2547,7 +2883,9 @@ namespace Protocol {
   }
 
   /// <summary>
-  /// 1. 인벤토리 전체 로딩 (게임 접속 직후 서버 -> 클라)
+  /// ============================================================
+  /// [ITEM &amp; INVENTORY] (그대로 유지)
+  /// ============================================================
   /// </summary>
   public sealed partial class S_ITEM_LIST : pb::IMessage<S_ITEM_LIST>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -2563,7 +2901,7 @@ namespace Protocol {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Protocol.ProtocolReflection.Descriptor.MessageTypes[11]; }
+      get { return global::Protocol.ProtocolReflection.Descriptor.MessageTypes[12]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2727,10 +3065,6 @@ namespace Protocol {
 
   }
 
-  /// <summary>
-  /// 2. 아이템 장착/사용 요청 (클라 -> 서버)
-  /// 장비면 장착/해제, 포션이면 사용. 서버가 판단한다.
-  /// </summary>
   public sealed partial class C_USE_ITEM : pb::IMessage<C_USE_ITEM>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -2745,7 +3079,7 @@ namespace Protocol {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Protocol.ProtocolReflection.Descriptor.MessageTypes[12]; }
+      get { return global::Protocol.ProtocolReflection.Descriptor.MessageTypes[13]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2920,10 +3254,6 @@ namespace Protocol {
 
   }
 
-  /// <summary>
-  /// 3. 아이템 정보 갱신 통보 (서버 -> 클라)
-  /// 아이템 획득, 사용(개수 감소), 장착 상태 변경 시 사용
-  /// </summary>
   public sealed partial class S_CHANGE_ITEM : pb::IMessage<S_CHANGE_ITEM>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -2938,7 +3268,7 @@ namespace Protocol {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Protocol.ProtocolReflection.Descriptor.MessageTypes[13]; }
+      get { return global::Protocol.ProtocolReflection.Descriptor.MessageTypes[14]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -3122,10 +3452,6 @@ namespace Protocol {
 
   }
 
-  /// <summary>
-  /// 4. 아이템 삭제 통보 (서버 -> 클라)
-  /// 포션을 다 썼거나 아이템을 버렸을 때
-  /// </summary>
   public sealed partial class S_REMOVE_ITEM : pb::IMessage<S_REMOVE_ITEM>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -3140,7 +3466,7 @@ namespace Protocol {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Protocol.ProtocolReflection.Descriptor.MessageTypes[14]; }
+      get { return global::Protocol.ProtocolReflection.Descriptor.MessageTypes[15]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -3329,7 +3655,7 @@ namespace Protocol {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Protocol.ProtocolReflection.Descriptor.MessageTypes[15]; }
+      get { return global::Protocol.ProtocolReflection.Descriptor.MessageTypes[16]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -3364,9 +3690,6 @@ namespace Protocol {
     /// <summary>Field number for the "itemUid" field.</summary>
     public const int ItemUidFieldNumber = 1;
     private ulong itemUid_;
-    /// <summary>
-    /// 어떤 아이템을?
-    /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public ulong ItemUid {
@@ -3379,9 +3702,6 @@ namespace Protocol {
     /// <summary>Field number for the "slotIndex" field.</summary>
     public const int SlotIndexFieldNumber = 2;
     private int slotIndex_;
-    /// <summary>
-    /// 몇 번 슬롯에 있는 거? (검증용)
-    /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int SlotIndex {
@@ -3394,9 +3714,6 @@ namespace Protocol {
     /// <summary>Field number for the "equip" field.</summary>
     public const int EquipFieldNumber = 3;
     private bool equip_;
-    /// <summary>
-    /// true: 장착, false: 해제
-    /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Equip {
@@ -3601,7 +3918,7 @@ namespace Protocol {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Protocol.ProtocolReflection.Descriptor.MessageTypes[16]; }
+      get { return global::Protocol.ProtocolReflection.Descriptor.MessageTypes[17]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -3660,9 +3977,6 @@ namespace Protocol {
     /// <summary>Field number for the "slotIndex" field.</summary>
     public const int SlotIndexFieldNumber = 3;
     private int slotIndex_;
-    /// <summary>
-    /// [NEW] 몇 번 슬롯인지 알려줌 (UI 갱신용)
-    /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int SlotIndex {
@@ -3853,9 +4167,6 @@ namespace Protocol {
 
   }
 
-  /// <summary>
-  /// [Stat Sync] 스탯 변경 알림 (장비 장착, 레벨업, 버프 등)
-  /// </summary>
   public sealed partial class S_CHANGE_STAT : pb::IMessage<S_CHANGE_STAT>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -3870,7 +4181,7 @@ namespace Protocol {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Protocol.ProtocolReflection.Descriptor.MessageTypes[17]; }
+      get { return global::Protocol.ProtocolReflection.Descriptor.MessageTypes[18]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -4056,7 +4367,7 @@ namespace Protocol {
 
   /// <summary>
   /// ============================================================
-  /// [CHAT] 
+  /// [CHAT] (그대로 유지)
   /// ============================================================
   /// </summary>
   public sealed partial class C_CHAT_REQ : pb::IMessage<C_CHAT_REQ>
@@ -4073,7 +4384,7 @@ namespace Protocol {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Protocol.ProtocolReflection.Descriptor.MessageTypes[18]; }
+      get { return global::Protocol.ProtocolReflection.Descriptor.MessageTypes[19]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -4262,7 +4573,7 @@ namespace Protocol {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Protocol.ProtocolReflection.Descriptor.MessageTypes[19]; }
+      get { return global::Protocol.ProtocolReflection.Descriptor.MessageTypes[20]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -4295,9 +4606,6 @@ namespace Protocol {
     /// <summary>Field number for the "success" field.</summary>
     public const int SuccessFieldNumber = 1;
     private bool success_;
-    /// <summary>
-    /// 전송 성공 여부
-    /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Success {
@@ -4454,7 +4762,7 @@ namespace Protocol {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Protocol.ProtocolReflection.Descriptor.MessageTypes[20]; }
+      get { return global::Protocol.ProtocolReflection.Descriptor.MessageTypes[21]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -4668,7 +4976,7 @@ namespace Protocol {
 
   /// <summary>
   /// ============================================================
-  /// [HEARTBEAT]
+  /// [HEARTBEAT] (그대로 유지)
   /// ============================================================
   /// </summary>
   public sealed partial class S_HEART_BEAT_RES : pb::IMessage<S_HEART_BEAT_RES>
@@ -4685,7 +4993,7 @@ namespace Protocol {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Protocol.ProtocolReflection.Descriptor.MessageTypes[21]; }
+      get { return global::Protocol.ProtocolReflection.Descriptor.MessageTypes[22]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -4837,7 +5145,7 @@ namespace Protocol {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Protocol.ProtocolReflection.Descriptor.MessageTypes[22]; }
+      get { return global::Protocol.ProtocolReflection.Descriptor.MessageTypes[23]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]

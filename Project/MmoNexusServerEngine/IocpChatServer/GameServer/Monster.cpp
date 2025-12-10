@@ -34,7 +34,7 @@ void Monster::Init(int32 templateId)
 	stat->set_hp(100);
 	stat->set_attack(10);
 	stat->set_defense(0);
-	stat->set_speed(5.0f); // [Check] 초당 이동 거리 (단위를 잘 맞춰야 함. 너무 느리면 안 움직이는 것처럼 보임)
+	stat->set_speed(1.0f); // [Check] 초당 이동 거리 (단위를 잘 맞춰야 함. 너무 느리면 안 움직이는 것처럼 보임)
 
 	_monsterInfo.set_name("Slime_King");
 }
@@ -88,50 +88,54 @@ void Monster::UpdateMove()
 	std::shared_ptr<Creature> target = GetTarget();
 	if (target == nullptr) return;
 
-	// [Refactoring] ObjectUtils 사용
-	// 1. 거리 체크 (제곱 계산으로 최적화)
 	float distSqr = ObjectUtils::DistSqr(*_posInfo, *target->GetPosInfo());
 	float attackRangeSqr = _attackRange * _attackRange;
 
-	// 2. 사거리 판정
+	// ✅ 사거리 체크만 하고 return 안 함
 	if (distSqr <= attackRangeSqr)
 	{
 		_posInfo->set_state(Protocol::MOVE_IDLE);
 		_posInfo->set_actionstate(Protocol::ACTION_ATTACK);
-		return;
+		// return 제거! 아래 브로드캐스트 로직 실행되도록
+	}
+	else
+	{
+		// 이동 로직
+		_posInfo->set_state(Protocol::MOVE_RUN);
+		_posInfo->set_actionstate(Protocol::ACTION_IDLE);
+
+		Vector3 dir = ObjectUtils::GetDirection(*_posInfo, *target->GetPosInfo());
+
+		float deltaTime = 0.1f;
+		Vector3 deltaMove = dir * _statInfo->speed() * deltaTime;
+
+		_posInfo->set_x(_posInfo->x() + deltaMove.x);
+		_posInfo->set_z(_posInfo->z() + deltaMove.z);
 	}
 
-	// 3. 이동 로직
-	_posInfo->set_state(Protocol::MOVE_RUN);
-	_posInfo->set_actionstate(Protocol::ACTION_IDLE);
-
-	// 방향 벡터 구하기
-	Vector3 dir = ObjectUtils::GetDirection(*_posInfo, *target->GetPosInfo());
-
-	// 속도 적용 (DeltaTime은 일단 0.1f로 가정)
-	// 나중엔 함수 인자로 deltaTime을 받아와야 함
-	float deltaTime = 0.1f;
-	Vector3 deltaMove = dir * _statInfo->speed() * deltaTime;
-
-	// 좌표 갱신
-	_posInfo->set_x(_posInfo->x() + deltaMove.x);
-	_posInfo->set_z(_posInfo->z() + deltaMove.z);
-
-	// 4. [Broadcast] 이동 패킷 전송
+	// ✅ Zone & Broadcast (공격 사거리 들어갔을 때도 실행)
 	std::shared_ptr<GameRoom> room = GetRoom();
 	if (room)
 	{
+		int32 oldZoneIndex = _zoneIndex;
+		int32 newZoneIndex = room->GetZoneIndex(*_posInfo);
+
+		if (newZoneIndex != oldZoneIndex)
+		{
+			MonsterRef thisMonster = std::static_pointer_cast<Monster>(shared_from_this());
+			room->GetZone(oldZoneIndex).monsters.erase(thisMonster);
+			room->GetZone(newZoneIndex).monsters.insert(thisMonster);
+			_zoneIndex = newZoneIndex;
+		}
+
 		Protocol::S_MOVE movePkt;
 		movePkt.set_objectid(_objectId);
 		*movePkt.mutable_posinfo() = *_posInfo;
 
 		SendBufferRef sendBuffer = ClientPacketHandler::MakeSendBuffer(movePkt);
-
-		// [Fixed] 이제 에러 안 날 거다. (GameRoom.h 수정 필수)
 		room->BroadcastToZone(sendBuffer, _zoneIndex);
 	}
 }
-
 void Monster::UpdateAttack()
 {
 	std::shared_ptr<Creature> target = GetTarget();

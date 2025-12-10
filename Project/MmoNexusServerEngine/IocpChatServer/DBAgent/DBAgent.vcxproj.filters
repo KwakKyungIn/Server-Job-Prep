@@ -22,6 +22,9 @@
     <Filter Include="Session_Game">
       <UniqueIdentifier>{fbf5d918-5c8f-4b2f-9412-f84c94c71b33}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Session_Login">
+      <UniqueIdentifier>{403b1478-482e-4e10-a606-a1b999abee62}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -54,6 +57,9 @@
     <ClCompile Include="ChatSession.cpp">
       <Filter>Session_Chat</Filter>
     </ClCompile>
+    <ClCompile Include="LoginSession.cpp">
+      <Filter>Session_Login</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -82,6 +88,9 @@
     </ClInclude>
     <ClInclude Include="ChatSession.h">
       <Filter>Session_Chat</Filter>
+    </ClInclude>
+    <ClInclude Include="LoginSession.h">
+      <Filter>Session_Login</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

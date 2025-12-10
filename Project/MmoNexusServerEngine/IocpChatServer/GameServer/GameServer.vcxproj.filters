@@ -28,6 +28,9 @@
     <Filter Include="Manager">
       <UniqueIdentifier>{ad7a092f-a2e6-4cee-a1b7-16547c77d20a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Session_Login">
+      <UniqueIdentifier>{234bab62-2006-443d-8401-a2d14a0de215}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GameServer.cpp">
@@ -84,6 +87,9 @@
     <ClCompile Include="Monster.cpp">
       <Filter>GameContents</Filter>
     </ClCompile>
+    <ClCompile Include="LoginSession.cpp">
+      <Filter>Session_Login</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -139,6 +145,9 @@
     </ClInclude>
     <ClInclude Include="ObjectUtils.h">
       <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="LoginSession.h">
+      <Filter>Session_Login</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -41,16 +41,20 @@ void GameRoom::Init(int32 mapId, int32 sizeX, int32 sizeY, int32 zoneSize)
 	slime->Init(1); // 템플릿 ID 1번 (슬라임 킹)
 
 	// 위치 설정 (플레이어 스폰 위치 근처인 55, 0, 55 정도로 설정)
-	slime->GetPosInfo()->set_x(55.0f);
+	slime->GetPosInfo()->set_x(5.0f);
 	slime->GetPosInfo()->set_y(0.0f);
-	slime->GetPosInfo()->set_z(55.0f);
+	slime->GetPosInfo()->set_z(5.0f);
 	slime->GetPosInfo()->set_yaw(0.0f);
 
 	// 방에 입장 (이때 EnterMonster가 호출되면서 Zone에 등록됨)
 	EnterMonster(slime);
 
-	printf("👾 [Test] Slime_King Spawned at (55, 0, 55)\n");
+	printf("👾 [Test] Slime_King Spawned at (5, 0, 5)\n");
+	int32 debugZoneIndex = GetZoneIndex(*slime->GetPosInfo());
+	Zone& debugZone = _zones[debugZoneIndex];
 
+	printf("🔍 [DEBUG] Monster Check: Slime ID %llu is in Zone [%d]. Players in Zone: %zu, Monsters in Zone: %zu\n",
+		slime->GetObjectId(), debugZoneIndex, debugZone.players.size(), debugZone.monsters.size());
 
 }
 
@@ -68,16 +72,32 @@ void GameRoom::Enter(PlayerSessionRef session)
 {
 	PlayerRef player = session->GetPlayer();
 	if (player == nullptr) return;
-
 	if (_players.find(player->GetPlayerId()) != _players.end()) return;
 
 	player->SetRoom(shared_from_this());
 	_players.insert({ player->GetPlayerId(), player });
 
 	int32 zoneIndex = GetZoneIndex(*player->GetPosInfo());
+
+	printf("🎮 [Enter] Player %llu entering Zone[%d] at (%.1f, %.1f, %.1f)\n",
+		player->GetPlayerId(), zoneIndex,
+		player->GetPosInfo()->x(),
+		player->GetPosInfo()->y(),
+		player->GetPosInfo()->z());
+
 	player->SetZoneIndex(zoneIndex);
 	_zones[zoneIndex].players.insert(player);
 
+	{
+		Protocol::S_ENTER_GAME enterPkt;
+		enterPkt.set_success(true);
+
+		// 내 정보를 담아서 보냄 (MyPlayerId 세팅용)
+		enterPkt.mutable_myplayer()->CopyFrom(*player->GetPlayerInfo());
+
+		SendBufferRef sendBuffer = ClientPacketHandler::MakeSendBuffer(enterPkt);
+		session->Send(sendBuffer);
+	}
 	// 1. 주변 플레이어들에게 "나(플레이어) 등장" 알림
 	{
 		Protocol::S_SPAWN spawnPkt;
@@ -103,10 +123,17 @@ void GameRoom::Enter(PlayerSessionRef session)
 		Vector<Zone*> nearbyZones;
 		GetNearbyZones(zoneIndex, nearbyZones);
 
+		printf("🔍 [Enter] Checking nearby zones for Player %llu (Zone[%d])\n",
+			player->GetPlayerId(), zoneIndex);
+		printf("    Nearby zones count: %zu\n", nearbyZones.size());
+
 		Protocol::S_SPAWN spawnPkt;
 
 		for (Zone* zone : nearbyZones)
 		{
+			printf("    → Checking zone: %zu players, %zu monsters\n",
+				zone->players.size(), zone->monsters.size());
+
 			// 플레이어 추가
 			for (const PlayerRef& other : zone->players)
 			{
@@ -119,20 +146,29 @@ void GameRoom::Enter(PlayerSessionRef session)
 			// [New] 몬스터 추가
 			for (const MonsterRef& monster : zone->monsters)
 			{
+				printf("      📦 Found Monster ID=%llu in zone\n",
+					monster->GetObjectId());
 				Protocol::MonsterInfo* mInfo = spawnPkt.add_monsters();
 				*mInfo = *monster->GetMonsterInfo();
 			}
 		}
+
+		printf("📤 [Enter] Final S_SPAWN packet: %d players, %d monsters\n",
+			spawnPkt.players_size(), spawnPkt.monsters_size());
 
 		// 주변에 뭐라도(플레이어든 몬스터든) 있으면 전송
 		if (spawnPkt.players_size() > 0 || spawnPkt.monsters_size() > 0)
 		{
 			SendBufferRef sendBuffer = ClientPacketHandler::MakeSendBuffer(spawnPkt);
 			session->Send(sendBuffer);
+			printf("✅ [Enter] S_SPAWN sent to Player %llu\n", player->GetPlayerId());
+		}
+		else
+		{
+			printf("⚠️ [Enter] S_SPAWN NOT sent (empty packet)\n");
 		}
 	}
 }
-
 void GameRoom::Leave(PlayerSessionRef session)
 {
 	PlayerRef player = session->GetPlayer();
@@ -327,7 +363,6 @@ void GameRoom::HandleMove(PlayerSessionRef session, Protocol::C_MOVE pkt)
 void GameRoom::EnterMonster(MonsterRef monster)
 {
 	if (monster == nullptr) return;
-
 	if (_monsters.find(monster->GetObjectId()) != _monsters.end())
 		return;
 
@@ -336,19 +371,28 @@ void GameRoom::EnterMonster(MonsterRef monster)
 
 	int32 zoneIndex = GetZoneIndex(*monster->GetPosInfo());
 	monster->SetZoneIndex(zoneIndex);
+
+	printf("👾 [EnterMonster] Monster ID=%llu entering Zone[%d]\n",
+		monster->GetObjectId(), zoneIndex);
+	printf("    Position: (%.1f, %.1f, %.1f)\n",
+		monster->GetPosInfo()->x(),
+		monster->GetPosInfo()->y(),
+		monster->GetPosInfo()->z());
+
 	_zones[zoneIndex].monsters.insert(monster);
 
-	// 주변 유저들에게 몬스터 스폰 알림
+	printf("    Zone[%d] now has %zu monsters\n",
+		zoneIndex, _zones[zoneIndex].monsters.size());
+
+	// 주변 유저들에게 몬스터 스폰 알림 (이 시점엔 플레이어 없음)
 	{
 		Protocol::S_SPAWN spawnPkt;
 		Protocol::MonsterInfo* mInfo = spawnPkt.add_monsters();
 		*mInfo = *monster->GetMonsterInfo();
-
 		SendBufferRef sendBuffer = ClientPacketHandler::MakeSendBuffer(spawnPkt);
 		BroadcastToZone(sendBuffer, zoneIndex);
 	}
 }
-
 void GameRoom::LeaveMonster(uint64 objectId)
 {
 	auto it = _monsters.find(objectId);
@@ -540,6 +584,7 @@ void GameRoom::HandleSkill(std::shared_ptr<Creature> attacker, int32 skillId)
 		}
 	}
 }
+
 void GameRoom::BroadcastToZone(SendBufferRef sendBuffer, int32 zoneIndex, uint64 exceptId)
 {
 	Vector<Zone*> nearbyZones;

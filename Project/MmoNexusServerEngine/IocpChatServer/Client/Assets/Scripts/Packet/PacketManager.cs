@@ -21,10 +21,10 @@ public class PacketManager
 
 	public enum MsgId : ushort
 	{
-		C_LOGIN_REQ = 1000,
-		S_LOGIN_RES = 1001,
-		C_ENTER_GAME_REQ = 1002,
-		S_ENTER_GAME_RES = 1003,
+		C_LOGIN = 1000,
+		S_LOGIN = 1001,
+		C_ENTER_GAME = 1002,
+		S_ENTER_GAME = 1003,
 		C_MOVE = 1004,
 		S_MOVE = 1005,
 		S_SPAWN = 1006,
@@ -48,10 +48,10 @@ public class PacketManager
 
 	public void Register()
 	{
-		_onRecv.Add((ushort)MsgId.S_LOGIN_RES, MakePacket<S_LOGIN_RES>);
-		_handler.Add((ushort)MsgId.S_LOGIN_RES, PacketHandler.S_LOGIN_RESHandler);
-		_onRecv.Add((ushort)MsgId.S_ENTER_GAME_RES, MakePacket<S_ENTER_GAME_RES>);
-		_handler.Add((ushort)MsgId.S_ENTER_GAME_RES, PacketHandler.S_ENTER_GAME_RESHandler);
+		_onRecv.Add((ushort)MsgId.S_LOGIN, MakePacket<S_LOGIN>);
+		_handler.Add((ushort)MsgId.S_LOGIN, PacketHandler.S_LOGINHandler);
+		_onRecv.Add((ushort)MsgId.S_ENTER_GAME, MakePacket<S_ENTER_GAME>);
+		_handler.Add((ushort)MsgId.S_ENTER_GAME, PacketHandler.S_ENTER_GAMEHandler);
 		_onRecv.Add((ushort)MsgId.S_MOVE, MakePacket<S_MOVE>);
 		_handler.Add((ushort)MsgId.S_MOVE, PacketHandler.S_MOVEHandler);
 		_onRecv.Add((ushort)MsgId.S_SPAWN, MakePacket<S_SPAWN>);

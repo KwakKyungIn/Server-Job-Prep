@@ -6,88 +6,109 @@ using Protocol;
 
 public class NexusClient : MonoBehaviour
 {
-    // UI 상태 제어 (로그인 화면 -> 게임/채팅 화면)
     bool _isGameEntered = false;
 
-    // UI 변수들
     string _inputName = "KwakPpiPpi";
+    string _inputPw = "1234";
     string _inputChat = "";
     string _chatLog = "";
     Vector2 _scrollPos;
 
+    string _loginToken = "";
+
     void Start()
     {
-        // [Event Subscription] 패킷 핸들러 이벤트 구독
-        PacketHandler.OnLoginResult += HandleLoginResult;
-        PacketHandler.OnEnterGame += HandleEnterGame; // [New] 입장 완료 이벤트
-        PacketHandler.OnChatMsg += HandleChatMsg;
+        PacketHandler.OnLogin += HandleLogin;
+        PacketHandler.OnEnterGame += HandleEnterGame;
+        PacketHandler.OnChatRes += HandleChatRes;
     }
 
     void OnDestroy()
     {
-        // 구독 해제 (습관화해라)
-        PacketHandler.OnLoginResult -= HandleLoginResult;
+        PacketHandler.OnLogin -= HandleLogin;
         PacketHandler.OnEnterGame -= HandleEnterGame;
-        PacketHandler.OnChatMsg -= HandleChatMsg;
+        PacketHandler.OnChatRes -= HandleChatRes;
     }
 
-    // [Callback] 로그인 결과 처리
-    void HandleLoginResult(bool success)
-    {
-        if (success)
-        {
-            _chatLog += ">> System: Login Success! Requesting Enter Game...\n";
-            // [Core Logic] 로그인 성공했으면 바로 게임 입장 요청
-            SendEnterGamePacket();
-        }
-        else
-        {
-            _chatLog += ">> System: Login Failed! Check Server.\n";
-        }
-    }
-
-    // [Callback] 게임 입장 결과 (캐릭터 스폰 시점)
-    void HandleEnterGame(S_ENTER_GAME_RES pkt)
+    // [Step 2] 로그인 결과 수신
+    void HandleLogin(S_LOGIN pkt)
     {
         if (pkt.Success)
         {
-            _isGameEntered = true; // UI 전환
-            _chatLog += ">> System: Entered Game! You can move now (WASD).\n";
+            Debug.Log($"[ConnectionDebug] 3. Login Success! Token Received: {pkt.Token}");
+            _chatLog += $">> System: Login Success!\n";
+            _loginToken = pkt.Token;
+
+            // 게임 서버로 환승 시작
+            StartCoroutine(CoConnectToGameServer());
+        }
+        else
+        {
+            Debug.LogError("[ConnectionDebug] Login Failed.");
+            _chatLog += ">> System: Login Failed! Check ID/PW.\n";
         }
     }
 
-    // [Callback] 채팅 수신 처리
-    void HandleChatMsg(string msg)
+    // [Step 3] 환승 코루틴
+    IEnumerator CoConnectToGameServer()
     {
-        _chatLog += msg + "\n";
-        _scrollPos.y = Mathf.Infinity;
+        Debug.Log("[ConnectionDebug] 4. Disconnecting from LoginServer...");
+        NetworkManager.Instance.Disconnect();
+
+        yield return new WaitForSeconds(0.2f);
+
+        Debug.Log("[ConnectionDebug] 5. Connecting to GameServer (7777)...");
+        NetworkManager.Instance.Connect("127.0.0.1", 7777);
+
+        yield return new WaitForSeconds(0.5f); // 접속 대기 시간을 조금 넉넉히
+
+        Debug.Log("[ConnectionDebug] 6. Sending C_ENTER_GAME with Token...");
+        SendEnterGamePacket();
     }
 
-    // [GUI] 테스트용 UI
+    // [Step 4] 게임 입장 완료
+    void HandleEnterGame(S_ENTER_GAME pkt)
+    {
+        if (pkt.Success)
+        {
+            Debug.Log("[ConnectionDebug] 7. Game Enter Success! Welcome!");
+            _isGameEntered = true;
+            _chatLog += ">> System: Entered Game! You can move now.\n";
+        }
+        else
+        {
+            Debug.LogError("[ConnectionDebug] 7. Game Enter Failed! (Invalid Token?)");
+            _chatLog += ">> System: Enter Game Failed\n";
+        }
+    }
+
+    void HandleChatRes(bool success) { }
+
     private void OnGUI()
     {
-        // 1. 게임 입장 전 (로그인 화면)
         if (_isGameEntered == false)
         {
-            GUI.Box(new Rect(Screen.width / 2 - 100, Screen.height / 2 - 50, 200, 100), "Nexus Login");
+            GUI.Box(new Rect(Screen.width / 2 - 100, Screen.height / 2 - 80, 200, 160), "Nexus Login");
 
-            _inputName = GUI.TextField(new Rect(Screen.width / 2 - 90, Screen.height / 2 - 20, 180, 20), _inputName);
+            GUI.Label(new Rect(Screen.width / 2 - 90, Screen.height / 2 - 50, 50, 20), "ID:");
+            _inputName = GUI.TextField(new Rect(Screen.width / 2 - 40, Screen.height / 2 - 50, 130, 20), _inputName);
 
-            if (GUI.Button(new Rect(Screen.width / 2 - 50, Screen.height / 2 + 10, 100, 30), "Login & Start"))
+            GUI.Label(new Rect(Screen.width / 2 - 90, Screen.height / 2 - 20, 50, 20), "PW:");
+            _inputPw = GUI.PasswordField(new Rect(Screen.width / 2 - 40, Screen.height / 2 - 20, 130, 20), _inputPw, '*');
+
+            if (GUI.Button(new Rect(Screen.width / 2 - 50, Screen.height / 2 + 20, 100, 30), "Login"))
             {
+                Debug.Log($"[ConnectionDebug] 2. Sending Login Request...");
                 SendLoginPacket();
             }
         }
-        // 2. 게임 입장 후 (채팅 + 로그)
         else
         {
-            // 채팅 로그 영역
             GUILayout.BeginArea(new Rect(50, 50, Screen.width - 100, Screen.height - 100));
             _scrollPos = GUILayout.BeginScrollView(_scrollPos, GUILayout.Width(Screen.width - 100), GUILayout.Height(Screen.height - 150));
             GUILayout.Label(_chatLog);
             GUILayout.EndScrollView();
 
-            // 입력 영역
             GUILayout.BeginHorizontal();
             _inputChat = GUILayout.TextField(_inputChat, GUILayout.Width(Screen.width - 200));
 
@@ -104,32 +125,27 @@ public class NexusClient : MonoBehaviour
         }
     }
 
-    // [Packet Send] 1. 로그인 요청
     void SendLoginPacket()
     {
-        C_LOGIN_REQ packet = new C_LOGIN_REQ();
-        packet.Name = _inputName;
-
-        // [FIX] PacketId 인자 추가
-        NetworkManager.Instance.Send(packet, (ushort)PacketManager.MsgId.C_LOGIN_REQ);
-        Debug.Log($"[Client] Try Login: {_inputName}");
+        C_LOGIN packet = new C_LOGIN();
+        packet.UserId = _inputName;
+        packet.Password = _inputPw;
+        NetworkManager.Instance.Send(packet, (ushort)PacketManager.MsgId.C_LOGIN);
     }
 
-    // [Packet Send] 2. 게임 입장 요청
     void SendEnterGamePacket()
     {
-        C_ENTER_GAME_REQ packet = new C_ENTER_GAME_REQ();
-        packet.PlayerIndex = 0; // 첫 번째 슬롯 캐릭터 선택 (일단 고정)
+        if (string.IsNullOrEmpty(_loginToken)) return;
 
-        NetworkManager.Instance.Send(packet, (ushort)PacketManager.MsgId.C_ENTER_GAME_REQ);
+        C_ENTER_GAME packet = new C_ENTER_GAME();
+        packet.Token = _loginToken;
+        NetworkManager.Instance.Send(packet, (ushort)PacketManager.MsgId.C_ENTER_GAME);
     }
 
-    // [Packet Send] 채팅
     void SendChatPacket()
     {
         C_CHAT_REQ packet = new C_CHAT_REQ();
         packet.Message = _inputChat;
-
         NetworkManager.Instance.Send(packet, (ushort)PacketManager.MsgId.C_CHAT_REQ);
     }
 }

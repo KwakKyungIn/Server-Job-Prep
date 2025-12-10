@@ -11,9 +11,11 @@
 #include "GameRoom.h" // [GIGACHAD FIX] 이거 없으면 GameRoom 모름
 #include <iostream>
 #include <windows.h>
+#include "LoginSession.h"
 
 // [External Reference] ClientPacketHandler.cpp에 있는 그 놈 가져오기
 extern shared_ptr<GameRoom> GTestRoom;
+extern shared_ptr<LoginSession> G_LoginSession;
 extern std::atomic<bool> GIsRunning; // 전역 변수 참조
 
 // [Ctrl+C 핸들러]
@@ -61,8 +63,16 @@ int main()
 		1000
 	);
 
+	ClientServiceRef loginService = MakeShared<ClientService>(
+		NetAddress(L"127.0.0.1", 7776), // LoginServer의 내부 통신 포트
+		core,
+		MakeShared<LoginSession>,
+		1
+	);
+
 	ASSERT_CRASH(dbService->Start());
 	ASSERT_CRASH(chatService->Start());
+	ASSERT_CRASH(loginService->Start());
 	ASSERT_CRASH(gameService->Start());
 
 	std::cout << "✅ [GameServer] Running... (Press Ctrl+C to quit)" << std::endl;
@@ -114,6 +124,7 @@ int main()
 			dbService->CheckHeartbeat();
 			chatService->CheckHeartbeat();
 			gameService->CheckHeartbeat();
+			loginService->CheckHeartbeat();
 		}
 	}
 
@@ -122,6 +133,7 @@ int main()
 	gameService->CloseService();
 	dbService->CloseService();
 	chatService->CloseService();
+	loginService->CloseService();
 
 	return 0;
 }

@@ -7,7 +7,8 @@
 #include "DBConnectionPool.h"
 #include "DBAgentPacketHandler.h"
 #include "GameSession.h" 
-#include <windows.h> // [ADD]
+#include "LoginSession.h" // [ADD] 아까 만든 헤더 포함
+#include <windows.h>
 
 // [정의] GDBConnectionPool의 실체
 DBConnectionPool* GDBConnectionPool = nullptr;
@@ -47,43 +48,54 @@ int main()
 
 	std::cout << "[DBAgent] DB Connection established to Azure SQL." << std::endl;
 
-	// 3. 서버 서비스 시작
-	ServerServiceRef service = MakeShared<ServerService>(
+	// [CHANGE] IOCP Core를 공유하기 위해 미리 생성
+	IocpCoreRef mainIocpCore = MakeShared<IocpCore>();
+
+	// 3-1. GameServer용 서비스 (Port: 7778)
+	ServerServiceRef gameService = MakeShared<ServerService>(
 		NetAddress(L"127.0.0.1", 7778),
-		MakeShared<IocpCore>(),
-		MakeShared<GameSession>, // 잡큐가 장착된 세션
+		mainIocpCore, // Core 공유
+		MakeShared<GameSession>,
 		100
 	);
 
-	ASSERT_CRASH(service->Start());
-	std::cout << "✅ [DBAgent] Listening on Port 7778... (Press Ctrl+C to quit)" << std::endl;
+	// 3-2. [ADD] LoginServer용 서비스 (Port: 7779)
+	ServerServiceRef loginService = MakeShared<ServerService>(
+		NetAddress(L"127.0.0.1", 7779), // 포트 분리!
+		mainIocpCore, // Core 공유
+		MakeShared<LoginSession>, // LoginSession 생성
+		10 // 로그인 서버는 소수니까 적게 잡아도 됨
+	);
+
+	ASSERT_CRASH(gameService->Start());
+	ASSERT_CRASH(loginService->Start());
+
+	std::cout << "✅ [DBAgent] Listening on Port 7778(Game) & 7779(Login)..." << std::endl;
 
 	// 4. 스레드 런칭 (Hybrid Architecture)
-	// [CRITICAL Change] IOCP만 돌리면 안 되고, JobQueue도 돌려야 한다!
 	int32 threadCount = std::thread::hardware_concurrency();
 	if (threadCount < 2) threadCount = 2;
 
-	// 전략: 반반 나눈다. 
-	// (DB 쿼리가 느리기 때문에 로직 스레드가 넉넉해야 병목이 안 생긴다)
 	int32 networkThreadCount = threadCount / 2;
 	int32 logicThreadCount = threadCount - networkThreadCount;
 
 	std::cout << "🚀 [System] Worker Threads -> Network: " << networkThreadCount
 		<< " | Logic(DB): " << logicThreadCount << std::endl;
 
-	// 4-1. 네트워크 스레드 (패킷 수신 -> Job 생성)
+	// 4-1. 네트워크 스레드
 	for (int32 i = 0; i < networkThreadCount; i++)
 	{
 		GThreadManager->Launch([=]() {
 			while (GIsRunning)
 			{
-				service->GetIocpCore()->Dispatch(10);
+				// [Check] Core를 공유했으므로 mainIocpCore만 돌리면
+				// gameService, loginService 둘 다 처리된다.
+				mainIocpCore->Dispatch(10);
 			}
 			});
 	}
 
-	// 4-2. 로직(DB) 스레드 (Job 꺼내서 SQL 실행)
-	// 이 친구들이 없으면 DB 처리가 영원히 안 된다.
+	// 4-2. 로직(DB) 스레드
 	for (int32 i = 0; i < logicThreadCount; i++)
 	{
 		GThreadManager->Launch([=]() {
@@ -94,11 +106,11 @@ int main()
 	// [CHANGE] 메인 스레드: 주기적 Heartbeat 체크
 	while (GIsRunning)
 	{
-		// 1초에 한 번씩 검사
 		std::this_thread::sleep_for(std::chrono::seconds(3));
 
-		// 서비스들의 상태 체크
-		service->CheckHeartbeat();
+		// 두 서비스 모두 체크
+		gameService->CheckHeartbeat();
+		loginService->CheckHeartbeat();
 	}
 
 	// 5. 대기 및 종료
@@ -106,8 +118,9 @@ int main()
 
 	std::cout << "🛑 [DBAgent] Cleaning up resources..." << std::endl;
 
-	service->CloseService(); // 리스너/세션 정리
-	delete GDBConnectionPool; // DB 연결 정리
+	gameService->CloseService();
+	loginService->CloseService(); // [ADD]
+	delete GDBConnectionPool;
 
 	std::cout << "👋 [DBAgent] Bye!" << std::endl;
 	return 0;

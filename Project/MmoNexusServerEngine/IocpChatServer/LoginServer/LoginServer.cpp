@@ -2,14 +2,18 @@
 #include "ThreadManager.h"
 #include "Service.h"
 #include "Session.h"
-#include "LoginSession.h"
 #include "BufferWriter.h"
+#include "ClientPacketHandler.h"
+#include "S2SPacketHandler.h"
+#include "ClientSession.h"
+#include "DBAgentSession.h"
 #include <iostream>
 #include <windows.h>
-#include <RedisManager.h>
-// [GIGACHAD] CoreGlobal은 ServerCore.lib 안에 이미 전역으로 있으니
-// 여기서는 별도로 extern 선언 안 해도 됨 (ServerCore 헤더에 포함됨).
-// 하지만 명시적으로 초기화 순서가 필요하다면 CoreGlobal.h를 인클루드.
+#include "RedisManager.h"
+#include "GameServerSession.h"
+#include "LoginSessionManager.h"
+// [GIGACHAD] CoreGlobal은 PCH나 라이브러리 링크로 해결되지만, 
+// 명시적으로 전역 변수 초기화 순서를 위해 포함.
 #include "CoreGlobal.h"
 
 enum
@@ -17,6 +21,9 @@ enum
 	WORKER_TICK = 64
 };
 
+// [GIGACHAD] DB 세션을 전역으로 관리 (로그인 핸들러에서 써야 하니까)
+// 나중엔 SessionManager가 관리하겠지만, 지금은 단일 연결이니 전역이 편함.
+shared_ptr<DBAgentSession> GDBAgentSession = nullptr;
 
 BOOL WINAPI CtrlHandler(DWORD fdwCtrlType)
 {
@@ -36,29 +43,72 @@ int main()
 {
 	SetConsoleCtrlHandler(CtrlHandler, TRUE);
 
-	// 1. 패킷 핸들러 초기화 (나중에 구현)
-	// LoginPacketHandler::Init();
-	if (GRedisManager->Set("TestToken", "1234", 60)) // 60초 뒤 삭제
+	// 1. 패킷 핸들러 초기화 (필수!)
+	ClientPacketHandler::Init();
+	S2SPacketHandler::Init();
+
+	GSessionManager = new LoginSessionManager();
+	LoginSessionManager::GSessionManager = GSessionManager;
+
+	// [Redis Test] 서버 켜질 때 Redis 살아있는지 신고식
+	if (GRedisManager->Set("LoginServer_Alive", "OK", 60))
 	{
-		std::cout << "Redis Set Success!" << std::endl;
-		std::string val = GRedisManager->Get("TestToken");
-		std::cout << "Redis Get Result: " << val << std::endl;
+		std::cout << "✅ [Redis] Connection Verified." << std::endl;
 	}
+
 	// 2. IOCP 코어 생성
 	IocpCoreRef core = MakeShared<IocpCore>();
 
-	// 3. Login Service 생성 (Port: 7776)
-	// LoginSession을 생성하는 람다 팩토리 전달
-	ServerServiceRef loginService = MakeShared<ServerService>(
-		NetAddress(L"127.0.0.1", 7776),
+	// ============================================================
+	// [Service 1] 클라이언트 접속용 (유저 받는 문)
+	// ============================================================
+	// Port: 7776
+	// Session: ClientSession (가벼운 버전)
+	// ============================================================
+	// [Service 1] 유저 접속용 (Port: 7776)
+	// ============================================================
+	ServerServiceRef clientService = MakeShared<ServerService>(
+		NetAddress(L"127.0.0.1", 7775),
 		core,
-		MakeShared<LoginSession>, // Factory: 새로운 세션 필요 시 LoginSession 생성
-		1000 // Max User
+		MakeShared<ClientSession>,
+		1000
 	);
 
-	ASSERT_CRASH(loginService->Start());
+	// ============================================================
+	// [Service 2] GameServer 접속용 (Port: 7775) [NEW]
+	// ============================================================
+	// GameServer들이 여기에 붙어서 상태를 보고한다.
+	ServerServiceRef gameServerService = MakeShared<ServerService>(
+		NetAddress(L"127.0.0.1", 7776),
+		core,
+		MakeShared<GameServerSession>,
+		10 // 게임 서버 개수는 많지 않음
+	);
 
-	std::cout << "✅ [LoginServer] Listening on Port 7776..." << std::endl;
+	// ============================================================
+	// [Service 3] DBAgent 접속용 (Port: 7779)
+	// ============================================================
+	ClientServiceRef dbService = MakeShared<ClientService>(
+		NetAddress(L"127.0.0.1", 7779),
+		core,
+		MakeShared<DBAgentSession>,
+		1
+	);
+	// [중요] DB 세션 생성 콜백 낚아채기
+	// 연결 성공하면 그 세션을 전역 변수(GDBAgentSession)에 저장해둔다.
+	// 그래야 ClientPacketHandler에서 DB로 패킷을 보내지.
+	dbService->SetConnectCallback([](SessionRef session)
+		{
+			// SessionRef를 DBAgentSession으로 변환 (static_pointer_cast 사용)
+			GDBAgentSession = static_pointer_cast<DBAgentSession>(session);
+			std::cout << "🔗 [Main] Capture DBAgent Session!" << std::endl;
+		});
+
+	// 3. 서비스 시작
+	ASSERT_CRASH(clientService->Start());
+	ASSERT_CRASH(dbService->Start());
+
+	std::cout << "✅ [LoginServer] Listening on 7776 & Connecting to DB..." << std::endl;
 
 	// 4. 스레드 풀 가동
 	int32 threadCount = std::thread::hardware_concurrency();
@@ -69,36 +119,33 @@ int main()
 		GThreadManager->Launch([=]() {
 			while (GIsRunning)
 			{
-				core->Dispatch(10); // 10ms 타임아웃
+				core->Dispatch(10);
 			}
 			});
 	}
 
-	// 5. 메인 루프 (Heartbeat 및 글로벌 작업)
-	// 로그인 서버는 게임 로직(AI, 이동 등)이 없으므로 부하가 적다.
+	// 5. 메인 루프
 	uint64 lastHeartbeatTick = 0;
 
 	while (GIsRunning)
 	{
-		// 글로벌 큐 작업 (혹시 모를 예약 작업 처리)
 		ThreadManager::DoGlobalQueueWork();
-
-		// CPU 휴식
 		std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
-		// 하트비트 체크 (세션 정리 등)
 		uint64 now = ::GetTickCount64();
-		if (now - lastHeartbeatTick > 5000) // 5초마다
+		if (now - lastHeartbeatTick > 5000)
 		{
 			lastHeartbeatTick = now;
-			loginService->CheckHeartbeat();
-			// cout << "[Heartbeat] LoginServer Alive..." << endl;
+			// 하트비트 체크
+			 clientService->CheckHeartbeat(); 
+			 dbService->CheckHeartbeat(); 
 		}
 	}
 
-	// 종료 처리
+	// 종료
 	GThreadManager->Join();
-	loginService->CloseService();
+	clientService->CloseService();
+	dbService->CloseService();
 
 	std::cout << "👋 [LoginServer] Terminated." << std::endl;
 

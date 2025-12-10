@@ -1,4 +1,4 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Protocol;
@@ -6,17 +6,16 @@ using Protocol;
 public class ObjectManager : MonoBehaviour
 {
     public static ObjectManager Instance { get; private set; }
-
     public static ulong MyPlayerId { get; set; }
 
-    // [GIGACHAD Refactoring] ÇÃ·¹ÀÌ¾î¸¸ ´ã´Â °Ô ¾Æ´Ï¶ó ¸ó½ºÅÍµµ ´ã¾Æ¾ß ÇÔ.
-    // ÀÌ¸§µµ _objects·Î º¯°æ. (PlayerId, MonsterId ¸ğµÎ ulongÀ¸·Î ÅëÇÕ °ü¸®)
     Dictionary<ulong, GameObject> _objects = new Dictionary<ulong, GameObject>();
 
-    // [Resources]
     public GameObject MyPlayerPrefab;
     public GameObject OtherPlayerPrefab;
-    public GameObject MonsterPrefab; // [New] ¸ó½ºÅÍ¿ë ÇÁ¸®ÆÕ ¿¬°á ÇÊ¿ä
+    public GameObject MonsterPrefab;
+
+    // [GIGACHAD ADD] MyPlayer ìƒì„± ì „ì— ë„ì°©í•œ ëª¬ìŠ¤í„°ë¥¼ ì„ì‹œ ì €ì¥í•  í
+    List<MonsterInfo> _pendingMonsters = new List<MonsterInfo>(); // [ADD]
 
     void Awake()
     {
@@ -25,27 +24,31 @@ public class ObjectManager : MonoBehaviour
 
     void Start()
     {
-        PacketHandler.OnEnterGame += OnEnterGame;
-        PacketHandler.OnSpawn += OnSpawn;
-        PacketHandler.OnDespawn += OnDespawn;
-        PacketHandler.OnMove += OnMove;
+        PacketHandler.OnEnterGame += OnEnterGame; // S_ENTER_GAME
+        PacketHandler.OnSpawn += OnSpawn;         // S_SPAWN
+        PacketHandler.OnDespawn += OnDespawn;     // S_DESPAWN
+        PacketHandler.OnMove += OnMove;           // S_MOVE
     }
 
-    // 1. ³» Ä³¸¯ÅÍ ÀÔÀå
-    void OnEnterGame(S_ENTER_GAME_RES pkt)
+    // [Change] íŒ¨í‚· íƒ€ì… ë³€ê²½ (S_ENTER_GAME_RES -> S_ENTER_GAME)
+    void OnEnterGame(S_ENTER_GAME pkt)
     {
+        Debug.Log($"ğŸ“¥ [OnEnterGame] Called! Success={pkt.Success}");
+
         if (pkt.Success == false) return;
 
         MyPlayerId = pkt.MyPlayer.PlayerId;
+        Debug.Log($"âœ… MyPlayerId set to {MyPlayerId}");
 
-        // ³ª¸¦ »ı¼º
         Spawn(pkt.MyPlayer, true);
+
+        ProcessPendingSpawns();
     }
 
-    // 2. ´Ù¸¥ °´Ã¼(ÇÃ·¹ÀÌ¾î + ¸ó½ºÅÍ) ÃâÇö
     void OnSpawn(S_SPAWN pkt)
     {
-        // 2-1. ÇÃ·¹ÀÌ¾î Ã³¸®
+        Debug.Log($"ğŸ“¥ [OnSpawn] Called! Players={pkt.Players?.Count ?? 0}, Monsters={pkt.Monsters?.Count ?? 0}");
+
         if (pkt.Players != null)
         {
             foreach (PlayerInfo player in pkt.Players)
@@ -55,20 +58,43 @@ public class ObjectManager : MonoBehaviour
             }
         }
 
-        // 2-2. [New] ¸ó½ºÅÍ Ã³¸®
         if (pkt.Monsters != null)
         {
+            Debug.Log($"ğŸ” Processing {pkt.Monsters.Count} monsters...");
             foreach (MonsterInfo monster in pkt.Monsters)
             {
-                SpawnMonster(monster);
+                Debug.Log($"ğŸ” Monster in packet: ID={monster.ObjectId}, TemplateId={monster.TemplateId}");
+
+                if (MyPlayerId == 0)
+                {
+                    _pendingMonsters.Add(monster);
+                    Debug.LogWarning("[ObjectManager] Monster packet arrived before MyPlayer. Pending...");
+                }
+                else
+                {
+                    SpawnMonster(monster);
+                }
             }
         }
     }
 
-    // 3. °´Ã¼ »ç¶óÁü (S_DESPAWN)
+    // [GIGACHAD ADD] ëŒ€ê¸° ì¤‘ì¸ ëª¬ìŠ¤í„°ë¥¼ ì²˜ë¦¬í•˜ëŠ” ì „ìš© í•¨ìˆ˜
+    void ProcessPendingSpawns()
+    {
+        if (_pendingMonsters.Count > 0)
+        {
+            Debug.Log($"[ObjectManager] Processing {_pendingMonsters.Count} pending monsters now.");
+            foreach (MonsterInfo monster in _pendingMonsters)
+            {
+                SpawnMonster(monster);
+            }
+            _pendingMonsters.Clear();
+        }
+    }
+
+
     void OnDespawn(S_DESPAWN pkt)
     {
-        // [Modify] PacketHandler ¼öÁ¤¿¡ ¸ÂÃç ObjectIds »ç¿ë
         foreach (ulong id in pkt.ObjectIds)
         {
             if (_objects.ContainsKey(id))
@@ -79,32 +105,20 @@ public class ObjectManager : MonoBehaviour
         }
     }
 
-    // 4. ÀÌµ¿ ÆĞÅ¶ Ã³¸® (S_MOVE)
     void OnMove(S_MOVE pkt)
     {
-        // [Modify] PlayerId -> ObjectId
         if (pkt.ObjectId == MyPlayerId) return;
 
-        // Dictionary(_objects)¿¡¼­ Ã£±â
         if (_objects.TryGetValue(pkt.ObjectId, out GameObject go))
         {
-            // ÇÃ·¹ÀÌ¾îµç ¸ó½ºÅÍµç PlayerController(È¤Àº BaseController)¸¦ °¡Áö°í ÀÖ´Ù°í °¡Á¤
-            // ¿òÁ÷ÀÓ µ¿±âÈ­ ·ÎÁ÷Àº µ¿ÀÏÇÏ´Ï±î.
             PlayerController pc = go.GetComponent<PlayerController>();
             if (pc != null)
             {
                 pc.SetTargetPosition(new Vector3(pkt.PosInfo.X, pkt.PosInfo.Y, pkt.PosInfo.Z));
             }
         }
-        else
-        {
-            // ½Ã¾ß ¹®Á¦ µîÀ¸·Î ÀÎÇØ ½ºÆù ÆĞÅ¶º¸´Ù ÀÌµ¿ ÆĞÅ¶ÀÌ ¸ÕÀú ¿Ã ¼öµµ ÀÖÀ½ (UDP¶ó¸é)
-            // ÇÏÁö¸¸ TCP¶ó¸é ¼ø¼­ º¸ÀåµÇ¹Ç·Î ·ÎÁ÷ ¿¡·¯ÀÏ °¡´É¼º ³ôÀ½
-            // Debug.LogError($"[S_MOVE] Object ID {pkt.ObjectId} not found!");
-        }
     }
 
-    // [Helper] ÇÃ·¹ÀÌ¾î »ı¼º
     void Spawn(PlayerInfo info, bool isMine)
     {
         if (_objects.ContainsKey(info.PlayerId)) return;
@@ -115,35 +129,52 @@ public class ObjectManager : MonoBehaviour
         if (isMine)
         {
             go = Instantiate(MyPlayerPrefab, pos, Quaternion.identity);
-            go.AddComponent<MyPlayerController>(); // ³» ÄÁÆ®·Ñ·¯
+            go.AddComponent<MyPlayerController>();
         }
         else
         {
             go = Instantiate(OtherPlayerPrefab, pos, Quaternion.identity);
-            go.AddComponent<PlayerController>(); // Å¸ÀÎ ÄÁÆ®·Ñ·¯ (º¸°£ ÀÌµ¿)
+            go.AddComponent<PlayerController>();
         }
 
         go.name = $"Player_{info.PlayerId}_{info.Name}";
         _objects.Add(info.PlayerId, go);
     }
 
-    // [Helper] ¸ó½ºÅÍ »ı¼º (New)
     void SpawnMonster(MonsterInfo info)
     {
-        // Object ID Áßº¹ Ã¼Å©
-        if (_objects.ContainsKey(info.ObjectId)) return; // MonsterInfo¿¡µµ ObjectId ÇÊµå°¡ ÀÖ¾î¾ß ÇÔ (Struct.proto È®ÀÎ)
+        // ID ì¶©ëŒ/ì¤‘ë³µ ì²´í¬
+        if (_objects.ContainsKey(info.ObjectId))
+        {
+            Debug.LogError($"[Spawn Fail] Monster ID {info.ObjectId} already exists! Skipping.");
+            return;
+        }
 
         Vector3 pos = new Vector3(info.PosInfo.X, info.PosInfo.Y, info.PosInfo.Z);
 
-        // ¸ó½ºÅÍ ÇÁ¸®ÆÕ »ı¼º
+        // [CRITICAL CHECK 1] MonsterPrefabì´ ì—°ê²°ë˜ì—ˆëŠ”ì§€ í™•ì¸
+        if (MonsterPrefab == null)
+        {
+            Debug.LogError("[Spawn Fail] MonsterPrefab is NULL! Assign Prefab in Inspector.");
+            return; // í”„ë¦¬íŒ¹ì´ ì—†ìœ¼ë©´ ì—¬ê¸°ì„œ ë©ˆì¶°ì•¼ í•¨
+        }
+
+        // [CRITICAL CHECK 2] ì‹¤ì œ ìƒì„± ì‹œë„
         GameObject go = Instantiate(MonsterPrefab, pos, Quaternion.identity);
 
-        // ¸ó½ºÅÍµµ ÀÌµ¿ÇØ¾ß ÇÏ¹Ç·Î PlayerController(ÀÌµ¿ ´ã´ç)¸¦ ºÙ¿©ÁØ´Ù.
-        // ³ªÁß¿¡´Â MonsterController¸¦ µû·Î ¸¸µå´Â °Ô Á¤¼®.
+        if (go == null)
+        {
+            Debug.LogError("[Spawn Fail] Instantiate failed! Prefab might be corrupted.");
+            return;
+        }
+
         if (go.GetComponent<PlayerController>() == null)
             go.AddComponent<PlayerController>();
 
         go.name = $"Monster_{info.TemplateId}_{info.ObjectId}";
         _objects.Add(info.ObjectId, go);
+
+        // [FINAL DEBUG] ìƒì„± ì„±ê³µ í™•ì¸
+        Debug.Log($"ğŸ‘¾ [SUCCESS] Monster Spawned: {go.name} at {pos}");
     }
 }

@@ -7,6 +7,21 @@
     <Filter Include="Utils">
       <UniqueIdentifier>{ff7d3e7a-5bf4-4218-be3f-a583bc7b4727}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Protocol">
+      <UniqueIdentifier>{cc5f896d-ea3f-44a9-9701-730dfd7d176b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Session_Clinet">
+      <UniqueIdentifier>{c95e2bf3-b447-4ca0-ac15-e30b439a07d3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Session_DB">
+      <UniqueIdentifier>{304b7c2a-7f37-4815-b576-498cf6be9add}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Handler">
+      <UniqueIdentifier>{8e457a85-42e9-46d6-8b11-d4cb47367b8c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Session_GameServer">
+      <UniqueIdentifier>{6c7e0977-1ef7-4d4b-a7eb-c20005a8ae14}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="LoginServer.cpp">
@@ -15,15 +30,81 @@
     <ClCompile Include="pch.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
-    <ClCompile Include="LoginSession.cpp" />
+    <ClCompile Include="ClientSession.cpp">
+      <Filter>Session_Clinet</Filter>
+    </ClCompile>
+    <ClCompile Include="DBAgentSession.cpp">
+      <Filter>Session_DB</Filter>
+    </ClCompile>
+    <ClCompile Include="Protocol.pb.cc">
+      <Filter>Protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="Protocol_S2S.pb.cc">
+      <Filter>Protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="Struct.pb.cc">
+      <Filter>Protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="Enum.pb.cc">
+      <Filter>Protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="ClientPacketHandler.cpp">
+      <Filter>Handler</Filter>
+    </ClCompile>
+    <ClCompile Include="S2SPacketHandler.cpp">
+      <Filter>Handler</Filter>
+    </ClCompile>
+    <ClCompile Include="GameServerSession.cpp">
+      <Filter>Session_GameServer</Filter>
+    </ClCompile>
+    <ClCompile Include="LoginSessionManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
       <Filter>Utils</Filter>
     </ClInclude>
-    <ClInclude Include="LoginSession.h" />
+    <ClInclude Include="ClientSession.h">
+      <Filter>Session_Clinet</Filter>
+    </ClInclude>
+    <ClInclude Include="DBAgentSession.h">
+      <Filter>Session_DB</Filter>
+    </ClInclude>
+    <ClInclude Include="ClientPacketHandler.h">
+      <Filter>Handler</Filter>
+    </ClInclude>
+    <ClInclude Include="S2SPacketHandler.h">
+      <Filter>Handler</Filter>
+    </ClInclude>
+    <ClInclude Include="Protocol.pb.h">
+      <Filter>Protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="Protocol_S2S.pb.h">
+      <Filter>Protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="Struct.pb.h">
+      <Filter>Protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="Enum.pb.h">
+      <Filter>Protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="GameServerSession.h">
+      <Filter>Session_GameServer</Filter>
+    </ClInclude>
+    <ClInclude Include="LoginSessionManager.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ServerConfig.json" />
+    <None Include="..\Common\Protobuf\bin\Protocol.proto">
+      <Filter>Protocol</Filter>
+    </None>
+    <None Include="..\Common\Protobuf\bin\Protocol_S2S.proto">
+      <Filter>Protocol</Filter>
+    </None>
+    <None Include="..\Common\Protobuf\bin\Struct.proto">
+      <Filter>Protocol</Filter>
+    </None>
+    <None Include="..\Common\Protobuf\bin\Enum.proto">
+      <Filter>Protocol</Filter>
+    </None>
   </ItemGroup>
 </Project>

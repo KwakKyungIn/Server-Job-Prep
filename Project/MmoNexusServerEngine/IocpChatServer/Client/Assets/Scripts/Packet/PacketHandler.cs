@@ -7,94 +7,115 @@ using UnityEngine;
 public class PacketHandler
 {
     // [GIGACHAD] UI 및 게임 로직으로 이벤트를 토스하기 위한 Action들
-    public static Action<bool> OnLoginResult;
-    public static Action<S_ENTER_GAME_RES> OnEnterGame; // 내 캐릭터 입장
-    public static Action<S_SPAWN> OnSpawn;              // 다른 캐릭터(또는 몬스터) 출현
-    public static Action<S_DESPAWN> OnDespawn;          // 오브젝트 사라짐
-    public static Action<S_MOVE> OnMove;                // 이동
+
+    // [Change] 로그인 결과: 이제 bool이 아니라 패킷(S_LOGIN)을 통째로 넘김 (토큰 포함)
+    public static Action<S_LOGIN> OnLogin;
+
+    // [Change] 게임 입장: S_ENTER_GAME_RES -> S_ENTER_GAME
+    public static Action<S_ENTER_GAME> OnEnterGame;
+
+    public static Action<S_SPAWN> OnSpawn;
+    public static Action<S_DESPAWN> OnDespawn;
+    public static Action<S_MOVE> OnMove;
     public static Action<string> OnChatMsg;
+    public static Action<bool> OnChatRes; // 채팅 전송 성공여부
 
     // [Inventory Events]
     public static Action<RepeatedField<ItemInfo>> OnItemList;
     public static Action<ItemInfo> OnUpdateItem;
     public static Action<ulong> OnRemoveItem;
 
-    // [New] 전투 관련 이벤트
-    public static Action<S_SKILL> OnSkill;         // 누가 스킬 씀
-    public static Action<S_CHANGE_HP> OnChangeHp;  // 누가 데미지 입음
+    // [Combat Events]
+    public static Action<S_SKILL> OnSkill;
+    public static Action<S_CHANGE_HP> OnChangeHp;
 
     public static Action<S_EQUIP_ITEM> OnEquipItem;
     public static Action<StatInfo> OnChangeStat;
 
-    // [S_LOGIN_RES] 로그인 응답
-    public static void S_LOGIN_RESHandler(ServerSession session, IMessage packet)
-    {
-        S_LOGIN_RES res = packet as S_LOGIN_RES;
+    // ============================================================
+    // [LOGIN & ENTRY HANDLERS]
+    // ============================================================
 
-        if (res.Success)
+    // [S_LOGIN] 로그인 응답 (토큰 수신)
+    public static void S_LOGINHandler(ServerSession session, IMessage packet)
+    {
+        S_LOGIN pkt = packet as S_LOGIN;
+
+        if (pkt.Success)
         {
-            Debug.Log($"[Login Success] ID: {res.PlayerId}");
-            if (OnLoginResult != null)
-                OnLoginResult.Invoke(true);
+            Debug.Log($"[Login Success] Token: {pkt.Token}");
         }
         else
         {
-            Debug.Log($"[Login Failed] Check Server");
-            if (OnLoginResult != null)
-                OnLoginResult.Invoke(false);
+            Debug.Log($"[Login Failed] Check ID/PW");
         }
+
+        if (OnLogin != null)
+            OnLogin.Invoke(pkt);
     }
 
-    // [S_ENTER_GAME_RES] 게임 입장 성공
-    public static void S_ENTER_GAME_RESHandler(ServerSession session, IMessage packet)
+    // [S_ENTER_GAME] 게임 입장 성공 (캐릭터 정보 수신)
+    public static void S_ENTER_GAMEHandler(ServerSession session, IMessage packet)
     {
-        S_ENTER_GAME_RES res = packet as S_ENTER_GAME_RES;
-        if (res.Success)
+        S_ENTER_GAME pkt = packet as S_ENTER_GAME;
+
+        if (pkt.Success)
         {
             Debug.Log("[Enter Game] Success!");
             if (OnEnterGame != null)
-                OnEnterGame.Invoke(res);
+                OnEnterGame.Invoke(pkt);
         }
     }
 
+    // ============================================================
+    // [WORLD OBJECT HANDLERS]
+    // ============================================================
+
+    // [S_SPAWN] 다른 플레이어 + 몬스터 출현
     // [S_SPAWN] 다른 플레이어 + 몬스터 출현
     public static void S_SPAWNHandler(ServerSession session, IMessage packet)
     {
-        S_SPAWN spawnPkt = packet as S_SPAWN;
+        Debug.Log($"🚨🚨🚨 [S_SPAWNHandler] ENTRY POINT!"); // ← 가장 첫 줄에 추가
 
-        // [Modify] 이제 몬스터도 같이 온다. 로그 수정.
-        int playerCount = spawnPkt.Players == null ? 0 : spawnPkt.Players.Count;
-        int monsterCount = spawnPkt.Monsters == null ? 0 : spawnPkt.Monsters.Count;
+        S_SPAWN pkt = packet as S_SPAWN;
 
-        Debug.Log($"[Client Log] Received S_SPAWN. Players: {playerCount}, Monsters: {monsterCount}");
+        int playerCount = pkt.Players == null ? 0 : pkt.Players.Count;
+        int monsterCount = pkt.Monsters == null ? 0 : pkt.Monsters.Count;
+
+        Debug.Log($"🚨🚨🚨 [S_SPAWNHandler] CALLED! Players={playerCount}, Monsters={monsterCount}");
 
         if (OnSpawn != null)
-            OnSpawn.Invoke(spawnPkt);
+        {
+            Debug.Log($"✅ [S_SPAWNHandler] Invoking OnSpawn event");
+            OnSpawn.Invoke(pkt);
+        }
+        else
+        {
+            Debug.LogError($"❌ [S_SPAWNHandler] OnSpawn is NULL! Event not registered!");
+        }
     }
-
     // [S_DESPAWN] 오브젝트 사라짐
     public static void S_DESPAWNHandler(ServerSession session, IMessage packet)
     {
-        S_DESPAWN despawnPkt = packet as S_DESPAWN;
+        S_DESPAWN pkt = packet as S_DESPAWN;
 
-        // [Modify] PlayerIds -> ObjectIds로 이름 변경됨 (C# GenPackets 확인 필요)
-        Debug.Log($"[Client Log] S_DESPAWN Count: {despawnPkt.ObjectIds.Count}");
+        // [Check] Protocol.proto에서 field name이 objectIds인지 확인
+        // 만약 C#에서 ObjectIds로 생성되었다면 그대로 사용.
+        Debug.Log($"[Despawn] Count: {pkt.ObjectIds.Count}");
 
         if (OnDespawn != null)
-            OnDespawn.Invoke(despawnPkt);
+            OnDespawn.Invoke(pkt);
     }
 
     // [S_MOVE] 이동 패킷
     public static void S_MOVEHandler(ServerSession session, IMessage packet)
     {
-        S_MOVE movePkt = packet as S_MOVE;
+        S_MOVE pkt = packet as S_MOVE;
 
-        // [Modify] PlayerId -> ObjectId로 변경됨
-        // 로그를 찍고 싶다면 movePkt.ObjectId 를 써야 함.
-        // Debug.Log($"[Move] ObjID: {movePkt.ObjectId} Pos: {movePkt.PosInfo.X}, {movePkt.PosInfo.Z}");
+        // Debug.Log($"[Move] ObjID: {pkt.ObjectId} Pos: {pkt.PosInfo.X}, {pkt.PosInfo.Z}");
 
         if (OnMove != null)
-            OnMove.Invoke(movePkt);
+            OnMove.Invoke(pkt);
     }
 
     // ============================================================
@@ -145,6 +166,11 @@ public class PacketHandler
         if (OnChangeStat != null)
             OnChangeStat.Invoke(pkt.StatInfo);
     }
+
+    // ============================================================
+    // [COMBAT HANDLERS]
+    // ============================================================
+
     public static void S_SKILLHandler(ServerSession session, IMessage packet)
     {
         S_SKILL pkt = packet as S_SKILL;
@@ -154,7 +180,6 @@ public class PacketHandler
             OnSkill.Invoke(pkt);
     }
 
-    // [New] 체력 변경 알림 (데미지 폰트, 사망 처리용)
     public static void S_CHANGE_HPHandler(ServerSession session, IMessage packet)
     {
         S_CHANGE_HP pkt = packet as S_CHANGE_HP;
@@ -163,15 +188,27 @@ public class PacketHandler
         if (OnChangeHp != null)
             OnChangeHp.Invoke(pkt);
     }
+
+    // ============================================================
+    // [CHAT HANDLERS]
+    // ============================================================
+
     public static void S_CHAT_RESHandler(ServerSession session, IMessage packet)
     {
+        S_CHAT_RES pkt = packet as S_CHAT_RES;
+        if (OnChatRes != null)
+            OnChatRes.Invoke(pkt.Success);
     }
 
     public static void S_CHAT_NTFHandler(ServerSession session, IMessage packet)
     {
+        S_CHAT_NTF pkt = packet as S_CHAT_NTF;
+        if (OnChatMsg != null)
+            OnChatMsg.Invoke(pkt.Message);
     }
 
     public static void S_HEART_BEAT_RESHandler(ServerSession session, IMessage packet)
     {
+        // 하트비트 응답은 보통 무시하거나 연결 상태 갱신에 사용
     }
 }

@@ -6,7 +6,9 @@
 #include "Job.h"
 #include "Player.h"
 #include "DataManager.h"
+#include "GameRoom.h"
 
+extern shared_ptr<GameRoom> GTestRoom;
 PacketHandlerFunc S2SPacketHandler::GPacketHandler[UINT16_MAX];
 
 bool S2SPacketHandler::Handle_INVALID(PacketSessionRef& session, BYTE* buffer, int32 len)
@@ -17,61 +19,61 @@ bool S2SPacketHandler::Handle_INVALID(PacketSessionRef& session, BYTE* buffer, i
 // [DB -> Game] 로그인 결과 도착
 bool S2SPacketHandler::Handle_S2S_RES_LOGIN(PacketSessionRef& session, Protocol::S2S_RES_LOGIN& pkt)
 {
-	uint64 userSessionId = pkt.playersessionid();
-	auto playerSession = static_pointer_cast<PlayerSession>(GameSessionManager::GSessionManager->Find(userSessionId));
+	//uint64 userSessionId = pkt.playersessionid();
+	//auto playerSession = static_pointer_cast<PlayerSession>(GameSessionManager::GSessionManager->Find(userSessionId));
 
-	if (playerSession == nullptr)
-	{
-		std::cout << "💀 [FAIL] Session Not Found! ID : " << userSessionId << std::endl;
-		return true;
-	}
+	//if (playerSession == nullptr)
+	//{
+	//	std::cout << "💀 [FAIL] Session Not Found! ID : " << userSessionId << std::endl;
+	//	return true;
+	//}
 
-	playerSession->PushJob(ObjectPool<Job>::MakeShared([playerSession, session, pkt]()
-		{
-			Protocol::S_LOGIN_RES resPkt;
-			resPkt.set_success(pkt.success());
-			resPkt.set_playerid(pkt.playerid());
+	//playerSession->PushJob(ObjectPool<Job>::MakeShared([playerSession, session, pkt]()
+	//	{
+	//		Protocol::S_LOGIN_RES resPkt;
+	//		resPkt.set_success(pkt.success());
+	//		resPkt.set_playerid(pkt.playerid());
 
-			auto sendBuffer = ClientPacketHandler::MakeSendBuffer(resPkt);
-			playerSession->Send(sendBuffer);
+	//		auto sendBuffer = ClientPacketHandler::MakeSendBuffer(resPkt);
+	//		playerSession->Send(sendBuffer);
 
-			if (pkt.success())
-			{
-				// 1. Player 생성 및 기본 ID 설정
-				shared_ptr<Player> newPlayer = make_shared<Player>();
-				newPlayer->SetSession(playerSession);
-				newPlayer->GetPlayerInfo()->set_playerid(pkt.playerid());
-				newPlayer->GetPlayerInfo()->set_name("Player_" + std::to_string(pkt.playerid()));
+	//		if (pkt.success())
+	//		{
+	//			// 1. Player 생성 및 기본 ID 설정
+	//			shared_ptr<Player> newPlayer = make_shared<Player>();
+	//			newPlayer->SetSession(playerSession);
+	//			newPlayer->GetPlayerInfo()->set_playerid(pkt.playerid());
+	//			newPlayer->GetPlayerInfo()->set_name("Player_" + std::to_string(pkt.playerid()));
 
-				// 2. 세션 연결
-				playerSession->SetPlayer(newPlayer);
+	//			// 2. 세션 연결
+	//			playerSession->SetPlayer(newPlayer);
 
-				std::cout << "✅ [Login Success] SessionID: " << playerSession->GetSessionId() << " -> PlayerID: " << pkt.playerid() << std::endl;
+	//			std::cout << "✅ [Login Success] SessionID: " << playerSession->GetSessionId() << " -> PlayerID: " << pkt.playerid() << std::endl;
 
-				// 3. [GIGACHAD FLOW] 데이터 로딩 2연타 요청
-				// (1) 아이템 로딩 요청
-				{
-					Protocol::S2S_REQ_ITEMS_LOAD itemReq;
-					itemReq.set_playerid(pkt.playerid());
-					itemReq.set_gamesessionid(playerSession->GetSessionId());
-					session->Send(S2SPacketHandler::MakeSendBuffer(itemReq));
-				}
+	//			// 3. [GIGACHAD FLOW] 데이터 로딩 2연타 요청
+	//			// (1) 아이템 로딩 요청
+	//			{
+	//				Protocol::S2S_REQ_ITEMS_LOAD itemReq;
+	//				itemReq.set_playerid(pkt.playerid());
+	//				itemReq.set_gamesessionid(playerSession->GetSessionId());
+	//				session->Send(S2SPacketHandler::MakeSendBuffer(itemReq));
+	//			}
 
-				// (2) 플레이어 스탯 로딩 요청 (NEW)
-				{
-					Protocol::S2S_REQ_LOAD_PLAYER_DATA statReq;
-					statReq.set_playerid(pkt.playerid());
-					statReq.set_gamesessionid(playerSession->GetSessionId());
-					session->Send(S2SPacketHandler::MakeSendBuffer(statReq));
-				}
+	//			// (2) 플레이어 스탯 로딩 요청 (NEW)
+	//			{
+	//				Protocol::S2S_REQ_LOAD_PLAYER_DATA statReq;
+	//				statReq.set_playerid(pkt.playerid());
+	//				statReq.set_gamesessionid(playerSession->GetSessionId());
+	//				session->Send(S2SPacketHandler::MakeSendBuffer(statReq));
+	//			}
 
-				std::cout << "🚀 [Game] Requested Full Data Load (Items + Stats) for Player: " << pkt.playerid() << std::endl;
-			}
-			else
-			{
-				std::cout << "❌ [Login Failed] SessionID: " << playerSession->GetSessionId() << std::endl;
-			}
-		}));
+	//			std::cout << "🚀 [Game] Requested Full Data Load (Items + Stats) for Player: " << pkt.playerid() << std::endl;
+	//		}
+	//		else
+	//		{
+	//			std::cout << "❌ [Login Failed] SessionID: " << playerSession->GetSessionId() << std::endl;
+	//		}
+	//	}));
 
 	return true;
 }
@@ -101,8 +103,12 @@ bool S2SPacketHandler::Handle_S2S_RES_LOAD_PLAYER_DATA(PacketSessionRef& session
 				std::cout << "👤 [Player] Stat Loaded. Lv:" << player->GetStatInfo()->level()
 					<< " HP:" << player->GetStatInfo()->hp() << std::endl;
 
-				// (옵션) 클라에게 바로 S_CHANGE_STAT을 보내줘도 되지만, 
-				// 보통은 게임 입장(EnterGame) 후에 보내거나 여기서 보내도 무방함.
+				if (GTestRoom)
+				{
+					GTestRoom->PushJob(&GameRoom::Enter, playerSession);
+					std::cout << "🚪 [GameRoom] Player Entered Room!" << std::endl;
+				}
+
 			}
 		}));
 

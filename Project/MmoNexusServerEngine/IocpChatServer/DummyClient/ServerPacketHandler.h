@@ -9,10 +9,10 @@ class ServerPacketHandler
 public:
 	enum : uint16
 	{
-		PKT_C_LOGIN_REQ = 1000,
-		PKT_S_LOGIN_RES = 1001,
-		PKT_C_ENTER_GAME_REQ = 1002,
-		PKT_S_ENTER_GAME_RES = 1003,
+		PKT_C_LOGIN = 1000,
+		PKT_S_LOGIN = 1001,
+		PKT_C_ENTER_GAME = 1002,
+		PKT_S_ENTER_GAME = 1003,
 		PKT_C_MOVE = 1004,
 		PKT_S_MOVE = 1005,
 		PKT_S_SPAWN = 1006,
@@ -38,8 +38,8 @@ public:
 	{
 		for (int32 i = 0; i < UINT16_MAX; i++)
 			GPacketHandler[i] = Handle_INVALID;
-		GPacketHandler[PKT_S_LOGIN_RES] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S_LOGIN_RES>(Handle_S_LOGIN_RES, session, buffer, len); };
-		GPacketHandler[PKT_S_ENTER_GAME_RES] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S_ENTER_GAME_RES>(Handle_S_ENTER_GAME_RES, session, buffer, len); };
+		GPacketHandler[PKT_S_LOGIN] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S_LOGIN>(Handle_S_LOGIN, session, buffer, len); };
+		GPacketHandler[PKT_S_ENTER_GAME] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S_ENTER_GAME>(Handle_S_ENTER_GAME, session, buffer, len); };
 		GPacketHandler[PKT_S_MOVE] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S_MOVE>(Handle_S_MOVE, session, buffer, len); };
 		GPacketHandler[PKT_S_SPAWN] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S_SPAWN>(Handle_S_SPAWN, session, buffer, len); };
 		GPacketHandler[PKT_S_DESPAWN] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S_DESPAWN>(Handle_S_DESPAWN, session, buffer, len); };
@@ -60,8 +60,8 @@ public:
 		PacketHeader* header = reinterpret_cast<PacketHeader*>(buffer);
 		return GPacketHandler[header->id](session, buffer, len);
 	}
-	static SendBufferRef MakeSendBuffer(Protocol::C_LOGIN_REQ& pkt) { return MakeSendBuffer(pkt, PKT_C_LOGIN_REQ); }
-	static SendBufferRef MakeSendBuffer(Protocol::C_ENTER_GAME_REQ& pkt) { return MakeSendBuffer(pkt, PKT_C_ENTER_GAME_REQ); }
+	static SendBufferRef MakeSendBuffer(Protocol::C_LOGIN& pkt) { return MakeSendBuffer(pkt, PKT_C_LOGIN); }
+	static SendBufferRef MakeSendBuffer(Protocol::C_ENTER_GAME& pkt) { return MakeSendBuffer(pkt, PKT_C_ENTER_GAME); }
 	static SendBufferRef MakeSendBuffer(Protocol::C_MOVE& pkt) { return MakeSendBuffer(pkt, PKT_C_MOVE); }
 	static SendBufferRef MakeSendBuffer(Protocol::C_SKILL& pkt) { return MakeSendBuffer(pkt, PKT_C_SKILL); }
 	static SendBufferRef MakeSendBuffer(Protocol::C_USE_ITEM& pkt) { return MakeSendBuffer(pkt, PKT_C_USE_ITEM); }
@@ -72,8 +72,8 @@ public:
 public:
 	static PacketHandlerFunc GPacketHandler[UINT16_MAX];
 	static bool Handle_INVALID(PacketSessionRef& session, BYTE* buffer, int32 len);
-	static bool Handle_S_LOGIN_RES(PacketSessionRef& session, Protocol::S_LOGIN_RES& pkt);
-	static bool Handle_S_ENTER_GAME_RES(PacketSessionRef& session, Protocol::S_ENTER_GAME_RES& pkt);
+	static bool Handle_S_LOGIN(PacketSessionRef& session, Protocol::S_LOGIN& pkt);
+	static bool Handle_S_ENTER_GAME(PacketSessionRef& session, Protocol::S_ENTER_GAME& pkt);
 	static bool Handle_S_MOVE(PacketSessionRef& session, Protocol::S_MOVE& pkt);
 	static bool Handle_S_SPAWN(PacketSessionRef& session, Protocol::S_SPAWN& pkt);
 	static bool Handle_S_DESPAWN(PacketSessionRef& session, Protocol::S_DESPAWN& pkt);
