@@ -190,6 +190,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="BattleSystem.cpp" />
     <ClCompile Include="ChatSession.cpp" />
     <ClCompile Include="ClientPacketHandler.cpp" />
     <ClCompile Include="Creature.cpp" />
@@ -216,11 +217,13 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="S2SPacketHandler.cpp" />
+    <ClCompile Include="SpatialGrid.cpp" />
     <ClCompile Include="Struct.pb.cc">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BattleSystem.h" />
     <ClInclude Include="ChatSession.h" />
     <ClInclude Include="ClientPacketHandler.h" />
     <ClInclude Include="Creature.h" />
@@ -239,7 +242,9 @@
     <ClInclude Include="Protocol.pb.h" />
     <ClInclude Include="Protocol_S2S.pb.h" />
     <ClInclude Include="S2SPacketHandler.h" />
+    <ClInclude Include="SpatialGrid.h" />
     <ClInclude Include="Struct.pb.h" />
+    <ClInclude Include="Zone.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Common\Protobuf\bin\Enum.proto" />

@@ -7,10 +7,14 @@
 #include "Monster.h"
 #include "DataManager.h"
 #include "ObjectUtils.h"
+#include "BattleSystem.h"
+#include "Zone.h"
+#include "Creature.h"
 
 GameRoom::GameRoom()
 {
 	_jobQueue = MakeShared<JobQueue>();
+	_battle = std::make_unique<BattleSystem>(&_grid);
 }
 
 GameRoom::~GameRoom()
@@ -22,25 +26,17 @@ void GameRoom::Init(int32 mapId, int32 sizeX, int32 sizeY, int32 zoneSize)
 	_map = MakeShared<GameMap>();
 	_map->Init(mapId, sizeX, sizeY);
 
-	// [Spatial Partitioning Init]
-	_zoneCellSize = zoneSize;
-	_gridSizeX = (sizeX + zoneSize - 1) / zoneSize;
-	_gridSizeY = (sizeY + zoneSize - 1) / zoneSize;
+	// [Spatial Partitioning Init] → SpatialGrid 사용
+	// AOI 초기화
+	_grid.Init(0, 0, sizeX, sizeY, zoneSize);
 
-	_zones.resize(_gridSizeX * _gridSizeY);
-
-	printf("[GameRoom] Init MapId: %d, Grid: %dx%d, CellSize: %d\n", mapId, _gridSizeX, _gridSizeY, zoneSize);
-
-
-
-
+	printf("[GameRoom] Init MapId: %d, Grid: (%d, %d), CellSize: %d\n",
+		mapId, sizeX, sizeY, zoneSize);
 
 	// [Test Spawn] 테스트용 몬스터 1마리 소환
-	// 나중엔 GenFile(배치 파일)이나 DB에서 읽어서 루프 돌려야 함
 	MonsterRef slime = ObjectPool<Monster>::MakeShared();
 	slime->Init(1); // 템플릿 ID 1번 (슬라임 킹)
 
-	// 위치 설정 (플레이어 스폰 위치 근처인 55, 0, 55 정도로 설정)
 	slime->GetPosInfo()->set_x(5.0f);
 	slime->GetPosInfo()->set_y(0.0f);
 	slime->GetPosInfo()->set_z(5.0f);
@@ -50,12 +46,16 @@ void GameRoom::Init(int32 mapId, int32 sizeX, int32 sizeY, int32 zoneSize)
 	EnterMonster(slime);
 
 	printf("👾 [Test] Slime_King Spawned at (5, 0, 5)\n");
-	int32 debugZoneIndex = GetZoneIndex(*slime->GetPosInfo());
-	Zone& debugZone = _zones[debugZoneIndex];
+
+	// 디버그용: SpatialGrid 기준으로 확인
+	int32 debugZoneIndex = _grid.GetZoneIndex(*slime->GetPosInfo());
+	Zone& debugZone = _grid.GetZone(debugZoneIndex);
 
 	printf("🔍 [DEBUG] Monster Check: Slime ID %llu is in Zone [%d]. Players in Zone: %zu, Monsters in Zone: %zu\n",
-		slime->GetObjectId(), debugZoneIndex, debugZone.players.size(), debugZone.monsters.size());
-
+		slime->GetObjectId(),
+		debugZoneIndex,
+		debugZone.players.size(),
+		debugZone.monsters.size());
 }
 
 void GameRoom::Update()
@@ -77,7 +77,8 @@ void GameRoom::Enter(PlayerSessionRef session)
 	player->SetRoom(shared_from_this());
 	_players.insert({ player->GetPlayerId(), player });
 
-	int32 zoneIndex = GetZoneIndex(*player->GetPosInfo());
+	// [CHANGED] AOI : zoneIndex 계산을 SpatialGrid로
+	int32 zoneIndex = _grid.GetZoneIndex(*player->GetPosInfo());
 
 	printf("🎮 [Enter] Player %llu entering Zone[%d] at (%.1f, %.1f, %.1f)\n",
 		player->GetPlayerId(), zoneIndex,
@@ -86,18 +87,20 @@ void GameRoom::Enter(PlayerSessionRef session)
 		player->GetPosInfo()->z());
 
 	player->SetZoneIndex(zoneIndex);
-	_zones[zoneIndex].players.insert(player);
+
+	// [CHANGED] 특정 Zone에 플레이어 등록
+	Zone& enterZone = _grid.GetZone(zoneIndex);
+	enterZone.players.insert(player);
 
 	{
 		Protocol::S_ENTER_GAME enterPkt;
 		enterPkt.set_success(true);
-
-		// 내 정보를 담아서 보냄 (MyPlayerId 세팅용)
 		enterPkt.mutable_myplayer()->CopyFrom(*player->GetPlayerInfo());
 
 		SendBufferRef sendBuffer = ClientPacketHandler::MakeSendBuffer(enterPkt);
 		session->Send(sendBuffer);
 	}
+
 	// 1. 주변 플레이어들에게 "나(플레이어) 등장" 알림
 	{
 		Protocol::S_SPAWN spawnPkt;
@@ -106,7 +109,7 @@ void GameRoom::Enter(PlayerSessionRef session)
 		SendBufferRef sendBuffer = ClientPacketHandler::MakeSendBuffer(spawnPkt);
 
 		Vector<Zone*> nearbyZones;
-		GetNearbyZones(zoneIndex, nearbyZones);
+		_grid.GetNearbyZones(zoneIndex, nearbyZones);   // [CHANGED]
 
 		for (Zone* zone : nearbyZones)
 		{
@@ -121,7 +124,7 @@ void GameRoom::Enter(PlayerSessionRef session)
 	// 2. 나에게 "주변 정보(플레이어 + 몬스터)" 알림
 	{
 		Vector<Zone*> nearbyZones;
-		GetNearbyZones(zoneIndex, nearbyZones);
+		_grid.GetNearbyZones(zoneIndex, nearbyZones);   // [CHANGED]
 
 		printf("🔍 [Enter] Checking nearby zones for Player %llu (Zone[%d])\n",
 			player->GetPlayerId(), zoneIndex);
@@ -143,7 +146,7 @@ void GameRoom::Enter(PlayerSessionRef session)
 					*pInfo = *other->GetPlayerInfo();
 				}
 			}
-			// [New] 몬스터 추가
+			// 몬스터 추가
 			for (const MonsterRef& monster : zone->monsters)
 			{
 				printf("      📦 Found Monster ID=%llu in zone\n",
@@ -156,7 +159,6 @@ void GameRoom::Enter(PlayerSessionRef session)
 		printf("📤 [Enter] Final S_SPAWN packet: %d players, %d monsters\n",
 			spawnPkt.players_size(), spawnPkt.monsters_size());
 
-		// 주변에 뭐라도(플레이어든 몬스터든) 있으면 전송
 		if (spawnPkt.players_size() > 0 || spawnPkt.monsters_size() > 0)
 		{
 			SendBufferRef sendBuffer = ClientPacketHandler::MakeSendBuffer(spawnPkt);
@@ -169,21 +171,23 @@ void GameRoom::Enter(PlayerSessionRef session)
 		}
 	}
 }
+
 void GameRoom::Leave(PlayerSessionRef session)
 {
 	PlayerRef player = session->GetPlayer();
 	if (player == nullptr) return;
 
 	uint64 playerId = player->GetPlayerId();
-
 	if (_players.find(playerId) == _players.end()) return;
 
 	int32 zoneIndex = player->GetZoneIndex();
 
-	// 1. Zone에서 제거
-	if (zoneIndex >= 0 && zoneIndex < _zones.size())
+	// 1. Zone에서 제거 (AOI)
+	int32 totalZones = _grid.GetGridSizeX() * _grid.GetGridSizeY();
+	if (zoneIndex >= 0 && zoneIndex < totalZones)
 	{
-		_zones[zoneIndex].players.erase(player);
+		Zone& zone = _grid.GetZone(zoneIndex);
+		zone.players.erase(player);
 	}
 
 	// 2. 전체 명단 제거
@@ -208,18 +212,17 @@ void GameRoom::HandleMove(PlayerSessionRef session, Protocol::C_MOVE pkt)
 	if (player == nullptr) return;
 
 	uint64 playerId = player->GetPlayerId();
-
 	if (_players.find(playerId) == _players.end()) return;
 
-	// 1. [Validation]
+	// 1. [Validation] 맵 충돌 체크
 	if (_map->CanGo(pkt.posinfo()) == false)
 		return;
 
-	// 2. [Zone Check]
+	// 2. [Zone Check] AOI 그리드 기준
 	int32 oldZoneIndex = player->GetZoneIndex();
-	int32 newZoneIndex = GetZoneIndex(pkt.posinfo());
+	int32 newZoneIndex = _grid.GetZoneIndex(pkt.posinfo());
 
-	// 3. [Update] 정보 갱신
+	// 3. [Update] 위치 정보 갱신
 	player->SetPosInfo(pkt.posinfo());
 
 	// [Case A] 같은 Zone 내 이동
@@ -236,11 +239,11 @@ void GameRoom::HandleMove(PlayerSessionRef session, Protocol::C_MOVE pkt)
 	else
 	{
 		Vector<int32> oldZones;
-		GetNearbyZoneIndices(oldZoneIndex, oldZones);
+		_grid.GetNearbyZoneIndices(oldZoneIndex, oldZones);
 		std::sort(oldZones.begin(), oldZones.end());
 
 		Vector<int32> newZones;
-		GetNearbyZoneIndices(newZoneIndex, newZones);
+		_grid.GetNearbyZoneIndices(newZoneIndex, newZones);
 		std::sort(newZones.begin(), newZones.end());
 
 		// (Old - New) : Despawn Group (사라져야 할 놈들)
@@ -260,18 +263,18 @@ void GameRoom::HandleMove(PlayerSessionRef session, Protocol::C_MOVE pkt)
 
 			for (int32 zoneIdx : removedZones)
 			{
-				Zone& zone = _zones[zoneIdx];
+				Zone& zone = _grid.GetZone(zoneIdx);
 
 				// 해당 존에 있는 플레이어 처리
 				for (auto& p : zone.players)
 				{
 					if (p->GetPlayerId() != playerId)
 					{
-						p->GetSession()->Send(sendBuffer); // 걔네한테 내 정보 삭제 요청
-						despawnToMePkt.add_objectids(p->GetPlayerId()); // 내 목록에 걔네 추가
+						p->GetSession()->Send(sendBuffer);              // 걔네한테 내 정보 삭제
+						despawnToMePkt.add_objectids(p->GetPlayerId()); // 내 목록에서 걔네 삭제
 					}
 				}
-				// [New] 해당 존에 있는 몬스터 처리
+				// 몬스터 처리
 				for (auto& m : zone.monsters)
 				{
 					despawnToMePkt.add_objectids(m->GetObjectId());
@@ -303,19 +306,19 @@ void GameRoom::HandleMove(PlayerSessionRef session, Protocol::C_MOVE pkt)
 
 			for (int32 zoneIdx : addedZones)
 			{
-				Zone& zone = _zones[zoneIdx];
+				Zone& zone = _grid.GetZone(zoneIdx);
 
 				// 플레이어 처리
 				for (auto& p : zone.players)
 				{
 					if (p->GetPlayerId() != playerId)
 					{
-						p->GetSession()->Send(mySpawnBuffer); // 걔네한테 나 보냄
+						p->GetSession()->Send(mySpawnBuffer); // 걔네에게 나를 보냄
 						auto* otherInfo = othersSpawnPkt.add_players();
-						*otherInfo = *p->GetPlayerInfo(); // 내 목록에 걔네 추가
+						*otherInfo = *p->GetPlayerInfo();
 					}
 				}
-				// [New] 몬스터 처리
+				// 몬스터 처리
 				for (auto& m : zone.monsters)
 				{
 					auto* mInfo = othersSpawnPkt.add_monsters();
@@ -344,7 +347,7 @@ void GameRoom::HandleMove(PlayerSessionRef session, Protocol::C_MOVE pkt)
 
 			for (int32 zoneIdx : commonZones)
 			{
-				Zone& zone = _zones[zoneIdx];
+				Zone& zone = _grid.GetZone(zoneIdx);
 				for (auto& p : zone.players)
 				{
 					if (p->GetPlayerId() != playerId)
@@ -354,9 +357,14 @@ void GameRoom::HandleMove(PlayerSessionRef session, Protocol::C_MOVE pkt)
 		}
 
 		// 서버 내 Zone 이동 반영
-		_zones[oldZoneIndex].players.erase(player);
-		_zones[newZoneIndex].players.insert(player);
-		player->SetZoneIndex(newZoneIndex);
+		{
+			Zone& oldZone = _grid.GetZone(oldZoneIndex);
+			Zone& newZone = _grid.GetZone(newZoneIndex);
+
+			oldZone.players.erase(player);
+			newZone.players.insert(player);
+			player->SetZoneIndex(newZoneIndex);
+		}
 	}
 }
 
@@ -369,7 +377,8 @@ void GameRoom::EnterMonster(MonsterRef monster)
 	_monsters.insert({ monster->GetObjectId(), monster });
 	monster->SetRoom(shared_from_this());
 
-	int32 zoneIndex = GetZoneIndex(*monster->GetPosInfo());
+	// [CHANGED] AOI: zoneIndex 계산을 SpatialGrid로
+	int32 zoneIndex = _grid.GetZoneIndex(*monster->GetPosInfo());
 	monster->SetZoneIndex(zoneIndex);
 
 	printf("👾 [EnterMonster] Monster ID=%llu entering Zone[%d]\n",
@@ -379,20 +388,24 @@ void GameRoom::EnterMonster(MonsterRef monster)
 		monster->GetPosInfo()->y(),
 		monster->GetPosInfo()->z());
 
-	_zones[zoneIndex].monsters.insert(monster);
+	// [CHANGED] 해당 Zone의 몬스터 집합에 추가
+	Zone& zone = _grid.GetZone(zoneIndex);
+	zone.monsters.insert(monster);
 
 	printf("    Zone[%d] now has %zu monsters\n",
-		zoneIndex, _zones[zoneIndex].monsters.size());
+		zoneIndex, zone.monsters.size());
 
-	// 주변 유저들에게 몬스터 스폰 알림 (이 시점엔 플레이어 없음)
+	// 주변 유저들에게 몬스터 스폰 알림
 	{
 		Protocol::S_SPAWN spawnPkt;
 		Protocol::MonsterInfo* mInfo = spawnPkt.add_monsters();
 		*mInfo = *monster->GetMonsterInfo();
+
 		SendBufferRef sendBuffer = ClientPacketHandler::MakeSendBuffer(spawnPkt);
 		BroadcastToZone(sendBuffer, zoneIndex);
 	}
 }
+
 void GameRoom::LeaveMonster(uint64 objectId)
 {
 	auto it = _monsters.find(objectId);
@@ -401,8 +414,13 @@ void GameRoom::LeaveMonster(uint64 objectId)
 	MonsterRef monster = it->second;
 	int32 zoneIndex = monster->GetZoneIndex();
 
-	if (zoneIndex >= 0 && zoneIndex < _zones.size())
-		_zones[zoneIndex].monsters.erase(monster);
+	// [CHANGED] AOI: Zone에서 제거
+	int32 totalZones = _grid.GetGridSizeX() * _grid.GetGridSizeY();
+	if (zoneIndex >= 0 && zoneIndex < totalZones)
+	{
+		Zone& zone = _grid.GetZone(zoneIndex);
+		zone.monsters.erase(monster);
+	}
 
 	_monsters.erase(objectId);
 	monster->SetRoom(nullptr);
@@ -410,7 +428,7 @@ void GameRoom::LeaveMonster(uint64 objectId)
 	// 주변 유저들에게 몬스터 사라짐 알림
 	{
 		Protocol::S_DESPAWN despawnPkt;
-		despawnPkt.add_objectids(objectId); // 여기는 변경된 이름 그대로 사용
+		despawnPkt.add_objectids(objectId);
 		SendBufferRef sendBuffer = ClientPacketHandler::MakeSendBuffer(despawnPkt);
 		BroadcastToZone(sendBuffer, zoneIndex);
 	}
@@ -418,9 +436,11 @@ void GameRoom::LeaveMonster(uint64 objectId)
 
 PlayerRef GameRoom::FindNearestPlayer(Protocol::PositionInfo* pos, float range)
 {
-	int32 zoneIndex = GetZoneIndex(*pos);
+	// [CHANGED] AOI: 그리드에 직접 문의
+	int32 zoneIndex = _grid.GetZoneIndex(*pos);
+
 	Vector<Zone*> zones;
-	GetNearbyZones(zoneIndex, zones);
+	_grid.GetNearbyZones(zoneIndex, zones);
 
 	PlayerRef target = nullptr;
 	float minDistSqr = range * range;
@@ -444,151 +464,90 @@ PlayerRef GameRoom::FindNearestPlayer(Protocol::PositionInfo* pos, float range)
 	return target;
 }
 
-// Helper 함수들
-void GameRoom::GetNearbyZoneIndices(int32 zoneIndex, Vector<int32>& outIndices)
-{
-	outIndices.clear();
-	if (zoneIndex < 0 || zoneIndex >= _zones.size()) return;
-
-	int32 x = zoneIndex % _gridSizeX;
-	int32 y = zoneIndex / _gridSizeX;
-
-	for (int32 dy = -1; dy <= 1; dy++)
-	{
-		for (int32 dx = -1; dx <= 1; dx++)
-		{
-			int32 nx = x + dx;
-			int32 ny = y + dy;
-			if (nx >= 0 && nx < _gridSizeX && ny >= 0 && ny < _gridSizeY)
-			{
-				int32 index = ny * _gridSizeX + nx;
-				outIndices.push_back(index);
-			}
-		}
-	}
-}
-
-int32 GameRoom::GetZoneIndex(const Protocol::PositionInfo& posInfo)
-{
-	int32 x = static_cast<int32>(posInfo.x());
-	int32 y = static_cast<int32>(posInfo.z());
-
-	int32 minX = _map->GetMinX();
-	int32 minY = _map->GetMinY();
-	int32 maxX = _map->GetMaxX();
-	int32 maxY = _map->GetMaxY();
-
-	if (x < minX) x = minX;
-	if (x >= maxX) x = maxX - 1;
-	if (y < minY) y = minY;
-	if (y >= maxY) y = maxY - 1;
-
-	int32 zoneX = (x - minX) / _zoneCellSize;
-	int32 zoneY = (y - minY) / _zoneCellSize;
-
-	return zoneY * _gridSizeX + zoneX;
-}
-
-void GameRoom::GetNearbyZones(int32 zoneIndex, Vector<Zone*>& outZones)
-{
-	outZones.clear();
-	if (zoneIndex < 0 || zoneIndex >= _zones.size()) return;
-
-	int32 x = zoneIndex % _gridSizeX;
-	int32 y = zoneIndex / _gridSizeX;
-
-	for (int32 dy = -1; dy <= 1; dy++)
-	{
-		for (int32 dx = -1; dx <= 1; dx++)
-		{
-			int32 nx = x + dx;
-			int32 ny = y + dy;
-			if (nx >= 0 && nx < _gridSizeX && ny >= 0 && ny < _gridSizeY)
-			{
-				int32 index = ny * _gridSizeX + nx;
-				outZones.push_back(&_zones[index]);
-			}
-		}
-	}
-}
-
 void GameRoom::HandleSkill(std::shared_ptr<Creature> attacker, int32 skillId)
 {
-	if (attacker == nullptr) return;
-
-	// 1. 데이터 검증
-	const Protocol::SkillTemplateInfo* skillData = DataManager::Instance()->GetSkillTemplate(skillId);
-	if (skillData == nullptr) return;
+	if (attacker == nullptr)
+		return;
 
 	// 방 검증
-	if (attacker->GetRoom() != shared_from_this()) return;
+	if (attacker->GetRoom().get() != this)
+		return;
 
-	Protocol::SkillType type = skillData->skilltype();
-	float range = skillData->range();
-	int32 damage = skillData->damage();
+	if (_battle == nullptr)
+		return;
 
-	bool isMonster = (attacker->GetObjectType() == Protocol::OBJECT_TYPE_MONSTER);
+	// 1. BattleSystem에 전투 판정 위임
+	SkillResult result;
+	if (_battle->ResolveSkill(attacker, skillId, result) == false)
+		return;
 
-	// 2. 타겟 탐색 (Broad Phase)
-	int32 zoneIndex = GetZoneIndex(*attacker->GetPosInfo()); // 여기서 에러나면 GetZoneIndex가 멤버 함수인지 확인
-	Vector<Zone*> zones;
-	GetNearbyZones(zoneIndex, zones);
-
-	Vector<std::shared_ptr<Creature>> victims;
-	for (Zone* zone : zones)
+	// 2. 스킬 모션 브로드캐스트
 	{
-		if (isMonster)
-		{
-			for (auto& p : zone->players) victims.push_back(p);
-		}
-		else
-		{
-			for (auto& m : zone->monsters) victims.push_back(m);
-		}
+		Protocol::S_SKILL skillPkt;
+		skillPkt.set_objectid(attacker->GetObjectId());
+		skillPkt.set_skillid(skillId);
+
+		SendBufferRef skillBuffer = ClientPacketHandler::MakeSendBuffer(skillPkt);
+		BroadcastToZone(skillBuffer, result.zoneIndex);
 	}
 
-	// 3. 판정 (Narrow Phase)
-	for (auto& victim : victims)
+	// 3. 피격 결과 브로드캐스트 (HP 변경)
+	for (const HitInfo& hit : result.hits)
 	{
-		if (victim->GetStatInfo()->hp() <= 0) continue;
+		auto victim = hit.target;
+		if (victim == nullptr) continue;
 
-		bool isHit = false;
+		Protocol::S_CHANGE_HP changePkt;
+		changePkt.set_objectid(victim->GetObjectId());
+		changePkt.set_attackerid(attacker->GetObjectId());
+		changePkt.set_currenthp(victim->GetStatInfo()->hp()); // OnDamaged 후 HP
+		changePkt.set_damage(hit.damage);
 
-		switch (type)
-		{
-		case Protocol::SKILL_AUTO:
-		{
-			if (ObjectUtils::CheckCircle(*attacker->GetPosInfo(), range, *victim->GetPosInfo()))
-			{
-				isHit = true;
-			}
-		}
-		break;
-		// ... (다른 케이스들) ...
-		}
-
-		if (isHit)
-		{
-			victim->OnDamaged(attacker, damage);
-
-			Protocol::S_CHANGE_HP changePkt;
-			changePkt.set_objectid(victim->GetObjectId());
-			changePkt.set_attackerid(attacker->GetObjectId());
-			changePkt.set_currenthp(victim->GetStatInfo()->hp());
-			changePkt.set_damage(damage);
-
-			SendBufferRef sendBuffer = ClientPacketHandler::MakeSendBuffer(changePkt);
-			BroadcastToZone(sendBuffer, zoneIndex);
-
-			if (type == Protocol::SKILL_AUTO) break;
-		}
+		SendBufferRef sendBuffer = ClientPacketHandler::MakeSendBuffer(changePkt);
+		BroadcastToZone(sendBuffer, result.zoneIndex);
 	}
 }
+
+void GameRoom::OnMonsterMoved(MonsterRef monster)
+{
+	if (monster == nullptr)
+		return;
+
+	int32 oldZoneIndex = monster->GetZoneIndex();
+	int32 newZoneIndex = _grid.GetZoneIndex(*monster->GetPosInfo());
+
+	int32 totalZones = _grid.GetGridSizeX() * _grid.GetGridSizeY();
+
+	// 존 변경 처리
+	if (newZoneIndex != oldZoneIndex)
+	{
+		if (oldZoneIndex >= 0 && oldZoneIndex < totalZones)
+		{
+			Zone& oldZone = _grid.GetZone(oldZoneIndex);
+			oldZone.monsters.erase(monster);
+		}
+
+		Zone& newZone = _grid.GetZone(newZoneIndex);
+		newZone.monsters.insert(monster);
+		monster->SetZoneIndex(newZoneIndex);
+	}
+
+	// 위치 브로드캐스트
+	Protocol::S_MOVE movePkt;
+	movePkt.set_objectid(monster->GetObjectId());
+	*movePkt.mutable_posinfo() = *monster->GetPosInfo();
+
+	SendBufferRef sendBuffer = ClientPacketHandler::MakeSendBuffer(movePkt);
+
+	int32 zoneIndex = monster->GetZoneIndex();
+	BroadcastToZone(sendBuffer, zoneIndex);
+}
+
 
 void GameRoom::BroadcastToZone(SendBufferRef sendBuffer, int32 zoneIndex, uint64 exceptId)
 {
 	Vector<Zone*> nearbyZones;
-	GetNearbyZones(zoneIndex, nearbyZones);
+	_grid.GetNearbyZones(zoneIndex, nearbyZones);   // [CHANGED]
 
 	for (Zone* zone : nearbyZones)
 	{

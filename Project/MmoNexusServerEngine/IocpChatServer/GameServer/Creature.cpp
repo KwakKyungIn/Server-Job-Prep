@@ -71,31 +71,19 @@ void Creature::UseSkill(int32 skillId)
     if (CanUseSkill(skillId) == false)
         return;
 
-    // 1. 스킬 데이터 가져오기
-    const Protocol::SkillTemplateInfo* skillData = DataManager::Instance()->GetSkillTemplate(skillId);
+    // 1. 스킬 데이터 가져오기 (쿨타임용)
+    const Protocol::SkillTemplateInfo* skillData =
+        DataManager::Instance()->GetSkillTemplate(skillId);
+    if (skillData == nullptr)
+        return;
 
     // 2. 쿨타임 적용
     uint64 now = ::GetTickCount64();
     _cooldowns[skillId] = now + skillData->cooldown();
 
-    // 3. [Broadcast] "나 스킬 썼음" 알림 (모션용)
-    // 데미지 판정과는 별개로, 모션은 바로 보여줘야 반응성이 좋음
-    std::shared_ptr<GameRoom> room = GetRoom();
-
-    if (room)
+    // 3. 룸에 "이 스킬 썼다" 요청만 던짐 (브로드캐스트/판정은 룸 책임)
+    if (auto room = GetRoom())
     {
-        Protocol::S_SKILL skillPkt;
-        skillPkt.set_objectid(GetObjectId());
-        skillPkt.set_skillid(skillId);
-        auto sendBuffer = ClientPacketHandler::MakeSendBuffer(skillPkt);
-        room->Broadcast(sendBuffer); // 혹은 BroadcastToZone
-    }
-
-    // 4. [Hit Detection] 피격 판정 및 데미지 적용
-    if (room)
-    {
-        // 룸에게 판정 위임 (동기화된 룸 스레드에서 실행됨)
-        // 람다 캡처로 안전하게 전달
         auto self = shared_from_this();
         room->PushJob([room, self, skillId]()
             {

@@ -91,12 +91,12 @@ void Monster::UpdateMove()
 	float distSqr = ObjectUtils::DistSqr(*_posInfo, *target->GetPosInfo());
 	float attackRangeSqr = _attackRange * _attackRange;
 
-	// ✅ 사거리 체크만 하고 return 안 함
+	// ✅ 사거리 체크
 	if (distSqr <= attackRangeSqr)
 	{
 		_posInfo->set_state(Protocol::MOVE_IDLE);
 		_posInfo->set_actionstate(Protocol::ACTION_ATTACK);
-		// return 제거! 아래 브로드캐스트 로직 실행되도록
+		// 여기서도 아래 브로드캐스트/존 갱신은 해야 하니 return 하지 않음
 	}
 	else
 	{
@@ -106,36 +106,22 @@ void Monster::UpdateMove()
 
 		Vector3 dir = ObjectUtils::GetDirection(*_posInfo, *target->GetPosInfo());
 
-		float deltaTime = 0.1f;
-		Vector3 deltaMove = dir * _statInfo->speed() * deltaTime;
+		float    deltaTime = 0.1f;
+		Vector3  deltaMove = dir * _statInfo->speed() * deltaTime;
 
 		_posInfo->set_x(_posInfo->x() + deltaMove.x);
 		_posInfo->set_z(_posInfo->z() + deltaMove.z);
 	}
 
-	// ✅ Zone & Broadcast (공격 사거리 들어갔을 때도 실행)
-	std::shared_ptr<GameRoom> room = GetRoom();
-	if (room)
+	// ✅ Zone & Broadcast는 GameRoom에 위임
+	if (auto room = GetRoom())
 	{
-		int32 oldZoneIndex = _zoneIndex;
-		int32 newZoneIndex = room->GetZoneIndex(*_posInfo);
-
-		if (newZoneIndex != oldZoneIndex)
-		{
-			MonsterRef thisMonster = std::static_pointer_cast<Monster>(shared_from_this());
-			room->GetZone(oldZoneIndex).monsters.erase(thisMonster);
-			room->GetZone(newZoneIndex).monsters.insert(thisMonster);
-			_zoneIndex = newZoneIndex;
-		}
-
-		Protocol::S_MOVE movePkt;
-		movePkt.set_objectid(_objectId);
-		*movePkt.mutable_posinfo() = *_posInfo;
-
-		SendBufferRef sendBuffer = ClientPacketHandler::MakeSendBuffer(movePkt);
-		room->BroadcastToZone(sendBuffer, _zoneIndex);
+		MonsterRef self = std::static_pointer_cast<Monster>(shared_from_this());
+		room->OnMonsterMoved(self);
 	}
 }
+
+
 void Monster::UpdateAttack()
 {
 	std::shared_ptr<Creature> target = GetTarget();

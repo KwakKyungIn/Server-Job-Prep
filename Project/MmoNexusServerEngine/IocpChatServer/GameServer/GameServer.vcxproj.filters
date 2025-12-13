@@ -31,6 +31,21 @@
     <Filter Include="Session_Login">
       <UniqueIdentifier>{234bab62-2006-443d-8401-a2d14a0de215}</UniqueIdentifier>
     </Filter>
+    <Filter Include="GameContents\Acotr">
+      <UniqueIdentifier>{dd7a14bb-4519-49b6-83a3-763a059380c1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameContents\Map">
+      <UniqueIdentifier>{0c7b8b8c-376b-4b86-8f8c-dbf6ac298c2c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameContents\Room">
+      <UniqueIdentifier>{70285613-2ee5-4c2c-b145-89b0a596e9cb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameContents\AOI">
+      <UniqueIdentifier>{03bc0d50-4b7c-4446-8105-8fa08aba3114}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameContents\Battle">
+      <UniqueIdentifier>{405f206d-507b-4655-9d46-1781342c05cf}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GameServer.cpp">
@@ -66,29 +81,35 @@
     <ClCompile Include="Struct.pb.cc">
       <Filter>Protocol</Filter>
     </ClCompile>
-    <ClCompile Include="GameMap.cpp">
-      <Filter>GameContents</Filter>
-    </ClCompile>
-    <ClCompile Include="GameRoom.cpp">
-      <Filter>GameContents</Filter>
-    </ClCompile>
-    <ClCompile Include="Player.cpp">
-      <Filter>GameContents</Filter>
-    </ClCompile>
     <ClCompile Include="DataManager.cpp">
       <Filter>Manager</Filter>
     </ClCompile>
     <ClCompile Include="GameSessionManager.cpp">
       <Filter>Manager</Filter>
     </ClCompile>
-    <ClCompile Include="Creature.cpp">
-      <Filter>GameContents</Filter>
-    </ClCompile>
-    <ClCompile Include="Monster.cpp">
-      <Filter>GameContents</Filter>
-    </ClCompile>
     <ClCompile Include="LoginSession.cpp">
       <Filter>Session_Login</Filter>
+    </ClCompile>
+    <ClCompile Include="Creature.cpp">
+      <Filter>GameContents\Acotr</Filter>
+    </ClCompile>
+    <ClCompile Include="Monster.cpp">
+      <Filter>GameContents\Acotr</Filter>
+    </ClCompile>
+    <ClCompile Include="Player.cpp">
+      <Filter>GameContents\Acotr</Filter>
+    </ClCompile>
+    <ClCompile Include="GameMap.cpp">
+      <Filter>GameContents\Map</Filter>
+    </ClCompile>
+    <ClCompile Include="GameRoom.cpp">
+      <Filter>GameContents\Room</Filter>
+    </ClCompile>
+    <ClCompile Include="SpatialGrid.cpp">
+      <Filter>GameContents\AOI</Filter>
+    </ClCompile>
+    <ClCompile Include="BattleSystem.cpp">
+      <Filter>GameContents\Battle</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -122,32 +143,41 @@
     <ClInclude Include="Struct.pb.h">
       <Filter>Protocol</Filter>
     </ClInclude>
-    <ClInclude Include="GameMap.h">
-      <Filter>GameContents</Filter>
-    </ClInclude>
-    <ClInclude Include="GameRoom.h">
-      <Filter>GameContents</Filter>
-    </ClInclude>
-    <ClInclude Include="Player.h">
-      <Filter>GameContents</Filter>
-    </ClInclude>
     <ClInclude Include="DataManager.h">
       <Filter>Manager</Filter>
     </ClInclude>
     <ClInclude Include="GameSessionManager.h">
       <Filter>Manager</Filter>
     </ClInclude>
-    <ClInclude Include="Creature.h">
-      <Filter>GameContents</Filter>
-    </ClInclude>
-    <ClInclude Include="Monster.h">
-      <Filter>GameContents</Filter>
-    </ClInclude>
     <ClInclude Include="ObjectUtils.h">
       <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="LoginSession.h">
       <Filter>Session_Login</Filter>
+    </ClInclude>
+    <ClInclude Include="Creature.h">
+      <Filter>GameContents\Acotr</Filter>
+    </ClInclude>
+    <ClInclude Include="Monster.h">
+      <Filter>GameContents\Acotr</Filter>
+    </ClInclude>
+    <ClInclude Include="Player.h">
+      <Filter>GameContents\Acotr</Filter>
+    </ClInclude>
+    <ClInclude Include="GameMap.h">
+      <Filter>GameContents\Map</Filter>
+    </ClInclude>
+    <ClInclude Include="GameRoom.h">
+      <Filter>GameContents\Room</Filter>
+    </ClInclude>
+    <ClInclude Include="Zone.h">
+      <Filter>GameContents\AOI</Filter>
+    </ClInclude>
+    <ClInclude Include="SpatialGrid.h">
+      <Filter>GameContents\AOI</Filter>
+    </ClInclude>
+    <ClInclude Include="BattleSystem.h">
+      <Filter>GameContents\Battle</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
