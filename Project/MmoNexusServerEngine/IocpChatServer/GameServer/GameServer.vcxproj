@@ -216,6 +216,7 @@
     <ClCompile Include="Protocol_S2S.pb.cc">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="RoomManager.cpp" />
     <ClCompile Include="S2SPacketHandler.cpp" />
     <ClCompile Include="SpatialGrid.cpp" />
     <ClCompile Include="Struct.pb.cc">
@@ -241,6 +242,7 @@
     <ClInclude Include="PlayerSession.h" />
     <ClInclude Include="Protocol.pb.h" />
     <ClInclude Include="Protocol_S2S.pb.h" />
+    <ClInclude Include="RoomManager.h" />
     <ClInclude Include="S2SPacketHandler.h" />
     <ClInclude Include="SpatialGrid.h" />
     <ClInclude Include="Struct.pb.h" />

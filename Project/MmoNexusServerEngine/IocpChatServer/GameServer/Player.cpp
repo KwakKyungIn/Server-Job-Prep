@@ -20,9 +20,9 @@ Player::Player() : Creature(Protocol::OBJECT_TYPE_PLAYER)
 
 	// 초기값 세팅
 	_posInfo->set_state(Protocol::MOVE_IDLE);
-	_posInfo->set_x(0.0f);
+	_posInfo->set_x(50.0f);
 	_posInfo->set_y(0.0f);
-	_posInfo->set_z(0.0f);
+	_posInfo->set_z(50.0f);
 	_posInfo->set_yaw(0.0f);
 }
 
@@ -67,9 +67,9 @@ void Player::Init(const Protocol::PlayerInfo& info)
 	if (_playerInfo.has_posinfo() == false)
 	{
 		_posInfo->set_state(Protocol::MOVE_IDLE);
-		_posInfo->set_x(0.0f);
+		_posInfo->set_x(50.0f);
 		_posInfo->set_y(0.0f);
-		_posInfo->set_z(0.0f);
+		_posInfo->set_z(50.0f);
 		_posInfo->set_yaw(0.0f);
 	}
 }

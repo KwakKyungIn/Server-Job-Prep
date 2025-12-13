@@ -14,23 +14,26 @@ public class ObjectManager : MonoBehaviour
     public GameObject OtherPlayerPrefab;
     public GameObject MonsterPrefab;
 
-    // [GIGACHAD ADD] MyPlayer 생성 전에 도착한 몬스터를 임시 저장할 큐
-    List<MonsterInfo> _pendingMonsters = new List<MonsterInfo>(); // [ADD]
+    List<MonsterInfo> _pendingMonsters = new List<MonsterInfo>();
 
     void Awake()
     {
         Instance = this;
+        Debug.Log("🔧 [ObjectManager] Awake - Instance created");
     }
 
     void Start()
     {
-        PacketHandler.OnEnterGame += OnEnterGame; // S_ENTER_GAME
-        PacketHandler.OnSpawn += OnSpawn;         // S_SPAWN
-        PacketHandler.OnDespawn += OnDespawn;     // S_DESPAWN
-        PacketHandler.OnMove += OnMove;           // S_MOVE
+        Debug.Log("🔧 [ObjectManager] Start - Registering events...");
+
+        PacketHandler.OnEnterGame += OnEnterGame;
+        PacketHandler.OnSpawn += OnSpawn;
+        PacketHandler.OnDespawn += OnDespawn;
+        PacketHandler.OnMove += OnMove;
+
+        Debug.Log("✅ [ObjectManager] Events registered successfully");
     }
 
-    // [Change] 패킷 타입 변경 (S_ENTER_GAME_RES -> S_ENTER_GAME)
     void OnEnterGame(S_ENTER_GAME pkt)
     {
         Debug.Log($"📥 [OnEnterGame] Called! Success={pkt.Success}");
@@ -41,34 +44,49 @@ public class ObjectManager : MonoBehaviour
         Debug.Log($"✅ MyPlayerId set to {MyPlayerId}");
 
         Spawn(pkt.MyPlayer, true);
-
         ProcessPendingSpawns();
     }
 
     void OnSpawn(S_SPAWN pkt)
     {
-        Debug.Log($"📥 [OnSpawn] Called! Players={pkt.Players?.Count ?? 0}, Monsters={pkt.Monsters?.Count ?? 0}");
+        Debug.Log($"📥📥📥 [OnSpawn] ===== ENTRY POINT ===== ");
+        Debug.Log($"    Players={pkt.Players?.Count ?? 0}, Monsters={pkt.Monsters?.Count ?? 0}");
+        Debug.Log($"    MyPlayerId = {MyPlayerId}");
 
         if (pkt.Players != null)
         {
+            Debug.Log($"    Processing {pkt.Players.Count} players...");
             foreach (PlayerInfo player in pkt.Players)
             {
-                if (player.PlayerId == MyPlayerId) continue;
+                Debug.Log($"      🔍 Player {player.PlayerId} (Name: {player.Name})");
+                Debug.Log($"         Is this me? {player.PlayerId == MyPlayerId}");
+
+                if (player.PlayerId == MyPlayerId)
+                {
+                    Debug.Log($"         ⏭️ SKIPPING (Self)");
+                    continue;
+                }
+
+                Debug.Log($"         ✅ SPAWNING Other Player {player.PlayerId}");
                 Spawn(player, false);
             }
+        }
+        else
+        {
+            Debug.Log("    ⚠️ pkt.Players is NULL!");
         }
 
         if (pkt.Monsters != null)
         {
-            Debug.Log($"🔍 Processing {pkt.Monsters.Count} monsters...");
+            Debug.Log($"    🔍 Processing {pkt.Monsters.Count} monsters...");
             foreach (MonsterInfo monster in pkt.Monsters)
             {
-                Debug.Log($"🔍 Monster in packet: ID={monster.ObjectId}, TemplateId={monster.TemplateId}");
+                Debug.Log($"      🔍 Monster ID={monster.ObjectId}, TemplateId={monster.TemplateId}");
 
                 if (MyPlayerId == 0)
                 {
                     _pendingMonsters.Add(monster);
-                    Debug.LogWarning("[ObjectManager] Monster packet arrived before MyPlayer. Pending...");
+                    Debug.LogWarning("      ⏸️ Monster packet arrived before MyPlayer. Pending...");
                 }
                 else
                 {
@@ -76,9 +94,10 @@ public class ObjectManager : MonoBehaviour
                 }
             }
         }
+
+        Debug.Log($"📥📥📥 [OnSpawn] ===== COMPLETE ===== ");
     }
 
-    // [GIGACHAD ADD] 대기 중인 몬스터를 처리하는 전용 함수
     void ProcessPendingSpawns()
     {
         if (_pendingMonsters.Count > 0)
@@ -92,15 +111,21 @@ public class ObjectManager : MonoBehaviour
         }
     }
 
-
     void OnDespawn(S_DESPAWN pkt)
     {
+        Debug.Log($"📥 [OnDespawn] Removing {pkt.ObjectIds.Count} objects");
+
         foreach (ulong id in pkt.ObjectIds)
         {
             if (_objects.ContainsKey(id))
             {
+                Debug.Log($"    🗑️ Destroying object {id}");
                 Destroy(_objects[id]);
                 _objects.Remove(id);
+            }
+            else
+            {
+                Debug.LogWarning($"    ⚠️ Object {id} not found in dictionary");
             }
         }
     }
@@ -121,50 +146,55 @@ public class ObjectManager : MonoBehaviour
 
     void Spawn(PlayerInfo info, bool isMine)
     {
-        if (_objects.ContainsKey(info.PlayerId)) return;
+        if (_objects.ContainsKey(info.PlayerId))
+        {
+            Debug.LogWarning($"⚠️ [Spawn] Player {info.PlayerId} already exists! Skipping.");
+            return;
+        }
 
         GameObject go = null;
         Vector3 pos = new Vector3(info.PosInfo.X, info.PosInfo.Y, info.PosInfo.Z);
 
         if (isMine)
         {
+            Debug.Log($"👤 [Spawn] Creating MY Player {info.PlayerId} at {pos}");
             go = Instantiate(MyPlayerPrefab, pos, Quaternion.identity);
             go.AddComponent<MyPlayerController>();
         }
         else
         {
+            Debug.Log($"👥 [Spawn] Creating OTHER Player {info.PlayerId} at {pos}");
             go = Instantiate(OtherPlayerPrefab, pos, Quaternion.identity);
             go.AddComponent<PlayerController>();
         }
 
         go.name = $"Player_{info.PlayerId}_{info.Name}";
         _objects.Add(info.PlayerId, go);
+
+        Debug.Log($"✅ [Spawn] Player {info.PlayerId} spawned successfully. Total objects: {_objects.Count}");
     }
 
     void SpawnMonster(MonsterInfo info)
     {
-        // ID 충돌/중복 체크
         if (_objects.ContainsKey(info.ObjectId))
         {
-            Debug.LogError($"[Spawn Fail] Monster ID {info.ObjectId} already exists! Skipping.");
+            Debug.LogError($"❌ [Spawn Fail] Monster ID {info.ObjectId} already exists! Skipping.");
             return;
         }
 
         Vector3 pos = new Vector3(info.PosInfo.X, info.PosInfo.Y, info.PosInfo.Z);
 
-        // [CRITICAL CHECK 1] MonsterPrefab이 연결되었는지 확인
         if (MonsterPrefab == null)
         {
-            Debug.LogError("[Spawn Fail] MonsterPrefab is NULL! Assign Prefab in Inspector.");
-            return; // 프리팹이 없으면 여기서 멈춰야 함
+            Debug.LogError("❌ [Spawn Fail] MonsterPrefab is NULL! Assign Prefab in Inspector.");
+            return;
         }
 
-        // [CRITICAL CHECK 2] 실제 생성 시도
         GameObject go = Instantiate(MonsterPrefab, pos, Quaternion.identity);
 
         if (go == null)
         {
-            Debug.LogError("[Spawn Fail] Instantiate failed! Prefab might be corrupted.");
+            Debug.LogError("❌ [Spawn Fail] Instantiate failed! Prefab might be corrupted.");
             return;
         }
 
@@ -174,7 +204,6 @@ public class ObjectManager : MonoBehaviour
         go.name = $"Monster_{info.TemplateId}_{info.ObjectId}";
         _objects.Add(info.ObjectId, go);
 
-        // [FINAL DEBUG] 생성 성공 확인
         Debug.Log($"👾 [SUCCESS] Monster Spawned: {go.name} at {pos}");
     }
 }

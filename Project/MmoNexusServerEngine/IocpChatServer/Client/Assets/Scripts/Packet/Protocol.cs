@@ -29,37 +29,38 @@ namespace Protocol {
             "ZBgCIAEoCSJTCgdTX0xPR0lOEg8KB3N1Y2Nlc3MYASABKAgSKAoKc2VydmVy",
             "TGlzdBgCIAMoCzIULlByb3RvY29sLlNlcnZlckluZm8SDQoFdG9rZW4YAyAB",
             "KAkiSAoKU2VydmVySW5mbxIMCgRuYW1lGAEgASgJEgoKAmlwGAIgASgJEgwK",
-            "BHBvcnQYAyABKAUSEgoKY29uZ2VzdGlvbhgEIAEoBSIdCgxDX0VOVEVSX0dB",
-            "TUUSDQoFdG9rZW4YASABKAkiRwoMU19FTlRFUl9HQU1FEg8KB3N1Y2Nlc3MY",
-            "ASABKAgSJgoIbXlQbGF5ZXIYAiABKAsyFC5Qcm90b2NvbC5QbGF5ZXJJbmZv",
-            "IjEKBkNfTU9WRRInCgdwb3NJbmZvGAEgASgLMhYuUHJvdG9jb2wuUG9zaXRp",
-            "b25JbmZvIkMKBlNfTU9WRRIQCghvYmplY3RJZBgBIAEoBBInCgdwb3NJbmZv",
-            "GAIgASgLMhYuUHJvdG9jb2wuUG9zaXRpb25JbmZvIlkKB1NfU1BBV04SJQoH",
-            "cGxheWVycxgBIAMoCzIULlByb3RvY29sLlBsYXllckluZm8SJwoIbW9uc3Rl",
-            "cnMYAiADKAsyFS5Qcm90b2NvbC5Nb25zdGVySW5mbyIeCglTX0RFU1BBV04S",
-            "EQoJb2JqZWN0SWRzGAEgAygEIhoKB0NfU0tJTEwSDwoHc2tpbGxJZBgBIAEo",
-            "BSIsCgdTX1NLSUxMEhAKCG9iamVjdElkGAEgASgEEg8KB3NraWxsSWQYAiAB",
-            "KAUiVgoLU19DSEFOR0VfSFASEAoIb2JqZWN0SWQYASABKAQSEgoKYXR0YWNr",
-            "ZXJJZBgCIAEoBBIRCgljdXJyZW50SHAYAyABKAUSDgoGZGFtYWdlGAQgASgF",
-            "IjAKC1NfSVRFTV9MSVNUEiEKBWl0ZW1zGAEgAygLMhIuUHJvdG9jb2wuSXRl",
-            "bUluZm8iHQoKQ19VU0VfSVRFTRIPCgdpdGVtVWlkGAEgASgEIjEKDVNfQ0hB",
-            "TkdFX0lURU0SIAoEaXRlbRgBIAEoCzISLlByb3RvY29sLkl0ZW1JbmZvIiAK",
-            "DVNfUkVNT1ZFX0lURU0SDwoHaXRlbVVpZBgBIAEoBCJBCgxDX0VRVUlQX0lU",
-            "RU0SDwoHaXRlbVVpZBgBIAEoBBIRCglzbG90SW5kZXgYAiABKAUSDQoFZXF1",
-            "aXAYAyABKAgiRAoMU19FUVVJUF9JVEVNEg8KB2l0ZW1VaWQYASABKAQSEAoI",
-            "ZXF1aXBwZWQYAiABKAgSEQoJc2xvdEluZGV4GAMgASgFIjUKDVNfQ0hBTkdF",
-            "X1NUQVQSJAoIc3RhdEluZm8YASABKAsyEi5Qcm90b2NvbC5TdGF0SW5mbyId",
-            "CgpDX0NIQVRfUkVREg8KB21lc3NhZ2UYASABKAkiHQoKU19DSEFUX1JFUxIP",
-            "CgdzdWNjZXNzGAEgASgIIi8KClNfQ0hBVF9OVEYSEAoIcGxheWVySWQYASAB",
-            "KAQSDwoHbWVzc2FnZRgCIAEoCSISChBTX0hFQVJUX0JFQVRfUkVTIhIKEENf",
-            "SEVBUlRfQkVBVF9SRVFiBnByb3RvMw=="));
+            "BHBvcnQYAyABKAUSEgoKY29uZ2VzdGlvbhgEIAEoBSI/CgxDX0VOVEVSX0dB",
+            "TUUSDQoFdG9rZW4YASABKAkSEQoJY2hhbm5lbElkGAIgASgFEg0KBW1hcElk",
+            "GAMgASgFIkcKDFNfRU5URVJfR0FNRRIPCgdzdWNjZXNzGAEgASgIEiYKCG15",
+            "UGxheWVyGAIgASgLMhQuUHJvdG9jb2wuUGxheWVySW5mbyIxCgZDX01PVkUS",
+            "JwoHcG9zSW5mbxgBIAEoCzIWLlByb3RvY29sLlBvc2l0aW9uSW5mbyJDCgZT",
+            "X01PVkUSEAoIb2JqZWN0SWQYASABKAQSJwoHcG9zSW5mbxgCIAEoCzIWLlBy",
+            "b3RvY29sLlBvc2l0aW9uSW5mbyJZCgdTX1NQQVdOEiUKB3BsYXllcnMYASAD",
+            "KAsyFC5Qcm90b2NvbC5QbGF5ZXJJbmZvEicKCG1vbnN0ZXJzGAIgAygLMhUu",
+            "UHJvdG9jb2wuTW9uc3RlckluZm8iHgoJU19ERVNQQVdOEhEKCW9iamVjdElk",
+            "cxgBIAMoBCIaCgdDX1NLSUxMEg8KB3NraWxsSWQYASABKAUiLAoHU19TS0lM",
+            "TBIQCghvYmplY3RJZBgBIAEoBBIPCgdza2lsbElkGAIgASgFIlYKC1NfQ0hB",
+            "TkdFX0hQEhAKCG9iamVjdElkGAEgASgEEhIKCmF0dGFja2VySWQYAiABKAQS",
+            "EQoJY3VycmVudEhwGAMgASgFEg4KBmRhbWFnZRgEIAEoBSIwCgtTX0lURU1f",
+            "TElTVBIhCgVpdGVtcxgBIAMoCzISLlByb3RvY29sLkl0ZW1JbmZvIh0KCkNf",
+            "VVNFX0lURU0SDwoHaXRlbVVpZBgBIAEoBCIxCg1TX0NIQU5HRV9JVEVNEiAK",
+            "BGl0ZW0YASABKAsyEi5Qcm90b2NvbC5JdGVtSW5mbyIgCg1TX1JFTU9WRV9J",
+            "VEVNEg8KB2l0ZW1VaWQYASABKAQiQQoMQ19FUVVJUF9JVEVNEg8KB2l0ZW1V",
+            "aWQYASABKAQSEQoJc2xvdEluZGV4GAIgASgFEg0KBWVxdWlwGAMgASgIIkQK",
+            "DFNfRVFVSVBfSVRFTRIPCgdpdGVtVWlkGAEgASgEEhAKCGVxdWlwcGVkGAIg",
+            "ASgIEhEKCXNsb3RJbmRleBgDIAEoBSI1Cg1TX0NIQU5HRV9TVEFUEiQKCHN0",
+            "YXRJbmZvGAEgASgLMhIuUHJvdG9jb2wuU3RhdEluZm8iHQoKQ19DSEFUX1JF",
+            "URIPCgdtZXNzYWdlGAEgASgJIh0KClNfQ0hBVF9SRVMSDwoHc3VjY2VzcxgB",
+            "IAEoCCIvCgpTX0NIQVRfTlRGEhAKCHBsYXllcklkGAEgASgEEg8KB21lc3Nh",
+            "Z2UYAiABKAkiEgoQU19IRUFSVF9CRUFUX1JFUyISChBDX0hFQVJUX0JFQVRf",
+            "UkVRYgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Protocol.EnumReflection.Descriptor, global::Protocol.StructReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::Protocol.C_LOGIN), global::Protocol.C_LOGIN.Parser, new[]{ "UserId", "Password" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Protocol.S_LOGIN), global::Protocol.S_LOGIN.Parser, new[]{ "Success", "ServerList", "Token" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Protocol.ServerInfo), global::Protocol.ServerInfo.Parser, new[]{ "Name", "Ip", "Port", "Congestion" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Protocol.C_ENTER_GAME), global::Protocol.C_ENTER_GAME.Parser, new[]{ "Token" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Protocol.C_ENTER_GAME), global::Protocol.C_ENTER_GAME.Parser, new[]{ "Token", "ChannelId", "MapId" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Protocol.S_ENTER_GAME), global::Protocol.S_ENTER_GAME.Parser, new[]{ "Success", "MyPlayer" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Protocol.C_MOVE), global::Protocol.C_MOVE.Parser, new[]{ "PosInfo" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Protocol.S_MOVE), global::Protocol.S_MOVE.Parser, new[]{ "ObjectId", "PosInfo" }, null, null, null, null),
@@ -936,6 +937,8 @@ namespace Protocol {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public C_ENTER_GAME(C_ENTER_GAME other) : this() {
       token_ = other.token_;
+      channelId_ = other.channelId_;
+      mapId_ = other.mapId_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -949,7 +952,7 @@ namespace Protocol {
     public const int TokenFieldNumber = 1;
     private string token_ = "";
     /// <summary>
-    /// [핵심] ID 대신 토큰으로 입장!
+    /// [핵심] ID 대신 토큰
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -957,6 +960,36 @@ namespace Protocol {
       get { return token_; }
       set {
         token_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "channelId" field.</summary>
+    public const int ChannelIdFieldNumber = 2;
+    private int channelId_;
+    /// <summary>
+    /// [NEW] 클라이언트에서 선택한 채널
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int ChannelId {
+      get { return channelId_; }
+      set {
+        channelId_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "mapId" field.</summary>
+    public const int MapIdFieldNumber = 3;
+    private int mapId_;
+    /// <summary>
+    /// [NEW] 입장할 맵 (없으면 1로 사용해도 됨)
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int MapId {
+      get { return mapId_; }
+      set {
+        mapId_ = value;
       }
     }
 
@@ -976,6 +1009,8 @@ namespace Protocol {
         return true;
       }
       if (Token != other.Token) return false;
+      if (ChannelId != other.ChannelId) return false;
+      if (MapId != other.MapId) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -984,6 +1019,8 @@ namespace Protocol {
     public override int GetHashCode() {
       int hash = 1;
       if (Token.Length != 0) hash ^= Token.GetHashCode();
+      if (ChannelId != 0) hash ^= ChannelId.GetHashCode();
+      if (MapId != 0) hash ^= MapId.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -1006,6 +1043,14 @@ namespace Protocol {
         output.WriteRawTag(10);
         output.WriteString(Token);
       }
+      if (ChannelId != 0) {
+        output.WriteRawTag(16);
+        output.WriteInt32(ChannelId);
+      }
+      if (MapId != 0) {
+        output.WriteRawTag(24);
+        output.WriteInt32(MapId);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -1020,6 +1065,14 @@ namespace Protocol {
         output.WriteRawTag(10);
         output.WriteString(Token);
       }
+      if (ChannelId != 0) {
+        output.WriteRawTag(16);
+        output.WriteInt32(ChannelId);
+      }
+      if (MapId != 0) {
+        output.WriteRawTag(24);
+        output.WriteInt32(MapId);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
       }
@@ -1032,6 +1085,12 @@ namespace Protocol {
       int size = 0;
       if (Token.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(Token);
+      }
+      if (ChannelId != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(ChannelId);
+      }
+      if (MapId != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(MapId);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -1047,6 +1106,12 @@ namespace Protocol {
       }
       if (other.Token.Length != 0) {
         Token = other.Token;
+      }
+      if (other.ChannelId != 0) {
+        ChannelId = other.ChannelId;
+      }
+      if (other.MapId != 0) {
+        MapId = other.MapId;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -1067,6 +1132,14 @@ namespace Protocol {
             Token = input.ReadString();
             break;
           }
+          case 16: {
+            ChannelId = input.ReadInt32();
+            break;
+          }
+          case 24: {
+            MapId = input.ReadInt32();
+            break;
+          }
         }
       }
     #endif
@@ -1084,6 +1157,14 @@ namespace Protocol {
             break;
           case 10: {
             Token = input.ReadString();
+            break;
+          }
+          case 16: {
+            ChannelId = input.ReadInt32();
+            break;
+          }
+          case 24: {
+            MapId = input.ReadInt32();
             break;
           }
         }

@@ -69,6 +69,8 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORIT
 PROTOBUF_CONSTEXPR C_ENTER_GAME::C_ENTER_GAME(
     ::_pbi::ConstantInitialized): _impl_{
     /*decltype(_impl_.token_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}
+  , /*decltype(_impl_.channelid_)*/0
+  , /*decltype(_impl_.mapid_)*/0
   , /*decltype(_impl_._cached_size_)*/{}} {}
 struct C_ENTER_GAMEDefaultTypeInternal {
   PROTOBUF_CONSTEXPR C_ENTER_GAMEDefaultTypeInternal()
@@ -388,6 +390,8 @@ const uint32_t TableStruct_Protocol_2eproto::offsets[] PROTOBUF_SECTION_VARIABLE
   ~0u,  // no _weak_field_map_
   ~0u,  // no _inlined_string_donated_
   PROTOBUF_FIELD_OFFSET(::Protocol::C_ENTER_GAME, _impl_.token_),
+  PROTOBUF_FIELD_OFFSET(::Protocol::C_ENTER_GAME, _impl_.channelid_),
+  PROTOBUF_FIELD_OFFSET(::Protocol::C_ENTER_GAME, _impl_.mapid_),
   ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(::Protocol::S_ENTER_GAME, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -544,26 +548,26 @@ static const ::_pbi::MigrationSchema schemas[] PROTOBUF_SECTION_VARIABLE(protode
   { 8, -1, -1, sizeof(::Protocol::S_LOGIN)},
   { 17, -1, -1, sizeof(::Protocol::ServerInfo)},
   { 27, -1, -1, sizeof(::Protocol::C_ENTER_GAME)},
-  { 34, -1, -1, sizeof(::Protocol::S_ENTER_GAME)},
-  { 42, -1, -1, sizeof(::Protocol::C_MOVE)},
-  { 49, -1, -1, sizeof(::Protocol::S_MOVE)},
-  { 57, -1, -1, sizeof(::Protocol::S_SPAWN)},
-  { 65, -1, -1, sizeof(::Protocol::S_DESPAWN)},
-  { 72, -1, -1, sizeof(::Protocol::C_SKILL)},
-  { 79, -1, -1, sizeof(::Protocol::S_SKILL)},
-  { 87, -1, -1, sizeof(::Protocol::S_CHANGE_HP)},
-  { 97, -1, -1, sizeof(::Protocol::S_ITEM_LIST)},
-  { 104, -1, -1, sizeof(::Protocol::C_USE_ITEM)},
-  { 111, -1, -1, sizeof(::Protocol::S_CHANGE_ITEM)},
-  { 118, -1, -1, sizeof(::Protocol::S_REMOVE_ITEM)},
-  { 125, -1, -1, sizeof(::Protocol::C_EQUIP_ITEM)},
-  { 134, -1, -1, sizeof(::Protocol::S_EQUIP_ITEM)},
-  { 143, -1, -1, sizeof(::Protocol::S_CHANGE_STAT)},
-  { 150, -1, -1, sizeof(::Protocol::C_CHAT_REQ)},
-  { 157, -1, -1, sizeof(::Protocol::S_CHAT_RES)},
-  { 164, -1, -1, sizeof(::Protocol::S_CHAT_NTF)},
-  { 172, -1, -1, sizeof(::Protocol::S_HEART_BEAT_RES)},
-  { 178, -1, -1, sizeof(::Protocol::C_HEART_BEAT_REQ)},
+  { 36, -1, -1, sizeof(::Protocol::S_ENTER_GAME)},
+  { 44, -1, -1, sizeof(::Protocol::C_MOVE)},
+  { 51, -1, -1, sizeof(::Protocol::S_MOVE)},
+  { 59, -1, -1, sizeof(::Protocol::S_SPAWN)},
+  { 67, -1, -1, sizeof(::Protocol::S_DESPAWN)},
+  { 74, -1, -1, sizeof(::Protocol::C_SKILL)},
+  { 81, -1, -1, sizeof(::Protocol::S_SKILL)},
+  { 89, -1, -1, sizeof(::Protocol::S_CHANGE_HP)},
+  { 99, -1, -1, sizeof(::Protocol::S_ITEM_LIST)},
+  { 106, -1, -1, sizeof(::Protocol::C_USE_ITEM)},
+  { 113, -1, -1, sizeof(::Protocol::S_CHANGE_ITEM)},
+  { 120, -1, -1, sizeof(::Protocol::S_REMOVE_ITEM)},
+  { 127, -1, -1, sizeof(::Protocol::C_EQUIP_ITEM)},
+  { 136, -1, -1, sizeof(::Protocol::S_EQUIP_ITEM)},
+  { 145, -1, -1, sizeof(::Protocol::S_CHANGE_STAT)},
+  { 152, -1, -1, sizeof(::Protocol::C_CHAT_REQ)},
+  { 159, -1, -1, sizeof(::Protocol::S_CHAT_RES)},
+  { 166, -1, -1, sizeof(::Protocol::S_CHAT_NTF)},
+  { 174, -1, -1, sizeof(::Protocol::S_HEART_BEAT_RES)},
+  { 180, -1, -1, sizeof(::Protocol::C_HEART_BEAT_REQ)},
 };
 
 static const ::_pb::Message* const file_default_instances[] = {
@@ -600,33 +604,33 @@ const char descriptor_table_protodef_Protocol_2eproto[] PROTOBUF_SECTION_VARIABL
   "\001 \001(\010\022(\n\nserverList\030\002 \003(\0132\024.Protocol.Ser"
   "verInfo\022\r\n\005token\030\003 \001(\t\"H\n\nServerInfo\022\014\n\004"
   "name\030\001 \001(\t\022\n\n\002ip\030\002 \001(\t\022\014\n\004port\030\003 \001(\005\022\022\n\n"
-  "congestion\030\004 \001(\005\"\035\n\014C_ENTER_GAME\022\r\n\005toke"
-  "n\030\001 \001(\t\"G\n\014S_ENTER_GAME\022\017\n\007success\030\001 \001(\010"
-  "\022&\n\010myPlayer\030\002 \001(\0132\024.Protocol.PlayerInfo"
-  "\"1\n\006C_MOVE\022\'\n\007posInfo\030\001 \001(\0132\026.Protocol.P"
-  "ositionInfo\"C\n\006S_MOVE\022\020\n\010objectId\030\001 \001(\004\022"
-  "\'\n\007posInfo\030\002 \001(\0132\026.Protocol.PositionInfo"
-  "\"Y\n\007S_SPAWN\022%\n\007players\030\001 \003(\0132\024.Protocol."
-  "PlayerInfo\022\'\n\010monsters\030\002 \003(\0132\025.Protocol."
-  "MonsterInfo\"\036\n\tS_DESPAWN\022\021\n\tobjectIds\030\001 "
-  "\003(\004\"\032\n\007C_SKILL\022\017\n\007skillId\030\001 \001(\005\",\n\007S_SKI"
-  "LL\022\020\n\010objectId\030\001 \001(\004\022\017\n\007skillId\030\002 \001(\005\"V\n"
-  "\013S_CHANGE_HP\022\020\n\010objectId\030\001 \001(\004\022\022\n\nattack"
-  "erId\030\002 \001(\004\022\021\n\tcurrentHp\030\003 \001(\005\022\016\n\006damage\030"
-  "\004 \001(\005\"0\n\013S_ITEM_LIST\022!\n\005items\030\001 \003(\0132\022.Pr"
-  "otocol.ItemInfo\"\035\n\nC_USE_ITEM\022\017\n\007itemUid"
-  "\030\001 \001(\004\"1\n\rS_CHANGE_ITEM\022 \n\004item\030\001 \001(\0132\022."
-  "Protocol.ItemInfo\" \n\rS_REMOVE_ITEM\022\017\n\007it"
-  "emUid\030\001 \001(\004\"A\n\014C_EQUIP_ITEM\022\017\n\007itemUid\030\001"
-  " \001(\004\022\021\n\tslotIndex\030\002 \001(\005\022\r\n\005equip\030\003 \001(\010\"D"
-  "\n\014S_EQUIP_ITEM\022\017\n\007itemUid\030\001 \001(\004\022\020\n\010equip"
-  "ped\030\002 \001(\010\022\021\n\tslotIndex\030\003 \001(\005\"5\n\rS_CHANGE"
-  "_STAT\022$\n\010statInfo\030\001 \001(\0132\022.Protocol.StatI"
-  "nfo\"\035\n\nC_CHAT_REQ\022\017\n\007message\030\001 \001(\t\"\035\n\nS_"
-  "CHAT_RES\022\017\n\007success\030\001 \001(\010\"/\n\nS_CHAT_NTF\022"
-  "\020\n\010playerId\030\001 \001(\004\022\017\n\007message\030\002 \001(\t\"\022\n\020S_"
-  "HEART_BEAT_RES\"\022\n\020C_HEART_BEAT_REQb\006prot"
-  "o3"
+  "congestion\030\004 \001(\005\"\?\n\014C_ENTER_GAME\022\r\n\005toke"
+  "n\030\001 \001(\t\022\021\n\tchannelId\030\002 \001(\005\022\r\n\005mapId\030\003 \001("
+  "\005\"G\n\014S_ENTER_GAME\022\017\n\007success\030\001 \001(\010\022&\n\010my"
+  "Player\030\002 \001(\0132\024.Protocol.PlayerInfo\"1\n\006C_"
+  "MOVE\022\'\n\007posInfo\030\001 \001(\0132\026.Protocol.Positio"
+  "nInfo\"C\n\006S_MOVE\022\020\n\010objectId\030\001 \001(\004\022\'\n\007pos"
+  "Info\030\002 \001(\0132\026.Protocol.PositionInfo\"Y\n\007S_"
+  "SPAWN\022%\n\007players\030\001 \003(\0132\024.Protocol.Player"
+  "Info\022\'\n\010monsters\030\002 \003(\0132\025.Protocol.Monste"
+  "rInfo\"\036\n\tS_DESPAWN\022\021\n\tobjectIds\030\001 \003(\004\"\032\n"
+  "\007C_SKILL\022\017\n\007skillId\030\001 \001(\005\",\n\007S_SKILL\022\020\n\010"
+  "objectId\030\001 \001(\004\022\017\n\007skillId\030\002 \001(\005\"V\n\013S_CHA"
+  "NGE_HP\022\020\n\010objectId\030\001 \001(\004\022\022\n\nattackerId\030\002"
+  " \001(\004\022\021\n\tcurrentHp\030\003 \001(\005\022\016\n\006damage\030\004 \001(\005\""
+  "0\n\013S_ITEM_LIST\022!\n\005items\030\001 \003(\0132\022.Protocol"
+  ".ItemInfo\"\035\n\nC_USE_ITEM\022\017\n\007itemUid\030\001 \001(\004"
+  "\"1\n\rS_CHANGE_ITEM\022 \n\004item\030\001 \001(\0132\022.Protoc"
+  "ol.ItemInfo\" \n\rS_REMOVE_ITEM\022\017\n\007itemUid\030"
+  "\001 \001(\004\"A\n\014C_EQUIP_ITEM\022\017\n\007itemUid\030\001 \001(\004\022\021"
+  "\n\tslotIndex\030\002 \001(\005\022\r\n\005equip\030\003 \001(\010\"D\n\014S_EQ"
+  "UIP_ITEM\022\017\n\007itemUid\030\001 \001(\004\022\020\n\010equipped\030\002 "
+  "\001(\010\022\021\n\tslotIndex\030\003 \001(\005\"5\n\rS_CHANGE_STAT\022"
+  "$\n\010statInfo\030\001 \001(\0132\022.Protocol.StatInfo\"\035\n"
+  "\nC_CHAT_REQ\022\017\n\007message\030\001 \001(\t\"\035\n\nS_CHAT_R"
+  "ES\022\017\n\007success\030\001 \001(\010\"/\n\nS_CHAT_NTF\022\020\n\010pla"
+  "yerId\030\001 \001(\004\022\017\n\007message\030\002 \001(\t\"\022\n\020S_HEART_"
+  "BEAT_RES\"\022\n\020C_HEART_BEAT_REQb\006proto3"
   ;
 static const ::_pbi::DescriptorTable* const descriptor_table_Protocol_2eproto_deps[2] = {
   &::descriptor_table_Enum_2eproto,
@@ -634,7 +638,7 @@ static const ::_pbi::DescriptorTable* const descriptor_table_Protocol_2eproto_de
 };
 static ::_pbi::once_flag descriptor_table_Protocol_2eproto_once;
 const ::_pbi::DescriptorTable descriptor_table_Protocol_2eproto = {
-    false, false, 1282, descriptor_table_protodef_Protocol_2eproto,
+    false, false, 1316, descriptor_table_protodef_Protocol_2eproto,
     "Protocol.proto",
     &descriptor_table_Protocol_2eproto_once, descriptor_table_Protocol_2eproto_deps, 2, 24,
     schemas, file_default_instances, TableStruct_Protocol_2eproto::offsets,
@@ -1496,6 +1500,8 @@ C_ENTER_GAME::C_ENTER_GAME(const C_ENTER_GAME& from)
   C_ENTER_GAME* const _this = this; (void)_this;
   new (&_impl_) Impl_{
       decltype(_impl_.token_){}
+    , decltype(_impl_.channelid_){}
+    , decltype(_impl_.mapid_){}
     , /*decltype(_impl_._cached_size_)*/{}};
 
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
@@ -1507,6 +1513,9 @@ C_ENTER_GAME::C_ENTER_GAME(const C_ENTER_GAME& from)
     _this->_impl_.token_.Set(from._internal_token(), 
       _this->GetArenaForAllocation());
   }
+  ::memcpy(&_impl_.channelid_, &from._impl_.channelid_,
+    static_cast<size_t>(reinterpret_cast<char*>(&_impl_.mapid_) -
+    reinterpret_cast<char*>(&_impl_.channelid_)) + sizeof(_impl_.mapid_));
   // @@protoc_insertion_point(copy_constructor:Protocol.C_ENTER_GAME)
 }
 
@@ -1516,6 +1525,8 @@ inline void C_ENTER_GAME::SharedCtor(
   (void)is_message_owned;
   new (&_impl_) Impl_{
       decltype(_impl_.token_){}
+    , decltype(_impl_.channelid_){0}
+    , decltype(_impl_.mapid_){0}
     , /*decltype(_impl_._cached_size_)*/{}
   };
   _impl_.token_.InitDefault();
@@ -1549,6 +1560,9 @@ void C_ENTER_GAME::Clear() {
   (void) cached_has_bits;
 
   _impl_.token_.ClearToEmpty();
+  ::memset(&_impl_.channelid_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&_impl_.mapid_) -
+      reinterpret_cast<char*>(&_impl_.channelid_)) + sizeof(_impl_.mapid_));
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
@@ -1565,6 +1579,22 @@ const char* C_ENTER_GAME::_InternalParse(const char* ptr, ::_pbi::ParseContext* 
           ptr = ::_pbi::InlineGreedyStringParser(str, ptr, ctx);
           CHK_(ptr);
           CHK_(::_pbi::VerifyUTF8(str, "Protocol.C_ENTER_GAME.token"));
+        } else
+          goto handle_unusual;
+        continue;
+      // int32 channelId = 2;
+      case 2:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 16)) {
+          _impl_.channelid_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
+          CHK_(ptr);
+        } else
+          goto handle_unusual;
+        continue;
+      // int32 mapId = 3;
+      case 3:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 24)) {
+          _impl_.mapid_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
+          CHK_(ptr);
         } else
           goto handle_unusual;
         continue;
@@ -1607,6 +1637,18 @@ uint8_t* C_ENTER_GAME::_InternalSerialize(
         1, this->_internal_token(), target);
   }
 
+  // int32 channelId = 2;
+  if (this->_internal_channelid() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteInt32ToArray(2, this->_internal_channelid(), target);
+  }
+
+  // int32 mapId = 3;
+  if (this->_internal_mapid() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteInt32ToArray(3, this->_internal_mapid(), target);
+  }
+
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
     target = ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance), target, stream);
@@ -1630,6 +1672,16 @@ size_t C_ENTER_GAME::ByteSizeLong() const {
         this->_internal_token());
   }
 
+  // int32 channelId = 2;
+  if (this->_internal_channelid() != 0) {
+    total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(this->_internal_channelid());
+  }
+
+  // int32 mapId = 3;
+  if (this->_internal_mapid() != 0) {
+    total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(this->_internal_mapid());
+  }
+
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
@@ -1650,6 +1702,12 @@ void C_ENTER_GAME::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::P
 
   if (!from._internal_token().empty()) {
     _this->_internal_set_token(from._internal_token());
+  }
+  if (from._internal_channelid() != 0) {
+    _this->_internal_set_channelid(from._internal_channelid());
+  }
+  if (from._internal_mapid() != 0) {
+    _this->_internal_set_mapid(from._internal_mapid());
   }
   _this->_internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
@@ -1674,6 +1732,12 @@ void C_ENTER_GAME::InternalSwap(C_ENTER_GAME* other) {
       &_impl_.token_, lhs_arena,
       &other->_impl_.token_, rhs_arena
   );
+  ::PROTOBUF_NAMESPACE_ID::internal::memswap<
+      PROTOBUF_FIELD_OFFSET(C_ENTER_GAME, _impl_.mapid_)
+      + sizeof(C_ENTER_GAME::_impl_.mapid_)
+      - PROTOBUF_FIELD_OFFSET(C_ENTER_GAME, _impl_.channelid_)>(
+          reinterpret_cast<char*>(&_impl_.channelid_),
+          reinterpret_cast<char*>(&other->_impl_.channelid_));
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata C_ENTER_GAME::GetMetadata() const {

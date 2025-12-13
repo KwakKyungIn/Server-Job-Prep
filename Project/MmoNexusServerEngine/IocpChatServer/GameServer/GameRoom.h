@@ -19,7 +19,7 @@ public:
     GameRoom();
     virtual ~GameRoom();
 
-    void Init(int32 mapId, int32 sizeX, int32 sizeY, int32 zoneSize = 50);
+    void Init(int32 channelId, int32 mapId, int32 sizeX, int32 sizeY, int32 zoneSize = 50);
     void Update();
 
 public:
@@ -70,6 +70,11 @@ private:
     Map<uint64, MonsterRef> _monsters;
 
     SpatialGrid             _grid;      // AOI 책임
+
+    int32 _channelId = 1;
+    int32 _mapId = 1;
+
+
     std::unique_ptr<BattleSystem> _battle; // 전투 로직 엔진
 
 };

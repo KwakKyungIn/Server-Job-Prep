@@ -24,6 +24,13 @@ public:
 	void					Update();
 	void					RefreshStats();
 
+	// [NEW] 채널/맵 메타 정보
+	void SetChannelId(int32 channelId) { _channelId = channelId; }
+	int32 GetChannelId() const { return _channelId; }
+
+	void SetMapId(int32 mapId) { _mapId = mapId; }
+	int32 GetMapId() const { return _mapId; }
+
 public:
 	// [Network Link] Player만의 고유 기능 (세션 연결)
 	void					SetSession(std::shared_ptr<PlayerSession> session) { _session = session; }
@@ -69,6 +76,9 @@ protected:
 
 	// [References]
 	std::weak_ptr<PlayerSession> _session;
+
+	int32 _channelId = 1;
+	int32 _mapId = 1;
 
 	// _room, _zoneIndex는 Creature로 이사 갔으니 삭제.
 };

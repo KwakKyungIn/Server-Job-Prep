@@ -21,8 +21,11 @@ GameRoom::~GameRoom()
 {
 }
 
-void GameRoom::Init(int32 mapId, int32 sizeX, int32 sizeY, int32 zoneSize)
+void GameRoom::Init(int32 channelId, int32 mapId, int32 sizeX, int32 sizeY, int32 zoneSize)
 {
+	_channelId = channelId;
+	_mapId = mapId;
+
 	_map = MakeShared<GameMap>();
 	_map->Init(mapId, sizeX, sizeY);
 
@@ -32,7 +35,7 @@ void GameRoom::Init(int32 mapId, int32 sizeX, int32 sizeY, int32 zoneSize)
 
 	printf("[GameRoom] Init MapId: %d, Grid: (%d, %d), CellSize: %d\n",
 		mapId, sizeX, sizeY, zoneSize);
-
+	/*
 	// [Test Spawn] 테스트용 몬스터 1마리 소환
 	MonsterRef slime = ObjectPool<Monster>::MakeShared();
 	slime->Init(1); // 템플릿 ID 1번 (슬라임 킹)
@@ -56,6 +59,8 @@ void GameRoom::Init(int32 mapId, int32 sizeX, int32 sizeY, int32 zoneSize)
 		debugZoneIndex,
 		debugZone.players.size(),
 		debugZone.monsters.size());
+
+		*/
 }
 
 void GameRoom::Update()
@@ -103,20 +108,33 @@ void GameRoom::Enter(PlayerSessionRef session)
 
 	// 1. 주변 플레이어들에게 "나(플레이어) 등장" 알림
 	{
+		printf("📢 [Enter-Broadcast] Notifying nearby players about Player %llu\n",
+			player->GetPlayerId());
+
 		Protocol::S_SPAWN spawnPkt;
 		Protocol::PlayerInfo* pInfo = spawnPkt.add_players();
 		*pInfo = *player->GetPlayerInfo();
 		SendBufferRef sendBuffer = ClientPacketHandler::MakeSendBuffer(spawnPkt);
 
 		Vector<Zone*> nearbyZones;
-		_grid.GetNearbyZones(zoneIndex, nearbyZones);   // [CHANGED]
+		_grid.GetNearbyZones(zoneIndex, nearbyZones);
+
+		printf("    Nearby zones: %zu\n", nearbyZones.size());
 
 		for (Zone* zone : nearbyZones)
 		{
+			printf("    → Zone has %zu players\n", zone->players.size());
 			for (const PlayerRef& other : zone->players)
 			{
 				if (other != player)
+				{
+					printf("      ✉️ Sending spawn to Player %llu\n", other->GetPlayerId());
 					other->GetSession()->Send(sendBuffer);
+				}
+				else
+				{
+					printf("      ⏭️ Skipping self (Player %llu)\n", other->GetPlayerId());
+				}
 			}
 		}
 	}
@@ -214,6 +232,11 @@ void GameRoom::HandleMove(PlayerSessionRef session, Protocol::C_MOVE pkt)
 	uint64 playerId = player->GetPlayerId();
 	if (_players.find(playerId) == _players.end()) return;
 
+	printf("[GameRoom::HandleMove] Player %llu Move -> (%.1f,%.1f,%.1f)\n",
+		playerId,
+		pkt.posinfo().x(), pkt.posinfo().y(), pkt.posinfo().z());
+
+
 	// 1. [Validation] 맵 충돌 체크
 	if (_map->CanGo(pkt.posinfo()) == false)
 		return;
@@ -233,7 +256,14 @@ void GameRoom::HandleMove(PlayerSessionRef session, Protocol::C_MOVE pkt)
 		*movePkt.mutable_posinfo() = pkt.posinfo();
 		SendBufferRef sendBuffer = ClientPacketHandler::MakeSendBuffer(movePkt);
 
+
+		printf("📢 [HandleMove] Broadcasting to Zone[%d], except Player %llu\n",
+			newZoneIndex, playerId);  // ← 추가
+
+
 		BroadcastToZone(sendBuffer, newZoneIndex, playerId);
+
+		printf("✅ [HandleMove] Broadcast complete\n");  // ← 추가
 	}
 	// [Case B] Zone 변경 발생
 	else

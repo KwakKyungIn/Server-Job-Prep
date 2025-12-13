@@ -12,9 +12,10 @@
 #include <iostream>
 #include <windows.h>
 #include "LoginSession.h"
+#include "RoomManager.h" // [NEW]
 
 // [External Reference] ClientPacketHandler.cpp에 있는 그 놈 가져오기
-extern shared_ptr<GameRoom> GTestRoom;
+//extern shared_ptr<GameRoom> GTestRoom;
 extern shared_ptr<LoginSession> G_LoginSession;
 extern std::atomic<bool> GIsRunning; // 전역 변수 참조
 
@@ -75,6 +76,8 @@ int main()
 	ASSERT_CRASH(loginService->Start());
 	ASSERT_CRASH(gameService->Start());
 
+	GRoomManager = MakeShared<RoomManager>();
+
 	std::cout << "✅ [GameServer] Running... (Press Ctrl+C to quit)" << std::endl;
 
 	// 스레드 런칭 로직 (기존 유지)
@@ -108,10 +111,9 @@ int main()
 	while (GIsRunning)
 	{
 		// 1. [CRITICAL] 룸 로직 업데이트 (몬스터 AI는 여기서 돌아간다)
-		if (GTestRoom != nullptr)
-		{
-			GTestRoom->Update();
-		}
+		// [CHANGED] 모든 룸 업데이트
+		if (GRoomManager)
+			GRoomManager->UpdateAll();
 
 		// 2. CPU 휴식 (프레임 제한)
 		std::this_thread::sleep_for(std::chrono::milliseconds(50));

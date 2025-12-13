@@ -7,14 +7,14 @@
 #include "Job.h" 
 #include "GameRoom.h" 
 #include "RedisManager.h"
+#include "RoomManager.h"
 
 // Global DB Session Reference
 extern shared_ptr<PacketSession> G_DBSession;
 
 PacketHandlerFunc ClientPacketHandler::GPacketHandler[UINT16_MAX];
 
-// [Test] 임시 테스트용 1번방 (Lazy Initialization용 nullptr 초기화)
-shared_ptr<GameRoom> GTestRoom = nullptr;
+
 
 bool ClientPacketHandler::Handle_INVALID(PacketSessionRef& session, BYTE* buffer, int32 len)
 {
@@ -40,6 +40,13 @@ bool ClientPacketHandler::Handle_C_ENTER_GAME(PacketSessionRef& session, Protoco
 	uint64 playerId = std::stoull(value);
 	printf("✅ [EnterGame] Token Validated! PlayerID: %llu\n", playerId);
 
+	// [NEW] 채널/맵 정보 읽기 (기본값 방어)
+	int32 channelId = pkt.channelid();
+	if (channelId <= 0) channelId = 1;
+
+	int32 mapId = pkt.mapid();
+	if (mapId <= 0) mapId = 1;
+
 	// 2. [Player Object] 생성
 	shared_ptr<Player> player = ObjectPool<Player>::MakeShared();
 
@@ -56,6 +63,11 @@ bool ClientPacketHandler::Handle_C_ENTER_GAME(PacketSessionRef& session, Protoco
 
 		player->Init(tempInfo);
 	}
+
+	// [NEW] 선택한 채널/맵 저장
+	player->SetChannelId(channelId);
+	player->SetMapId(mapId);
+
 
 	// 세션과 플레이어 연결
 	playerSession->SetPlayer(player);
@@ -77,17 +89,6 @@ bool ClientPacketHandler::Handle_C_ENTER_GAME(PacketSessionRef& session, Protoco
 		G_DBSession->Send(S2SPacketHandler::MakeSendBuffer(reqItem));
 	}
 
-	// 4. [Lazy Init] 룸 생성 (테스트용)
-	if (GTestRoom == nullptr)
-	{
-		GTestRoom = MakeShared<GameRoom>();
-		GTestRoom->Init(1, 100, 100, 10);
-	}
-
-	// 주의: 아직 방에 넣지 않음. 
-	// DB에서 데이터(좌표 등)가 로딩된 후(S2S_RES_LOAD_PLAYER_DATA)에 방에 넣는 것이 정석.
-	// 하지만 지금 구조상 바로 넣고 싶다면 여기서 GTestRoom->PushJob(&GameRoom::Enter, playerSession); 호출 가능.
-	// 일단 DB 로딩 완료 패킷 핸들러(S2SPacketHandler)에서 Enter 처리하는 것을 권장.
 
 	return true;
 }
@@ -99,9 +100,24 @@ bool ClientPacketHandler::Handle_C_MOVE(PacketSessionRef& session, Protocol::C_M
 {
 	PlayerSessionRef playerSession = static_pointer_cast<PlayerSession>(session);
 	auto player = playerSession->GetPlayer();
-	if (player == nullptr) return false;
+
+	if (player == nullptr)
+	{
+		printf("[C_MOVE] Player is null\n");
+		return false;
+	}
 
 	auto room = player->GetRoom();
+	if (room == nullptr)
+	{
+		printf("[C_MOVE] Room is null for Player %llu\n", player->GetPlayerId());
+		return false;
+	}
+
+	printf("[C_MOVE] From Player %llu Pos:(%.1f,%.1f,%.1f)\n",
+		player->GetPlayerId(),
+		pkt.posinfo().x(), pkt.posinfo().y(), pkt.posinfo().z());
+
 	if (room) room->PushJob(&GameRoom::HandleMove, playerSession, pkt);
 	return true;
 }

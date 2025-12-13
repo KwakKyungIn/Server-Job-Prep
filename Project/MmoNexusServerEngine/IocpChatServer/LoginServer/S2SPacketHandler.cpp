@@ -55,11 +55,32 @@ bool S2SPacketHandler::Handle_S2S_RES_LOGIN(PacketSessionRef& session, Protocol:
 		resPkt.set_token(token);
 
 		// 게임 서버 정보
-		auto* server = resPkt.add_serverlist();
-		server->set_name("GIGACHAD Server 1");
-		server->set_ip("127.0.0.1");
-		server->set_port(7777);
-		server->set_congestion(0);
+		{
+			auto* server = resPkt.add_serverlist();
+			server->set_name("GIGACHAD Server 1");
+			server->set_ip("127.0.0.1");
+			server->set_port(7777);
+			server->set_congestion(0);
+
+		}
+
+		{
+			auto* server = resPkt.add_serverlist();
+			server->set_name("GIGACHAD Server 2");
+			server->set_ip("127.0.0.1");
+			server->set_port(7777);
+			server->set_congestion(0);
+
+		}
+
+		{
+			auto* server = resPkt.add_serverlist();
+			server->set_name("GIGACHAD Server 3");
+			server->set_ip("127.0.0.1");
+			server->set_port(7777);
+			server->set_congestion(0);
+
+		}
 
 		printf("✅ [Login] Success! User: %llu\n", rawId);
 	}

@@ -817,6 +817,8 @@ class C_ENTER_GAME final :
 
   enum : int {
     kTokenFieldNumber = 1,
+    kChannelIdFieldNumber = 2,
+    kMapIdFieldNumber = 3,
   };
   // string token = 1;
   void clear_token();
@@ -832,6 +834,24 @@ class C_ENTER_GAME final :
   std::string* _internal_mutable_token();
   public:
 
+  // int32 channelId = 2;
+  void clear_channelid();
+  int32_t channelid() const;
+  void set_channelid(int32_t value);
+  private:
+  int32_t _internal_channelid() const;
+  void _internal_set_channelid(int32_t value);
+  public:
+
+  // int32 mapId = 3;
+  void clear_mapid();
+  int32_t mapid() const;
+  void set_mapid(int32_t value);
+  private:
+  int32_t _internal_mapid() const;
+  void _internal_set_mapid(int32_t value);
+  public:
+
   // @@protoc_insertion_point(class_scope:Protocol.C_ENTER_GAME)
  private:
   class _Internal;
@@ -841,6 +861,8 @@ class C_ENTER_GAME final :
   typedef void DestructorSkippable_;
   struct Impl_ {
     ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr token_;
+    int32_t channelid_;
+    int32_t mapid_;
     mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   };
   union { Impl_ _impl_; };
@@ -4395,6 +4417,46 @@ inline void C_ENTER_GAME::set_allocated_token(std::string* token) {
   }
 #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:Protocol.C_ENTER_GAME.token)
+}
+
+// int32 channelId = 2;
+inline void C_ENTER_GAME::clear_channelid() {
+  _impl_.channelid_ = 0;
+}
+inline int32_t C_ENTER_GAME::_internal_channelid() const {
+  return _impl_.channelid_;
+}
+inline int32_t C_ENTER_GAME::channelid() const {
+  // @@protoc_insertion_point(field_get:Protocol.C_ENTER_GAME.channelId)
+  return _internal_channelid();
+}
+inline void C_ENTER_GAME::_internal_set_channelid(int32_t value) {
+  
+  _impl_.channelid_ = value;
+}
+inline void C_ENTER_GAME::set_channelid(int32_t value) {
+  _internal_set_channelid(value);
+  // @@protoc_insertion_point(field_set:Protocol.C_ENTER_GAME.channelId)
+}
+
+// int32 mapId = 3;
+inline void C_ENTER_GAME::clear_mapid() {
+  _impl_.mapid_ = 0;
+}
+inline int32_t C_ENTER_GAME::_internal_mapid() const {
+  return _impl_.mapid_;
+}
+inline int32_t C_ENTER_GAME::mapid() const {
+  // @@protoc_insertion_point(field_get:Protocol.C_ENTER_GAME.mapId)
+  return _internal_mapid();
+}
+inline void C_ENTER_GAME::_internal_set_mapid(int32_t value) {
+  
+  _impl_.mapid_ = value;
+}
+inline void C_ENTER_GAME::set_mapid(int32_t value) {
+  _internal_set_mapid(value);
+  // @@protoc_insertion_point(field_set:Protocol.C_ENTER_GAME.mapId)
 }
 
 // -------------------------------------------------------------------

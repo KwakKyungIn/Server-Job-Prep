@@ -111,6 +111,9 @@
     <ClCompile Include="BattleSystem.cpp">
       <Filter>GameContents\Battle</Filter>
     </ClCompile>
+    <ClCompile Include="RoomManager.cpp">
+      <Filter>GameContents\Room</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -178,6 +181,9 @@
     </ClInclude>
     <ClInclude Include="BattleSystem.h">
       <Filter>GameContents\Battle</Filter>
+    </ClInclude>
+    <ClInclude Include="RoomManager.h">
+      <Filter>GameContents\Room</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -39,9 +39,10 @@ message ServerInfo {
 // 기존 C_ENTER_GAME_REQ 대체
 // 더 이상 캐릭터 인덱스(PlayerIndex)를 보내지 않는다. (LoginServer에서 이미 결정했다고 가정하거나, 여기서 Token만 보냄)
 message C_ENTER_GAME {
-    string token = 1; // [핵심] ID 대신 토큰으로 입장!
+    string token    = 1; // [핵심] ID 대신 토큰
+    int32  channelId = 2; // [NEW] 클라이언트에서 선택한 채널
+    int32  mapId     = 3; // [NEW] 입장할 맵 (없으면 1로 사용해도 됨)
 }
-
 // 5. 입장 응답 (GameServer -> Client)
 // 기존 S_ENTER_GAME_RES 대체
 message S_ENTER_GAME {
@@ -125,6 +126,13 @@ message S_EQUIP_ITEM {
 message S_CHANGE_STAT {
     StatInfo statInfo = 1;
 }
+
+// ============================================================
+// [GAME SERVER 전용] 
+// ============================================================
+
+
+
 
 // ============================================================
 // [CHAT] (그대로 유지)

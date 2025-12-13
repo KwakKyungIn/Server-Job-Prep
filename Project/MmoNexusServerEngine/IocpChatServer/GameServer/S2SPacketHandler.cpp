@@ -7,8 +7,10 @@
 #include "Player.h"
 #include "DataManager.h"
 #include "GameRoom.h"
+#include "RoomManager.h"
 
-extern shared_ptr<GameRoom> GTestRoom;
+extern shared_ptr<RoomManager> GRoomManager;
+
 PacketHandlerFunc S2SPacketHandler::GPacketHandler[UINT16_MAX];
 
 bool S2SPacketHandler::Handle_INVALID(PacketSessionRef& session, BYTE* buffer, int32 len)
@@ -103,10 +105,19 @@ bool S2SPacketHandler::Handle_S2S_RES_LOAD_PLAYER_DATA(PacketSessionRef& session
 				std::cout << "👤 [Player] Stat Loaded. Lv:" << player->GetStatInfo()->level()
 					<< " HP:" << player->GetStatInfo()->hp() << std::endl;
 
-				if (GTestRoom)
+
+				if (GRoomManager)
 				{
-					GTestRoom->PushJob(&GameRoom::Enter, playerSession);
-					std::cout << "🚪 [GameRoom] Player Entered Room!" << std::endl;
+					int32 channelId = player->GetChannelId();
+					int32 mapId = player->GetMapId();
+
+					auto room = GRoomManager->GetOrCreateRoom(channelId, mapId);
+					if (room)
+					{
+						room->PushJob(&GameRoom::Enter, playerSession);
+						std::cout << "🚪 [GameRoom] Player Entered Room! (Channel "
+							<< channelId << ", Map " << mapId << ")" << std::endl;
+					}
 				}
 
 			}
