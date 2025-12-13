@@ -1,4 +1,4 @@
-#include "pch.h"
+ï»¿#include "pch.h"
 #include "Service.h"
 #include "Session.h"
 #include "Listener.h"
@@ -18,10 +18,10 @@ Service::~Service()
 
 void Service::CloseService()
 {
-	// [GIGACHAD FIX] µ¥µå¶ô ¹æÁö ÄÚµå
-	// ¶ôÀ» ÀâÀº »óÅÂ¿¡¼­ Disconnect¸¦ È£ÃâÇÏ¸é, 
-	// OnDisconnected -> ReleaseSession¿¡¼­ ´Ù½Ã ¶ôÀ» ÀâÀ¸·Á´Ù ¼­¹ö°¡ ¸ØÃâ ¼ö ÀÖ´Ù.
-	// ±×·¡¼­ ¼¼¼Ç ¸ñ·ÏÀ» º¹»çÇØµÎ°í, ¶ôÀ» Ç¬ µÚ¿¡ ²÷¾î¾ß ÇÑ´Ù.
+	// [GIGACHAD FIX] ë°ë“œë½ ë°©ì§€ ì½”ë“œ
+	// ë½ì„ ì¡ì€ ìƒíƒœì—ì„œ Disconnectë¥¼ í˜¸ì¶œí•˜ë©´, 
+	// OnDisconnected -> ReleaseSessionì—ì„œ ë‹¤ì‹œ ë½ì„ ì¡ìœ¼ë ¤ë‹¤ ì„œë²„ê°€ ë©ˆì¶œ ìˆ˜ ìˆë‹¤.
+	// ê·¸ë˜ì„œ ì„¸ì…˜ ëª©ë¡ì„ ë³µì‚¬í•´ë‘ê³ , ë½ì„ í‘¼ ë’¤ì— ëŠì–´ì•¼ í•œë‹¤.
 
 	Set<SessionRef> tempSessions;
 	{
@@ -63,7 +63,7 @@ void Service::AddSession(SessionRef session)
 	_sessionCount++;
 	_sessions.insert(session);
 
-	// [GIGACHAD FIX] Äİ¹é È£Ãâ (ÀÌ°Ô ÀÖ¾î¾ß LoginServer°¡ ¼¼¼ÇÀ» ³¬¾ÆÃ¦´Ù)
+	// [GIGACHAD FIX] ì½œë°± í˜¸ì¶œ (ì´ê²Œ ìˆì–´ì•¼ LoginServerê°€ ì„¸ì…˜ì„ ë‚šì•„ì±ˆë‹¤)
 	if (_connectCallback)
 		_connectCallback(session);
 }
@@ -123,7 +123,11 @@ bool ClientService::Start()
 	{
 		SessionRef session = CreateSession();
 		if (session->Connect() == false)
-			return false;
+		{
+			std::cout << "âš ï¸ [Warning] Initial Connection Failed. Will retry later via Heartbeat." << std::endl;
+			//return false;
+		}
+			
 	}
 
 	return true;

@@ -110,7 +110,7 @@ int main()
 
 		// 두 서비스 모두 체크
 		gameService->CheckHeartbeat();
-		loginService->CheckHeartbeat();
+		//loginService->CheckHeartbeat();
 	}
 
 	// 5. 대기 및 종료

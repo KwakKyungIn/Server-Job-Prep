@@ -209,6 +209,12 @@ public class PacketHandler
 
     public static void S_HEART_BEAT_RESHandler(ServerSession session, IMessage packet)
     {
-        // 하트비트 응답은 보통 무시하거나 연결 상태 갱신에 사용
+        C_HEART_BEAT_REQ pongPacket = new C_HEART_BEAT_REQ();
+
+        // 2. NetworkManager를 통해 전송 (구조적 정답)
+        // 이유: NetworkManager가 세션 null 체크와 로그를 관리하기 때문.
+        // ID: PacketManager에 정의된 MsgId Enum을 캐스팅해서 사용 (하드코딩 금지)
+
+        NetworkManager.Instance.Send(pongPacket, (ushort)PacketManager.MsgId.C_HEART_BEAT_REQ);
     }
 }

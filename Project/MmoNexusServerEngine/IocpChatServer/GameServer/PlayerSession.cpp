@@ -49,3 +49,13 @@ void PlayerSession::OnSend(int32 len)
 {
 	// 전송 완료 후 추가 작업
 }
+
+void PlayerSession::Ping()
+{
+	Protocol::S_HEART_BEAT_RES pkt;
+	// ClientPacketHandler에 있는 MakeSendBuffer를 사용한다.
+	auto sendBuffer = ClientPacketHandler::MakeSendBuffer(pkt);
+
+	Send(sendBuffer);
+	std::cout << "[Server] Ping -> Client" << std::endl;
+}
