@@ -64,6 +64,10 @@ public class PacketHandler
             Debug.Log("[Enter Game] Success!");
             if (OnEnterGame != null)
                 OnEnterGame.Invoke(pkt);
+
+            if (pkt.MyPlayer != null && pkt.MyPlayer.StatInfo != null)
+                OnChangeStat?.Invoke(pkt.MyPlayer.StatInfo);
+
         }
     }
 
