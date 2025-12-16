@@ -59,7 +59,7 @@ bool ClientPacketHandler::Handle_C_ENTER_GAME(PacketSessionRef& session, Protoco
 		// 좌표 등은 Player::Init 내부에서 방어코드(_playerInfo.has_posinfo 체크)가 있으므로 생략 가능
 		// 하지만 확실하게 하기 위해 기본값 세팅
 		auto pos = tempInfo.mutable_posinfo();
-		pos->set_x(0); pos->set_y(0); pos->set_z(0);
+		pos->set_x(50); pos->set_y(0); pos->set_z(50);
 
 		player->Init(tempInfo);
 	}

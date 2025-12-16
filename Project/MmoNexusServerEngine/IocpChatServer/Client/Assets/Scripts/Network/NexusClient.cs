@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Google.Protobuf;
 using Protocol;
+using UnityEngine.SceneManagement;
 
 public class NexusClient : MonoBehaviour
 {
@@ -22,6 +23,23 @@ public class NexusClient : MonoBehaviour
 
     // 선택된 채널 ID (1, 2, 3...)
     int _selectedChannelId = 0;
+
+
+    static NexusClient _instance;
+    public static NexusClient Instance => _instance;
+
+    void Awake()
+    {
+        if (_instance == null)
+        {
+            _instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
 
     void Start()
     {
@@ -64,6 +82,7 @@ public class NexusClient : MonoBehaviour
 
             _isLoggedIn = true;   // 이제 채널 선택 UI로 넘어간다.
             _chatLog += ">> System: Select a channel.\n";
+            SceneManager.LoadScene("02_Channel");
         }
         else
         {
@@ -84,6 +103,10 @@ public class NexusClient : MonoBehaviour
         NetworkManager.Instance.Connect(serverInfo.Ip, serverInfo.Port);
 
         yield return new WaitForSeconds(0.5f); // 접속 대기
+
+        SceneManager.LoadScene("03_Game");
+        yield return null;
+
 
         Debug.Log("[ConnectionDebug] 6. Sending C_ENTER_GAME with Token + ChannelId + MapId...");
         _selectedChannelId = channelId;
@@ -108,6 +131,32 @@ public class NexusClient : MonoBehaviour
 
     void HandleChatRes(bool success) { }
 
+    public void RequestLogin(string id, string pw)
+    {
+        _inputName = id;
+        _inputPw = pw;
+        SendLoginPacket();
+    }
+
+    public List<ServerInfo> GetServerList()
+    {
+        return _serverList;
+    }
+
+    public void RequestEnterGameByIndex(int index)
+    {
+        if (index < 0 || index >= _serverList.Count) return;
+        StartCoroutine(CoConnectToGameServer(_serverList[index], index + 1));
+    }
+
+    public void RequestSendChat(string msg)
+    {
+        _inputChat = msg;
+        SendChatPacket();
+    }
+
+
+    /*
     private void OnGUI()
     {
         // 1단계: 아직 로그인 안 됨 -> 로그인 UI
@@ -178,7 +227,7 @@ public class NexusClient : MonoBehaviour
             GUILayout.EndArea();
         }
     }
-
+    */
     void SendLoginPacket()
     {
         C_LOGIN packet = new C_LOGIN();
