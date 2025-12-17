@@ -43,6 +43,11 @@ public class MyPlayerController : MonoBehaviour
 
     void Update()
     {
+
+        if (NetworkManager.Instance != null && NetworkManager.Instance.IsMapChanging)
+            return;
+
+
         // [New] 죽었으면 조작 불가
         if (_isDead) return;
 
@@ -84,6 +89,42 @@ public class MyPlayerController : MonoBehaviour
             }
         }
 
+        //임시 테스트 코드
+        if (Input.GetKeyDown(KeyCode.H))
+        {
+            C_MAP_CHANGE_REQ req = new C_MAP_CHANGE_REQ();
+            req.TargetMapId = 1; // 테스트용
+
+            NetworkManager.Instance.Send(req, (ushort)PacketManager.MsgId.C_MAP_CHANGE_REQ);
+            Debug.Log("📤 [TEST] Sent C_MAP_CHANGE_REQ targetMapId=1");
+        }
+
+        if (Input.GetKeyDown(KeyCode.J))
+        {
+            C_MAP_CHANGE_REQ req = new C_MAP_CHANGE_REQ();
+            req.TargetMapId = 2; // 테스트용
+
+            NetworkManager.Instance.Send(req, (ushort)PacketManager.MsgId.C_MAP_CHANGE_REQ);
+            Debug.Log("📤 [TEST] Sent C_MAP_CHANGE_REQ targetMapId=2");
+        }
+        if (Input.GetKeyDown(KeyCode.K))
+        {
+            C_MAP_CHANGE_REQ req = new C_MAP_CHANGE_REQ();
+            req.TargetMapId = 3; // 테스트용
+
+            NetworkManager.Instance.Send(req, (ushort)PacketManager.MsgId.C_MAP_CHANGE_REQ);
+            Debug.Log("📤 [TEST] Sent C_MAP_CHANGE_REQ targetMapId=3");
+        }
+        if (Input.GetKeyDown(KeyCode.L))
+        {
+            C_MAP_CHANGE_REQ req = new C_MAP_CHANGE_REQ();
+            req.TargetMapId = 4; // 테스트용
+
+            NetworkManager.Instance.Send(req, (ushort)PacketManager.MsgId.C_MAP_CHANGE_REQ);
+            Debug.Log("📤 [TEST] Sent C_MAP_CHANGE_REQ targetMapId=4");
+        }
+
+
         // ============================================================
         // [Movement]
         // ============================================================
@@ -103,8 +144,14 @@ public class MyPlayerController : MonoBehaviour
 
     IEnumerator CoSendPacket()
     {
+
+
         while (true)
         {
+            if (NetworkManager.Instance != null && NetworkManager.Instance.IsMapChanging)
+                continue;
+
+
             yield return new WaitForSeconds(0.2f);
 
             // 죽었으면 이동 패킷 안 보냄

@@ -16,6 +16,8 @@ public class ObjectManager : MonoBehaviour
 
     List<MonsterInfo> _pendingMonsters = new List<MonsterInfo>();
 
+
+
     void Awake()
     {
         Instance = this;
@@ -30,6 +32,10 @@ public class ObjectManager : MonoBehaviour
         PacketHandler.OnSpawn += OnSpawn;
         PacketHandler.OnDespawn += OnDespawn;
         PacketHandler.OnMove += OnMove;
+
+        PacketHandler.OnMapChangeBegin += OnMapChangeBegin;
+        PacketHandler.OnMapChangeEnd += OnMapChangeEnd;
+
 
         Debug.Log("✅ [ObjectManager] Events registered successfully");
     }
@@ -128,6 +134,50 @@ public class ObjectManager : MonoBehaviour
                 Debug.LogWarning($"    ⚠️ Object {id} not found in dictionary");
             }
         }
+    }
+
+
+    void OnMapChangeBegin(S_MAP_CHANGE_BEGIN pkt)
+    {
+        Debug.Log($"[ObjectManager] OnMapChangeBegin token={pkt.Token} targetMapId={pkt.TargetMapId}");
+
+        // 1) 내 플레이어는 유지 (END 패킷에 MyPlayerInfo가 없어서 재스폰 불가)
+        // 2) 나머지 오브젝트만 전부 제거
+        List<ulong> removeIds = new List<ulong>();
+
+        foreach (var kv in _objects)
+        {
+            ulong id = kv.Key;
+            if (id == MyPlayerId) continue;
+            removeIds.Add(id);
+        }
+
+        foreach (ulong id in removeIds)
+        {
+            if (_objects.TryGetValue(id, out GameObject go))
+                Destroy(go);
+            _objects.Remove(id);
+        }
+
+        _pendingMonsters.Clear();
+
+        Debug.Log($"[ObjectManager] Cleared world except MyPlayer. Remaining={_objects.Count}");
+    }
+
+    void OnMapChangeEnd(S_MAP_CHANGE_END pkt)
+    {
+        Debug.Log($"[ObjectManager] OnMapChangeEnd token={pkt.Token} mapId={pkt.MapId}");
+
+        if (_objects.TryGetValue(MyPlayerId, out GameObject myGo) == false || myGo == null)
+        {
+            Debug.LogError($"[ObjectManager] MyPlayer object not found! MyPlayerId={MyPlayerId}. (BEGIN에서 MyPlayer까지 지웠으면 이거 터짐)");
+            return;
+        }
+
+        Vector3 pos = new Vector3(pkt.Pos.X, pkt.Pos.Y, pkt.Pos.Z);
+        myGo.transform.position = pos;
+
+        Debug.Log($"[ObjectManager] MyPlayer warped to {pos}");
     }
 
     void OnMove(S_MOVE pkt)

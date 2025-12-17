@@ -163,6 +163,7 @@ bool ClientPacketHandler::Handle_C_EQUIP_ITEM(PacketSessionRef& session, Protoco
 {
 	PlayerSessionRef playerSession = static_pointer_cast<PlayerSession>(session);
 
+	if (playerSession->IsMapChanging()) return true;
 	// 1. Player 검증
 	auto player = playerSession->GetPlayer();
 	if (player == nullptr) return false;
@@ -365,7 +366,7 @@ bool ClientPacketHandler::Handle_C_MAP_CHANGE_ACK(PacketSessionRef& session, Pro
 			// IMPORTANT:
 			// - 여기서 newRoom의 Enter가 S_MAP_CHANGE_END를 보내도록 GameRoom.cpp를 조정해야 함.
 			// - 그리고 그 시점에 playerSession->EndMapChange() 호출해서 입력락 풀어야 "2-step"이 완성된다.
-			newRoom->PushJob(&GameRoom::Enter, playerSession);
+			newRoom->PushJob(&GameRoom::EnterMapChange, playerSession);
 		});
 
 	printf("🗺️ [MapChange][ACK] Player %llu -> Map %d (token=%llu)\n",

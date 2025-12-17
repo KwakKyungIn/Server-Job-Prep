@@ -14,6 +14,32 @@ public class NetworkManager : MonoBehaviour
     Queue<Action> _packetQueue = new Queue<Action>();
     object _lock = new object();
 
+    public bool IsMapChanging { get; private set; } = false;
+    public ulong MapChangeToken { get; private set; } = 0;
+
+
+    public void BeginMapChange(ulong token)
+    {
+        IsMapChanging = true;
+        MapChangeToken = token;
+        Debug.Log($"[NetworkManager] BeginMapChange token={token}");
+    }
+
+    public void EndMapChange(ulong token)
+    {
+        // 토큰 다르면 무시 (꼬임 방지)
+        if (MapChangeToken != token)
+        {
+            Debug.LogWarning($"[NetworkManager] EndMapChange ignored (token mismatch) cur={MapChangeToken} recv={token}");
+            return;
+        }
+
+        IsMapChanging = false;
+        MapChangeToken = 0;
+        Debug.Log($"[NetworkManager] EndMapChange token={token}");
+    }
+
+
     void Awake()
     {
         if (_instance == null)

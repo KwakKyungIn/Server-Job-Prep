@@ -246,7 +246,7 @@ public class NexusClient : MonoBehaviour
         packet.ChannelId = _selectedChannelId;
 
         // 지금은 맵 하나만 사용하니까 하드코딩
-        packet.MapId = 999;
+        packet.MapId = 1;
 
         NetworkManager.Instance.Send(packet, (ushort)PacketManager.MsgId.C_ENTER_GAME);
     }
