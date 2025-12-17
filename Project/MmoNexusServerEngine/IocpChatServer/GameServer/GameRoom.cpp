@@ -563,6 +563,81 @@ void GameRoom::HandleSkill(std::shared_ptr<Creature> attacker, int32 skillId)
 	}
 }
 
+void GameRoom::HandleUseItem(PlayerSessionRef session, Protocol::C_USE_ITEM pkt)
+{
+	PlayerRef player = session->GetPlayer();
+	if (player == nullptr) return;
+
+	const uint64 playerId = player->GetPlayerId();
+	if (_players.find(playerId) == _players.end()) return;
+
+	// 인벤에서 아이템 찾기
+	auto& items = player->GetItems();
+	auto it = std::find_if(items.begin(), items.end(),
+		[&](const Protocol::ItemInfo& item) { return item.itemuid() == pkt.itemuid(); });
+
+	if (it == items.end())
+		return;
+
+	// 템플릿 검증
+	const Protocol::ItemTemplateInfo* tpl = DataManager::Instance()->GetItemTemplate(it->templateid());
+	if (tpl == nullptr) return;
+
+	const Protocol::ItemType itemType = static_cast<Protocol::ItemType>(tpl->itemtype());
+	if (itemType != Protocol::ITEM_TYPE_CONSUMABLE)
+		return;
+
+	if (it->count() <= 0)
+		return;
+
+	// 힐량(지금은 hp_bonus로 처리)
+	const int32 heal = tpl->hpbonus();
+	if (heal <= 0)
+		return;
+
+	Protocol::StatInfo* stat = player->GetStatInfo();
+	if (stat == nullptr) return;
+
+	// 풀피면 소비 안 하게(추천)
+	if (stat->hp() >= stat->maxhp())
+		return;
+
+	// 1) HP 적용
+	const int32 newHp = min(stat->hp() + heal, stat->maxhp());
+	stat->set_hp(newHp);
+
+	// 2) 아이템 카운트 감소
+	it->set_count(it->count() - 1);
+
+	// 3) 아이템 패킷(변경/삭제)
+	if (it->count() <= 0)
+	{
+		const uint64 removedUid = it->itemuid();
+		items.erase(it);
+
+		Protocol::S_REMOVE_ITEM rm;
+		rm.set_itemuid(removedUid);
+		session->Send(ClientPacketHandler::MakeSendBuffer(rm));
+	}
+	else
+	{
+		Protocol::S_CHANGE_ITEM ch;
+		ch.mutable_item()->CopyFrom(*it);
+		session->Send(ClientPacketHandler::MakeSendBuffer(ch));
+	}
+
+	// 4) 스탯 패킷
+	{
+		Protocol::S_CHANGE_STAT st;
+		st.mutable_statinfo()->CopyFrom(*stat);
+		session->Send(ClientPacketHandler::MakeSendBuffer(st));
+	}
+
+	// TODO: DB 반영(S2S 아이템 count 업데이트, hp 저장 정책)
+}
+
+
+
 void GameRoom::OnMonsterMoved(MonsterRef monster)
 {
 	if (monster == nullptr)

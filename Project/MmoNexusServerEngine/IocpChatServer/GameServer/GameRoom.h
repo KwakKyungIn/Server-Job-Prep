@@ -66,6 +66,10 @@ public:
     void HandleSkill(std::shared_ptr<Creature> attacker, int32 skillId);
     void OnMonsterMoved(MonsterRef monster);
 
+    //(포션)아이템
+    void HandleUseItem(PlayerSessionRef session, Protocol::C_USE_ITEM pkt);
+
+
 
 private:
     GameMapRef              _map;

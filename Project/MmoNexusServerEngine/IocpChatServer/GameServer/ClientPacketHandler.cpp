@@ -154,8 +154,23 @@ bool ClientPacketHandler::Handle_C_MOVE(PacketSessionRef& session, Protocol::C_M
 
 bool ClientPacketHandler::Handle_C_USE_ITEM(PacketSessionRef& session, Protocol::C_USE_ITEM& pkt)
 {
-	return false;
+	PlayerSessionRef ps = static_pointer_cast<PlayerSession>(session);
+	PlayerRef player = ps->GetPlayer();
+	if (player == nullptr) return false;
+
+	// 맵 이동 중 입력 차단 (너가 원하던 “이동 중 상태”)
+	if (ps->IsMapChanging())
+		return false;
+
+	auto room = player->GetRoom();
+	if (room == nullptr)
+		return false;
+
+	// 로직 스레드에서 처리
+	room->PushJob(&GameRoom::HandleUseItem, ps, pkt);
+	return true;
 }
+
 
 // [ClientPacketHandler.cpp]
 
