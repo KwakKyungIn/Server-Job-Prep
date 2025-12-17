@@ -130,6 +130,19 @@ message S_CHANGE_STAT {
 // ============================================================
 // [GAME SERVER Àü¿ë] 
 // ============================================================
+message C_MAP_CHANGE_REQ {
+    int32 targetMapId = 1; 
+}
+message S_MAP_CHANGE_BEGIN {
+    uint64 token = 1; int32 targetMapId = 2; PositionInfo spawn = 3; 
+}
+
+message C_MAP_CHANGE_ACK {
+    uint64 token = 1; 
+}
+message S_MAP_CHANGE_END {
+    uint64 token = 1; int32 mapId = 2; PositionInfo pos = 3; 
+}
 
 
 

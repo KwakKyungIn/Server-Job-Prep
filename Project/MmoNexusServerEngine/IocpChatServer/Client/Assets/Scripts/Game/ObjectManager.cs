@@ -161,6 +161,8 @@ public class ObjectManager : MonoBehaviour
             go = Instantiate(MyPlayerPrefab, pos, Quaternion.identity);
             go.AddComponent<MyPlayerController>();
 
+            go.tag = "MyPlayer";
+
             FollowCamera cam = Camera.main.GetComponent<FollowCamera>();
             if (cam != null)
                 cam.target = go.transform;

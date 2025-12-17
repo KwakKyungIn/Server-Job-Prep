@@ -73,44 +73,44 @@ void GameRoom::Update()
 	}
 }
 
-void GameRoom::Enter(PlayerSessionRef session)
+bool GameRoom::EnterRegister(PlayerSessionRef session)
 {
 	PlayerRef player = session->GetPlayer();
-	if (player == nullptr) return;
-	if (_players.find(player->GetPlayerId()) != _players.end()) return;
+	if (player == nullptr) return false;
 
+	// 이미 들어와 있으면 실패 (중복 Enter 방지)
+	if (_players.find(player->GetPlayerId()) != _players.end())
+		return false;
+
+	// 1) 룸 소속 설정
 	player->SetRoom(shared_from_this());
 	_players.insert({ player->GetPlayerId(), player });
 
-	// [CHANGED] AOI : zoneIndex 계산을 SpatialGrid로
+	// 2) AOI Zone 계산 및 등록
 	int32 zoneIndex = _grid.GetZoneIndex(*player->GetPosInfo());
+	player->SetZoneIndex(zoneIndex);
 
-	printf("🎮 [Enter] Player %llu entering Zone[%d] at (%.1f, %.1f, %.1f)\n",
+	Zone& enterZone = _grid.GetZone(zoneIndex);
+	enterZone.players.insert(player);
+
+	printf("🎮 [EnterRegister] Player %llu Zone[%d] at (%.1f, %.1f, %.1f)\n",
 		player->GetPlayerId(), zoneIndex,
 		player->GetPosInfo()->x(),
 		player->GetPosInfo()->y(),
 		player->GetPosInfo()->z());
 
-	player->SetZoneIndex(zoneIndex);
+	return true;
+}
 
-	// [CHANGED] 특정 Zone에 플레이어 등록
-	Zone& enterZone = _grid.GetZone(zoneIndex);
-	enterZone.players.insert(player);
+void GameRoom::SendEnterSpawns(PlayerSessionRef session)
+{
+	PlayerRef player = session->GetPlayer();
+	if (player == nullptr) return;
 
+	const int32 zoneIndex = player->GetZoneIndex();
+
+	// 1) 주변 플레이어들에게 "나 등장" 브로드캐스트
 	{
-		Protocol::S_ENTER_GAME enterPkt;
-		enterPkt.set_success(true);
-		enterPkt.mutable_myplayer()->CopyFrom(*player->GetPlayerInfo());
-
-		SendBufferRef sendBuffer = ClientPacketHandler::MakeSendBuffer(enterPkt);
-		session->Send(sendBuffer);
-	}
-
-	// 1. 주변 플레이어들에게 "나(플레이어) 등장" 알림
-	{
-		printf("📢 [Enter-Broadcast] Notifying nearby players about Player %llu\n",
-			player->GetPlayerId());
-
 		Protocol::S_SPAWN spawnPkt;
 		Protocol::PlayerInfo* pInfo = spawnPkt.add_players();
 		*pInfo = *player->GetPlayerInfo();
@@ -119,43 +119,25 @@ void GameRoom::Enter(PlayerSessionRef session)
 		Vector<Zone*> nearbyZones;
 		_grid.GetNearbyZones(zoneIndex, nearbyZones);
 
-		printf("    Nearby zones: %zu\n", nearbyZones.size());
-
 		for (Zone* zone : nearbyZones)
 		{
-			printf("    → Zone has %zu players\n", zone->players.size());
 			for (const PlayerRef& other : zone->players)
 			{
 				if (other != player)
-				{
-					printf("      ✉️ Sending spawn to Player %llu\n", other->GetPlayerId());
 					other->GetSession()->Send(sendBuffer);
-				}
-				else
-				{
-					printf("      ⏭️ Skipping self (Player %llu)\n", other->GetPlayerId());
-				}
 			}
 		}
 	}
 
-	// 2. 나에게 "주변 정보(플레이어 + 몬스터)" 알림
+	// 2) 나에게 주변 정보 스폰
 	{
 		Vector<Zone*> nearbyZones;
-		_grid.GetNearbyZones(zoneIndex, nearbyZones);   // [CHANGED]
-
-		printf("🔍 [Enter] Checking nearby zones for Player %llu (Zone[%d])\n",
-			player->GetPlayerId(), zoneIndex);
-		printf("    Nearby zones count: %zu\n", nearbyZones.size());
+		_grid.GetNearbyZones(zoneIndex, nearbyZones);
 
 		Protocol::S_SPAWN spawnPkt;
 
 		for (Zone* zone : nearbyZones)
 		{
-			printf("    → Checking zone: %zu players, %zu monsters\n",
-				zone->players.size(), zone->monsters.size());
-
-			// 플레이어 추가
 			for (const PlayerRef& other : zone->players)
 			{
 				if (other != player)
@@ -164,31 +146,74 @@ void GameRoom::Enter(PlayerSessionRef session)
 					*pInfo = *other->GetPlayerInfo();
 				}
 			}
-			// 몬스터 추가
+
 			for (const MonsterRef& monster : zone->monsters)
 			{
-				printf("      📦 Found Monster ID=%llu in zone\n",
-					monster->GetObjectId());
 				Protocol::MonsterInfo* mInfo = spawnPkt.add_monsters();
 				*mInfo = *monster->GetMonsterInfo();
 			}
 		}
 
-		printf("📤 [Enter] Final S_SPAWN packet: %d players, %d monsters\n",
-			spawnPkt.players_size(), spawnPkt.monsters_size());
-
 		if (spawnPkt.players_size() > 0 || spawnPkt.monsters_size() > 0)
 		{
 			SendBufferRef sendBuffer = ClientPacketHandler::MakeSendBuffer(spawnPkt);
 			session->Send(sendBuffer);
-			printf("✅ [Enter] S_SPAWN sent to Player %llu\n", player->GetPlayerId());
-		}
-		else
-		{
-			printf("⚠️ [Enter] S_SPAWN NOT sent (empty packet)\n");
 		}
 	}
 }
+
+// [로그인 입장]
+void GameRoom::Enter(PlayerSessionRef session)
+{
+	if (EnterRegister(session) == false)
+		return;
+
+	PlayerRef player = session->GetPlayer();
+	if (player == nullptr) return;
+
+	// 1) 응답 먼저
+	Protocol::S_ENTER_GAME enterPkt;
+	enterPkt.set_success(true);
+	enterPkt.mutable_myplayer()->CopyFrom(*player->GetPlayerInfo());
+	// NOTE: 네 proto에 mapid가 실제로 있으면 유지, 없으면 이 줄 삭제
+	// enterPkt.set_mapid(_mapId);
+
+	session->Send(ClientPacketHandler::MakeSendBuffer(enterPkt));
+
+	// 2) 스폰 전송은 그 다음
+	SendEnterSpawns(session);
+
+	printf("✅ [Enter-Login] Player %llu\n", player->GetPlayerId());
+}
+
+// [맵 이동 입장]
+void GameRoom::EnterMapChange(PlayerSessionRef session)
+{
+	if (EnterRegister(session) == false)
+		return;
+
+	PlayerRef player = session->GetPlayer();
+	if (player == nullptr) return;
+
+	// 1) END 응답 먼저
+	Protocol::S_MAP_CHANGE_END endPkt;
+	endPkt.set_token(session->GetMapChangeToken());
+	endPkt.set_mapid(_mapId);
+	endPkt.mutable_pos()->CopyFrom(*player->GetPosInfo()); // proto: PositionInfo pos = 3
+
+	session->Send(ClientPacketHandler::MakeSendBuffer(endPkt));
+
+	// 2) 입력락 해제
+	session->EndMapChange();
+
+	// 3) 스폰은 그 다음
+	SendEnterSpawns(session);
+
+	printf("✅ [MapChange-END] Player %llu -> Map %d (Token=%llu)\n",
+		player->GetPlayerId(), _mapId, endPkt.token());
+}
+
+
 
 void GameRoom::Leave(PlayerSessionRef session)
 {

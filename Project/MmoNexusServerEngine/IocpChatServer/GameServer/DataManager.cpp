@@ -1,6 +1,42 @@
 ﻿#include "pch.h"
 #include "DataManager.h"
 
+DataManager::DataManager()
+{
+	InitMapRegistry();
+}
+
+void DataManager::InitMapRegistry()
+{
+	_mapConfigs.clear();
+
+	for (int32 id = 1; id <= 4; ++id)
+	{
+		MapConfig cfg;
+		cfg.mapId = id;
+		cfg.sizeX = 100;
+		cfg.sizeY = 100;
+		cfg.zoneSize = 10;
+		cfg.spawnX = 50.f;
+		cfg.spawnY = 0.f;
+		cfg.spawnZ = 50.f;
+
+		_mapConfigs[id] = cfg;
+	}
+}
+bool DataManager::IsValidMapId(int32 mapId) const
+{
+	return _mapConfigs.find(mapId) != _mapConfigs.end();
+}
+
+const MapConfig* DataManager::GetMapConfig(int32 mapId) const
+{
+	auto it = _mapConfigs.find(mapId);
+	if (it == _mapConfigs.end()) return nullptr;
+	return &it->second;
+
+}
+
 void DataManager::LoadFromPacket(const Protocol::S2S_RES_LOAD_GAME_DATA& pkt)
 {
 	_statTemplates.clear();

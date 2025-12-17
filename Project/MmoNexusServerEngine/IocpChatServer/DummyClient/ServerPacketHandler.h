@@ -27,11 +27,15 @@ public:
 		PKT_C_EQUIP_ITEM = 1015,
 		PKT_S_EQUIP_ITEM = 1016,
 		PKT_S_CHANGE_STAT = 1017,
-		PKT_C_CHAT_REQ = 1018,
-		PKT_S_CHAT_RES = 1019,
-		PKT_S_CHAT_NTF = 1020,
-		PKT_S_HEART_BEAT_RES = 1021,
-		PKT_C_HEART_BEAT_REQ = 1022,
+		PKT_C_MAP_CHANGE_REQ = 1018,
+		PKT_S_MAP_CHANGE_BEGIN = 1019,
+		PKT_C_MAP_CHANGE_ACK = 1020,
+		PKT_S_MAP_CHANGE_END = 1021,
+		PKT_C_CHAT_REQ = 1022,
+		PKT_S_CHAT_RES = 1023,
+		PKT_S_CHAT_NTF = 1024,
+		PKT_S_HEART_BEAT_RES = 1025,
+		PKT_C_HEART_BEAT_REQ = 1026,
 	};
 
 	static void Init()
@@ -50,6 +54,8 @@ public:
 		GPacketHandler[PKT_S_REMOVE_ITEM] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S_REMOVE_ITEM>(Handle_S_REMOVE_ITEM, session, buffer, len); };
 		GPacketHandler[PKT_S_EQUIP_ITEM] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S_EQUIP_ITEM>(Handle_S_EQUIP_ITEM, session, buffer, len); };
 		GPacketHandler[PKT_S_CHANGE_STAT] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S_CHANGE_STAT>(Handle_S_CHANGE_STAT, session, buffer, len); };
+		GPacketHandler[PKT_S_MAP_CHANGE_BEGIN] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S_MAP_CHANGE_BEGIN>(Handle_S_MAP_CHANGE_BEGIN, session, buffer, len); };
+		GPacketHandler[PKT_S_MAP_CHANGE_END] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S_MAP_CHANGE_END>(Handle_S_MAP_CHANGE_END, session, buffer, len); };
 		GPacketHandler[PKT_S_CHAT_RES] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S_CHAT_RES>(Handle_S_CHAT_RES, session, buffer, len); };
 		GPacketHandler[PKT_S_CHAT_NTF] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S_CHAT_NTF>(Handle_S_CHAT_NTF, session, buffer, len); };
 		GPacketHandler[PKT_S_HEART_BEAT_RES] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S_HEART_BEAT_RES>(Handle_S_HEART_BEAT_RES, session, buffer, len); };
@@ -66,6 +72,8 @@ public:
 	static SendBufferRef MakeSendBuffer(Protocol::C_SKILL& pkt) { return MakeSendBuffer(pkt, PKT_C_SKILL); }
 	static SendBufferRef MakeSendBuffer(Protocol::C_USE_ITEM& pkt) { return MakeSendBuffer(pkt, PKT_C_USE_ITEM); }
 	static SendBufferRef MakeSendBuffer(Protocol::C_EQUIP_ITEM& pkt) { return MakeSendBuffer(pkt, PKT_C_EQUIP_ITEM); }
+	static SendBufferRef MakeSendBuffer(Protocol::C_MAP_CHANGE_REQ& pkt) { return MakeSendBuffer(pkt, PKT_C_MAP_CHANGE_REQ); }
+	static SendBufferRef MakeSendBuffer(Protocol::C_MAP_CHANGE_ACK& pkt) { return MakeSendBuffer(pkt, PKT_C_MAP_CHANGE_ACK); }
 	static SendBufferRef MakeSendBuffer(Protocol::C_CHAT_REQ& pkt) { return MakeSendBuffer(pkt, PKT_C_CHAT_REQ); }
 	static SendBufferRef MakeSendBuffer(Protocol::C_HEART_BEAT_REQ& pkt) { return MakeSendBuffer(pkt, PKT_C_HEART_BEAT_REQ); }
 
@@ -84,6 +92,8 @@ public:
 	static bool Handle_S_REMOVE_ITEM(PacketSessionRef& session, Protocol::S_REMOVE_ITEM& pkt);
 	static bool Handle_S_EQUIP_ITEM(PacketSessionRef& session, Protocol::S_EQUIP_ITEM& pkt);
 	static bool Handle_S_CHANGE_STAT(PacketSessionRef& session, Protocol::S_CHANGE_STAT& pkt);
+	static bool Handle_S_MAP_CHANGE_BEGIN(PacketSessionRef& session, Protocol::S_MAP_CHANGE_BEGIN& pkt);
+	static bool Handle_S_MAP_CHANGE_END(PacketSessionRef& session, Protocol::S_MAP_CHANGE_END& pkt);
 	static bool Handle_S_CHAT_RES(PacketSessionRef& session, Protocol::S_CHAT_RES& pkt);
 	static bool Handle_S_CHAT_NTF(PacketSessionRef& session, Protocol::S_CHAT_NTF& pkt);
 	static bool Handle_S_HEART_BEAT_RES(PacketSessionRef& session, Protocol::S_HEART_BEAT_RES& pkt);

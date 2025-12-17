@@ -8,6 +8,26 @@
 #include "GameRoom.h" 
 #include "RedisManager.h"
 #include "RoomManager.h"
+#include "DataManager.h"
+
+#include <atomic>
+#include <chrono>
+
+namespace
+{
+	std::atomic<uint64> G_MapChangeTokenSeq{ 1 };
+
+	uint64 MakeMapChangeToken(uint64 playerId, uint64 sessionId)
+	{
+		uint64 seq = G_MapChangeTokenSeq.fetch_add(1, std::memory_order_relaxed);
+		uint64 now = (uint64)std::chrono::duration_cast<std::chrono::milliseconds>(
+			std::chrono::steady_clock::now().time_since_epoch()).count();
+
+		// 충돌만 안 나면 됨
+		return (playerId << 32) ^ (sessionId << 16) ^ seq ^ now;
+	}
+}
+
 
 // Global DB Session Reference
 extern shared_ptr<PacketSession> G_DBSession;
@@ -45,7 +65,11 @@ bool ClientPacketHandler::Handle_C_ENTER_GAME(PacketSessionRef& session, Protoco
 	if (channelId <= 0) channelId = 1;
 
 	int32 mapId = pkt.mapid();
-	if (mapId <= 0) mapId = 1;
+	DataManager* dm = DataManager::Instance();
+	if (dm == nullptr || dm->IsValidMapId(mapId) == false)
+		mapId = (dm ? dm->GetDefaultMapId() : 1);
+
+	const MapConfig* cfg = (dm ? dm->GetMapConfig(mapId) : nullptr);
 
 	// 2. [Player Object] 생성
 	shared_ptr<Player> player = ObjectPool<Player>::MakeShared();
@@ -59,8 +83,9 @@ bool ClientPacketHandler::Handle_C_ENTER_GAME(PacketSessionRef& session, Protoco
 		// 좌표 등은 Player::Init 내부에서 방어코드(_playerInfo.has_posinfo 체크)가 있으므로 생략 가능
 		// 하지만 확실하게 하기 위해 기본값 세팅
 		auto pos = tempInfo.mutable_posinfo();
-		pos->set_x(50); pos->set_y(0); pos->set_z(50);
-
+		pos->set_x(cfg ? cfg->spawnX : 50.f);
+		pos->set_y(cfg ? cfg->spawnY : 0.f);
+		pos->set_z(cfg ? cfg->spawnZ : 50.f);
 		player->Init(tempInfo);
 	}
 
@@ -99,6 +124,11 @@ bool ClientPacketHandler::Handle_C_ENTER_GAME(PacketSessionRef& session, Protoco
 bool ClientPacketHandler::Handle_C_MOVE(PacketSessionRef& session, Protocol::C_MOVE& pkt)
 {
 	PlayerSessionRef playerSession = static_pointer_cast<PlayerSession>(session);
+
+	if (playerSession->IsMapChanging())
+		return true;
+
+
 	auto player = playerSession->GetPlayer();
 
 	if (player == nullptr)
@@ -194,6 +224,11 @@ bool ClientPacketHandler::Handle_C_EQUIP_ITEM(PacketSessionRef& session, Protoco
 bool ClientPacketHandler::Handle_C_SKILL(PacketSessionRef& session, Protocol::C_SKILL& pkt)
 {
 	PlayerSessionRef playerSession = static_pointer_cast<PlayerSession>(session);
+
+	if (playerSession->IsMapChanging())
+		return true;
+
+
 	PlayerRef player = playerSession->GetPlayer();
 	if (player == nullptr) return false;
 
@@ -223,6 +258,122 @@ bool ClientPacketHandler::Handle_C_CHAT_REQ(PacketSessionRef& session, Protocol:
 
 	return true;
 }
+
+//맵이동
+bool ClientPacketHandler::Handle_C_MAP_CHANGE_REQ(PacketSessionRef& session, Protocol::C_MAP_CHANGE_REQ& pkt)
+{
+	PlayerSessionRef playerSession = static_pointer_cast<PlayerSession>(session);
+	PlayerRef player = playerSession->GetPlayer();
+	if (player == nullptr)
+		return false;
+
+	// 이미 진행 중이면 중복 요청 무시
+	if (playerSession->IsMapChanging())
+		return true;
+
+	const int32 targetMapId = pkt.targetmapid();
+
+	// 맵 유효성 체크
+	DataManager* dm = DataManager::Instance();
+	if (dm == nullptr || dm->IsValidMapId(targetMapId) == false)
+		return false;
+
+	// 같은 맵이면 무시
+	if (player->GetMapId() == targetMapId)
+		return true;
+
+	const MapConfig* cfg = dm->GetMapConfig(targetMapId);
+	if (cfg == nullptr)
+		return false;
+
+	// 목적지 스폰
+	Protocol::PositionInfo spawn;
+	spawn.set_x(cfg->spawnX);
+	spawn.set_y(cfg->spawnY);
+	spawn.set_z(cfg->spawnZ);
+
+	// 토큰 생성 + 세션에 pending 저장
+	const uint64 token = MakeMapChangeToken(player->GetPlayerId(), playerSession->GetSessionId());
+	if (playerSession->TryBeginMapChange(token, targetMapId, spawn) == false)
+		return true;
+
+	// BEGIN 전송 (클라: 입력락/로딩 시작)
+	Protocol::S_MAP_CHANGE_BEGIN beginPkt;
+	beginPkt.set_token(token);
+	beginPkt.set_targetmapid(targetMapId);
+	beginPkt.mutable_spawn()->CopyFrom(spawn);
+
+	playerSession->Send(MakeSendBuffer(beginPkt));
+
+	printf("🗺️ [MapChange][BEGIN] Player %llu -> Map %d (token=%llu)\n",
+		player->GetPlayerId(), targetMapId, token);
+
+	return true;
+}
+
+
+bool ClientPacketHandler::Handle_C_MAP_CHANGE_ACK(PacketSessionRef& session, Protocol::C_MAP_CHANGE_ACK& pkt)
+{
+	PlayerSessionRef playerSession = static_pointer_cast<PlayerSession>(session);
+	PlayerRef player = playerSession->GetPlayer();
+	if (player == nullptr)
+		return false;
+
+	const uint64 token = pkt.token();
+
+	// 여기 out으로 pending을 꺼내면서 상태를 SWITCHING으로 전환
+	int32 targetMapId = 0;
+	Protocol::PositionInfo spawn;
+	if (playerSession->TryConsumeMapChangeAck(token, targetMapId, spawn) == false)
+		return false;
+
+	// 목적지 룸 확보
+	const int32 channelId = player->GetChannelId();
+	auto newRoom = GRoomManager->GetOrCreateRoom(channelId, targetMapId);
+	if (newRoom == nullptr)
+	{
+		playerSession->CancelMapChange();
+		return false;
+	}
+
+	auto oldRoom = player->GetRoom();
+	if (oldRoom == nullptr)
+	{
+		// 예외: 아직 룸이 없으면(입장 직후 타이밍) 그냥 새 룸으로 들어간다
+		player->SetMapId(targetMapId);
+		player->GetPosInfo()->CopyFrom(spawn);
+
+		newRoom->PushJob(&GameRoom::EnterMapChange, playerSession);
+
+		printf("🗺️ [MapChange][ACK] Player %llu oldRoom=null -> Enter newRoom(map=%d)\n",
+			player->GetPlayerId(), targetMapId);
+
+		return true;
+	}
+
+	// 핵심: Leave는 oldRoom 스레드에서, Enter는 newRoom 스레드에서
+	oldRoom->PushJob([playerSession, player, oldRoom, newRoom, targetMapId, spawn]()
+		{
+			// 1) oldRoom에서 나가기
+			oldRoom->Leave(playerSession);
+
+			// 2) 메타/좌표 갱신
+			player->SetMapId(targetMapId);
+			player->GetPosInfo()->CopyFrom(spawn);
+
+			// 3) newRoom 입장
+			// IMPORTANT:
+			// - 여기서 newRoom의 Enter가 S_MAP_CHANGE_END를 보내도록 GameRoom.cpp를 조정해야 함.
+			// - 그리고 그 시점에 playerSession->EndMapChange() 호출해서 입력락 풀어야 "2-step"이 완성된다.
+			newRoom->PushJob(&GameRoom::Enter, playerSession);
+		});
+
+	printf("🗺️ [MapChange][ACK] Player %llu -> Map %d (token=%llu)\n",
+		player->GetPlayerId(), targetMapId, token);
+
+	return true;
+}
+
 
 bool ClientPacketHandler::Handle_C_HEART_BEAT_REQ(PacketSessionRef& session, Protocol::C_HEART_BEAT_REQ& pkt)
 {

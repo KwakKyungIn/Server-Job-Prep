@@ -39,11 +39,15 @@ public class PacketManager
 		C_EQUIP_ITEM = 1015,
 		S_EQUIP_ITEM = 1016,
 		S_CHANGE_STAT = 1017,
-		C_CHAT_REQ = 1018,
-		S_CHAT_RES = 1019,
-		S_CHAT_NTF = 1020,
-		S_HEART_BEAT_RES = 1021,
-		C_HEART_BEAT_REQ = 1022,
+		C_MAP_CHANGE_REQ = 1018,
+		S_MAP_CHANGE_BEGIN = 1019,
+		C_MAP_CHANGE_ACK = 1020,
+		S_MAP_CHANGE_END = 1021,
+		C_CHAT_REQ = 1022,
+		S_CHAT_RES = 1023,
+		S_CHAT_NTF = 1024,
+		S_HEART_BEAT_RES = 1025,
+		C_HEART_BEAT_REQ = 1026,
 	}
 
 	public void Register()
@@ -72,6 +76,10 @@ public class PacketManager
 		_handler.Add((ushort)MsgId.S_EQUIP_ITEM, PacketHandler.S_EQUIP_ITEMHandler);
 		_onRecv.Add((ushort)MsgId.S_CHANGE_STAT, MakePacket<S_CHANGE_STAT>);
 		_handler.Add((ushort)MsgId.S_CHANGE_STAT, PacketHandler.S_CHANGE_STATHandler);
+		_onRecv.Add((ushort)MsgId.S_MAP_CHANGE_BEGIN, MakePacket<S_MAP_CHANGE_BEGIN>);
+		_handler.Add((ushort)MsgId.S_MAP_CHANGE_BEGIN, PacketHandler.S_MAP_CHANGE_BEGINHandler);
+		_onRecv.Add((ushort)MsgId.S_MAP_CHANGE_END, MakePacket<S_MAP_CHANGE_END>);
+		_handler.Add((ushort)MsgId.S_MAP_CHANGE_END, PacketHandler.S_MAP_CHANGE_ENDHandler);
 		_onRecv.Add((ushort)MsgId.S_CHAT_RES, MakePacket<S_CHAT_RES>);
 		_handler.Add((ushort)MsgId.S_CHAT_RES, PacketHandler.S_CHAT_RESHandler);
 		_onRecv.Add((ushort)MsgId.S_CHAT_NTF, MakePacket<S_CHAT_NTF>);

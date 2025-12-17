@@ -1,10 +1,17 @@
 #include "pch.h"
 #include "RoomManager.h"
+#include "DataManager.h"
 
 std::shared_ptr<RoomManager> GRoomManager = nullptr;
 
 std::shared_ptr<GameRoom> RoomManager::GetOrCreateRoom(int32 channelId, int32 mapId)
 {
+
+    DataManager* dm = DataManager::Instance();
+    if (dm && dm->IsValidMapId(mapId) == false)
+        mapId = dm->GetDefaultMapId();
+
+
     RoomKey key{ channelId, mapId };
 
     // 1차: 읽기 락으로 존재 여부 확인
@@ -21,12 +28,16 @@ std::shared_ptr<GameRoom> RoomManager::GetOrCreateRoom(int32 channelId, int32 ma
     if (it != _rooms.end())
         return it->second;
 
+
+    const MapConfig* cfg = (dm ? dm->GetMapConfig(mapId) : nullptr);
+
+    const int32 sizeX = cfg ? cfg->sizeX : 100;
+    const int32 sizeY = cfg ? cfg->sizeY : 100;
+    const int32 zoneSize = cfg ? cfg->zoneSize : 10;
+
     auto room = MakeShared<GameRoom>();
 
-    // TODO: 나중에 mapId별로 sizeX/sizeY/zoneSize를 DataManager/Config에서 가져가도 됨
-    const int32 sizeX = 100;
-    const int32 sizeY = 100;
-    const int32 zoneSize = 10;
+    
 
     room->Init(channelId, mapId, sizeX, sizeY, zoneSize);
     _rooms[key] = room;

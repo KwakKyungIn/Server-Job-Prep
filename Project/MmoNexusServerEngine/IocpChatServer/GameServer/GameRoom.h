@@ -51,6 +51,11 @@ public:
     void EnterMonster(MonsterRef monster);
     void LeaveMonster(uint64 objectId);
 
+    bool EnterRegister(PlayerSessionRef session); // 등록만
+    void SendEnterSpawns(PlayerSessionRef session); // 스폰만
+    void EnterMapChange(PlayerSessionRef session); // 맵이동
+
+
     PlayerRef  FindNearestPlayer(Protocol::PositionInfo* pos, float range);
     GameMapRef GetMap() { return _map; }
 
