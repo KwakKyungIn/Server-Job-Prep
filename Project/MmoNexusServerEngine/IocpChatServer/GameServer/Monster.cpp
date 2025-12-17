@@ -30,8 +30,8 @@ void Monster::Init(int32 templateId)
 
 	// 스탯 설정
 	Protocol::StatInfo* stat = GetStatInfo();
-	stat->set_maxhp(100);
-	stat->set_hp(100);
+	stat->set_maxhp(10);
+	stat->set_hp(10);
 	stat->set_attack(10);
 	stat->set_defense(0);
 	stat->set_speed(1.0f); // [Check] 초당 이동 거리 (단위를 잘 맞춰야 함. 너무 느리면 안 움직이는 것처럼 보임)
@@ -150,7 +150,10 @@ void Monster::UpdateAttack()
 
 	// 타격
 	printf("🥊 [Monster] Attack! -> Player %llu\n", target->GetObjectId());
-	target->OnDamaged(static_pointer_cast<Creature>(shared_from_this()), _statInfo->attack());
+	if (auto room = GetRoom())
+	{
+		room->HandleSkill(static_pointer_cast<Creature>(shared_from_this()), 1); // 1번=평타
+	}
 }
 
 void Monster::OnDamaged(std::shared_ptr<Creature> attacker, int32 damage)
@@ -179,9 +182,11 @@ void Monster::OnDead(std::shared_ptr<Creature> attacker)
 	std::shared_ptr<GameRoom> room = GetRoom();
 	if (room)
 	{
-		room->LeaveMonster(GetObjectId());
+		MonsterRef self = std::static_pointer_cast<Monster>(shared_from_this());
+		room->PushJob(&GameRoom::HandleMonsterDead, attacker, self);
 	}
 }
+
 
 std::shared_ptr<Creature> Monster::GetTarget()
 {

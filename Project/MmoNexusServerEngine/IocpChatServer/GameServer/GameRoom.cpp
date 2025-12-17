@@ -11,6 +11,18 @@
 #include "Zone.h"
 #include "Creature.h"
 
+// util: 네트워크로 나가는 ID는 "플레이어=playerId, 몬스터=objectId"로 통일
+static uint64 NetId(const std::shared_ptr<Creature>& c)
+{
+	if (c == nullptr) return 0;
+
+	if (c->GetObjectType() == Protocol::OBJECT_TYPE_PLAYER)
+		return std::static_pointer_cast<Player>(c)->GetPlayerId();
+
+	return c->GetObjectId(); // 몬스터/투사체 등
+}
+
+
 GameRoom::GameRoom()
 {
 	_jobQueue = MakeShared<JobQueue>();
@@ -35,14 +47,14 @@ void GameRoom::Init(int32 channelId, int32 mapId, int32 sizeX, int32 sizeY, int3
 
 	printf("[GameRoom] Init MapId: %d, Grid: (%d, %d), CellSize: %d\n",
 		mapId, sizeX, sizeY, zoneSize);
-	/*
+	
 	// [Test Spawn] 테스트용 몬스터 1마리 소환
 	MonsterRef slime = ObjectPool<Monster>::MakeShared();
 	slime->Init(1); // 템플릿 ID 1번 (슬라임 킹)
 
-	slime->GetPosInfo()->set_x(5.0f);
+	slime->GetPosInfo()->set_x(52.0f);
 	slime->GetPosInfo()->set_y(0.0f);
-	slime->GetPosInfo()->set_z(5.0f);
+	slime->GetPosInfo()->set_z(52.0f);
 	slime->GetPosInfo()->set_yaw(0.0f);
 
 	// 방에 입장 (이때 EnterMonster가 호출되면서 Zone에 등록됨)
@@ -60,7 +72,7 @@ void GameRoom::Init(int32 channelId, int32 mapId, int32 sizeX, int32 sizeY, int3
 		debugZone.players.size(),
 		debugZone.monsters.size());
 
-		*/
+		
 }
 
 void GameRoom::Update()
@@ -481,13 +493,140 @@ void GameRoom::LeaveMonster(uint64 objectId)
 	monster->SetRoom(nullptr);
 
 	// 주변 유저들에게 몬스터 사라짐 알림
+	// 주변 유저들에게 몬스터 사라짐 알림 (9-grid 기준)
 	{
 		Protocol::S_DESPAWN despawnPkt;
 		despawnPkt.add_objectids(objectId);
 		SendBufferRef sendBuffer = ClientPacketHandler::MakeSendBuffer(despawnPkt);
-		BroadcastToZone(sendBuffer, zoneIndex);
+
+		Vector<Zone*> nearbyZones;
+		_grid.GetNearbyZones(zoneIndex, nearbyZones);
+
+		for (Zone* zone : nearbyZones)
+		{
+			for (const PlayerRef& p : zone->players)
+			{
+				p->GetSession()->Send(sendBuffer);
+			}
+		}
+	}
+
+}
+
+//몬스터 죽이고, 경험치 및 템 루팅
+static std::atomic<uint64> GItemUidGen{ 1000000 }; // 서버 발급 itemUid (DB가 identity면 나중에 정책 바꿔야 함)
+
+static int32 FindEmptySlot(const std::vector<Protocol::ItemInfo>& items, int32 maxSlots)
+{
+	std::vector<bool> used(maxSlots, false);
+	for (const auto& it : items)
+	{
+		if (it.slot() >= 0 && it.slot() < maxSlots)
+			used[it.slot()] = true;
+	}
+	for (int32 i = 0; i < maxSlots; i++)
+		if (used[i] == false)
+			return i;
+	return -1;
+}
+
+static void AddExpAndLevelUp(PlayerRef player, int64 addExp)
+{
+	Protocol::StatInfo* stat = player->GetStatInfo();
+	if (stat == nullptr) return;
+
+	stat->set_totalexp(stat->totalexp() + addExp);
+
+	// 레벨업: "다음 레벨 템플릿의 totalExp"를 달성 조건으로 사용
+	while (true)
+	{
+		int32 curLv = stat->level();
+		const Protocol::StatTemplateInfo* nextTpl = DataManager::Instance()->GetStatTemplate(curLv + 1);
+		if (nextTpl == nullptr)
+			break;
+
+		if (stat->totalexp() < nextTpl->totalexp())
+			break;
+
+		stat->set_level(curLv + 1);
+
+		// 레벨 바뀌었으니 스탯 리프레시
+		player->RefreshStats();
+
+		// 레벨업하면 풀피로 (원하면 비율 유지로 바꿔도 됨)
+		stat->set_hp(stat->maxhp());
 	}
 }
+
+void GameRoom::HandleMonsterDead(std::shared_ptr<Creature> attacker, MonsterRef monster)
+{
+	if (monster == nullptr) return;
+	if (monster->GetRoom().get() != this) return;
+
+	const uint64 monsterId = monster->GetObjectId();
+	if (_monsters.find(monsterId) == _monsters.end())
+	{
+		// 이미 처리됐으면 중복 방지
+		return;
+	}
+
+	// 1) 킬러가 플레이어인지 확인
+	PlayerRef killer = nullptr;
+	if (attacker && attacker->GetObjectType() == Protocol::OBJECT_TYPE_PLAYER)
+		killer = std::static_pointer_cast<Player>(attacker);
+
+	// 2) 경험치 지급
+	if (killer)
+	{
+		const int64 exp = 10; // TODO: 몬스터 템플릿에서 읽기
+		AddExpAndLevelUp(killer, exp);
+
+		Protocol::S_CHANGE_STAT st;
+		st.mutable_statinfo()->CopyFrom(*killer->GetStatInfo());
+		killer->GetSession()->Send(ClientPacketHandler::MakeSendBuffer(st));
+	}
+
+	// 3) 드랍(루팅) = “즉시 인벤 지급” 방식 (바닥 루프 만들기용)
+	if (killer)
+	{
+		// TODO: 드랍 테이블 생기면 여기 교체
+		const int32 dropTemplateId = 103; // 예: 포션 템플릿 ID (네 ITEM_TEMPLATE에 맞춰서 바꿔)
+
+		const Protocol::ItemTemplateInfo* tpl = DataManager::Instance()->GetItemTemplate(dropTemplateId);
+		if (tpl && static_cast<Protocol::ItemType>(tpl->itemtype()) != Protocol::ITEM_TYPE_NONE)
+		{
+			auto& items = killer->GetItems();
+			const int32 maxSlots = 24; // 너 인벤 고정이면 그대로
+			int32 emptySlot = FindEmptySlot(items, maxSlots);
+
+			if (emptySlot >= 0)
+			{
+				Protocol::ItemInfo newItem;
+				newItem.set_itemuid(GItemUidGen.fetch_add(1));
+				newItem.set_templateid(dropTemplateId);
+				newItem.set_count(1);
+				newItem.set_slot(emptySlot);
+				newItem.set_isequipped(false);
+
+				items.push_back(newItem);
+
+				Protocol::S_CHANGE_ITEM ch;
+				ch.mutable_item()->CopyFrom(newItem);
+				killer->GetSession()->Send(ClientPacketHandler::MakeSendBuffer(ch));
+
+				// TODO: DB 저장(S2S INSERT ITEMS)
+			}
+			else
+			{
+				// 인벤 꽉 참: 지금은 그냥 드랍 폐기 or TODO: 월드 드랍 오브젝트
+			}
+		}
+	}
+
+	// 4) 마지막에 몬스터 제거(브로드캐스트 despawn 포함)
+	LeaveMonster(monsterId);
+}
+
 
 PlayerRef GameRoom::FindNearestPlayer(Protocol::PositionInfo* pos, float range)
 {
@@ -539,7 +678,7 @@ void GameRoom::HandleSkill(std::shared_ptr<Creature> attacker, int32 skillId)
 	// 2. 스킬 모션 브로드캐스트
 	{
 		Protocol::S_SKILL skillPkt;
-		skillPkt.set_objectid(attacker->GetObjectId());
+		skillPkt.set_objectid(NetId(attacker));
 		skillPkt.set_skillid(skillId);
 
 		SendBufferRef skillBuffer = ClientPacketHandler::MakeSendBuffer(skillPkt);
@@ -553,8 +692,8 @@ void GameRoom::HandleSkill(std::shared_ptr<Creature> attacker, int32 skillId)
 		if (victim == nullptr) continue;
 
 		Protocol::S_CHANGE_HP changePkt;
-		changePkt.set_objectid(victim->GetObjectId());
-		changePkt.set_attackerid(attacker->GetObjectId());
+		changePkt.set_objectid(NetId(victim));
+		changePkt.set_attackerid(NetId(attacker));
 		changePkt.set_currenthp(victim->GetStatInfo()->hp()); // OnDamaged 후 HP
 		changePkt.set_damage(hit.damage);
 
