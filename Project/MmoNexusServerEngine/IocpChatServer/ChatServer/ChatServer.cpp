@@ -40,7 +40,7 @@ int main()
 
 	// 3. [DB 연결] 
 	ClientServiceRef dbService = MakeShared<ClientService>(
-		NetAddress(L"127.0.0.1", 7778),
+		NetAddress(L"127.0.0.1", 7781),
 		core,
 		MakeShared<DBSession>,
 		1
@@ -48,7 +48,7 @@ int main()
 
 	// 4. [GameServer 리스닝] 
 	ServerServiceRef gameService = MakeShared<ServerService>(
-		NetAddress(L"127.0.0.1", 7779),
+		NetAddress(L"127.0.0.1", 7776),
 		core,
 		MakeShared<GameSession>,
 		100

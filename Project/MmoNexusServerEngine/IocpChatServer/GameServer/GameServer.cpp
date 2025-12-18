@@ -51,7 +51,7 @@ int main()
 	);
 
 	ClientServiceRef chatService = MakeShared<ClientService>(
-		NetAddress(L"127.0.0.1", 7779),
+		NetAddress(L"127.0.0.1", 7776),
 		core,
 		MakeShared<ChatSession>,
 		1
@@ -65,7 +65,7 @@ int main()
 	);
 
 	ClientServiceRef loginService = MakeShared<ClientService>(
-		NetAddress(L"127.0.0.1", 7776), // LoginServer의 내부 통신 포트
+		NetAddress(L"127.0.0.1", 7780), // LoginServer의 내부 통신 포트
 		core,
 		MakeShared<LoginSession>,
 		1

@@ -65,7 +65,7 @@ int main()
 	// Port: 7776
 	// Session: ClientSession (가벼운 버전)
 	// ============================================================
-	// [Service 1] 유저 접속용 (Port: 7776)
+	// [Service 1] 유저 접속용 (Port: 7775)
 	// ============================================================
 	ServerServiceRef clientService = MakeShared<ServerService>(
 		NetAddress(L"127.0.0.1", 7775),
@@ -75,11 +75,11 @@ int main()
 	);
 
 	// ============================================================
-	// [Service 2] GameServer 접속용 (Port: 7775) [NEW]
+	// [Service 2] GameServer 접속용 (Port: 7780) [NEW]
 	// ============================================================
 	// GameServer들이 여기에 붙어서 상태를 보고한다.
 	ServerServiceRef gameServerService = MakeShared<ServerService>(
-		NetAddress(L"127.0.0.1", 7776),
+		NetAddress(L"127.0.0.1", 7780),
 		core,
 		MakeShared<GameServerSession>,
 		10 // 게임 서버 개수는 많지 않음
@@ -107,6 +107,7 @@ int main()
 	// 3. 서비스 시작
 	ASSERT_CRASH(clientService->Start());
 	ASSERT_CRASH(dbService->Start());
+	ASSERT_CRASH(gameServerService->Start());
 
 	std::cout << "✅ [LoginServer] Listening on 7776 & Connecting to DB..." << std::endl;
 
@@ -146,7 +147,7 @@ int main()
 	GThreadManager->Join();
 	clientService->CloseService();
 	dbService->CloseService();
-
+	gameServerService->CloseService();
 	std::cout << "👋 [LoginServer] Terminated." << std::endl;
 
 	return 0;
