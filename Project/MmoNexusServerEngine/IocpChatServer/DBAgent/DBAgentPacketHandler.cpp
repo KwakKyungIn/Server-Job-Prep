@@ -331,7 +331,6 @@ bool DBAgentPacketHandler::Handle_S2S_REQ_LOAD_GAME_DATA(PacketSessionRef& sessi
 }
 
 
-
 bool DBAgentPacketHandler::Handle_S2S_REQ_LOAD_PLAYER_DATA(PacketSessionRef& session, Protocol::S2S_REQ_LOAD_PLAYER_DATA& pkt)
 {
 	shared_ptr<GameSession> gameSession = static_pointer_cast<GameSession>(session);

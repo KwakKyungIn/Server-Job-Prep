@@ -83,7 +83,7 @@ bool S2SPacketHandler::Handle_S2S_RES_LOGIN(PacketSessionRef& session, Protocol:
 // [DB -> Game] 플레이어 정보(Stat) 로딩 완료 (NEW)
 bool S2SPacketHandler::Handle_S2S_RES_LOAD_PLAYER_DATA(PacketSessionRef& session, Protocol::S2S_RES_LOAD_PLAYER_DATA& pkt)
 {
-	auto playerSession = static_pointer_cast<PlayerSession>(GameSessionManager::GSessionManager->Find(pkt.gamesessionid()));
+	auto playerSession = GameSessionManager::GSessionManager->FindBySessionId(pkt.gamesessionid());
 	if (playerSession == nullptr) return true;
 
 	playerSession->PushJob(ObjectPool<Job>::MakeShared([playerSession, pkt]()
@@ -129,7 +129,7 @@ bool S2SPacketHandler::Handle_S2S_RES_LOAD_PLAYER_DATA(PacketSessionRef& session
 // [DB -> Game] 아이템 로딩 완료
 bool S2SPacketHandler::Handle_S2S_RES_ITEMS_LOAD(PacketSessionRef& session, Protocol::S2S_RES_ITEMS_LOAD& pkt)
 {
-	auto playerSession = static_pointer_cast<PlayerSession>(GameSessionManager::GSessionManager->Find(pkt.gamesessionid()));
+	auto playerSession = GameSessionManager::GSessionManager->FindBySessionId(pkt.gamesessionid());
 	if (playerSession == nullptr) return true;
 
 	playerSession->PushJob(ObjectPool<Job>::MakeShared([playerSession, pkt]()

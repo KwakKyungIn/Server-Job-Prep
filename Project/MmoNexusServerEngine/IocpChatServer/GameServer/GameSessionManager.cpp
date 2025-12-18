@@ -1,37 +1,71 @@
 #include "pch.h"
 #include "GameSessionManager.h"
-#include "PlayerSession.h" // 실제 구현부에서는 include 필요
+#include "PlayerSession.h"
 
-// 전역 인스턴스 초기화
-GameSessionManager* GameSessionManager::GSessionManager = new GameSessionManager();
+GameSessionManager* GameSessionManager::GSessionManager = nullptr;
 
 void GameSessionManager::Add(PlayerSessionRef session)
 {
-	WRITE_LOCK; // 쓰기 락
-	_sessions.insert({ session->GetSessionId(), session });
+    if (!session) return;
+    WRITE_LOCK;
+    _bySessionId[session->GetSessionId()] = session;
 }
 
 void GameSessionManager::Remove(PlayerSessionRef session)
 {
-	WRITE_LOCK; // 쓰기 락
-	_sessions.erase(session->GetSessionId());
+    if (!session) return;
+
+    WRITE_LOCK;
+
+    const uint64 sessionId = session->GetSessionId();
+    _bySessionId.erase(sessionId);
+
+    // 여기 중요: Remove가 먼저 호출되고 그 다음에 _player = nullptr 되니까
+    // 지금 시점엔 GetPlayerId()가 살아있다.
+    const uint64 playerId = session->GetPlayerId();
+    if (playerId != 0)
+        _byPlayerId.erase(playerId);
+}
+
+void GameSessionManager::BindPlayerId(PlayerSessionRef session, uint64 playerId)
+{
+    if (!session || playerId == 0) return;
+
+    WRITE_LOCK;
+    _byPlayerId[playerId] = session;
+}
+
+void GameSessionManager::UnbindPlayerId(uint64 playerId)
+{
+    if (playerId == 0) return;
+    WRITE_LOCK;
+    _byPlayerId.erase(playerId);
+}
+
+PlayerSessionRef GameSessionManager::FindBySessionId(uint64 sessionId)
+{
+    READ_LOCK;
+    auto it = _bySessionId.find(sessionId);
+    if (it == _bySessionId.end()) return nullptr;
+    return it->second;
+}
+
+PlayerSessionRef GameSessionManager::FindByPlayerId(uint64 playerId)
+{
+    READ_LOCK;
+    auto it = _byPlayerId.find(playerId);
+    if (it == _byPlayerId.end()) return nullptr;
+    return it->second;
 }
 
 void GameSessionManager::Broadcast(SendBufferRef sendBuffer)
 {
-	READ_LOCK; // 읽기 락 (동시 접속자들에게 뿌리기만 하므로)
-	for (auto& item : _sessions)
-	{
-		item.second->Send(sendBuffer);
-	}
-}
+    if (!sendBuffer) return;
 
-PlayerSessionRef GameSessionManager::Find(uint64 id)
-{
-	READ_LOCK; // 읽기 락
-	auto it = _sessions.find(id);
-	if (it == _sessions.end())
-		return nullptr;
-
-	return it->second;
+    READ_LOCK;
+    for (auto it = _bySessionId.begin(); it != _bySessionId.end(); ++it)
+    {
+        PlayerSessionRef s = it->second;
+        if (s) s->Send(sendBuffer);
+    }
 }

@@ -72,6 +72,7 @@ public:
     // 보상 + 몬스터 제거(Despawn)까지 룸에서 직렬 처리
     void HandleMonsterDead(std::shared_ptr<Creature> attacker, MonsterRef monster);
 
+    void BroadcastChat(const Protocol::S_CHAT_NTF& ntf);
 
 private:
     GameMapRef              _map;

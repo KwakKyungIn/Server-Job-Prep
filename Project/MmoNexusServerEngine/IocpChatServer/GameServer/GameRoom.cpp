@@ -837,3 +837,25 @@ void GameRoom::Broadcast(SendBufferRef sendBuffer, uint64 exceptId)
 		p->GetSession()->Send(sendBuffer);
 	}
 }
+
+void GameRoom::BroadcastChat(const Protocol::S_CHAT_NTF& ntf)
+{
+	// GameRoom은 JobQueue로 직렬 실행되는 전제라 별도 락 없이 간다.
+	for (auto it = _players.begin(); it != _players.end(); ++it)
+	{
+		PlayerRef player = it->second;
+		if (player == nullptr)
+			continue;
+
+		auto ps = player->GetSession();
+		if (ps == nullptr)
+			continue;
+
+		// ✅ SendBuffer는 세션마다 새로 생성 (seq/crc 채움 구조 때문에 공유 금지)
+		Protocol::S_CHAT_NTF pkt;
+		pkt.CopyFrom(ntf);
+
+		auto sb = ClientPacketHandler::MakeSendBuffer(pkt);
+		ps->Send(sb);
+	}
+}

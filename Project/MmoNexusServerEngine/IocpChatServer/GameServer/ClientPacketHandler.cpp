@@ -9,7 +9,7 @@
 #include "RedisManager.h"
 #include "RoomManager.h"
 #include "DataManager.h"
-
+#include "PartyManager.h"
 #include <atomic>
 #include <chrono>
 
@@ -97,6 +97,9 @@ bool ClientPacketHandler::Handle_C_ENTER_GAME(PacketSessionRef& session, Protoco
 	// 세션과 플레이어 연결
 	playerSession->SetPlayer(player);
 	player->SetSession(playerSession);
+
+	GameSessionManager::GSessionManager->BindPlayerId(playerSession, playerId);
+
 
 	// 3. [DB Loading] 데이터 로딩 요청 (비동기)
 	if (G_DBSession)
@@ -264,16 +267,39 @@ bool ClientPacketHandler::Handle_C_SKILL(PacketSessionRef& session, Protocol::C_
 // [CHAT] 채팅 요청
 bool ClientPacketHandler::Handle_C_CHAT_REQ(PacketSessionRef& session, Protocol::C_CHAT_REQ& pkt)
 {
-	PlayerSessionRef playerSession = static_pointer_cast<PlayerSession>(session);
+	PlayerSessionRef ps = static_pointer_cast<PlayerSession>(session);
+	if (!ps) return true;
 
-	// 채팅도 순차 처리를 위해 JobQueue 사용
-	playerSession->PushJob(ObjectPool<Job>::MakeShared([playerSession, pkt]()
+	// 맵 전환 중이면 입력 차단(원하면 제거)
+	if (ps->IsMapChanging())
+		return true;
+
+	const std::string msg = pkt.message();
+
+	ps->PushJob(ObjectPool<Job>::MakeShared([ps, msg]()
 		{
-			// TODO: ChatServer 연결 확인 및 전송 로직
+			auto player = ps->GetPlayer();
+			if (!player) return;
+
+			auto room = player->GetRoom();
+			if (!room) return;
+
+			Protocol::S_CHAT_NTF ntf;
+			ntf.set_playerid(player->GetPlayerId());
+			ntf.set_name(player->GetName());
+			ntf.set_message(msg);
+
+			// ✅ 여기서 Room이 "버퍼 복제" 해주거나,
+			//    room 내부에서 멤버 순회하면서 MakeSendBuffer를 매번 호출해야 안전함.
+			room->PushJob([room, ntf]()
+				{
+					room->BroadcastChat(ntf); // 아래 GameRoom 패치 참고
+				});
 		}));
 
 	return true;
 }
+
 
 //맵이동
 bool ClientPacketHandler::Handle_C_MAP_CHANGE_REQ(PacketSessionRef& session, Protocol::C_MAP_CHANGE_REQ& pkt)
@@ -396,10 +422,55 @@ bool ClientPacketHandler::Handle_C_HEART_BEAT_REQ(PacketSessionRef& session, Pro
 	return true;
 }
 
+
+
 bool ClientPacketHandler::Handle_C_PARTY_CHAT_REQ(PacketSessionRef& session, Protocol::C_PARTY_CHAT_REQ& pkt)
 {
-	return false;
+	PlayerSessionRef ps = static_pointer_cast<PlayerSession>(session);
+	if (!ps) return true;
+
+	const std::string msg = pkt.message();
+
+	ps->PushJob(ObjectPool<Job>::MakeShared([ps, msg]()
+		{
+			auto player = ps->GetPlayer();
+			if (!player) return;
+
+			const uint64 senderId = player->GetPlayerId();
+			const std::string senderName = player->GetName();
+
+			const uint64 partyId = PartyManager::Instance().GetPartyIdByPlayerId(senderId);
+			if (partyId == 0)
+			{
+				// TODO : 파티 없음 -> 무시 or 실패 패킷 보내도 됨(지금은 무시)
+				return;
+			}
+
+			// 멤버 목록 뽑아서 라우팅
+			std::vector<uint64> members;
+			PartyManager::Instance().GetMembers(partyId, members);
+
+			for (uint64 memberId : members)
+			{
+				PlayerSessionRef target =
+					GameSessionManager::GSessionManager->FindByPlayerId(memberId);
+
+				if (!target) continue;
+
+				Protocol::S_PARTY_CHAT_NTF ntf;
+				ntf.set_partyid(partyId);
+				ntf.set_senderid(senderId);
+				ntf.set_sendername(senderName);
+				ntf.set_message(msg);
+
+				auto sb = ClientPacketHandler::MakeSendBuffer(ntf);
+				target->Send(sb);
+			}
+		}));
+
+	return true;
 }
+
 
 bool ClientPacketHandler::Handle_C_LOGIN(PacketSessionRef& session, Protocol::C_LOGIN& pkt)
 {

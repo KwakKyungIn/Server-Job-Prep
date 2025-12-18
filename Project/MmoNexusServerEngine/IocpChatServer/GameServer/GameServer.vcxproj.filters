@@ -46,6 +46,9 @@
     <Filter Include="GameContents\Battle">
       <UniqueIdentifier>{405f206d-507b-4655-9d46-1781342c05cf}</UniqueIdentifier>
     </Filter>
+    <Filter Include="GameContents\Party">
+      <UniqueIdentifier>{583353aa-8414-4d72-b54a-b5701de272e8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GameServer.cpp">
@@ -110,6 +113,9 @@
     </ClCompile>
     <ClCompile Include="RoomManager.cpp">
       <Filter>GameContents\Room</Filter>
+    </ClCompile>
+    <ClCompile Include="PartyManager.cpp">
+      <Filter>GameContents\Party</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -178,6 +184,9 @@
     </ClInclude>
     <ClInclude Include="RoomManager.h">
       <Filter>GameContents\Room</Filter>
+    </ClInclude>
+    <ClInclude Include="PartyManager.h">
+      <Filter>GameContents\Party</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
