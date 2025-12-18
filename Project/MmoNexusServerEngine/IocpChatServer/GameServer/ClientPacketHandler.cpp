@@ -884,6 +884,7 @@ bool ClientPacketHandler::Handle_C_PARTY_DISBAND_REQ(PacketSessionRef& session, 
 
 	return true;
 }
+
 bool ClientPacketHandler::Handle_C_PARTY_STATUS_REQ(PacketSessionRef& session, Protocol::C_PARTY_STATUS_REQ& pkt)
 {
 	PlayerSessionRef ps = static_pointer_cast<PlayerSession>(session);
@@ -958,3 +959,4 @@ bool ClientPacketHandler::Handle_C_PARTY_STATUS_REQ(PacketSessionRef& session, P
 
 	return true;
 }
+

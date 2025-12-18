@@ -4,8 +4,11 @@
 
 GameSessionManager* GameSessionManager::GSessionManager = nullptr;
 
+
 void GameSessionManager::Add(PlayerSessionRef session)
 {
+    ASSERT_CRASH(this != nullptr);
+
     if (!session) return;
     WRITE_LOCK;
     _bySessionId[session->GetSessionId()] = session;

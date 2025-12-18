@@ -7,6 +7,9 @@
 
 void PlayerSession::OnConnected()
 {
+	ASSERT_CRASH(GameSessionManager::GSessionManager != nullptr);
+
+
 	// [Manager] 전체 접속자 명단에 등록
 	GameSessionManager::GSessionManager->Add(static_pointer_cast<PlayerSession>(shared_from_this()));
 }

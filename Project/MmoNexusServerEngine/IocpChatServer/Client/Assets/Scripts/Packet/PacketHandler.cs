@@ -34,6 +34,17 @@ public class PacketHandler
 
     public static Action<S_MAP_CHANGE_BEGIN> OnMapChangeBegin;
     public static Action<S_MAP_CHANGE_END> OnMapChangeEnd;
+
+
+
+
+
+    //====================나중에 채울거임===========================
+    public static Action<S_PARTY_CHAT_NTF> OnPartyChatNtf;
+    public static Action<S_PARTY_INFO_NTF> OnPartyInfoNtf;
+    public static Action<S_PARTY_RESULT> OnPartyResult;
+    public static Action<S_PARTY_INVITE_NTF> OnPartyInviteNtf;
+    public static Action<S_PARTY_STATUS_NTF> OnPartyStatusNtf;
     // ============================================================
     // [LOGIN & ENTRY HANDLERS]
     // ============================================================
@@ -255,4 +266,51 @@ public class PacketHandler
 
         NetworkManager.Instance.Send(pongPacket, (ushort)PacketManager.MsgId.C_HEART_BEAT_REQ);
     }
+
+    public static void S_PARTY_CHAT_NTFHandler(ServerSession session, IMessage packet)
+    {
+        var pkt = packet as S_PARTY_CHAT_NTF;
+        if (pkt == null) return;
+
+        Debug.Log($"[PartyChat] party={pkt.PartyId} {pkt.SenderName}({pkt.SenderId}): {pkt.Message}");
+        OnPartyChatNtf?.Invoke(pkt);
+    }
+
+    public static void S_PARTY_INFO_NTFHandler(ServerSession session, IMessage packet)
+    {
+        var pkt = packet as S_PARTY_INFO_NTF;
+        if (pkt == null) return;
+
+        Debug.Log($"[PartyInfo] hasParty={pkt.HasParty} partyId={pkt.PartyId} leader={pkt.LeaderId} members={pkt.MemberIds.Count} ver={pkt.Version}");
+        OnPartyInfoNtf?.Invoke(pkt);
+    }
+
+    public static void S_PARTY_RESULTHandler(ServerSession session, IMessage packet)
+    {
+        var pkt = packet as S_PARTY_RESULT;
+        if (pkt == null) return;
+
+        Debug.Log($"[PartyResult] op={pkt.Op} success={pkt.Success} reason={pkt.Reason} partyId={pkt.PartyId} ver={pkt.Version}");
+        OnPartyResult?.Invoke(pkt);
+    }
+
+    public static void S_PARTY_INVITE_NTFHandler(ServerSession session, IMessage packet)
+    {
+        var pkt = packet as S_PARTY_INVITE_NTF;
+        if (pkt == null) return;
+
+        Debug.Log($"[PartyInvite] partyId={pkt.PartyId} inviter={pkt.InviterName}({pkt.InviterId})");
+        OnPartyInviteNtf?.Invoke(pkt);
+    }
+
+    public static void S_PARTY_STATUS_NTFHandler(ServerSession session, IMessage packet)
+    {
+        var pkt = packet as S_PARTY_STATUS_NTF;
+        if (pkt == null) return;
+
+        Debug.Log($"[PartyStatus] partyId={pkt.PartyId} ver={pkt.Version} members={pkt.Members.Count}");
+        OnPartyStatusNtf?.Invoke(pkt);
+    }
 }
+
+
