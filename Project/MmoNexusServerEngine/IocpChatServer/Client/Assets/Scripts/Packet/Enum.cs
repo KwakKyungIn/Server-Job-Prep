@@ -42,11 +42,24 @@ namespace Protocol {
             "eXBlEhAKDFJPT01fUFJJVkFURRAAEg4KClJPT01fR1JPVVAQARIOCgpST09N",
             "X0dVSUxEEAIqQAoOUHJlc2VuY2VTdGF0dXMSCwoHT0ZGTElORRAAEgoKBk9O",
             "TElORRABEgsKB0lOX0dBTUUQAhIICgRBV0FZEAMqNgoMRnJpZW5kU3RhdHVz",
-            "EgsKB1BFTkRJTkcQABIMCghBQ0NFUFRFRBABEgsKB0JMT0NLRUQQAmIGcHJv",
-            "dG8z"));
+            "EgsKB1BFTkRJTkcQABIMCghBQ0NFUFRFRBABEgsKB0JMT0NLRUQQAirUAQoH",
+            "UGFydHlPcBIRCg1QQVJUWV9PUF9OT05FEAASEwoPUEFSVFlfT1BfQ1JFQVRF",
+            "EGQSEwoPUEFSVFlfT1BfSU5WSVRFEGUSGgoWUEFSVFlfT1BfSU5WSVRFX0FD",
+            "Q0VQVBBmEhoKFlBBUlRZX09QX0lOVklURV9SRUpFQ1QQZxISCg5QQVJUWV9P",
+            "UF9MRUFWRRBuEhEKDVBBUlRZX09QX0tJQ0sQbxIUChBQQVJUWV9PUF9ESVNC",
+            "QU5EEHASFwoTUEFSVFlfT1BfU1RBVFVTX1JFURB4KvMCChFQYXJ0eVJlc3Vs",
+            "dFJlYXNvbhIVChFQQVJUWV9SRUFTT05fTk9ORRAAEhQKD1BBUlRZX1JFQVNP",
+            "Tl9PSxDoBxIbChZQQVJUWV9SRUFTT05fTk9fVEFSR0VUEOkHEiIKHVBBUlRZ",
+            "X1JFQVNPTl9BTFJFQURZX0lOX1BBUlRZEOoHEh4KGVBBUlRZX1JFQVNPTl9O",
+            "T1RfSU5fUEFSVFkQ6wcSHAoXUEFSVFlfUkVBU09OX05PVF9MRUFERVIQ7AcS",
+            "HAoXUEFSVFlfUkVBU09OX05PVF9NRU1CRVIQ7QcSHwoaUEFSVFlfUkVBU09O",
+            "X0lOVkFMSURfUEFSVFkQ7gcSHQoYUEFSVFlfUkVBU09OX1NFTEZfVEFSR0VU",
+            "EO8HEhYKEVBBUlRZX1JFQVNPTl9GVUxMEPAHEhoKFVBBUlRZX1JFQVNPTl9S",
+            "RUpFQ1RFRBDxBxIgChtQQVJUWV9SRUFTT05fSU5URVJOQUxfRVJST1IQywhi",
+            "BnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
-          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Protocol.MoveState), typeof(global::Protocol.ActionState), typeof(global::Protocol.PlayerType), typeof(global::Protocol.ObjectType), typeof(global::Protocol.ItemType), typeof(global::Protocol.SkillType), typeof(global::Protocol.ConnectStatus), typeof(global::Protocol.RoomType), typeof(global::Protocol.PresenceStatus), typeof(global::Protocol.FriendStatus), }, null, null));
+          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Protocol.MoveState), typeof(global::Protocol.ActionState), typeof(global::Protocol.PlayerType), typeof(global::Protocol.ObjectType), typeof(global::Protocol.ItemType), typeof(global::Protocol.SkillType), typeof(global::Protocol.ConnectStatus), typeof(global::Protocol.RoomType), typeof(global::Protocol.PresenceStatus), typeof(global::Protocol.FriendStatus), typeof(global::Protocol.PartyOp), typeof(global::Protocol.PartyResultReason), }, null, null));
     }
     #endregion
 
@@ -199,6 +212,72 @@ namespace Protocol {
     [pbr::OriginalName("PENDING")] Pending = 0,
     [pbr::OriginalName("ACCEPTED")] Accepted = 1,
     [pbr::OriginalName("BLOCKED")] Blocked = 2,
+  }
+
+  /// <summary>
+  /// ===== [Party] 파티 요청 종류 =====
+  /// </summary>
+  public enum PartyOp {
+    [pbr::OriginalName("PARTY_OP_NONE")] None = 0,
+    [pbr::OriginalName("PARTY_OP_CREATE")] Create = 100,
+    [pbr::OriginalName("PARTY_OP_INVITE")] Invite = 101,
+    [pbr::OriginalName("PARTY_OP_INVITE_ACCEPT")] InviteAccept = 102,
+    [pbr::OriginalName("PARTY_OP_INVITE_REJECT")] InviteReject = 103,
+    [pbr::OriginalName("PARTY_OP_LEAVE")] Leave = 110,
+    [pbr::OriginalName("PARTY_OP_KICK")] Kick = 111,
+    [pbr::OriginalName("PARTY_OP_DISBAND")] Disband = 112,
+    /// <summary>
+    /// (선택) 디버그/로깅용
+    /// </summary>
+    [pbr::OriginalName("PARTY_OP_STATUS_REQ")] StatusReq = 120,
+  }
+
+  /// <summary>
+  /// ===== [Party] 실패/거절 사유 =====
+  /// </summary>
+  public enum PartyResultReason {
+    [pbr::OriginalName("PARTY_REASON_NONE")] PartyReasonNone = 0,
+    [pbr::OriginalName("PARTY_REASON_OK")] PartyReasonOk = 1000,
+    /// <summary>
+    /// 대상 없음(오프라인/세션 없음)
+    /// </summary>
+    [pbr::OriginalName("PARTY_REASON_NO_TARGET")] PartyReasonNoTarget = 1001,
+    /// <summary>
+    /// 대상 또는 내가 이미 파티 있음
+    /// </summary>
+    [pbr::OriginalName("PARTY_REASON_ALREADY_IN_PARTY")] PartyReasonAlreadyInParty = 1002,
+    /// <summary>
+    /// 파티가 없는데 요청함
+    /// </summary>
+    [pbr::OriginalName("PARTY_REASON_NOT_IN_PARTY")] PartyReasonNotInParty = 1003,
+    /// <summary>
+    /// 리더만 가능한 동작
+    /// </summary>
+    [pbr::OriginalName("PARTY_REASON_NOT_LEADER")] PartyReasonNotLeader = 1004,
+    /// <summary>
+    /// 파티원이 아님
+    /// </summary>
+    [pbr::OriginalName("PARTY_REASON_NOT_MEMBER")] PartyReasonNotMember = 1005,
+    /// <summary>
+    /// partyId가 잘못됨
+    /// </summary>
+    [pbr::OriginalName("PARTY_REASON_INVALID_PARTY")] PartyReasonInvalidParty = 1006,
+    /// <summary>
+    /// 자기 자신 초대/추방 등
+    /// </summary>
+    [pbr::OriginalName("PARTY_REASON_SELF_TARGET")] PartyReasonSelfTarget = 1007,
+    /// <summary>
+    /// 파티 정원 초과(나중에)
+    /// </summary>
+    [pbr::OriginalName("PARTY_REASON_FULL")] PartyReasonFull = 1008,
+    /// <summary>
+    /// 초대 거절
+    /// </summary>
+    [pbr::OriginalName("PARTY_REASON_REJECTED")] PartyReasonRejected = 1009,
+    /// <summary>
+    /// 서버 내부 에러
+    /// </summary>
+    [pbr::OriginalName("PARTY_REASON_INTERNAL_ERROR")] PartyReasonInternalError = 1099,
   }
 
   #endregion

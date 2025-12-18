@@ -188,3 +188,80 @@ message S_PARTY_INFO_NTF {
     repeated uint64 memberIds = 4;
     uint32 version = 5;
 }
+
+
+// ============================================================
+// [PARTY - CONTROL] (NEW)
+// ============================================================
+
+// 파티 생성/초대/수락/거절/탈퇴/추방/해산 요청들
+// - op/reason enum은 Enum.proto에 정의할 것
+
+message C_PARTY_CREATE_REQ {
+    uint64 targetPlayerId = 1; // 처음 파티 시작: 상대 1명을 지정 (0이면 혼자 파티 생성도 가능)
+}
+
+message C_PARTY_INVITE_REQ {
+    uint64 targetPlayerId = 1;
+}
+
+message C_PARTY_INVITE_ACCEPT_REQ {
+    uint64 partyId = 1;   // 초대 받은 파티
+    bool accept = 2;      // true=수락, false=거절
+}
+
+message C_PARTY_LEAVE_REQ { }
+
+message C_PARTY_KICK_REQ {
+    uint64 targetPlayerId = 1;
+}
+
+message C_PARTY_DISBAND_REQ { }
+
+// 서버 -> 클라: 결과(공통)
+// op/reason은 Enum.proto에서: PartyOp, PartyResultReason 같은 걸로 정의
+message S_PARTY_RESULT {
+    int32 op = 1;         // PartyOp (enum)
+    bool success = 2;
+    int32 reason = 3;     // PartyResultReason (enum)
+    uint64 partyId = 4;
+    uint32 version = 5;
+}
+
+// 서버 -> 클라: 파티 초대 알림
+message S_PARTY_INVITE_NTF {
+    uint64 partyId = 1;
+    uint64 inviterId = 2;
+    string inviterName = 3;
+}
+
+// ============================================================
+// [PARTY - STATUS] (NEW) 파티원 체력/레벨 등 상태 확인
+// ============================================================
+
+// 파티원 상태(최소)
+// - objectId까지 넣으면 월드에서 찾을 때도 편함(없으면 0)
+message PartyMemberStatus {
+    uint64 playerId = 1;
+    uint64 objectId = 2;
+    string name = 3;
+
+    int32 level = 4;
+    int32 hp = 5;
+    int32 maxHp = 6;
+
+    int32 mapId = 7;
+    int32 channelId = 8;
+    PositionInfo posInfo = 9; // 원하면 제거 가능(미니맵/추적용)
+}
+
+// 클라 -> 서버: 파티 상태 스냅샷 요청 (UI 열 때 1번)
+message C_PARTY_STATUS_REQ { }
+
+// 서버 -> 클라: 파티 상태 스냅샷/갱신
+// - memberStatus는 전체 스냅샷을 보내도 되고, delta로 보내도 됨(일단 스냅샷부터)
+message S_PARTY_STATUS_NTF {
+    uint64 partyId = 1;
+    uint32 version = 2;
+    repeated PartyMemberStatus members = 3;
+}

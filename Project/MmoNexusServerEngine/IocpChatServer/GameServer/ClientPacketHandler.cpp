@@ -476,3 +476,485 @@ bool ClientPacketHandler::Handle_C_LOGIN(PacketSessionRef& session, Protocol::C_
 {
 	return false;
 }
+
+//=======================================파티===========================================
+
+// 파티 스냅샷 -> S_PARTY_INFO_NTF
+static Protocol::S_PARTY_INFO_NTF MakePartyInfoNtf(const PartyManager::Party& p)
+{
+	Protocol::S_PARTY_INFO_NTF ntf;
+	ntf.set_hasparty(true);
+	ntf.set_partyid(p.partyId);
+	ntf.set_leaderid(p.leaderId);
+	ntf.set_version(p.version);
+	for (uint64 id : p.members)
+		ntf.add_memberids(id);
+	return ntf;
+}
+
+// (해산/추방 등) 파티 없음 통지
+static Protocol::S_PARTY_INFO_NTF MakeNoPartyInfoNtf()
+{
+	Protocol::S_PARTY_INFO_NTF ntf;
+	ntf.set_hasparty(false);
+	ntf.set_partyid(0);
+	ntf.set_leaderid(0);
+	ntf.set_version(0);
+	return ntf;
+}
+
+static void SendPartyInfoTo(PlayerSessionRef target, uint64 partyId)
+{
+	Protocol::S_PARTY_INFO_NTF info;
+
+	if (partyId == 0)
+	{
+		info.set_hasparty(false);
+		target->Send(ClientPacketHandler::MakeSendBuffer(info));
+		return;
+	}
+
+	auto snap = PartyManager::Instance().GetSnapshot(partyId);
+	if (snap.partyId == 0)
+	{
+		info.set_hasparty(false);
+		target->Send(ClientPacketHandler::MakeSendBuffer(info));
+		return;
+	}
+
+	info.set_hasparty(true);
+	info.set_partyid(snap.partyId);
+	info.set_leaderid(snap.leaderId);
+	info.set_version(snap.version);
+
+	for (uint64 id : snap.members)
+		info.add_memberids(id);
+
+	target->Send(ClientPacketHandler::MakeSendBuffer(info));
+}
+
+static void BroadcastPartyInfoAndStatus(uint64 partyId)
+{
+	auto snap = PartyManager::Instance().GetSnapshot(partyId);
+	if (snap.partyId == 0) return;
+
+	// 1. Info 패킷 미리 생성
+	Protocol::S_PARTY_INFO_NTF infoPkt = MakePartyInfoNtf(snap);
+
+	// 2. Status 패킷 준비
+	Protocol::S_PARTY_STATUS_NTF statusPkt;
+	statusPkt.set_partyid(partyId);
+	statusPkt.set_version(snap.version);
+
+	// 3. 한 번의 순회로 처리
+	for (uint64 id : snap.members)
+	{
+		auto ps = GameSessionManager::GSessionManager->FindByPlayerId(id);
+		if (!ps) continue;
+
+		auto p = ps->GetPlayer();
+		if (!p) continue;
+
+		// Status 멤버 추가
+		auto* m = statusPkt.add_members();
+		m->set_playerid(id);
+		m->set_name(p->GetName());
+		auto st = p->GetStatInfo();
+		m->set_level(st ? st->level() : 1);
+		m->set_hp(st ? st->hp() : 0);
+		m->set_maxhp(st ? st->maxhp() : 0);
+	}
+
+	// 4. 전송 (각 세션의 Job 큐 활용)
+	for (uint64 id : snap.members)
+	{
+		auto ps = GameSessionManager::GSessionManager->FindByPlayerId(id);
+		if (!ps) continue;
+
+		ps->PushJob(ObjectPool<Job>::MakeShared([ps, infoPkt, statusPkt]() mutable
+			{
+				ps->Send(ClientPacketHandler::MakeSendBuffer(infoPkt));
+				ps->Send(ClientPacketHandler::MakeSendBuffer(statusPkt));
+			}));
+	}
+}
+
+
+bool ClientPacketHandler::Handle_C_PARTY_CREATE_REQ(PacketSessionRef& session, Protocol::C_PARTY_CREATE_REQ& pkt)
+{
+	PlayerSessionRef ps = static_pointer_cast<PlayerSession>(session);
+	if (!ps) return true;
+
+	if (ps->IsMapChanging())
+		return true;
+
+	ps->PushJob(ObjectPool<Job>::MakeShared([ps]()
+		{
+			auto player = ps->GetPlayer();
+			if (!player) return;
+
+			uint64 leaderId = player->GetPlayerId();
+
+			// 이미 파티 있으면 실패
+			if (PartyManager::Instance().GetPartyIdByPlayerId(leaderId) != 0)
+			{
+				Protocol::S_PARTY_RESULT res;
+				res.set_op(Protocol::PARTY_OP_CREATE);
+				res.set_success(false);
+				res.set_reason(Protocol::PARTY_REASON_ALREADY_IN_PARTY);
+				ps->Send(ClientPacketHandler::MakeSendBuffer(res));
+				return;
+			}
+
+			uint64 partyId = 0;
+			bool ok = PartyManager::Instance().Create(leaderId, partyId);
+
+			Protocol::S_PARTY_RESULT res;
+			res.set_op(Protocol::PARTY_OP_CREATE);
+			res.set_success(ok);
+			res.set_reason(ok ? Protocol::PARTY_REASON_OK : Protocol::PARTY_REASON_INTERNAL_ERROR);
+			res.set_partyid(partyId);
+			res.set_version(ok ? PartyManager::Instance().GetSnapshot(partyId).version : 0);
+			ps->Send(ClientPacketHandler::MakeSendBuffer(res));
+
+			if (ok)
+				BroadcastPartyInfoAndStatus(partyId);
+		}));
+
+	return true;
+}
+
+bool ClientPacketHandler::Handle_C_PARTY_INVITE_REQ(PacketSessionRef& session, Protocol::C_PARTY_INVITE_REQ& pkt)
+{
+	PlayerSessionRef ps = static_pointer_cast<PlayerSession>(session);
+	if (!ps) return true;
+
+	if (ps->IsMapChanging())
+		return true;
+
+	const uint64 targetId = pkt.targetplayerid();
+
+	// Handle_C_PARTY_INVITE_REQ 수정
+	ps->PushJob(ObjectPool<Job>::MakeShared([ps, targetId]()
+		{
+			auto player = ps->GetPlayer();
+			if (!player) return;
+
+			const uint64 inviterId = player->GetPlayerId();
+			const std::string inviterName = player->GetName(); // ✅ 여기서 미리 복사
+
+			// 기본 검증
+			if (targetId == 0 || targetId == inviterId)
+			{
+				Protocol::S_PARTY_RESULT res;
+				res.set_op(Protocol::PARTY_OP_INVITE);
+				res.set_success(false);
+				res.set_reason(Protocol::PARTY_REASON_SELF_TARGET);
+				ps->Send(ClientPacketHandler::MakeSendBuffer(res));
+				return;
+			}
+
+			uint64 partyId = PartyManager::Instance().GetPartyIdByPlayerId(inviterId);
+			if (partyId == 0)
+			{
+				Protocol::S_PARTY_RESULT res;
+				res.set_op(Protocol::PARTY_OP_INVITE);
+				res.set_success(false);
+				res.set_reason(Protocol::PARTY_REASON_NOT_IN_PARTY);
+				ps->Send(ClientPacketHandler::MakeSendBuffer(res));
+				return;
+			}
+
+			// 대상 온라인 확인
+			auto targetSession = GameSessionManager::GSessionManager->FindByPlayerId(targetId);
+			if (!targetSession)
+			{
+				Protocol::S_PARTY_RESULT res;
+				res.set_op(Protocol::PARTY_OP_INVITE);
+				res.set_success(false);
+				res.set_reason(Protocol::PARTY_REASON_NO_TARGET);
+				ps->Send(ClientPacketHandler::MakeSendBuffer(res));
+				return;
+			}
+
+			PartyManager::PendingInvite inv;
+			bool ok = PartyManager::Instance().Invite(inviterId, targetId, inv);
+
+			Protocol::S_PARTY_RESULT res;
+			res.set_op(Protocol::PARTY_OP_INVITE);
+			res.set_success(ok);
+			res.set_reason(ok ? Protocol::PARTY_REASON_OK : Protocol::PARTY_REASON_ALREADY_IN_PARTY);
+			res.set_partyid(partyId);
+			res.set_version(PartyManager::Instance().GetSnapshot(partyId).version);
+			ps->Send(ClientPacketHandler::MakeSendBuffer(res));
+
+			if (!ok) return;
+
+			// ✅ 대상 세션의 Job 큐를 통해 안전하게 전송
+			targetSession->PushJob(ObjectPool<Job>::MakeShared(
+				[targetSession, partyId, inviterId, inviterName]() // inviterName이 이제 정의됨!
+				{
+					Protocol::S_PARTY_INVITE_NTF ntf;
+					ntf.set_partyid(partyId);
+					ntf.set_inviterid(inviterId);
+					ntf.set_invitername(inviterName);
+					targetSession->Send(ClientPacketHandler::MakeSendBuffer(ntf));
+				}));
+		}));
+
+	return true;
+}
+
+bool ClientPacketHandler::Handle_C_PARTY_INVITE_ACCEPT_REQ(PacketSessionRef& session, Protocol::C_PARTY_INVITE_ACCEPT_REQ& pkt)
+{
+	PlayerSessionRef ps = static_pointer_cast<PlayerSession>(session);
+	if (!ps) return true;
+
+
+
+	const uint64 partyId = pkt.partyid();
+	const bool accept = pkt.accept();
+
+	ps->PushJob(ObjectPool<Job>::MakeShared([ps, partyId, accept]()
+		{
+			auto player = ps->GetPlayer();
+			if (!player) return;
+
+			const uint64 targetId = player->GetPlayerId();
+
+			PartyManager::Party after;
+			bool ok = PartyManager::Instance().AcceptInvite(targetId, partyId, accept, after);
+
+			Protocol::S_PARTY_RESULT res;
+			res.set_op(accept ? Protocol::PARTY_OP_INVITE_ACCEPT : Protocol::PARTY_OP_INVITE_REJECT);
+			res.set_success(ok);
+			res.set_reason(ok ? (accept ? Protocol::PARTY_REASON_OK : Protocol::PARTY_REASON_REJECTED)
+				: Protocol::PARTY_REASON_INVALID_PARTY);
+			res.set_partyid(partyId);
+			res.set_version(after.partyId ? after.version : 0);
+
+			ps->Send(ClientPacketHandler::MakeSendBuffer(res));
+
+			if (ok && accept && after.partyId != 0)
+				BroadcastPartyInfoAndStatus(after.partyId);
+
+			if (ok && !accept)
+				SendPartyInfoTo(ps, PartyManager::Instance().GetPartyIdByPlayerId(targetId)); // 보통 0
+		}));
+
+	return true;
+}
+
+bool ClientPacketHandler::Handle_C_PARTY_LEAVE_REQ(PacketSessionRef& session, Protocol::C_PARTY_LEAVE_REQ& pkt)
+{
+	PlayerSessionRef ps = static_pointer_cast<PlayerSession>(session);
+	if (!ps) return true;
+
+	if (ps->IsMapChanging())
+		return true;
+
+	ps->PushJob(ObjectPool<Job>::MakeShared([ps]()
+		{
+			auto player = ps->GetPlayer();
+			if (!player) return;
+
+			const uint64 pid = player->GetPlayerId();
+			uint64 partyId = PartyManager::Instance().GetPartyIdByPlayerId(pid);
+
+			PartyManager::Party after;
+			bool disbanded = false;
+			bool ok = PartyManager::Instance().Leave(pid, after, disbanded);
+
+			Protocol::S_PARTY_RESULT res;
+			res.set_op(Protocol::PARTY_OP_LEAVE);
+			res.set_success(ok);
+			res.set_reason(ok ? Protocol::PARTY_REASON_OK : Protocol::PARTY_REASON_NOT_IN_PARTY);
+			res.set_partyid(partyId);
+			res.set_version(after.partyId ? after.version : 0);
+			ps->Send(ClientPacketHandler::MakeSendBuffer(res));
+
+			// 떠난 사람은 party false로
+			SendPartyInfoTo(ps, 0);
+
+			// 남은 파티원 갱신
+			if (ok && !disbanded && after.partyId != 0)
+				BroadcastPartyInfoAndStatus(after.partyId);
+			if (ok && disbanded)
+			{
+				// 파티가 터졌으면 남은 사람 없음(0)이라 추가 브로드캐스트 필요 없음
+			}
+		}));
+
+	return true;
+}
+
+bool ClientPacketHandler::Handle_C_PARTY_KICK_REQ(PacketSessionRef& session, Protocol::C_PARTY_KICK_REQ& pkt)
+{
+	PlayerSessionRef ps = static_pointer_cast<PlayerSession>(session);
+	if (!ps) return true;
+	if (ps->IsMapChanging()) return true;
+
+	const uint64 targetId = pkt.targetplayerid();
+
+	ps->PushJob(ObjectPool<Job>::MakeShared([ps, targetId]()
+		{
+			auto player = ps->GetPlayer();
+			if (!player) return;
+
+			const uint64 leaderId = player->GetPlayerId();
+			PartyManager::Party partyAfter;
+			const bool ok = PartyManager::Instance().Kick(leaderId, targetId, partyAfter);
+
+			// 결과 응답(요청자)
+			{
+				Protocol::S_PARTY_RESULT res;
+				res.set_op((int32)Protocol::PARTY_OP_KICK);
+				res.set_success(ok);
+				res.set_reason(ok ? (int32)Protocol::PARTY_REASON_OK : (int32)Protocol::PARTY_REASON_INTERNAL_ERROR);
+				res.set_partyid(ok ? partyAfter.partyId : 0);
+				res.set_version(ok ? partyAfter.version : 0);
+				ps->Send(ClientPacketHandler::MakeSendBuffer(res));
+			}
+
+			if (!ok) return;
+
+			// ✅ 남은 파티원: Info + Status 둘 다 갱신
+			BroadcastPartyInfoAndStatus(partyAfter.partyId);
+
+			// ✅ 킥당한 사람: 파티 없음만 따로
+			{
+				auto kicked = GameSessionManager::GSessionManager->FindByPlayerId(targetId);
+				if (kicked)
+				{
+					kicked->PushJob(ObjectPool<Job>::MakeShared([kicked]() {
+						Protocol::S_PARTY_INFO_NTF off = MakeNoPartyInfoNtf();
+						kicked->Send(ClientPacketHandler::MakeSendBuffer(off));
+						}));
+				}
+			}
+
+		}));
+
+	return true;
+}
+
+bool ClientPacketHandler::Handle_C_PARTY_DISBAND_REQ(PacketSessionRef& session, Protocol::C_PARTY_DISBAND_REQ& pkt)
+{
+	PlayerSessionRef ps = static_pointer_cast<PlayerSession>(session);
+	if (!ps) return true;
+	if (ps->IsMapChanging()) return true;
+
+	ps->PushJob(ObjectPool<Job>::MakeShared([ps]()
+		{
+			auto player = ps->GetPlayer();
+			if (!player) return;
+
+			const uint64 leaderId = player->GetPlayerId();
+			PartyManager::Party disbanded;
+			const bool ok = PartyManager::Instance().Disband(leaderId, disbanded);
+
+			// 결과 응답(요청자)
+			{
+				Protocol::S_PARTY_RESULT res;
+				res.set_op((int32)Protocol::PARTY_OP_DISBAND);
+				res.set_success(ok);
+				res.set_reason(ok ? (int32)Protocol::PARTY_REASON_OK : (int32)Protocol::PARTY_REASON_INTERNAL_ERROR);
+				res.set_partyid(ok ? disbanded.partyId : 0);
+				res.set_version(ok ? disbanded.version : 0);
+				ps->Send(ClientPacketHandler::MakeSendBuffer(res));
+			}
+
+			if (!ok) return;
+
+			// 전원에게 "파티 없음"
+
+			for (uint64 id : disbanded.members)
+			{
+				auto ms = GameSessionManager::GSessionManager->FindByPlayerId(id);
+				if (!ms) continue;
+
+				// 패킷은 값으로 캡처하고, SendBuffer는 Job 안에서 "매번 새로" 만든다.
+				ms->PushJob(ObjectPool<Job>::MakeShared([ms]() {
+					Protocol::S_PARTY_INFO_NTF off = MakeNoPartyInfoNtf();
+					ms->Send(ClientPacketHandler::MakeSendBuffer(off));
+					}));
+			}
+
+		}));
+
+	return true;
+}
+bool ClientPacketHandler::Handle_C_PARTY_STATUS_REQ(PacketSessionRef& session, Protocol::C_PARTY_STATUS_REQ& pkt)
+{
+	PlayerSessionRef ps = static_pointer_cast<PlayerSession>(session);
+	if (!ps) return true;
+
+	if (ps->IsMapChanging())
+		return true;
+
+	ps->PushJob(ObjectPool<Job>::MakeShared([ps]()
+		{
+			auto me = ps->GetPlayer();
+			if (!me) return;
+
+			const uint64 myId = me->GetPlayerId();
+			const uint64 partyId = PartyManager::Instance().GetPartyIdByPlayerId(myId);
+
+			// 파티 없음이면 빈 스냅샷
+			if (partyId == 0)
+			{
+				Protocol::S_PARTY_STATUS_NTF ntf;
+				ntf.set_partyid(0);
+				ntf.set_version(0);
+				ps->Send(ClientPacketHandler::MakeSendBuffer(ntf));
+				return;
+			}
+
+			// 스냅샷 + 멤버별 상태 채우기
+			PartyManager::Party snap = PartyManager::Instance().GetSnapshot(partyId);
+
+			Protocol::S_PARTY_STATUS_NTF ntf;
+			ntf.set_partyid(snap.partyId);
+			ntf.set_version(snap.version);
+
+			for (uint64 memberId : snap.members)
+			{
+				auto ms = GameSessionManager::GSessionManager->FindByPlayerId(memberId);
+				if (!ms) continue;
+
+				auto mp = ms->GetPlayer();
+				if (!mp) continue;
+
+				auto* st = ntf.add_members();
+				st->set_playerid(memberId);
+
+				// objectId: Creature에 GetObjectId() 있으면 그거, 없으면 playerId로 대체해도 됨
+				st->set_objectid(mp->GetObjectId()); // 없으면 컴파일 에러 -> 그때 0 또는 playerId로 바꿔
+
+				st->set_name(mp->GetName());
+
+				// StatInfo: Creature 쪽 GetStatInfo() 쓰는 구조로 너 이미 쓰고 있었지
+				st->set_level(mp->GetStatInfo()->level());
+				st->set_hp(mp->GetStatInfo()->hp());
+				st->set_maxhp(mp->GetStatInfo()->maxhp());
+
+				st->set_mapid(mp->GetMapId());
+				st->set_channelid(mp->GetChannelId());
+
+				// 위치 포함
+				st->mutable_posinfo()->CopyFrom(*mp->GetPosInfo());
+			}
+
+			// 패킷 한 번만 생성
+			auto buffer = ClientPacketHandler::MakeSendBuffer(ntf);
+
+			for (uint64 memberId : snap.members)
+			{
+				auto ms = GameSessionManager::GSessionManager->FindByPlayerId(memberId);
+				if (!ms) continue;
+				ms->Send(ClientPacketHandler::MakeSendBuffer(ntf)); // ✅ 세션마다 새로 생성
+			}
+		}));
+
+	return true;
+}

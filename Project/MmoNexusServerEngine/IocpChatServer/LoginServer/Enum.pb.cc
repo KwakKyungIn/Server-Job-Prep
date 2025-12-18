@@ -22,7 +22,7 @@ namespace _pbi = _pb::internal;
 
 namespace Protocol {
 }  // namespace Protocol
-static const ::_pb::EnumDescriptor* file_level_enum_descriptors_Enum_2eproto[10];
+static const ::_pb::EnumDescriptor* file_level_enum_descriptors_Enum_2eproto[12];
 static constexpr ::_pb::ServiceDescriptor const** file_level_service_descriptors_Enum_2eproto = nullptr;
 const uint32_t TableStruct_Enum_2eproto::offsets[1] = {};
 static constexpr ::_pbi::MigrationSchema* schemas = nullptr;
@@ -50,11 +50,26 @@ const char descriptor_table_protodef_Enum_2eproto[] PROTOBUF_SECTION_VARIABLE(pr
   "_GUILD\020\002*@\n\016PresenceStatus\022\013\n\007OFFLINE\020\000\022"
   "\n\n\006ONLINE\020\001\022\013\n\007IN_GAME\020\002\022\010\n\004AWAY\020\003*6\n\014Fr"
   "iendStatus\022\013\n\007PENDING\020\000\022\014\n\010ACCEPTED\020\001\022\013\n"
-  "\007BLOCKED\020\002b\006proto3"
+  "\007BLOCKED\020\002*\324\001\n\007PartyOp\022\021\n\rPARTY_OP_NONE\020"
+  "\000\022\023\n\017PARTY_OP_CREATE\020d\022\023\n\017PARTY_OP_INVIT"
+  "E\020e\022\032\n\026PARTY_OP_INVITE_ACCEPT\020f\022\032\n\026PARTY"
+  "_OP_INVITE_REJECT\020g\022\022\n\016PARTY_OP_LEAVE\020n\022"
+  "\021\n\rPARTY_OP_KICK\020o\022\024\n\020PARTY_OP_DISBAND\020p"
+  "\022\027\n\023PARTY_OP_STATUS_REQ\020x*\363\002\n\021PartyResul"
+  "tReason\022\025\n\021PARTY_REASON_NONE\020\000\022\024\n\017PARTY_"
+  "REASON_OK\020\350\007\022\033\n\026PARTY_REASON_NO_TARGET\020\351"
+  "\007\022\"\n\035PARTY_REASON_ALREADY_IN_PARTY\020\352\007\022\036\n"
+  "\031PARTY_REASON_NOT_IN_PARTY\020\353\007\022\034\n\027PARTY_R"
+  "EASON_NOT_LEADER\020\354\007\022\034\n\027PARTY_REASON_NOT_"
+  "MEMBER\020\355\007\022\037\n\032PARTY_REASON_INVALID_PARTY\020"
+  "\356\007\022\035\n\030PARTY_REASON_SELF_TARGET\020\357\007\022\026\n\021PAR"
+  "TY_REASON_FULL\020\360\007\022\032\n\025PARTY_REASON_REJECT"
+  "ED\020\361\007\022 \n\033PARTY_REASON_INTERNAL_ERROR\020\313\010b"
+  "\006proto3"
   ;
 static ::_pbi::once_flag descriptor_table_Enum_2eproto_once;
 const ::_pbi::DescriptorTable descriptor_table_Enum_2eproto = {
-    false, false, 858, descriptor_table_protodef_Enum_2eproto,
+    false, false, 1447, descriptor_table_protodef_Enum_2eproto,
     "Enum.proto",
     &descriptor_table_Enum_2eproto_once, nullptr, 0, 0,
     schemas, file_default_instances, TableStruct_Enum_2eproto::offsets,
@@ -220,6 +235,51 @@ bool FriendStatus_IsValid(int value) {
     case 0:
     case 1:
     case 2:
+      return true;
+    default:
+      return false;
+  }
+}
+
+const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* PartyOp_descriptor() {
+  ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&descriptor_table_Enum_2eproto);
+  return file_level_enum_descriptors_Enum_2eproto[10];
+}
+bool PartyOp_IsValid(int value) {
+  switch (value) {
+    case 0:
+    case 100:
+    case 101:
+    case 102:
+    case 103:
+    case 110:
+    case 111:
+    case 112:
+    case 120:
+      return true;
+    default:
+      return false;
+  }
+}
+
+const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* PartyResultReason_descriptor() {
+  ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&descriptor_table_Enum_2eproto);
+  return file_level_enum_descriptors_Enum_2eproto[11];
+}
+bool PartyResultReason_IsValid(int value) {
+  switch (value) {
+    case 0:
+    case 1000:
+    case 1001:
+    case 1002:
+    case 1003:
+    case 1004:
+    case 1005:
+    case 1006:
+    case 1007:
+    case 1008:
+    case 1009:
+    case 1099:
       return true;
     default:
       return false;

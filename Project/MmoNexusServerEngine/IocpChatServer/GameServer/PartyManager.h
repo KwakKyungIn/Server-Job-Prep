@@ -7,8 +7,16 @@ public:
     {
         uint64 partyId = 0;
         uint64 leaderId = 0;
-        uint32 version = 0; // 단일 GS라도 UI Sync/디버그에 유용
+        uint32 version = 0;
         std::unordered_set<uint64> members;
+    };
+
+    struct PendingInvite
+    {
+        uint64 partyId = 0;
+        uint64 inviterId = 0;
+        uint64 targetId = 0;
+        uint64 expireTick = 0; // GetTickCount64 기반
     };
 
     static PartyManager& Instance()
@@ -18,30 +26,31 @@ public:
     }
 
 public:
-    // 스냅샷 통째로 반영 (테스트/GM 커맨드/초기화에 좋음)
-    void Upsert(uint64 partyId, uint64 leaderId, uint32 version, const std::vector<uint64>& memberIds);
-
-    // 자주 쓰는 조회
+    // ===== Query =====
+    uint64 GetPartyIdByPlayerId(uint64 playerId) const;
     bool   IsMember(uint64 partyId, uint64 playerId) const;
     Party  GetSnapshot(uint64 partyId) const;
+    void   GetMembers(uint64 partyId, std::vector<uint64>& outMembers) const;
 
-    // 라우팅 핵심: playerId -> partyId
-    uint64 GetPartyIdByPlayerId(uint64 playerId) const;
-
-    // 멤버 리스트를 vector로 뽑아 쓰기 편하게
-    void GetMembers(uint64 partyId, std::vector<uint64>& outMembers) const;
-
-    // 최소 기능(있어야 나중에 던전/탈퇴 처리 안 꼬임)
-    bool RemoveMember(uint64 partyId, uint64 playerId);
-    bool Disband(uint64 partyId);
+public:
+    // ===== Ops (실사용) =====
+    bool Create(uint64 leaderId, uint64& outPartyId);
+    bool Invite(uint64 inviterId, uint64 targetId, PendingInvite& outInvite);
+    bool AcceptInvite(uint64 targetId, uint64 partyId, bool accept, Party& outPartyAfter);
+    bool Leave(uint64 playerId, Party& outPartyAfter, bool& outDisbanded);
+    bool Kick(uint64 leaderId, uint64 targetId, Party& outPartyAfter);
+    bool Disband(uint64 leaderId, Party& outDisbandedParty);
 
 private:
     PartyManager() = default;
 
 private:
-
     USE_LOCK;
 
-    std::unordered_map<uint64, Party> _parties;       // partyId -> Party
-    std::unordered_map<uint64, uint64> _playerToParty; // playerId -> partyId
+    uint64 _nextPartyId = 1;
+
+    std::unordered_map<uint64, Party> _parties;            // partyId -> Party
+    std::unordered_map<uint64, uint64> _playerToParty;     // playerId -> partyId
+
+    std::unordered_map<uint64, PendingInvite> _pendingByTarget; // targetId -> invite
 };

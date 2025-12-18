@@ -75,3 +75,37 @@ enum FriendStatus {
     ACCEPTED = 1;
     BLOCKED = 2;
 }
+
+// ===== [Party] 파티 요청 종류 =====
+enum PartyOp {
+    PARTY_OP_NONE = 0;
+
+    PARTY_OP_CREATE = 100;
+    PARTY_OP_INVITE = 101;
+    PARTY_OP_INVITE_ACCEPT = 102;
+    PARTY_OP_INVITE_REJECT = 103;
+
+    PARTY_OP_LEAVE = 110;
+    PARTY_OP_KICK = 111;
+    PARTY_OP_DISBAND = 112;
+
+    PARTY_OP_STATUS_REQ = 120; // (선택) 디버그/로깅용
+}
+
+// ===== [Party] 실패/거절 사유 =====
+enum PartyResultReason {
+    PARTY_REASON_NONE = 0;
+
+    PARTY_REASON_OK = 1000;
+
+    PARTY_REASON_NO_TARGET = 1001;         // 대상 없음(오프라인/세션 없음)
+    PARTY_REASON_ALREADY_IN_PARTY = 1002;  // 대상 또는 내가 이미 파티 있음
+    PARTY_REASON_NOT_IN_PARTY = 1003;      // 파티가 없는데 요청함
+    PARTY_REASON_NOT_LEADER = 1004;        // 리더만 가능한 동작
+    PARTY_REASON_NOT_MEMBER = 1005;        // 파티원이 아님
+    PARTY_REASON_INVALID_PARTY = 1006;     // partyId가 잘못됨
+    PARTY_REASON_SELF_TARGET = 1007;       // 자기 자신 초대/추방 등
+    PARTY_REASON_FULL = 1008;              // 파티 정원 초과(나중에)
+    PARTY_REASON_REJECTED = 1009;          // 초대 거절
+    PARTY_REASON_INTERNAL_ERROR = 1099;    // 서버 내부 에러
+}

@@ -315,6 +315,73 @@ inline bool FriendStatus_Parse(
   return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<FriendStatus>(
     FriendStatus_descriptor(), name, value);
 }
+enum PartyOp : int {
+  PARTY_OP_NONE = 0,
+  PARTY_OP_CREATE = 100,
+  PARTY_OP_INVITE = 101,
+  PARTY_OP_INVITE_ACCEPT = 102,
+  PARTY_OP_INVITE_REJECT = 103,
+  PARTY_OP_LEAVE = 110,
+  PARTY_OP_KICK = 111,
+  PARTY_OP_DISBAND = 112,
+  PARTY_OP_STATUS_REQ = 120,
+  PartyOp_INT_MIN_SENTINEL_DO_NOT_USE_ = std::numeric_limits<int32_t>::min(),
+  PartyOp_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits<int32_t>::max()
+};
+bool PartyOp_IsValid(int value);
+constexpr PartyOp PartyOp_MIN = PARTY_OP_NONE;
+constexpr PartyOp PartyOp_MAX = PARTY_OP_STATUS_REQ;
+constexpr int PartyOp_ARRAYSIZE = PartyOp_MAX + 1;
+
+const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* PartyOp_descriptor();
+template<typename T>
+inline const std::string& PartyOp_Name(T enum_t_value) {
+  static_assert(::std::is_same<T, PartyOp>::value ||
+    ::std::is_integral<T>::value,
+    "Incorrect type passed to function PartyOp_Name.");
+  return ::PROTOBUF_NAMESPACE_ID::internal::NameOfEnum(
+    PartyOp_descriptor(), enum_t_value);
+}
+inline bool PartyOp_Parse(
+    ::PROTOBUF_NAMESPACE_ID::ConstStringParam name, PartyOp* value) {
+  return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<PartyOp>(
+    PartyOp_descriptor(), name, value);
+}
+enum PartyResultReason : int {
+  PARTY_REASON_NONE = 0,
+  PARTY_REASON_OK = 1000,
+  PARTY_REASON_NO_TARGET = 1001,
+  PARTY_REASON_ALREADY_IN_PARTY = 1002,
+  PARTY_REASON_NOT_IN_PARTY = 1003,
+  PARTY_REASON_NOT_LEADER = 1004,
+  PARTY_REASON_NOT_MEMBER = 1005,
+  PARTY_REASON_INVALID_PARTY = 1006,
+  PARTY_REASON_SELF_TARGET = 1007,
+  PARTY_REASON_FULL = 1008,
+  PARTY_REASON_REJECTED = 1009,
+  PARTY_REASON_INTERNAL_ERROR = 1099,
+  PartyResultReason_INT_MIN_SENTINEL_DO_NOT_USE_ = std::numeric_limits<int32_t>::min(),
+  PartyResultReason_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits<int32_t>::max()
+};
+bool PartyResultReason_IsValid(int value);
+constexpr PartyResultReason PartyResultReason_MIN = PARTY_REASON_NONE;
+constexpr PartyResultReason PartyResultReason_MAX = PARTY_REASON_INTERNAL_ERROR;
+constexpr int PartyResultReason_ARRAYSIZE = PartyResultReason_MAX + 1;
+
+const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* PartyResultReason_descriptor();
+template<typename T>
+inline const std::string& PartyResultReason_Name(T enum_t_value) {
+  static_assert(::std::is_same<T, PartyResultReason>::value ||
+    ::std::is_integral<T>::value,
+    "Incorrect type passed to function PartyResultReason_Name.");
+  return ::PROTOBUF_NAMESPACE_ID::internal::NameOfEnum(
+    PartyResultReason_descriptor(), enum_t_value);
+}
+inline bool PartyResultReason_Parse(
+    ::PROTOBUF_NAMESPACE_ID::ConstStringParam name, PartyResultReason* value) {
+  return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<PartyResultReason>(
+    PartyResultReason_descriptor(), name, value);
+}
 // ===================================================================
 
 
@@ -386,6 +453,16 @@ template <> struct is_proto_enum< ::Protocol::FriendStatus> : ::std::true_type {
 template <>
 inline const EnumDescriptor* GetEnumDescriptor< ::Protocol::FriendStatus>() {
   return ::Protocol::FriendStatus_descriptor();
+}
+template <> struct is_proto_enum< ::Protocol::PartyOp> : ::std::true_type {};
+template <>
+inline const EnumDescriptor* GetEnumDescriptor< ::Protocol::PartyOp>() {
+  return ::Protocol::PartyOp_descriptor();
+}
+template <> struct is_proto_enum< ::Protocol::PartyResultReason> : ::std::true_type {};
+template <>
+inline const EnumDescriptor* GetEnumDescriptor< ::Protocol::PartyResultReason>() {
+  return ::Protocol::PartyResultReason_descriptor();
 }
 
 PROTOBUF_NAMESPACE_CLOSE

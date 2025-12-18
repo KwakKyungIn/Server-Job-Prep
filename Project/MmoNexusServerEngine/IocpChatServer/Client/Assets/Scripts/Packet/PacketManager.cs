@@ -51,6 +51,16 @@ public class PacketManager
 		C_PARTY_CHAT_REQ = 1027,
 		S_PARTY_CHAT_NTF = 1028,
 		S_PARTY_INFO_NTF = 1029,
+		C_PARTY_CREATE_REQ = 1030,
+		C_PARTY_INVITE_REQ = 1031,
+		C_PARTY_INVITE_ACCEPT_REQ = 1032,
+		C_PARTY_LEAVE_REQ = 1033,
+		C_PARTY_KICK_REQ = 1034,
+		C_PARTY_DISBAND_REQ = 1035,
+		S_PARTY_RESULT = 1036,
+		S_PARTY_INVITE_NTF = 1037,
+		C_PARTY_STATUS_REQ = 1038,
+		S_PARTY_STATUS_NTF = 1039,
 	}
 
 	public void Register()
@@ -93,6 +103,12 @@ public class PacketManager
 		_handler.Add((ushort)MsgId.S_PARTY_CHAT_NTF, PacketHandler.S_PARTY_CHAT_NTFHandler);
 		_onRecv.Add((ushort)MsgId.S_PARTY_INFO_NTF, MakePacket<S_PARTY_INFO_NTF>);
 		_handler.Add((ushort)MsgId.S_PARTY_INFO_NTF, PacketHandler.S_PARTY_INFO_NTFHandler);
+		_onRecv.Add((ushort)MsgId.S_PARTY_RESULT, MakePacket<S_PARTY_RESULT>);
+		_handler.Add((ushort)MsgId.S_PARTY_RESULT, PacketHandler.S_PARTY_RESULTHandler);
+		_onRecv.Add((ushort)MsgId.S_PARTY_INVITE_NTF, MakePacket<S_PARTY_INVITE_NTF>);
+		_handler.Add((ushort)MsgId.S_PARTY_INVITE_NTF, PacketHandler.S_PARTY_INVITE_NTFHandler);
+		_onRecv.Add((ushort)MsgId.S_PARTY_STATUS_NTF, MakePacket<S_PARTY_STATUS_NTF>);
+		_handler.Add((ushort)MsgId.S_PARTY_STATUS_NTF, PacketHandler.S_PARTY_STATUS_NTFHandler);
 	}
 
 	public void OnRecvPacket(ServerSession session, ArraySegment<byte> buffer)

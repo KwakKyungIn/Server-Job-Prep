@@ -39,6 +39,16 @@ public:
 		PKT_C_PARTY_CHAT_REQ = 1027,
 		PKT_S_PARTY_CHAT_NTF = 1028,
 		PKT_S_PARTY_INFO_NTF = 1029,
+		PKT_C_PARTY_CREATE_REQ = 1030,
+		PKT_C_PARTY_INVITE_REQ = 1031,
+		PKT_C_PARTY_INVITE_ACCEPT_REQ = 1032,
+		PKT_C_PARTY_LEAVE_REQ = 1033,
+		PKT_C_PARTY_KICK_REQ = 1034,
+		PKT_C_PARTY_DISBAND_REQ = 1035,
+		PKT_S_PARTY_RESULT = 1036,
+		PKT_S_PARTY_INVITE_NTF = 1037,
+		PKT_C_PARTY_STATUS_REQ = 1038,
+		PKT_S_PARTY_STATUS_NTF = 1039,
 	};
 
 	static void Init()
@@ -56,6 +66,13 @@ public:
 		GPacketHandler[PKT_C_CHAT_REQ] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::C_CHAT_REQ>(Handle_C_CHAT_REQ, session, buffer, len); };
 		GPacketHandler[PKT_C_HEART_BEAT_REQ] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::C_HEART_BEAT_REQ>(Handle_C_HEART_BEAT_REQ, session, buffer, len); };
 		GPacketHandler[PKT_C_PARTY_CHAT_REQ] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::C_PARTY_CHAT_REQ>(Handle_C_PARTY_CHAT_REQ, session, buffer, len); };
+		GPacketHandler[PKT_C_PARTY_CREATE_REQ] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::C_PARTY_CREATE_REQ>(Handle_C_PARTY_CREATE_REQ, session, buffer, len); };
+		GPacketHandler[PKT_C_PARTY_INVITE_REQ] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::C_PARTY_INVITE_REQ>(Handle_C_PARTY_INVITE_REQ, session, buffer, len); };
+		GPacketHandler[PKT_C_PARTY_INVITE_ACCEPT_REQ] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::C_PARTY_INVITE_ACCEPT_REQ>(Handle_C_PARTY_INVITE_ACCEPT_REQ, session, buffer, len); };
+		GPacketHandler[PKT_C_PARTY_LEAVE_REQ] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::C_PARTY_LEAVE_REQ>(Handle_C_PARTY_LEAVE_REQ, session, buffer, len); };
+		GPacketHandler[PKT_C_PARTY_KICK_REQ] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::C_PARTY_KICK_REQ>(Handle_C_PARTY_KICK_REQ, session, buffer, len); };
+		GPacketHandler[PKT_C_PARTY_DISBAND_REQ] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::C_PARTY_DISBAND_REQ>(Handle_C_PARTY_DISBAND_REQ, session, buffer, len); };
+		GPacketHandler[PKT_C_PARTY_STATUS_REQ] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::C_PARTY_STATUS_REQ>(Handle_C_PARTY_STATUS_REQ, session, buffer, len); };
 	}
 
 	static bool HandlePacket(PacketSessionRef& session, BYTE* buffer, int32 len)
@@ -82,6 +99,9 @@ public:
 	static SendBufferRef MakeSendBuffer(Protocol::S_HEART_BEAT_RES& pkt) { return MakeSendBuffer(pkt, PKT_S_HEART_BEAT_RES); }
 	static SendBufferRef MakeSendBuffer(Protocol::S_PARTY_CHAT_NTF& pkt) { return MakeSendBuffer(pkt, PKT_S_PARTY_CHAT_NTF); }
 	static SendBufferRef MakeSendBuffer(Protocol::S_PARTY_INFO_NTF& pkt) { return MakeSendBuffer(pkt, PKT_S_PARTY_INFO_NTF); }
+	static SendBufferRef MakeSendBuffer(Protocol::S_PARTY_RESULT& pkt) { return MakeSendBuffer(pkt, PKT_S_PARTY_RESULT); }
+	static SendBufferRef MakeSendBuffer(Protocol::S_PARTY_INVITE_NTF& pkt) { return MakeSendBuffer(pkt, PKT_S_PARTY_INVITE_NTF); }
+	static SendBufferRef MakeSendBuffer(Protocol::S_PARTY_STATUS_NTF& pkt) { return MakeSendBuffer(pkt, PKT_S_PARTY_STATUS_NTF); }
 
 public:
 	static PacketHandlerFunc GPacketHandler[UINT16_MAX];
@@ -97,6 +117,13 @@ public:
 	static bool Handle_C_CHAT_REQ(PacketSessionRef& session, Protocol::C_CHAT_REQ& pkt);
 	static bool Handle_C_HEART_BEAT_REQ(PacketSessionRef& session, Protocol::C_HEART_BEAT_REQ& pkt);
 	static bool Handle_C_PARTY_CHAT_REQ(PacketSessionRef& session, Protocol::C_PARTY_CHAT_REQ& pkt);
+	static bool Handle_C_PARTY_CREATE_REQ(PacketSessionRef& session, Protocol::C_PARTY_CREATE_REQ& pkt);
+	static bool Handle_C_PARTY_INVITE_REQ(PacketSessionRef& session, Protocol::C_PARTY_INVITE_REQ& pkt);
+	static bool Handle_C_PARTY_INVITE_ACCEPT_REQ(PacketSessionRef& session, Protocol::C_PARTY_INVITE_ACCEPT_REQ& pkt);
+	static bool Handle_C_PARTY_LEAVE_REQ(PacketSessionRef& session, Protocol::C_PARTY_LEAVE_REQ& pkt);
+	static bool Handle_C_PARTY_KICK_REQ(PacketSessionRef& session, Protocol::C_PARTY_KICK_REQ& pkt);
+	static bool Handle_C_PARTY_DISBAND_REQ(PacketSessionRef& session, Protocol::C_PARTY_DISBAND_REQ& pkt);
+	static bool Handle_C_PARTY_STATUS_REQ(PacketSessionRef& session, Protocol::C_PARTY_STATUS_REQ& pkt);
 
 private:
 	template<typename PacketType, typename ProcessFunc>
