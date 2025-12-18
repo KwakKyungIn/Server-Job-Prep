@@ -169,6 +169,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="ChatServerPacketHandler.cpp" />
+    <ClCompile Include="ChatServerSessionManager.cpp" />
     <ClCompile Include="DBSession.cpp" />
     <ClCompile Include="Enum.pb.cc">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
@@ -178,6 +179,7 @@
     </ClCompile>
     <ClCompile Include="ChatServer.cpp" />
     <ClCompile Include="GameSession.cpp" />
+    <ClCompile Include="PartyManager.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
@@ -203,9 +205,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ChatServerPacketHandler.h" />
+    <ClInclude Include="ChatServerSessionManager.h" />
     <ClInclude Include="DBSession.h" />
     <ClInclude Include="Enum.pb.h" />
     <ClInclude Include="GameSession.h" />
+    <ClInclude Include="PartyManager.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Protocol.pb.h" />
     <ClInclude Include="Protocol_S2S.pb.h" />

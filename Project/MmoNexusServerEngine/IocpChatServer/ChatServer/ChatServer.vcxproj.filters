@@ -54,6 +54,8 @@
     <ClCompile Include="S2SPacketHandler.cpp">
       <Filter>Handler</Filter>
     </ClCompile>
+    <ClCompile Include="ChatServerSessionManager.cpp" />
+    <ClCompile Include="PartyManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -83,6 +85,8 @@
     <ClInclude Include="S2SPacketHandler.h">
       <Filter>Handler</Filter>
     </ClInclude>
+    <ClInclude Include="ChatServerSessionManager.h" />
+    <ClInclude Include="PartyManager.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Common\Protobuf\bin\Protocol.proto">

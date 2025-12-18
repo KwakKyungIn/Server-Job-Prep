@@ -138,8 +138,8 @@ int main()
 		{
 			lastHeartbeatTick = now;
 			// 하트비트 체크
-			 clientService->CheckHeartbeat(); 
-			 dbService->CheckHeartbeat(); 
+			 //clientService->CheckHeartbeat(); 
+			 //dbService->CheckHeartbeat(); 
 		}
 	}
 

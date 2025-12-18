@@ -1,8 +1,9 @@
 ﻿#include "pch.h"
 #include "GameSession.h"
 #include "ChatServerPacketHandler.h" // [REQ 처리] GameServer의 요청 처리
-#include "S2sPacketHandler.h" 
-//#include "S2SPacketHandler.h"
+#include "S2SPacketHandler.h" 
+#include "ChatServerSessionManager.h"
+
 
 void GameSession::OnConnected()
 {

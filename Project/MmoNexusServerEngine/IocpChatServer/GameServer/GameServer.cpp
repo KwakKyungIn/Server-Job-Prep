@@ -123,10 +123,10 @@ int main()
 		if (now - lastHeartbeatTick > 3000)
 		{
 			lastHeartbeatTick = now;
-			dbService->CheckHeartbeat();
-			chatService->CheckHeartbeat();
-			gameService->CheckHeartbeat();
-			loginService->CheckHeartbeat();
+			//dbService->CheckHeartbeat();
+			//chatService->CheckHeartbeat();
+			//gameService->CheckHeartbeat();
+			//loginService->CheckHeartbeat();
 		}
 	}
 

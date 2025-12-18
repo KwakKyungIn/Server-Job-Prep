@@ -76,6 +76,9 @@ XCOPY /Y Protocol_S2S.pb.h "..\..\..\ChatServer"
 XCOPY /Y Protocol_S2S.pb.cc "..\..\..\ChatServer"
 XCOPY /Y ChatServerPacketHandler.h "..\..\..\ChatServer"
 XCOPY /Y S2SPacketHandler.h "..\..\..\ChatServer"
+XCOPY /Y Protocol.pb.h "..\..\..\ChatServer"
+XCOPY /Y Protocol.pb.cc "..\..\..\ChatServer"
+
 
 :: --- DBAgent ---
 XCOPY /Y Enum.pb.h "..\..\..\DBAgent"
@@ -85,6 +88,9 @@ XCOPY /Y Struct.pb.cc "..\..\..\DBAgent"
 XCOPY /Y Protocol_S2S.pb.h "..\..\..\DBAgent"
 XCOPY /Y Protocol_S2S.pb.cc "..\..\..\DBAgent"
 XCOPY /Y DBAgentPacketHandler.h "..\..\..\DBAgent"
+XCOPY /Y Protocol.pb.h "..\..\..\DBAgent"
+XCOPY /Y Protocol.pb.cc "..\..\..\DBAgent"
+
 
 :: --- DummyClient (C++) ---
 XCOPY /Y Enum.pb.h "..\..\..\DummyClient"

@@ -93,3 +93,42 @@ message S2S_RES_BROADCAST_CHAT {
 // ============================================================
 message S2S_RES_HEART_BEAT { } 
 message S2S_REQ_HEART_BEAT { }
+
+
+// ============================================================
+// 4. Party (GameServer <-> ChatServer)
+// ============================================================
+
+// GameServer -> ChatServer : 파티 멤버십 스냅샷 동기화(캐시용)
+message S2S_REQ_PARTY_SYNC {
+    uint64 partyId = 1;
+    uint64 leaderId = 2;
+    repeated uint64 memberIds = 3;
+    uint32 version = 4;
+}
+
+// ChatServer -> GameServer : 동기화 결과
+message S2S_RES_PARTY_SYNC {
+    bool success = 1;
+    uint64 partyId = 2;
+    uint32 version = 3;
+}
+
+// GameServer -> ChatServer : 파티 채팅 중계 요청
+message S2S_REQ_PARTY_CHAT {
+    uint64 partyId = 1;
+    uint64 senderId = 2;
+    string senderName = 3;
+    string message = 4;
+    uint32 version = 5;
+}
+
+// ChatServer -> GameServer : 파티 채팅 중계 결과(지금은 echo)
+message S2S_RES_PARTY_CHAT {
+    bool success = 1;
+    uint64 partyId = 2;
+    uint64 senderId = 3;
+    string senderName = 4;
+    string message = 5;
+    uint32 version = 6;
+}

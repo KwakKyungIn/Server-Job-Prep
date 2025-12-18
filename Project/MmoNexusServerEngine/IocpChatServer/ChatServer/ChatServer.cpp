@@ -101,8 +101,8 @@ int main()
 		std::this_thread::sleep_for(std::chrono::seconds(3));
 
 		// 서비스들의 상태 체크
-		dbService->CheckHeartbeat();   // 끊기면 재접속 시도!
-		gameService->CheckHeartbeat(); // 유저들 타임아웃 체크!
+		//dbService->CheckHeartbeat();   // 끊기면 재접속 시도!
+		//gameService->CheckHeartbeat(); // 유저들 타임아웃 체크!
 	}
 
 	GThreadManager->Join();

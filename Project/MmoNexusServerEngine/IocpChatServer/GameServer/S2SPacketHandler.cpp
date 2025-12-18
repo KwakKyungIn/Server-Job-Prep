@@ -172,3 +172,24 @@ bool S2SPacketHandler::Handle_S2S_RES_HEART_BEAT(PacketSessionRef& session, Prot
 {
 	return true;
 }
+
+bool S2SPacketHandler::Handle_S2S_RES_PARTY_SYNC(PacketSessionRef& session, Protocol::S2S_RES_PARTY_SYNC& pkt)
+{
+	std::cout << "[GameServer] PARTY_SYNC_ACK partyId=" << pkt.partyid()
+		<< " success=" << pkt.success()
+		<< " ver=" << pkt.version() << std::endl;
+	return true;
+}
+
+bool S2SPacketHandler::Handle_S2S_RES_PARTY_CHAT(PacketSessionRef& session, Protocol::S2S_RES_PARTY_CHAT& pkt)
+{
+	std::cout << "[GameServer] PARTY_CHAT_ACK partyId=" << pkt.partyid()
+		<< " success=" << pkt.success()
+		<< " senderId=" << pkt.senderid()
+		<< " name=" << pkt.sendername()
+		<< " msg=" << pkt.message()
+		<< " ver=" << pkt.version() << std::endl;
+
+	// Step1: 아직 파티 브로드캐스트는 안 한다. (Step3에서)
+	return true;
+}
