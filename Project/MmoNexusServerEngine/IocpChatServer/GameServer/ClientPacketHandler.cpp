@@ -396,6 +396,11 @@ bool ClientPacketHandler::Handle_C_HEART_BEAT_REQ(PacketSessionRef& session, Pro
 	return true;
 }
 
+bool ClientPacketHandler::Handle_C_PARTY_CHAT_REQ(PacketSessionRef& session, Protocol::C_PARTY_CHAT_REQ& pkt)
+{
+	return false;
+}
+
 bool ClientPacketHandler::Handle_C_LOGIN(PacketSessionRef& session, Protocol::C_LOGIN& pkt)
 {
 	return false;

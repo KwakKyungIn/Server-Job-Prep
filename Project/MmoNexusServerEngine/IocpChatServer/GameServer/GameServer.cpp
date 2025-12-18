@@ -7,7 +7,6 @@
 #include "ClientPacketHandler.h"
 #include "S2SPacketHandler.h"
 #include "DBSession.h"
-#include "ChatSession.h"
 #include "GameRoom.h" // [GIGACHAD FIX] 이거 없으면 GameRoom 모름
 #include <iostream>
 #include <windows.h>
@@ -50,12 +49,12 @@ int main()
 		1
 	);
 
-	ClientServiceRef chatService = MakeShared<ClientService>(
+	/*ClientServiceRef chatService = MakeShared<ClientService>(
 		NetAddress(L"127.0.0.1", 7776),
 		core,
 		MakeShared<ChatSession>,
 		1
-	);
+	);*/
 
 	ServerServiceRef gameService = MakeShared<ServerService>(
 		NetAddress(L"127.0.0.1", 7777),
@@ -72,7 +71,7 @@ int main()
 	);
 
 	ASSERT_CRASH(dbService->Start());
-	ASSERT_CRASH(chatService->Start());
+	//ASSERT_CRASH(chatService->Start());
 	ASSERT_CRASH(loginService->Start());
 	ASSERT_CRASH(gameService->Start());
 
@@ -134,7 +133,7 @@ int main()
 
 	gameService->CloseService();
 	dbService->CloseService();
-	chatService->CloseService();
+	//chatService->CloseService();
 	loginService->CloseService();
 
 	return 0;

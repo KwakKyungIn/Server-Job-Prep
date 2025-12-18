@@ -36,6 +36,9 @@ public:
 		PKT_S_CHAT_NTF = 1024,
 		PKT_S_HEART_BEAT_RES = 1025,
 		PKT_C_HEART_BEAT_REQ = 1026,
+		PKT_C_PARTY_CHAT_REQ = 1027,
+		PKT_S_PARTY_CHAT_NTF = 1028,
+		PKT_S_PARTY_INFO_NTF = 1029,
 	};
 
 	static void Init()
@@ -52,6 +55,7 @@ public:
 		GPacketHandler[PKT_C_MAP_CHANGE_ACK] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::C_MAP_CHANGE_ACK>(Handle_C_MAP_CHANGE_ACK, session, buffer, len); };
 		GPacketHandler[PKT_C_CHAT_REQ] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::C_CHAT_REQ>(Handle_C_CHAT_REQ, session, buffer, len); };
 		GPacketHandler[PKT_C_HEART_BEAT_REQ] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::C_HEART_BEAT_REQ>(Handle_C_HEART_BEAT_REQ, session, buffer, len); };
+		GPacketHandler[PKT_C_PARTY_CHAT_REQ] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::C_PARTY_CHAT_REQ>(Handle_C_PARTY_CHAT_REQ, session, buffer, len); };
 	}
 
 	static bool HandlePacket(PacketSessionRef& session, BYTE* buffer, int32 len)
@@ -76,6 +80,8 @@ public:
 	static SendBufferRef MakeSendBuffer(Protocol::S_CHAT_RES& pkt) { return MakeSendBuffer(pkt, PKT_S_CHAT_RES); }
 	static SendBufferRef MakeSendBuffer(Protocol::S_CHAT_NTF& pkt) { return MakeSendBuffer(pkt, PKT_S_CHAT_NTF); }
 	static SendBufferRef MakeSendBuffer(Protocol::S_HEART_BEAT_RES& pkt) { return MakeSendBuffer(pkt, PKT_S_HEART_BEAT_RES); }
+	static SendBufferRef MakeSendBuffer(Protocol::S_PARTY_CHAT_NTF& pkt) { return MakeSendBuffer(pkt, PKT_S_PARTY_CHAT_NTF); }
+	static SendBufferRef MakeSendBuffer(Protocol::S_PARTY_INFO_NTF& pkt) { return MakeSendBuffer(pkt, PKT_S_PARTY_INFO_NTF); }
 
 public:
 	static PacketHandlerFunc GPacketHandler[UINT16_MAX];
@@ -90,6 +96,7 @@ public:
 	static bool Handle_C_MAP_CHANGE_ACK(PacketSessionRef& session, Protocol::C_MAP_CHANGE_ACK& pkt);
 	static bool Handle_C_CHAT_REQ(PacketSessionRef& session, Protocol::C_CHAT_REQ& pkt);
 	static bool Handle_C_HEART_BEAT_REQ(PacketSessionRef& session, Protocol::C_HEART_BEAT_REQ& pkt);
+	static bool Handle_C_PARTY_CHAT_REQ(PacketSessionRef& session, Protocol::C_PARTY_CHAT_REQ& pkt);
 
 private:
 	template<typename PacketType, typename ProcessFunc>

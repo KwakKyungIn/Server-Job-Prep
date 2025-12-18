@@ -36,6 +36,9 @@ public:
 		PKT_S_CHAT_NTF = 1024,
 		PKT_S_HEART_BEAT_RES = 1025,
 		PKT_C_HEART_BEAT_REQ = 1026,
+		PKT_C_PARTY_CHAT_REQ = 1027,
+		PKT_S_PARTY_CHAT_NTF = 1028,
+		PKT_S_PARTY_INFO_NTF = 1029,
 	};
 
 	static void Init()
@@ -59,6 +62,8 @@ public:
 		GPacketHandler[PKT_S_CHAT_RES] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S_CHAT_RES>(Handle_S_CHAT_RES, session, buffer, len); };
 		GPacketHandler[PKT_S_CHAT_NTF] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S_CHAT_NTF>(Handle_S_CHAT_NTF, session, buffer, len); };
 		GPacketHandler[PKT_S_HEART_BEAT_RES] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S_HEART_BEAT_RES>(Handle_S_HEART_BEAT_RES, session, buffer, len); };
+		GPacketHandler[PKT_S_PARTY_CHAT_NTF] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S_PARTY_CHAT_NTF>(Handle_S_PARTY_CHAT_NTF, session, buffer, len); };
+		GPacketHandler[PKT_S_PARTY_INFO_NTF] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S_PARTY_INFO_NTF>(Handle_S_PARTY_INFO_NTF, session, buffer, len); };
 	}
 
 	static bool HandlePacket(PacketSessionRef& session, BYTE* buffer, int32 len)
@@ -76,6 +81,7 @@ public:
 	static SendBufferRef MakeSendBuffer(Protocol::C_MAP_CHANGE_ACK& pkt) { return MakeSendBuffer(pkt, PKT_C_MAP_CHANGE_ACK); }
 	static SendBufferRef MakeSendBuffer(Protocol::C_CHAT_REQ& pkt) { return MakeSendBuffer(pkt, PKT_C_CHAT_REQ); }
 	static SendBufferRef MakeSendBuffer(Protocol::C_HEART_BEAT_REQ& pkt) { return MakeSendBuffer(pkt, PKT_C_HEART_BEAT_REQ); }
+	static SendBufferRef MakeSendBuffer(Protocol::C_PARTY_CHAT_REQ& pkt) { return MakeSendBuffer(pkt, PKT_C_PARTY_CHAT_REQ); }
 
 public:
 	static PacketHandlerFunc GPacketHandler[UINT16_MAX];
@@ -97,6 +103,8 @@ public:
 	static bool Handle_S_CHAT_RES(PacketSessionRef& session, Protocol::S_CHAT_RES& pkt);
 	static bool Handle_S_CHAT_NTF(PacketSessionRef& session, Protocol::S_CHAT_NTF& pkt);
 	static bool Handle_S_HEART_BEAT_RES(PacketSessionRef& session, Protocol::S_HEART_BEAT_RES& pkt);
+	static bool Handle_S_PARTY_CHAT_NTF(PacketSessionRef& session, Protocol::S_PARTY_CHAT_NTF& pkt);
+	static bool Handle_S_PARTY_INFO_NTF(PacketSessionRef& session, Protocol::S_PARTY_INFO_NTF& pkt);
 
 private:
 	template<typename PacketType, typename ProcessFunc>

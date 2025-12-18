@@ -11,20 +11,14 @@ public:
 	{
 		PKT_S2S_REQ_LOGIN = 2000,
 		PKT_S2S_RES_LOGIN = 2001,
-		PKT_S2S_REQ_BROADCAST_CHAT = 2002,
-		PKT_S2S_REQ_LOAD_PLAYER_DATA = 2003,
-		PKT_S2S_RES_LOAD_PLAYER_DATA = 2004,
-		PKT_S2S_REQ_ITEMS_LOAD = 2005,
-		PKT_S2S_RES_ITEMS_LOAD = 2006,
-		PKT_S2S_REQ_LOAD_GAME_DATA = 2007,
-		PKT_S2S_RES_LOAD_GAME_DATA = 2008,
-		PKT_S2S_RES_BROADCAST_CHAT = 2009,
-		PKT_S2S_RES_HEART_BEAT = 2010,
-		PKT_S2S_REQ_HEART_BEAT = 2011,
-		PKT_S2S_REQ_PARTY_SYNC = 2012,
-		PKT_S2S_RES_PARTY_SYNC = 2013,
-		PKT_S2S_REQ_PARTY_CHAT = 2014,
-		PKT_S2S_RES_PARTY_CHAT = 2015,
+		PKT_S2S_REQ_LOAD_PLAYER_DATA = 2002,
+		PKT_S2S_RES_LOAD_PLAYER_DATA = 2003,
+		PKT_S2S_REQ_ITEMS_LOAD = 2004,
+		PKT_S2S_RES_ITEMS_LOAD = 2005,
+		PKT_S2S_REQ_LOAD_GAME_DATA = 2006,
+		PKT_S2S_RES_LOAD_GAME_DATA = 2007,
+		PKT_S2S_RES_HEART_BEAT = 2008,
+		PKT_S2S_REQ_HEART_BEAT = 2009,
 	};
 
 	static void Init()
@@ -35,10 +29,7 @@ public:
 		GPacketHandler[PKT_S2S_RES_LOAD_PLAYER_DATA] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S2S_RES_LOAD_PLAYER_DATA>(Handle_S2S_RES_LOAD_PLAYER_DATA, session, buffer, len); };
 		GPacketHandler[PKT_S2S_RES_ITEMS_LOAD] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S2S_RES_ITEMS_LOAD>(Handle_S2S_RES_ITEMS_LOAD, session, buffer, len); };
 		GPacketHandler[PKT_S2S_RES_LOAD_GAME_DATA] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S2S_RES_LOAD_GAME_DATA>(Handle_S2S_RES_LOAD_GAME_DATA, session, buffer, len); };
-		GPacketHandler[PKT_S2S_RES_BROADCAST_CHAT] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S2S_RES_BROADCAST_CHAT>(Handle_S2S_RES_BROADCAST_CHAT, session, buffer, len); };
 		GPacketHandler[PKT_S2S_RES_HEART_BEAT] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S2S_RES_HEART_BEAT>(Handle_S2S_RES_HEART_BEAT, session, buffer, len); };
-		GPacketHandler[PKT_S2S_RES_PARTY_SYNC] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S2S_RES_PARTY_SYNC>(Handle_S2S_RES_PARTY_SYNC, session, buffer, len); };
-		GPacketHandler[PKT_S2S_RES_PARTY_CHAT] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S2S_RES_PARTY_CHAT>(Handle_S2S_RES_PARTY_CHAT, session, buffer, len); };
 	}
 
 	static bool HandlePacket(PacketSessionRef& session, BYTE* buffer, int32 len)
@@ -47,13 +38,10 @@ public:
 		return GPacketHandler[header->id](session, buffer, len);
 	}
 	static SendBufferRef MakeSendBuffer(Protocol::S2S_REQ_LOGIN& pkt) { return MakeSendBuffer(pkt, PKT_S2S_REQ_LOGIN); }
-	static SendBufferRef MakeSendBuffer(Protocol::S2S_REQ_BROADCAST_CHAT& pkt) { return MakeSendBuffer(pkt, PKT_S2S_REQ_BROADCAST_CHAT); }
 	static SendBufferRef MakeSendBuffer(Protocol::S2S_REQ_LOAD_PLAYER_DATA& pkt) { return MakeSendBuffer(pkt, PKT_S2S_REQ_LOAD_PLAYER_DATA); }
 	static SendBufferRef MakeSendBuffer(Protocol::S2S_REQ_ITEMS_LOAD& pkt) { return MakeSendBuffer(pkt, PKT_S2S_REQ_ITEMS_LOAD); }
 	static SendBufferRef MakeSendBuffer(Protocol::S2S_REQ_LOAD_GAME_DATA& pkt) { return MakeSendBuffer(pkt, PKT_S2S_REQ_LOAD_GAME_DATA); }
 	static SendBufferRef MakeSendBuffer(Protocol::S2S_REQ_HEART_BEAT& pkt) { return MakeSendBuffer(pkt, PKT_S2S_REQ_HEART_BEAT); }
-	static SendBufferRef MakeSendBuffer(Protocol::S2S_REQ_PARTY_SYNC& pkt) { return MakeSendBuffer(pkt, PKT_S2S_REQ_PARTY_SYNC); }
-	static SendBufferRef MakeSendBuffer(Protocol::S2S_REQ_PARTY_CHAT& pkt) { return MakeSendBuffer(pkt, PKT_S2S_REQ_PARTY_CHAT); }
 
 public:
 	static PacketHandlerFunc GPacketHandler[UINT16_MAX];
@@ -62,10 +50,7 @@ public:
 	static bool Handle_S2S_RES_LOAD_PLAYER_DATA(PacketSessionRef& session, Protocol::S2S_RES_LOAD_PLAYER_DATA& pkt);
 	static bool Handle_S2S_RES_ITEMS_LOAD(PacketSessionRef& session, Protocol::S2S_RES_ITEMS_LOAD& pkt);
 	static bool Handle_S2S_RES_LOAD_GAME_DATA(PacketSessionRef& session, Protocol::S2S_RES_LOAD_GAME_DATA& pkt);
-	static bool Handle_S2S_RES_BROADCAST_CHAT(PacketSessionRef& session, Protocol::S2S_RES_BROADCAST_CHAT& pkt);
 	static bool Handle_S2S_RES_HEART_BEAT(PacketSessionRef& session, Protocol::S2S_RES_HEART_BEAT& pkt);
-	static bool Handle_S2S_RES_PARTY_SYNC(PacketSessionRef& session, Protocol::S2S_RES_PARTY_SYNC& pkt);
-	static bool Handle_S2S_RES_PARTY_CHAT(PacketSessionRef& session, Protocol::S2S_RES_PARTY_CHAT& pkt);
 
 private:
 	template<typename PacketType, typename ProcessFunc>

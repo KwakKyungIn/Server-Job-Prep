@@ -160,7 +160,8 @@ message S_CHAT_RES {
 
 message S_CHAT_NTF {
     uint64 playerId = 1;
-    string message = 2;
+    string name = 2;
+    string message = 3;
 }
 
 // ============================================================
@@ -168,3 +169,22 @@ message S_CHAT_NTF {
 // ============================================================
 message S_HEART_BEAT_RES { } 
 message C_HEART_BEAT_REQ { }
+
+message C_PARTY_CHAT_REQ {
+    string message = 1;
+}
+
+message S_PARTY_CHAT_NTF {
+    uint64 partyId = 1;
+    uint64 senderId = 2;
+    string senderName = 3;
+    string message = 4;
+}
+
+message S_PARTY_INFO_NTF {
+    bool hasParty = 1;
+    uint64 partyId = 2;
+    uint64 leaderId = 3;
+    repeated uint64 memberIds = 4;
+    uint32 version = 5;
+}

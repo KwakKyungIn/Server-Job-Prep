@@ -191,7 +191,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="BattleSystem.cpp" />
-    <ClCompile Include="ChatSession.cpp" />
     <ClCompile Include="ClientPacketHandler.cpp" />
     <ClCompile Include="Creature.cpp" />
     <ClCompile Include="DataManager.cpp" />
@@ -225,7 +224,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BattleSystem.h" />
-    <ClInclude Include="ChatSession.h" />
     <ClInclude Include="ClientPacketHandler.h" />
     <ClInclude Include="Creature.h" />
     <ClInclude Include="DataManager.h" />

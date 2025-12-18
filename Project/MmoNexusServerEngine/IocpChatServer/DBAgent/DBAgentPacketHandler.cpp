@@ -329,12 +329,7 @@ bool DBAgentPacketHandler::Handle_S2S_REQ_LOAD_GAME_DATA(PacketSessionRef& sessi
 
 	return true;
 }
-// [Game -> DB] 채팅 중계 요청? DB는 중계 안 함.
-bool DBAgentPacketHandler::Handle_S2S_REQ_BROADCAST_CHAT(PacketSessionRef& session, Protocol::S2S_REQ_BROADCAST_CHAT& pkt)
-{
-	// DB는 채팅을 뿌리는 곳이 아님. 로그 저장용이라면 모를까.
-	return true;
-}
+
 
 
 bool DBAgentPacketHandler::Handle_S2S_REQ_LOAD_PLAYER_DATA(PacketSessionRef& session, Protocol::S2S_REQ_LOAD_PLAYER_DATA& pkt)
@@ -410,38 +405,5 @@ bool DBAgentPacketHandler::Handle_S2S_REQ_HEART_BEAT(PacketSessionRef& session, 
 	auto sendBuffer = DBAgentPacketHandler::MakeSendBuffer(resPkt);
 	session->Send(sendBuffer);
 
-	return true;
-}
-
-
-// =======================
-// Party: DBAgent는 관여 안 함
-// (상대 서버가 대기하지 않게 실패 ACK만 돌림)
-// =======================
-
-bool DBAgentPacketHandler::Handle_S2S_REQ_PARTY_SYNC(PacketSessionRef& session, Protocol::S2S_REQ_PARTY_SYNC& pkt)
-{
-	Protocol::S2S_RES_PARTY_SYNC res;
-	res.set_success(false);
-	res.set_partyid(pkt.partyid());
-	res.set_version(pkt.version());
-
-	auto sendBuffer = DBAgentPacketHandler::MakeSendBuffer(res);
-	session->Send(sendBuffer);
-	return true;
-}
-
-bool DBAgentPacketHandler::Handle_S2S_REQ_PARTY_CHAT(PacketSessionRef& session, Protocol::S2S_REQ_PARTY_CHAT& pkt)
-{
-	Protocol::S2S_RES_PARTY_CHAT res;
-	res.set_success(false);
-	res.set_partyid(pkt.partyid());
-	res.set_senderid(pkt.senderid());
-	res.set_sendername(pkt.sendername());
-	res.set_message(pkt.message());
-	res.set_version(pkt.version());
-
-	auto sendBuffer = DBAgentPacketHandler::MakeSendBuffer(res);
-	session->Send(sendBuffer);
 	return true;
 }

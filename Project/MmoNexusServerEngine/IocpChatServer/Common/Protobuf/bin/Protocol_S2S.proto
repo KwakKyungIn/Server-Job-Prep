@@ -25,17 +25,7 @@ message S2S_RES_LOGIN {
     uint64 playerSessionId = 3; // [Context] 그대로 반환 -> 이걸로 GameServer가 PlayerSession 찾음
 }
 
-// ============================================================
-// 2. Chat Server 통신 (Relay)
-// ============================================================
-// GameServer -> ChatServer : "이거 뿌려줘"
-message S2S_REQ_BROADCAST_CHAT {
-    uint64 playerId = 1; 
-    string name = 2;
-    string message = 3;
-    // 채팅은 굳이 응답을 기다릴 필요가 없을 수도 있지만,
-    // 전송 실패 로그 등을 위해 남겨둔다.
-}
+
 
 // ============================================================
 // [PLAYER DATA LOADING] (NEW)
@@ -83,10 +73,6 @@ message S2S_RES_LOAD_GAME_DATA {
     repeated SkillTemplateInfo skills = 4;
 }
 
-// ChatServer -> GameServer : "뿌렸어 (혹은 실패했어)"
-message S2S_RES_BROADCAST_CHAT {
-    bool success = 1;
-}
 
 // ============================================================
 // 3. System (Heartbeat)
@@ -95,40 +81,3 @@ message S2S_RES_HEART_BEAT { }
 message S2S_REQ_HEART_BEAT { }
 
 
-// ============================================================
-// 4. Party (GameServer <-> ChatServer)
-// ============================================================
-
-// GameServer -> ChatServer : 파티 멤버십 스냅샷 동기화(캐시용)
-message S2S_REQ_PARTY_SYNC {
-    uint64 partyId = 1;
-    uint64 leaderId = 2;
-    repeated uint64 memberIds = 3;
-    uint32 version = 4;
-}
-
-// ChatServer -> GameServer : 동기화 결과
-message S2S_RES_PARTY_SYNC {
-    bool success = 1;
-    uint64 partyId = 2;
-    uint32 version = 3;
-}
-
-// GameServer -> ChatServer : 파티 채팅 중계 요청
-message S2S_REQ_PARTY_CHAT {
-    uint64 partyId = 1;
-    uint64 senderId = 2;
-    string senderName = 3;
-    string message = 4;
-    uint32 version = 5;
-}
-
-// ChatServer -> GameServer : 파티 채팅 중계 결과(지금은 echo)
-message S2S_RES_PARTY_CHAT {
-    bool success = 1;
-    uint64 partyId = 2;
-    uint64 senderId = 3;
-    string senderName = 4;
-    string message = 5;
-    uint32 version = 6;
-}

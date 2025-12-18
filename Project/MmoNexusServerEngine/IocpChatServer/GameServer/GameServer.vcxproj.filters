@@ -57,9 +57,6 @@
     <ClCompile Include="DBSession.cpp">
       <Filter>Session_DB</Filter>
     </ClCompile>
-    <ClCompile Include="ChatSession.cpp">
-      <Filter>Session_Chat</Filter>
-    </ClCompile>
     <ClCompile Include="PlayerSession.cpp">
       <Filter>Session_Player</Filter>
     </ClCompile>
@@ -121,9 +118,6 @@
     </ClInclude>
     <ClInclude Include="DBSession.h">
       <Filter>Session_DB</Filter>
-    </ClInclude>
-    <ClInclude Include="ChatSession.h">
-      <Filter>Session_Chat</Filter>
     </ClInclude>
     <ClInclude Include="PlayerSession.h">
       <Filter>Session_Player</Filter>

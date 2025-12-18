@@ -68,16 +68,16 @@ int main()
 		10 // 로그인 서버는 소수니까 적게 잡아도 됨
 	);
 
-	ServerServiceRef chatService = MakeShared<ServerService>(
-		NetAddress(L"127.0.0.1", 7781), // 포트 분리!
-		mainIocpCore, // Core 공유
-		MakeShared<ChatSession>, 
-		10 
-	);
+	//ServerServiceRef chatService = MakeShared<ServerService>(
+	//	NetAddress(L"127.0.0.1", 7781), // 포트 분리!
+	//	mainIocpCore, // Core 공유
+	//	MakeShared<ChatSession>, 
+	//	10 
+	//);
 
 	ASSERT_CRASH(gameService->Start());
 	ASSERT_CRASH(loginService->Start());
-	ASSERT_CRASH(chatService->Start());
+	//ASSERT_CRASH(chatService->Start());
 
 	std::cout << "✅ [DBAgent] Listening on Port 7778(Game) & 7779(Login)..." << std::endl;
 
@@ -129,7 +129,7 @@ int main()
 
 	gameService->CloseService();
 	loginService->CloseService(); // [ADD]
-	chatService->CloseService();
+	//chatService->CloseService();
 	delete GDBConnectionPool;
 
 	std::cout << "👋 [DBAgent] Bye!" << std::endl;

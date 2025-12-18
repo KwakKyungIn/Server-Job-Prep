@@ -48,6 +48,9 @@ public class PacketManager
 		S_CHAT_NTF = 1024,
 		S_HEART_BEAT_RES = 1025,
 		C_HEART_BEAT_REQ = 1026,
+		C_PARTY_CHAT_REQ = 1027,
+		S_PARTY_CHAT_NTF = 1028,
+		S_PARTY_INFO_NTF = 1029,
 	}
 
 	public void Register()
@@ -86,6 +89,10 @@ public class PacketManager
 		_handler.Add((ushort)MsgId.S_CHAT_NTF, PacketHandler.S_CHAT_NTFHandler);
 		_onRecv.Add((ushort)MsgId.S_HEART_BEAT_RES, MakePacket<S_HEART_BEAT_RES>);
 		_handler.Add((ushort)MsgId.S_HEART_BEAT_RES, PacketHandler.S_HEART_BEAT_RESHandler);
+		_onRecv.Add((ushort)MsgId.S_PARTY_CHAT_NTF, MakePacket<S_PARTY_CHAT_NTF>);
+		_handler.Add((ushort)MsgId.S_PARTY_CHAT_NTF, PacketHandler.S_PARTY_CHAT_NTFHandler);
+		_onRecv.Add((ushort)MsgId.S_PARTY_INFO_NTF, MakePacket<S_PARTY_INFO_NTF>);
+		_handler.Add((ushort)MsgId.S_PARTY_INFO_NTF, PacketHandler.S_PARTY_INFO_NTFHandler);
 	}
 
 	public void OnRecvPacket(ServerSession session, ArraySegment<byte> buffer)

@@ -99,7 +99,4 @@ bool S2SPacketHandler::Handle_S2S_RES_LOGIN(PacketSessionRef& session, Protocol:
 bool S2SPacketHandler::Handle_S2S_RES_LOAD_PLAYER_DATA(PacketSessionRef& session, Protocol::S2S_RES_LOAD_PLAYER_DATA& pkt) { return false; }
 bool S2SPacketHandler::Handle_S2S_RES_ITEMS_LOAD(PacketSessionRef& session, Protocol::S2S_RES_ITEMS_LOAD& pkt) { return false; }
 bool S2SPacketHandler::Handle_S2S_RES_LOAD_GAME_DATA(PacketSessionRef& session, Protocol::S2S_RES_LOAD_GAME_DATA& pkt) { return false; }
-bool S2SPacketHandler::Handle_S2S_RES_BROADCAST_CHAT(PacketSessionRef& session, Protocol::S2S_RES_BROADCAST_CHAT& pkt) { return true; }
 bool S2SPacketHandler::Handle_S2S_RES_HEART_BEAT(PacketSessionRef& session, Protocol::S2S_RES_HEART_BEAT& pkt) { return true; }
-bool S2SPacketHandler::Handle_S2S_RES_PARTY_SYNC(PacketSessionRef& session, Protocol::S2S_RES_PARTY_SYNC& pkt) { return true; }
-bool S2SPacketHandler::Handle_S2S_RES_PARTY_CHAT(PacketSessionRef& session, Protocol::S2S_RES_PARTY_CHAT& pkt) { return true; }
