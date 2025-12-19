@@ -90,7 +90,7 @@ public class MyPlayerController : MonoBehaviour
         }
 
         //임시 테스트 코드
-        if (Input.GetKeyDown(KeyCode.H))
+        if (Input.GetKeyDown(KeyCode.F1))
         {
             C_MAP_CHANGE_REQ req = new C_MAP_CHANGE_REQ();
             req.TargetMapId = 1; // 테스트용
@@ -99,7 +99,7 @@ public class MyPlayerController : MonoBehaviour
             Debug.Log("📤 [TEST] Sent C_MAP_CHANGE_REQ targetMapId=1");
         }
 
-        if (Input.GetKeyDown(KeyCode.J))
+        if (Input.GetKeyDown(KeyCode.F2))
         {
             C_MAP_CHANGE_REQ req = new C_MAP_CHANGE_REQ();
             req.TargetMapId = 2; // 테스트용
@@ -107,7 +107,7 @@ public class MyPlayerController : MonoBehaviour
             NetworkManager.Instance.Send(req, (ushort)PacketManager.MsgId.C_MAP_CHANGE_REQ);
             Debug.Log("📤 [TEST] Sent C_MAP_CHANGE_REQ targetMapId=2");
         }
-        if (Input.GetKeyDown(KeyCode.K))
+        if (Input.GetKeyDown(KeyCode.F3))
         {
             C_MAP_CHANGE_REQ req = new C_MAP_CHANGE_REQ();
             req.TargetMapId = 3; // 테스트용
@@ -115,7 +115,7 @@ public class MyPlayerController : MonoBehaviour
             NetworkManager.Instance.Send(req, (ushort)PacketManager.MsgId.C_MAP_CHANGE_REQ);
             Debug.Log("📤 [TEST] Sent C_MAP_CHANGE_REQ targetMapId=3");
         }
-        if (Input.GetKeyDown(KeyCode.L))
+        if (Input.GetKeyDown(KeyCode.F4))
         {
             C_MAP_CHANGE_REQ req = new C_MAP_CHANGE_REQ();
             req.TargetMapId = 4; // 테스트용

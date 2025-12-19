@@ -1,20 +1,22 @@
-﻿using System;
+﻿// ServerSession.cs
+
+using System;
 using System.Net;
 using System.Net.Sockets;
-using System.Threading;
 using UnityEngine;
 using Google.Protobuf;
-// using Packet; // PacketHeader 네임스페이스가 없다면 제거
 
 public class ServerSession
 {
     Socket _socket;
     object _lock = new object();
 
-    // 수신 버퍼
     byte[] _recvBuffer = new byte[65535];
 
-    // [Security] Seq 관리
+    // ✅ 누적 수신 길이(Partial 대응)
+    int _recvCount = 0;
+
+    // Seq
     uint _sendSeq = 0;
     uint _recvSeq = 0;
 
@@ -25,7 +27,6 @@ public class ServerSession
         return true;
     }
 
-    // [Modification] IPEndPoint를 직접 받도록 변경
     public void Connect(IPEndPoint endPoint)
     {
         _socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
@@ -35,7 +36,7 @@ public class ServerSession
             _socket.Connect(endPoint);
             Debug.Log($"[ServerSession] Connected to {endPoint}");
 
-            // 수신 대기 시작
+            _recvCount = 0;
             _socket.BeginReceive(_recvBuffer, 0, _recvBuffer.Length, SocketFlags.None, OnRecv, null);
         }
         catch (Exception e)
@@ -44,44 +45,33 @@ public class ServerSession
         }
     }
 
-    // [GIGACHAD] 암호화 (XOR)
     void XorCrypt(byte[] buffer, int offset, int len)
     {
         byte xorKey = 0x5A;
         for (int i = 0; i < len; i++)
-        {
             buffer[offset + i] ^= xorKey;
-        }
     }
 
     public void Send(IMessage packet, ushort packetId)
     {
-        // 1. [Body] Protobuf 직렬화
         int dataSize = packet.CalculateSize();
         byte[] bodyBytes = packet.ToByteArray();
 
-        // 2. [Body] 암호화 (Serialize -> Encrypt)
         XorCrypt(bodyBytes, 0, bodyBytes.Length);
 
-        // 3. [Total] 최종 전송 버퍼 생성 (Header 12 + Body)
         byte[] sendBuffer = new byte[dataSize + 12];
 
-        // 4. [Header] 기본 정보 작성 (Size, ID)
         Array.Copy(BitConverter.GetBytes((ushort)(dataSize + 12)), 0, sendBuffer, 0, 2);
         Array.Copy(BitConverter.GetBytes(packetId), 0, sendBuffer, 2, 2);
 
-        // 5. [Header] Seq 할당
         _sendSeq++;
         Array.Copy(BitConverter.GetBytes(_sendSeq), 0, sendBuffer, 8, 4);
 
-        // 6. [Body] 암호화된 바디 복사
         Array.Copy(bodyBytes, 0, sendBuffer, 12, dataSize);
 
-        // 7. [Header] CRC 계산
         uint crc = Crc32.Compute(sendBuffer, 12, dataSize);
         Array.Copy(BitConverter.GetBytes(crc), 0, sendBuffer, 4, 4);
 
-        // 8. 전송
         try
         {
             lock (_lock)
@@ -100,46 +90,47 @@ public class ServerSession
     {
         try
         {
-            int recvLen = _socket.EndReceive(ar);
-            if (recvLen == 0)
+            int len = _socket.EndReceive(ar);
+            if (len == 0)
             {
                 Disconnect();
                 return;
             }
 
-            // ✅ 수정: 버퍼에 여러 패킷이 있을 수 있으니 루프 처리
-            int processedBytes = 0;
+            _recvCount += len;
 
-            while (processedBytes < recvLen)
+            int processed = 0;
+            while (true)
             {
-                int remainingBytes = recvLen - processedBytes;
+                int remaining = _recvCount - processed;
 
-                // 최소 헤더 크기 체크
-                if (remainingBytes < 12)
+                if (remaining < 12) break;
+
+                ushort packetSize = BitConverter.ToUInt16(_recvBuffer, processed);
+
+                if (packetSize < 12 || packetSize > _recvBuffer.Length)
                 {
-                    Debug.LogWarning($"[ServerSession] Incomplete packet header. Remaining: {remainingBytes} bytes");
-                    break;
+                    Debug.LogError($"[ServerSession] Invalid packet size={packetSize}. Force disconnect.");
+                    Disconnect();
+                    return;
                 }
 
-                // 패킷 크기 확인
-                ushort packetSize = BitConverter.ToUInt16(_recvBuffer, processedBytes);
+                if (remaining < packetSize) break;
 
-                // 패킷 전체가 도착했는지 확인
-                if (remainingBytes < packetSize)
-                {
-                    Debug.LogWarning($"[ServerSession] Incomplete packet. Expected: {packetSize}, Got: {remainingBytes}");
-                    break;
-                }
+                PacketManager.Instance.OnRecvPacket(this,
+                    new ArraySegment<byte>(_recvBuffer, processed, packetSize));
 
-                // 패킷 처리
-                PacketManager.Instance.OnRecvPacket(this, new ArraySegment<byte>(_recvBuffer, processedBytes, packetSize));
-
-                // 다음 패킷으로 이동
-                processedBytes += packetSize;
+                processed += packetSize;
             }
 
-            // 다시 수신 대기
-            _socket.BeginReceive(_recvBuffer, 0, _recvBuffer.Length, SocketFlags.None, OnRecv, null);
+            if (processed > 0)
+            {
+                // ✅ 남은 데이터 앞으로 당겨서 다음 recv에 이어붙임
+                Buffer.BlockCopy(_recvBuffer, processed, _recvBuffer, 0, _recvCount - processed);
+                _recvCount -= processed;
+            }
+
+            _socket.BeginReceive(_recvBuffer, _recvCount, _recvBuffer.Length - _recvCount, SocketFlags.None, OnRecv, null);
         }
         catch (Exception e)
         {
@@ -147,6 +138,7 @@ public class ServerSession
             Disconnect();
         }
     }
+
     public void Disconnect()
     {
         if (_socket != null)
@@ -156,12 +148,10 @@ public class ServerSession
                 _socket.Shutdown(SocketShutdown.Both);
                 _socket.Close();
             }
-            catch (Exception e)
-            {
-                Debug.Log($"[ServerSession] Disconnect Error: {e}");
-            }
+            catch { }
 
             _socket = null;
+            _recvCount = 0;
             Debug.Log("[ServerSession] Disconnected");
         }
     }
