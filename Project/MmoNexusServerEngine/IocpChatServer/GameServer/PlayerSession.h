@@ -13,154 +13,122 @@ class GameRoom;
 class PlayerSession : public PacketSession
 {
 public:
-	PlayerSession()
-	{
-		_jobQueue = MakeShared<JobQueue>();
-	}
-	virtual ~PlayerSession() {};
+    PlayerSession()
+    {
+        _jobQueue = MakeShared<JobQueue>();
+    }
+    virtual ~PlayerSession() {};
 
-	virtual void OnConnected() override;
-	virtual void OnDisconnected() override;
-	virtual void OnRecvPacket(BYTE* buffer, int32 len) override;
-	virtual void OnSend(int32 len) override;
-	virtual void Ping() override;
+    virtual void OnConnected() override;
+    virtual void OnDisconnected() override;
+    virtual void OnRecvPacket(BYTE* buffer, int32 len) override;
+    virtual void OnSend(int32 len) override;
+    virtual void Ping() override;
 
-	void PushJob(shared_ptr<Job> job) { _jobQueue->Push(job); }
-
-public:
-	// [Logic Object Link]
-	void SetPlayer(shared_ptr<Player> player) { _player = player; }
-	shared_ptr<Player> GetPlayer() { return _player; }
-
-	// ============================================================
-	// [Helper / Wrapper] 기존 코드 호환성 + 안전장치
-	// ============================================================
-
-	Protocol::PlayerInfo* GetPlayerInfo()
-	{
-		if (_player)
-			return _player->GetPlayerInfo();
-		return nullptr;
-	}
-
-	uint64 GetPlayerId()
-	{
-		if (_player) return _player->GetPlayerId();
-		return 0;
-	}
-
-	shared_ptr<GameRoom> GetRoom()
-	{
-		if (_player) return _player->GetRoom();
-		return nullptr;
-	}
+    // 외부가 잡 넣는 건 허용(Actor mailbox)
+    void PushJob(shared_ptr<Job> job) { _jobQueue->Push(job); }
 
 public:
-	// ============================================================
-	// [MAP CHANGE STATE] 2-step 프로토콜 지원
-	//   REQ  -> S_BEGIN(token)
-	//   ACK  -> S_END(token) + room enter 완료 시 EndMapChange()
-	// ============================================================
-
-	enum : int32
-	{
-		MAP_CHANGE_NONE = 0,
-		MAP_CHANGE_WAITING_ACK = 1,
-		MAP_CHANGE_SWITCHING = 2,
-	};
-
-	// 네트워크 스레드에서 빠르게 체크(입력 차단용)
-	bool IsMapChanging() const
-	{
-		return _mapChangeState.load(std::memory_order_acquire) != MAP_CHANGE_NONE;
-	}
-	bool IsWaitingMapAck() const
-	{
-		return _mapChangeState.load(std::memory_order_acquire) == MAP_CHANGE_WAITING_ACK;
-	}
-	bool IsSwitchingMap() const
-	{
-		return _mapChangeState.load(std::memory_order_acquire) == MAP_CHANGE_SWITCHING;
-	}
-
-	// REQ 처리 시 호출: 이미 진행 중이면 false
-	bool TryBeginMapChange(uint64 token, int32 targetMapId, const Protocol::PositionInfo& spawn)
-	{
-		std::lock_guard<std::mutex> lock(_mapChangeLock);
-
-		if (_mapChangeState.load(std::memory_order_relaxed) != MAP_CHANGE_NONE)
-			return false;
-
-		_mapChangeToken = token;
-		_pendingTargetMapId = targetMapId;
-		_pendingSpawn.CopyFrom(spawn);
-
-		_mapChangeState.store(MAP_CHANGE_WAITING_ACK, std::memory_order_release);
-		return true;
-	}
-
-	// ACK 처리 시 호출: 토큰 검증 + 상태 전이
-	// 성공하면 out 값 채워주고 SWITCHING 상태로 바뀜
-	bool TryConsumeMapChangeAck(uint64 token, int32& outTargetMapId, Protocol::PositionInfo& outSpawn)
-	{
-		std::lock_guard<std::mutex> lock(_mapChangeLock);
-
-		if (_mapChangeState.load(std::memory_order_relaxed) != MAP_CHANGE_WAITING_ACK)
-			return false;
-
-		if (_mapChangeToken != token)
-			return false;
-
-		outTargetMapId = _pendingTargetMapId;
-		outSpawn.CopyFrom(_pendingSpawn);
-
-		_mapChangeState.store(MAP_CHANGE_SWITCHING, std::memory_order_release);
-		return true;
-	}
-
-	// 맵 전환이 완전히 끝났을 때(새 룸 Enter까지 끝난 시점) 호출
-	void EndMapChange()
-	{
-		std::lock_guard<std::mutex> lock(_mapChangeLock);
-		ResetMapChangeState_Locked();
-	}
-
-	// 실패/취소/끊김 등 강제 리셋
-	void CancelMapChange()
-	{
-		std::lock_guard<std::mutex> lock(_mapChangeLock);
-		ResetMapChangeState_Locked();
-	}
-
-	// 필요하면 서버가 현재 토큰을 조회할 수도 있음(로그/디버그용)
-	uint64 GetMapChangeToken() const
-	{
-		std::lock_guard<std::mutex> lock(_mapChangeLock);
-		return _mapChangeToken;
-	}
+    // [Logic Object Link]
+    // ※ 원칙: SetPlayer도 가능하면 Post 안에서만 호출해라(네가 지켜주면 됨)
+    void SetPlayer(shared_ptr<Player> player) { _player = player; }
 
 public:
-	shared_ptr<JobQueue> _jobQueue;
+    // ============================================================
+    // [MAP CHANGE STATE] (그대로)
+    // ============================================================
+    enum : int32
+    {
+        MAP_CHANGE_NONE = 0,
+        MAP_CHANGE_WAITING_ACK = 1,
+        MAP_CHANGE_SWITCHING = 2,
+    };
+
+    bool IsMapChanging() const
+    {
+        return _mapChangeState.load(std::memory_order_acquire) != MAP_CHANGE_NONE;
+    }
+    bool IsWaitingMapAck() const
+    {
+        return _mapChangeState.load(std::memory_order_acquire) == MAP_CHANGE_WAITING_ACK;
+    }
+    bool IsSwitchingMap() const
+    {
+        return _mapChangeState.load(std::memory_order_acquire) == MAP_CHANGE_SWITCHING;
+    }
+
+    bool TryBeginMapChange(uint64 token, int32 targetMapId, const Protocol::PositionInfo& spawn);
+    bool TryConsumeMapChangeAck(uint64 token, int32& outTargetMapId, Protocol::PositionInfo& outSpawn);
+
+    void EndMapChange();
+    void CancelMapChange();
+
+    uint64 GetMapChangeToken() const;
+
+public:
+    // ============================================================
+    // [Actor Post API] (외부는 이것만 써라)
+    // ============================================================
+    template<typename F>
+    void Post(F&& fn)
+    {
+        auto self = static_pointer_cast<PlayerSession>(shared_from_this());
+        _jobQueue->Push(MakeShared<Job>([self, fn = std::forward<F>(fn)]() mutable
+            {
+                fn(self);
+            }));
+    }
+
+    template<typename F>
+    void PostPlayer(F&& fn)
+    {
+        Post([fn = std::forward<F>(fn)](PlayerSessionRef self) mutable
+            {
+                auto player = self->_player;
+                if (!player) return;
+                fn(self, player);
+            });
+    }
+
+private:
+    // ============================================================
+    // [Helper / Wrapper]  <-- 이제 외부 접근 금지
+    // ============================================================
+    shared_ptr<Player> GetPlayer() { return _player; }
+
+    Protocol::PlayerInfo* GetPlayerInfo()
+    {
+        if (_player) return _player->GetPlayerInfo();
+        return nullptr;
+    }
+
+    uint64 GetPlayerId()
+    {
+        if (_player) return _player->GetPlayerId();
+        return 0;
+    }
+
+    shared_ptr<GameRoom> GetRoom()
+    {
+        if (_player) return _player->GetRoom();
+        return nullptr;
+    }
+
+private:
+    void ResetMapChangeState_Locked();
+
+private:
+    // 이제 _jobQueue 외부 노출 금지
+    shared_ptr<JobQueue> _jobQueue;
 
 protected:
-	shared_ptr<Player> _player;
+    shared_ptr<Player> _player;
 
 private:
-	void ResetMapChangeState_Locked()
-	{
-		_mapChangeToken = 0;
-		_pendingTargetMapId = 0;
-		_pendingSpawn.Clear();
+    mutable std::mutex _mapChangeLock;
+    std::atomic<int32> _mapChangeState{ MAP_CHANGE_NONE };
 
-		_mapChangeState.store(MAP_CHANGE_NONE, std::memory_order_release);
-	}
-
-private:
-	// [Map Change State]
-	mutable std::mutex _mapChangeLock;
-	std::atomic<int32> _mapChangeState{ MAP_CHANGE_NONE };
-
-	uint64 _mapChangeToken = 0;
-	int32 _pendingTargetMapId = 0;
-	Protocol::PositionInfo _pendingSpawn;
+    uint64 _mapChangeToken = 0;
+    int32 _pendingTargetMapId = 0;
+    Protocol::PositionInfo _pendingSpawn;
 };

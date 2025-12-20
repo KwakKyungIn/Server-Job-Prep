@@ -205,6 +205,7 @@
     <ClCompile Include="LoginSession.cpp" />
     <ClCompile Include="Monster.cpp" />
     <ClCompile Include="PartyManager.cpp" />
+    <ClCompile Include="PartyManagerCore.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
     </ClCompile>
@@ -236,7 +237,9 @@
     <ClInclude Include="LoginSession.h" />
     <ClInclude Include="Monster.h" />
     <ClInclude Include="ObjectUtils.h" />
+    <ClInclude Include="PartyActor.h" />
     <ClInclude Include="PartyManager.h" />
+    <ClInclude Include="PartyManagerCore.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="PlayerSession.h" />

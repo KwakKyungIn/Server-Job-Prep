@@ -83,45 +83,49 @@ bool S2SPacketHandler::Handle_S2S_RES_LOGIN(PacketSessionRef& session, Protocol:
 // [DB -> Game] 플레이어 정보(Stat) 로딩 완료 (NEW)
 bool S2SPacketHandler::Handle_S2S_RES_LOAD_PLAYER_DATA(PacketSessionRef& session, Protocol::S2S_RES_LOAD_PLAYER_DATA& pkt)
 {
-	auto playerSession = GameSessionManager::GSessionManager->FindBySessionId(pkt.gamesessionid());
-	if (playerSession == nullptr) return true;
+	PlayerSessionRef ps = GameSessionManager::GSessionManager->FindBySessionId(pkt.gamesessionid());
+	if (!ps) return true;
 
-	playerSession->PushJob(ObjectPool<Job>::MakeShared([playerSession, pkt]()
-		{
-			auto player = playerSession->GetPlayer();
-			if (player == nullptr) return;
-
-			if (pkt.success())
+	// ✅ 네트워크 스레드에서는 상태 건드리지 말고, 세션 Actor로 던진다.
+	if (!pkt.success())
+	{
+		ps->Post([](PlayerSessionRef self)
 			{
-				// 1. DB에서 가져온 기본 스탯(Level, HP, Exp) 적용
-				// CopyFrom을 쓰면 편리하지만, 필요한 것만 쏙쏙 뽑아 넣는 게 안전할 때도 있음.
-				// 여기선 StatInfo 전체 구조가 같으니 CopyFrom 사용.
-				player->GetStatInfo()->CopyFrom(pkt.statinfo());
+				// 필요하면 실패 처리(로그/디스커넥트 등)
+				// self->Disconnect(L"LoadPlayerData failed");
+			});
+		return true;
+	}
 
-				// 2. [Critical] 레벨이 세팅되었으니, 최종 스탯(MaxHP, Atk 등) 재계산!
-				// 이 함수 안에서 DataManager를 조회하여 1레벨(혹은 N레벨)의 템플릿 스탯을 적용함.
-				player->RefreshStats();
+	ps->PostPlayer([pkt](PlayerSessionRef self, PlayerRef player) mutable
+		{
+			// 1) Stat 반영
+			if (auto st = player->GetStatInfo())
+				st->CopyFrom(pkt.statinfo());
 
-				std::cout << "👤 [Player] Stat Loaded. Lv:" << player->GetStatInfo()->level()
-					<< " HP:" << player->GetStatInfo()->hp() << std::endl;
+			// 2) 템플릿 기반 최종 스탯 갱신
+			player->RefreshStats();
 
+			std::cout << "👤 [Player] Stat Loaded. Lv:"
+				<< (player->GetStatInfo() ? player->GetStatInfo()->level() : 0)
+				<< " HP:" << (player->GetStatInfo() ? player->GetStatInfo()->hp() : 0)
+				<< std::endl;
 
-				if (GRoomManager)
+			// 3) 방 입장은 Room Actor로 넘기기 (Enter 시그니처: Enter(ps, player))
+			if (GRoomManager)
+			{
+				const int32 channelId = player->GetChannelId();
+				const int32 mapId = player->GetMapId();
+
+				auto room = GRoomManager->GetOrCreateRoom(channelId, mapId);
+				if (room)
 				{
-					int32 channelId = player->GetChannelId();
-					int32 mapId = player->GetMapId();
-
-					auto room = GRoomManager->GetOrCreateRoom(channelId, mapId);
-					if (room)
-					{
-						room->PushJob(&GameRoom::Enter, playerSession);
-						std::cout << "🚪 [GameRoom] Player Entered Room! (Channel "
-							<< channelId << ", Map " << mapId << ")" << std::endl;
-					}
+					room->PushJob(&GameRoom::Enter, self, player); // ✅ 여기만 핵심 수정
+					std::cout << "🚪 [GameRoom] Player Entered Room! (Channel "
+						<< channelId << ", Map " << mapId << ")\n";
 				}
-
 			}
-		}));
+		});
 
 	return true;
 }
@@ -129,29 +133,33 @@ bool S2SPacketHandler::Handle_S2S_RES_LOAD_PLAYER_DATA(PacketSessionRef& session
 // [DB -> Game] 아이템 로딩 완료
 bool S2SPacketHandler::Handle_S2S_RES_ITEMS_LOAD(PacketSessionRef& session, Protocol::S2S_RES_ITEMS_LOAD& pkt)
 {
-	auto playerSession = GameSessionManager::GSessionManager->FindBySessionId(pkt.gamesessionid());
-	if (playerSession == nullptr) return true;
+	PlayerSessionRef ps = GameSessionManager::GSessionManager->FindBySessionId(pkt.gamesessionid());
+	if (!ps) return true;
 
-	playerSession->PushJob(ObjectPool<Job>::MakeShared([playerSession, pkt]()
-		{
-			auto player = playerSession->GetPlayer();
-			if (player == nullptr) return;
-
-			if (pkt.success())
+	if (!pkt.success())
+	{
+		ps->Post([](PlayerSessionRef self)
 			{
-				player->SetItems(pkt.items());
+				// 필요하면 실패 처리
+			});
+		return true;
+	}
 
-				// 아이템이 로드되었으니 장착 효과 적용을 위해 스탯 재계산
-				player->RefreshStats();
+	ps->PostPlayer([pkt](PlayerSessionRef self, PlayerRef player) mutable
+		{
+			// 1) 인벤 반영
+			player->SetItems(pkt.items());
 
-				Protocol::S_ITEM_LIST clientPkt;
-				clientPkt.mutable_items()->CopyFrom(pkt.items());
-				auto sendBuffer = ClientPacketHandler::MakeSendBuffer(clientPkt);
-				playerSession->Send(sendBuffer);
+			// 2) 장착 보너스 포함 스탯 재계산
+			player->RefreshStats();
 
-				std::cout << "📦 [Inventory] Synced " << pkt.items_size() << " items." << std::endl;
-			}
-		}));
+			// 3) 클라 동기화 패킷 전송
+			Protocol::S_ITEM_LIST clientPkt;
+			clientPkt.mutable_items()->CopyFrom(pkt.items());
+			self->Send(ClientPacketHandler::MakeSendBuffer(clientPkt));
+
+			std::cout << "📦 [Inventory] Synced " << pkt.items_size() << " items.\n";
+		});
 
 	return true;
 }

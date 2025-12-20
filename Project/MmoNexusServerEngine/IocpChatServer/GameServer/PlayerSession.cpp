@@ -1,4 +1,4 @@
-#include "pch.h"
+ï»¿#include "pch.h"
 #include "PlayerSession.h"
 #include "ClientPacketHandler.h"
 #include "GameSessionManager.h"
@@ -10,31 +10,37 @@ void PlayerSession::OnConnected()
 	ASSERT_CRASH(GameSessionManager::GSessionManager != nullptr);
 
 
-	// [Manager] ÀüÃ¼ Á¢¼ÓÀÚ ¸í´Ü¿¡ µî·Ï
+	// [Manager] ì „ì²´ ì ‘ì†ì ëª…ë‹¨ì— ë“±ë¡
 	GameSessionManager::GSessionManager->Add(static_pointer_cast<PlayerSession>(shared_from_this()));
 }
 
 void PlayerSession::OnDisconnected()
 {
-	// ¸Ê ÀÌµ¿ ÁßÀÌµç ¾Æ´Ïµç, ²÷±â¸é »óÅÂ ¸®¼Â(ÅäÅ«/¶ô ÇØÁ¦)
-	CancelMapChange();
+    auto self = static_pointer_cast<PlayerSession>(shared_from_this());
 
-	// [Manager] ÀüÃ¼ Á¢¼ÓÀÚ ¸í´Ü¿¡¼­ Á¦°Å
-	GameSessionManager::GSessionManager->Remove(static_pointer_cast<PlayerSession>(shared_from_this()));
+    GameSessionManager::GSessionManager->Remove(self);
 
-	// [Room] ¹æ ÅğÀå Ã³¸®
-	if (_player)
-	{
-		if (shared_ptr<GameRoom> room = _player->GetRoom())
-		{
-			room->PushJob(&GameRoom::Leave, static_pointer_cast<PlayerSession>(shared_from_this()));
-			_player->SetRoom(nullptr);
-		}
+    Post([=](PlayerSessionRef ps)
+        {
+            ps->CancelMapChange();
 
-		// [Critical] ¼øÈ¯ ÂüÁ¶ ÇØÁ¦
-		_player->SetSession(nullptr);
-		_player = nullptr;
-	}
+            if (ps->_player)
+            {
+                // âœ… playerë¥¼ ë¨¼ì € ë¡œì»¬ë¡œ ì¡ëŠ”ë‹¤ (shared_ptr ë³µì‚¬)
+                PlayerRef player = ps->_player;
+
+                // ë£¸ ë‚˜ê°€ê¸°ëŠ” ë£¸ Actorì—ê²Œ ìš”ì²­
+                if (auto room = player->GetRoom())
+                {
+                    room->PushJob(&GameRoom::Leave, ps, player);
+                    // ì—¬ê¸°ì„œ SetRoom(nullptr) í•˜ì§€ ë§ˆ
+                }
+
+                // ìˆœí™˜ ì°¸ì¡° í•´ì œëŠ” ì„¸ì…˜ì´ ì²˜ë¦¬
+                player->SetSession(nullptr);
+                ps->_player = nullptr;
+            }
+        });
 }
 
 void PlayerSession::OnRecvPacket(BYTE* buffer, int32 len)
@@ -45,7 +51,7 @@ void PlayerSession::OnRecvPacket(BYTE* buffer, int32 len)
 
 void PlayerSession::OnSend(int32 len)
 {
-	// Àü¼Û ¿Ï·á ÈÄ Ãß°¡ ÀÛ¾÷
+	// ì „ì†¡ ì™„ë£Œ í›„ ì¶”ê°€ ì‘ì—…
 }
 
 void PlayerSession::Ping()
@@ -54,4 +60,65 @@ void PlayerSession::Ping()
 	auto sendBuffer = ClientPacketHandler::MakeSendBuffer(pkt);
 	Send(sendBuffer);
 	std::cout << "[Server] Ping -> Client" << std::endl;
+}
+
+
+bool PlayerSession::TryBeginMapChange(uint64 token, int32 targetMapId, const Protocol::PositionInfo& spawn)
+{
+    std::lock_guard<std::mutex> lock(_mapChangeLock);
+
+    if (_mapChangeState.load(std::memory_order_relaxed) != MAP_CHANGE_NONE)
+        return false;
+
+    _mapChangeToken = token;
+    _pendingTargetMapId = targetMapId;
+    _pendingSpawn.CopyFrom(spawn);
+
+    _mapChangeState.store(MAP_CHANGE_WAITING_ACK, std::memory_order_release);
+    return true;
+}
+
+void PlayerSession::ResetMapChangeState_Locked()
+{
+    // âš ï¸ ì´ í•¨ìˆ˜ëŠ” _mapChangeLockì„ ì´ë¯¸ ì¡ì€ ìƒíƒœì—ì„œë§Œ í˜¸ì¶œí•´ì•¼ í•œë‹¤.
+    _mapChangeToken = 0;
+    _pendingTargetMapId = 0;
+    _pendingSpawn.Clear();
+
+    _mapChangeState.store(MAP_CHANGE_NONE, std::memory_order_release);
+}
+
+bool PlayerSession::TryConsumeMapChangeAck(uint64 token, int32& outTargetMapId, Protocol::PositionInfo& outSpawn)
+{
+    std::lock_guard<std::mutex> lock(_mapChangeLock);
+
+    if (_mapChangeState.load(std::memory_order_relaxed) != MAP_CHANGE_WAITING_ACK)
+        return false;
+
+    if (_mapChangeToken != token)
+        return false;
+
+    outTargetMapId = _pendingTargetMapId;
+    outSpawn.CopyFrom(_pendingSpawn);
+
+    _mapChangeState.store(MAP_CHANGE_SWITCHING, std::memory_order_release);
+    return true;
+}
+
+void PlayerSession::EndMapChange()
+{
+    std::lock_guard<std::mutex> lock(_mapChangeLock);
+    ResetMapChangeState_Locked();
+}
+
+void PlayerSession::CancelMapChange()
+{
+    std::lock_guard<std::mutex> lock(_mapChangeLock);
+    ResetMapChangeState_Locked();
+}
+
+uint64 PlayerSession::GetMapChangeToken() const
+{
+    std::lock_guard<std::mutex> lock(_mapChangeLock);
+    return _mapChangeToken;
 }

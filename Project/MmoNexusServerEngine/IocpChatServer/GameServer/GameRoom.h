@@ -44,16 +44,16 @@ public:
 
 public:
     // [Content Logic]
-    void Enter(PlayerSessionRef session);
-    void Leave(PlayerSessionRef session);
-    void HandleMove(PlayerSessionRef session, Protocol::C_MOVE pkt);
+    void Enter(PlayerSessionRef session, PlayerRef player);
+    void Leave(PlayerSessionRef session, PlayerRef player);
+    void HandleMove(PlayerSessionRef session, PlayerRef player,Protocol::C_MOVE pkt);
 
     void EnterMonster(MonsterRef monster);
     void LeaveMonster(uint64 objectId);
 
-    bool EnterRegister(PlayerSessionRef session); // 등록만
-    void SendEnterSpawns(PlayerSessionRef session); // 스폰만
-    void EnterMapChange(PlayerSessionRef session); // 맵이동
+    bool EnterRegister(PlayerSessionRef session, PlayerRef player); // 등록만
+    void SendEnterSpawns(PlayerSessionRef session, PlayerRef player); // 스폰만
+    void EnterMapChange(PlayerSessionRef session, PlayerRef player); // 맵이동
 
 
     PlayerRef  FindNearestPlayer(Protocol::PositionInfo* pos, float range);
@@ -67,7 +67,7 @@ public:
     void OnMonsterMoved(MonsterRef monster);
 
     //(포션)아이템
-    void HandleUseItem(PlayerSessionRef session, Protocol::C_USE_ITEM pkt);
+    void HandleUseItem(PlayerSessionRef session, PlayerRef player,Protocol::C_USE_ITEM pkt);
 
     // 보상 + 몬스터 제거(Despawn)까지 룸에서 직렬 처리
     void HandleMonsterDead(std::shared_ptr<Creature> attacker, MonsterRef monster);

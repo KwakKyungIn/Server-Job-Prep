@@ -1,6 +1,6 @@
-#pragma once
+ï»¿#pragma once
+#include "Lock.h"
 #include <unordered_map>
-#include <memory>
 
 class PlayerSession;
 using PlayerSessionRef = std::shared_ptr<PlayerSession>;
@@ -10,29 +10,23 @@ class GameSessionManager
 public:
     static GameSessionManager* GSessionManager;
 
-    // Á¢¼Ó/ÇØÁ¦
-    void Add(PlayerSessionRef session);      // sessionId µî·Ï
-    void Remove(PlayerSessionRef session);   // sessionId, playerId µÑ ´Ù ÇØÁ¦
+    void Add(PlayerSessionRef session);
+    void Remove(PlayerSessionRef session);
 
-    // ÀüÃ¼ ºê·ÎµåÄ³½ºÆ®(¿ùµå °øÁö °°Àº ¿ëµµ)
-    void Broadcast(SendBufferRef sendBuffer);
-
-    // Á¶È¸
-    PlayerSessionRef FindBySessionId(uint64 sessionId); // DB ÀÀ´ä gameSessionId·Î Ã£À» ¶§
-    PlayerSessionRef FindByPlayerId(uint64 playerId);   // ÆÄÆ¼/±Ó¼Ó¸»/ÀÎ½ºÅÏ½º ¶ó¿ìÆÃ
-
-    // ¹ÙÀÎµù: EnterGame ¼º°ø ÈÄ playerId°¡ °áÁ¤µÇ¸é È£Ãâ
     void BindPlayerId(PlayerSessionRef session, uint64 playerId);
     void UnbindPlayerId(uint64 playerId);
 
-    // ±âÁ¸ È£È¯(±âÁ¸ ÄÚµå°¡ Find¸¦ ½è´Ù¸é playerId ±âÁØÀ¸·Î ÀÇ¹Ì¸¦ °íÁ¤)
-    PlayerSessionRef Find(uint64 playerId) { return FindByPlayerId(playerId); }
+    PlayerSessionRef FindBySessionId(uint64 sessionId);
+    PlayerSessionRef FindByPlayerId(uint64 playerId);
+
+    void Broadcast(SendBufferRef sendBuffer);
 
 private:
     USE_LOCK;
 
-    std::unordered_map<uint64, PlayerSessionRef> _bySessionId;
-    std::unordered_map<uint64, PlayerSessionRef> _byPlayerId;
-};
+    std::unordered_map<uint64, PlayerSessionRef> _bySessionId;   // sessionId -> session
+    std::unordered_map<uint64, PlayerSessionRef> _byPlayerId;    // playerId  -> session
 
-extern GameSessionManager* GSessionManager;
+    // âœ… í•µì‹¬: ìš°íšŒ ì ‘ê·¼ ë§‰ê¸°ìš© ì—­ì¸ë±ìŠ¤
+    std::unordered_map<uint64, uint64> _playerIdBySessionId;     // sessionId -> playerId
+};

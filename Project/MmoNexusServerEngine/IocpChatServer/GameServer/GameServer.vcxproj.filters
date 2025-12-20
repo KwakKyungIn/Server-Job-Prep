@@ -117,6 +117,9 @@
     <ClCompile Include="PartyManager.cpp">
       <Filter>GameContents\Party</Filter>
     </ClCompile>
+    <ClCompile Include="PartyManagerCore.cpp">
+      <Filter>GameContents\Party</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -186,6 +189,12 @@
       <Filter>GameContents\Room</Filter>
     </ClInclude>
     <ClInclude Include="PartyManager.h">
+      <Filter>GameContents\Party</Filter>
+    </ClInclude>
+    <ClInclude Include="PartyManagerCore.h">
+      <Filter>GameContents\Party</Filter>
+    </ClInclude>
+    <ClInclude Include="PartyActor.h">
       <Filter>GameContents\Party</Filter>
     </ClInclude>
   </ItemGroup>

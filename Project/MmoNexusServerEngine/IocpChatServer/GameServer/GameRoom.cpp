@@ -85,9 +85,9 @@ void GameRoom::Update()
 	}
 }
 
-bool GameRoom::EnterRegister(PlayerSessionRef session)
+bool GameRoom::EnterRegister(PlayerSessionRef session, PlayerRef player)
 {
-	PlayerRef player = session->GetPlayer();
+
 	if (player == nullptr) return false;
 
 	// 이미 들어와 있으면 실패 (중복 Enter 방지)
@@ -114,9 +114,8 @@ bool GameRoom::EnterRegister(PlayerSessionRef session)
 	return true;
 }
 
-void GameRoom::SendEnterSpawns(PlayerSessionRef session)
+void GameRoom::SendEnterSpawns(PlayerSessionRef session, PlayerRef player)
 {
-	PlayerRef player = session->GetPlayer();
 	if (player == nullptr) return;
 
 	const int32 zoneIndex = player->GetZoneIndex();
@@ -175,12 +174,15 @@ void GameRoom::SendEnterSpawns(PlayerSessionRef session)
 }
 
 // [로그인 입장]
-void GameRoom::Enter(PlayerSessionRef session)
+void GameRoom::Enter(PlayerSessionRef session, PlayerRef player)
 {
-	if (EnterRegister(session) == false)
+	if (!session || !player)
 		return;
 
-	PlayerRef player = session->GetPlayer();
+	if (EnterRegister(session,player) == false)
+		return;
+
+	
 	if (player == nullptr) return;
 
 	// 1) 응답 먼저
@@ -193,18 +195,20 @@ void GameRoom::Enter(PlayerSessionRef session)
 	session->Send(ClientPacketHandler::MakeSendBuffer(enterPkt));
 
 	// 2) 스폰 전송은 그 다음
-	SendEnterSpawns(session);
+	SendEnterSpawns(session,player);
 
 	printf("✅ [Enter-Login] Player %llu\n", player->GetPlayerId());
 }
 
 // [맵 이동 입장]
-void GameRoom::EnterMapChange(PlayerSessionRef session)
+void GameRoom::EnterMapChange(PlayerSessionRef session, PlayerRef player)
 {
-	if (EnterRegister(session) == false)
+	if (!session || !player)
 		return;
 
-	PlayerRef player = session->GetPlayer();
+	if (EnterRegister(session,player) == false)
+		return;
+
 	if (player == nullptr) return;
 
 	// 1) END 응답 먼저
@@ -219,7 +223,7 @@ void GameRoom::EnterMapChange(PlayerSessionRef session)
 	session->EndMapChange();
 
 	// 3) 스폰은 그 다음
-	SendEnterSpawns(session);
+	SendEnterSpawns(session,player);
 
 	printf("✅ [MapChange-END] Player %llu -> Map %d (Token=%llu)\n",
 		player->GetPlayerId(), _mapId, endPkt.token());
@@ -227,9 +231,8 @@ void GameRoom::EnterMapChange(PlayerSessionRef session)
 
 
 
-void GameRoom::Leave(PlayerSessionRef session)
+void GameRoom::Leave(PlayerSessionRef session, PlayerRef player)
 {
-	PlayerRef player = session->GetPlayer();
 	if (player == nullptr) return;
 
 	uint64 playerId = player->GetPlayerId();
@@ -261,9 +264,9 @@ void GameRoom::Leave(PlayerSessionRef session)
 	printf("[ROOM] Player %llu Left Zone[%d].\n", playerId, zoneIndex);
 }
 
-void GameRoom::HandleMove(PlayerSessionRef session, Protocol::C_MOVE pkt)
+void GameRoom::HandleMove(PlayerSessionRef session, PlayerRef player,Protocol::C_MOVE pkt)
 {
-	PlayerRef player = session->GetPlayer();
+	
 	if (player == nullptr) return;
 
 	uint64 playerId = player->GetPlayerId();
@@ -702,9 +705,9 @@ void GameRoom::HandleSkill(std::shared_ptr<Creature> attacker, int32 skillId)
 	}
 }
 
-void GameRoom::HandleUseItem(PlayerSessionRef session, Protocol::C_USE_ITEM pkt)
+void GameRoom::HandleUseItem(PlayerSessionRef session, PlayerRef player, Protocol::C_USE_ITEM pkt)
 {
-	PlayerRef player = session->GetPlayer();
+	
 	if (player == nullptr) return;
 
 	const uint64 playerId = player->GetPlayerId();
