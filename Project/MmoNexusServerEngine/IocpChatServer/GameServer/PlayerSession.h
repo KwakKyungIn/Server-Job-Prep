@@ -1,9 +1,9 @@
-#pragma once
+ï»¿#pragma once
 #include "Session.h"
 #include "JobQueue.h"
 #include "Job.h"
 #include "Protocol.pb.h"
-#include "Player.h" // [Áß¿ä] Player Å¬·¡½º Á¤ÀÇ¸¦ ¾Ë¾Æ¾ß À§ÀÓ °¡´É
+#include "Player.h" // [ì¤‘ìš”] Player í´ë˜ìŠ¤ ì •ì˜ë¥¼ ì•Œì•„ì•¼ ìœ„ì„ ê°€ëŠ¥
 
 #include <atomic>
 #include <mutex>
@@ -25,17 +25,17 @@ public:
     virtual void OnSend(int32 len) override;
     virtual void Ping() override;
 
-    // ¿ÜºÎ°¡ Àâ ³Ö´Â °Ç Çã¿ë(Actor mailbox)
+    // ì™¸ë¶€ê°€ ì¡ ë„£ëŠ” ê±´ í—ˆìš©(Actor mailbox)
     void PushJob(shared_ptr<Job> job) { _jobQueue->Push(job); }
 
 public:
     // [Logic Object Link]
-    // ¡Ø ¿øÄ¢: SetPlayerµµ °¡´ÉÇÏ¸é Post ¾È¿¡¼­¸¸ È£ÃâÇØ¶ó(³×°¡ ÁöÄÑÁÖ¸é µÊ)
+    // â€» ì›ì¹™: SetPlayerë„ ê°€ëŠ¥í•˜ë©´ Post ì•ˆì—ì„œë§Œ í˜¸ì¶œí•´ë¼(ë„¤ê°€ ì§€ì¼œì£¼ë©´ ë¨)
     void SetPlayer(shared_ptr<Player> player) { _player = player; }
 
 public:
     // ============================================================
-    // [MAP CHANGE STATE] (±×´ë·Î)
+    // [MAP CHANGE STATE] (ê·¸ëŒ€ë¡œ)
     // ============================================================
     enum : int32
     {
@@ -67,7 +67,7 @@ public:
 
 public:
     // ============================================================
-    // [Actor Post API] (¿ÜºÎ´Â ÀÌ°Í¸¸ ½á¶ó)
+    // [Actor Post API] (ì™¸ë¶€ëŠ” ì´ê²ƒë§Œ ì¨ë¼)
     // ============================================================
     template<typename F>
     void Post(F&& fn)
@@ -90,9 +90,45 @@ public:
             });
     }
 
+public:
+    // âœ… Room Actorê°€ session->Post(...)ë¡œë§Œ í˜¸ì¶œí•˜ê²Œ ì“¸ ê²ƒ
+    void SetCurrentRoom(std::shared_ptr<GameRoom> room) { _currentRoom = room; }
+
+    void ClearCurrentRoom(std::shared_ptr<GameRoom> room)
+    {
+        if (!room)
+        {
+            _currentRoom.reset();
+            return;
+        }
+
+        auto cur = _currentRoom.lock();
+        if (cur && cur.get() == room.get())
+            _currentRoom.reset();
+    }
+
+public:
+    // âš ï¸ Actor thread(Post/PostPlayer ì•ˆ)ì—ì„œë§Œ ì‚¬ìš©
+    std::shared_ptr<GameRoom> GetCurrentRoom_ActorOnly() const
+    {
+        return _currentRoom.lock();
+    }
+
+    // (ì„¸ì…˜ + í”Œë ˆì´ì–´ + ë£¸) 3ì¢… ì„¸íŒ…ì„ ë³´ì¥í•´ì„œ ë„˜ê²¨ì£¼ëŠ” í—¬í¼
+    template<typename F>
+    void PostPlayerRoom(F&& fn)
+    {
+        PostPlayer([fn = std::forward<F>(fn)](PlayerSessionRef ps, PlayerRef player) mutable
+            {
+                auto room = ps->_currentRoom.lock();
+                if (!room) return;
+                fn(ps, player, room);
+            });
+    }
+
 private:
     // ============================================================
-    // [Helper / Wrapper]  <-- ÀÌÁ¦ ¿ÜºÎ Á¢±Ù ±İÁö
+    // [Helper / Wrapper]  <-- ì´ì œ ì™¸ë¶€ ì ‘ê·¼ ê¸ˆì§€
     // ============================================================
     shared_ptr<Player> GetPlayer() { return _player; }
 
@@ -110,17 +146,18 @@ private:
 
     shared_ptr<GameRoom> GetRoom()
     {
-        if (_player) return _player->GetRoom();
-        return nullptr;
+        return _currentRoom.lock();
     }
 
 private:
     void ResetMapChangeState_Locked();
 
 private:
-    // ÀÌÁ¦ _jobQueue ¿ÜºÎ ³ëÃâ ±İÁö
+    // ì´ì œ _jobQueue ì™¸ë¶€ ë…¸ì¶œ ê¸ˆì§€
     shared_ptr<JobQueue> _jobQueue;
-
+    // âœ… Session Actor ì†Œìœ : "í˜„ì¬ ë°©" ìºì‹œ
+    // âš ï¸ Session Actor thread(Post/PostPlayer)ì—ì„œë§Œ ì½ê³ /ì“´ë‹¤.
+    std::weak_ptr<GameRoom> _currentRoom;
 protected:
     shared_ptr<Player> _player;
 

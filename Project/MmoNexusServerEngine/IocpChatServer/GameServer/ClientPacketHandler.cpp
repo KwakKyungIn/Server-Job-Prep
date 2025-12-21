@@ -122,20 +122,15 @@ bool ClientPacketHandler::Handle_C_MOVE(PacketSessionRef& session, Protocol::C_M
 	PlayerSessionRef ps = static_pointer_cast<PlayerSession>(session);
 	if (!ps) return false;
 
-	// 빠른 컷(atomic read만) - OK
 	if (ps->IsMapChanging())
 		return true;
 
-	// 이제부터는 세션 Actor에게 위임
-	ps->PostPlayer([pkt](PlayerSessionRef ps, PlayerRef player)
+	ps->PostPlayerRoom([pkt](PlayerSessionRef ps, PlayerRef player, std::shared_ptr<GameRoom> room)
 		{
 			if (ps->IsMapChanging())
 				return;
 
-			auto room = player->GetRoom();
-			if (!room) return;
-
-			room->PushJob(&GameRoom::HandleMove, ps,player, pkt);
+			room->PushJob(&GameRoom::HandleMove, ps, player, pkt);
 		});
 
 	return true;
@@ -201,15 +196,12 @@ bool ClientPacketHandler::Handle_C_USE_ITEM(PacketSessionRef& session, Protocol:
 	if (ps->IsMapChanging())
 		return true;
 
-	ps->PostPlayer([pkt](PlayerSessionRef ps, PlayerRef player)
+	ps->PostPlayerRoom([pkt](PlayerSessionRef ps, PlayerRef player, std::shared_ptr<GameRoom> room)
 		{
 			if (ps->IsMapChanging())
 				return;
 
-			auto room = player->GetRoom();
-			if (!room) return;
-
-			room->PushJob(&GameRoom::HandleUseItem, ps,player, pkt);
+			room->PushJob(&GameRoom::HandleUseItem, ps, player, pkt);
 		});
 
 	return true;
@@ -225,16 +217,15 @@ bool ClientPacketHandler::Handle_C_SKILL(PacketSessionRef& session, Protocol::C_
 	if (ps->IsMapChanging())
 		return true;
 
-	ps->PostPlayer([pkt](PlayerSessionRef ps, PlayerRef player)
-		{
-			auto room = player->GetRoom();
-			if (!room) return;
+	const int32 skillId = pkt.skillid();
 
-			// 룸에서 처리(판정/쿨타임/HP체크 등도 룸으로 넘기는 게 깔끔)
-			room->PushJob([player, pkt]()
-				{
-					player->UseSkill(pkt.skillid());
-				});
+	ps->PostPlayerRoom([skillId](PlayerSessionRef ps, PlayerRef player, std::shared_ptr<GameRoom> room)
+		{
+			if (ps->IsMapChanging())
+				return;
+
+			std::shared_ptr<Creature> attacker = std::static_pointer_cast<Creature>(player);
+			room->PushJob(&GameRoom::HandleSkill, attacker, skillId);
 		});
 
 	return true;
@@ -251,17 +242,17 @@ bool ClientPacketHandler::Handle_C_CHAT_REQ(PacketSessionRef& session, Protocol:
 
 	const std::string msg = pkt.message();
 
-	ps->PostPlayer([msg](PlayerSessionRef ps, PlayerRef player)
+	ps->PostPlayerRoom([msg](PlayerSessionRef ps, PlayerRef player, std::shared_ptr<GameRoom> room)
 		{
-			auto room = player->GetRoom();
-			if (!room) return;
+			if (ps->IsMapChanging())
+				return;
 
 			Protocol::S_CHAT_NTF ntf;
 			ntf.set_playerid(player->GetPlayerId());
 			ntf.set_name(player->GetName());
 			ntf.set_message(msg);
 
-			room->PushJob([room, ntf]()
+			room->PushJob([room, ntf]() mutable
 				{
 					room->BroadcastChat(ntf);
 				});
@@ -330,7 +321,7 @@ bool ClientPacketHandler::Handle_C_MAP_CHANGE_ACK(PacketSessionRef& session, Pro
 
 	const uint64 token = pkt.token();
 
-	ps->PostPlayer([ps, token](PlayerSessionRef ps, PlayerRef player)
+	ps->PostPlayer([token](PlayerSessionRef ps, PlayerRef player)
 		{
 			int32 targetMapId = 0;
 			Protocol::PositionInfo spawn;
@@ -346,34 +337,26 @@ bool ClientPacketHandler::Handle_C_MAP_CHANGE_ACK(PacketSessionRef& session, Pro
 				return;
 			}
 
-			auto oldRoom = player->GetRoom();
+			// ✅ 여기! player->GetRoom() 금지. 캐시에서.
+			auto oldRoom = ps->GetCurrentRoom_ActorOnly();
 
 			if (!oldRoom)
 			{
-				// 룸 없으면 그냥 새 룸으로 진입 요청
-				// (mapId/pos 변경은 너 구조상 oldRoom에서 하도록 했는데,
-				//  oldRoom이 없으니 여기서는 “최소 변경”만 하고 newRoom으로 보낸다)
 				player->SetMapId(targetMapId);
 				player->GetPosInfo()->CopyFrom(spawn);
-
 				newRoom->PushJob(&GameRoom::EnterMapChange, ps, player);
 				return;
 			}
 
-			// Leave는 oldRoom, Enter는 newRoom (이건 너가 이미 잘 짰음)
 			oldRoom->PushJob([ps, player, oldRoom, newRoom, targetMapId, spawn]()
 				{
-					// ✅ Leave 시그니처가 (session, player)면 이렇게
 					oldRoom->Leave(ps, player);
 
-					// ✅ room thread에서 player 메타/좌표 갱신 (지금 구조 유지)
 					player->SetMapId(targetMapId);
 					player->GetPosInfo()->CopyFrom(spawn);
 
-					// ✅ EnterMapChange도 (session, player)로 바꿨으면 같이 넘겨야 함
 					newRoom->PushJob(&GameRoom::EnterMapChange, ps, player);
 				});
-
 		});
 
 	return true;

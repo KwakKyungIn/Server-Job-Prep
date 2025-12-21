@@ -3,6 +3,10 @@
 #include "SocketUtils.h"
 #include "Service.h"
 #include "Crc32.h"
+
+// Session.cpp
+#include <cstring> // memcpy
+
 static std::atomic<uint64> GSessionIdDistributor = 1;
 
 // ==============================
@@ -38,16 +42,29 @@ Session::~Session()
 // - 송신 큐에 쌓고, 필요시 RegisterSend() 발동
 // - 하드/소프트 캡으로 세션 보호
 // ------------------------------
-void Session::Send(SendBufferRef sendBuffer)
+void Session::Send(const SendBufferRef& sendBuffer)
 {
-	if (IsConnected() == false)
-		return;
+	if (!sendBuffer) return;
+	if (IsConnected() == false) return;
+
+
+	// ============================================================
+	// [CLONE POLICY] Send()는 헤더(seq/crc)를 mutate 한다.
+	// 따라서 "큐에 들어가는 버퍼"는 항상 독립 복사본이어야 안전하다.
+	// ============================================================
+	const uint32 writeSize = sendBuffer->WriteSize();
+	SendBufferRef tx = GSendBufferManager->Open(writeSize);
+	ASSERT_CRASH(tx != nullptr);
+	
+	::memcpy(tx->Buffer(), sendBuffer->Buffer(), writeSize);
+	tx->Close(writeSize);
+	
 
 	// ============================================================
 	// [GIGACHAD INJECTION] 보안 헤더 작성 (Seq + CRC)
 	// 큐에 넣기 전에 최종적으로 패킷을 완성한다.
 	// ============================================================
-	BYTE* buffer = sendBuffer->Buffer();
+	BYTE* buffer = tx->Buffer();
 	PacketHeader* header = reinterpret_cast<PacketHeader*>(buffer);
 
 	// 1. Seq 번호표 발급 및 부착 (Atomic)
@@ -62,7 +79,7 @@ void Session::Send(SendBufferRef sendBuffer)
 	// ============================================================
 
 	bool registerSend = false;
-	const int32 sz = static_cast<int32>(sendBuffer->WriteSize());
+	const int32 sz = static_cast<int32>(tx->WriteSize());
 
 	{
 		WRITE_LOCK;
@@ -86,7 +103,7 @@ void Session::Send(SendBufferRef sendBuffer)
 		}
 
 		// 송신 큐에 쌓기
-		_sendQueue.push(sendBuffer);
+		_sendQueue.push(tx);
 		_sendBacklogBytes += sz;
 		_sendBacklogCount += 1;
 
@@ -395,10 +412,16 @@ void Session::ProcessSend(int32 numOfBytes)
 	OnSend(numOfBytes); // 컨텐츠 훅
 
 	// 송신 큐에 남은 게 있으면 다시 등록
-	WRITE_LOCK;
-	if (_sendQueue.empty())
-		_sendRegistered.store(false);
-	else
+	bool needRegister = false;
+	{
+		WRITE_LOCK;
+		if (_sendQueue.empty())
+			_sendRegistered.store(false);
+		else
+			needRegister = true;
+	}
+
+	if (needRegister)
 		RegisterSend();
 }
 

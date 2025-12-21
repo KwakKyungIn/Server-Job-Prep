@@ -22,7 +22,7 @@ public:
 	virtual ~Session();
 
 	// -------- ¿ÜºÎ API --------
-	void Send(SendBufferRef sendBuffer);
+	void Send(const SendBufferRef& sendBuffer);
 	bool Connect();
 	void Disconnect(const WCHAR* cause);
 

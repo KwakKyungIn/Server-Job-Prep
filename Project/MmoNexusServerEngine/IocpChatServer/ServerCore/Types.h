@@ -2,6 +2,12 @@
 #include <mutex>
 #include <atomic>
 
+class Player;
+class PlayerSession;
+
+using PlayerRef = std::shared_ptr<Player>;
+using PlayerSessionRef = std::shared_ptr<PlayerSession>;
+
 // 기본 타입 정의
 using BYTE = unsigned char;
 using int8 = __int8;

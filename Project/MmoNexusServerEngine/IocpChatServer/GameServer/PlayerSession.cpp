@@ -30,11 +30,11 @@ void PlayerSession::OnDisconnected()
                 PlayerRef player = ps->_player;
 
                 // 룸 나가기는 룸 Actor에게 요청
-                if (auto room = player->GetRoom())
+                if (auto room = ps->GetRoom())   // ✅ 이제 session cache
                 {
                     room->PushJob(&GameRoom::Leave, ps, player);
-                    // 여기서 SetRoom(nullptr) 하지 마
                 }
+                ps->SetCurrentRoom(nullptr);     // ✅ 더 이상 라우팅 안 타게 즉시 끊기
 
                 // 순환 참조 해제는 세션이 처리
                 player->SetSession(nullptr);

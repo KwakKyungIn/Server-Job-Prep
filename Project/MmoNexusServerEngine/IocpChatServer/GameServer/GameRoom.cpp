@@ -10,6 +10,8 @@
 #include "BattleSystem.h"
 #include "Zone.h"
 #include "Creature.h"
+#include "GameSessionManager.h"
+
 
 // util: 네트워크로 나가는 ID는 "플레이어=playerId, 몬스터=objectId"로 통일
 static uint64 NetId(const std::shared_ptr<Creature>& c)
@@ -20,6 +22,18 @@ static uint64 NetId(const std::shared_ptr<Creature>& c)
 		return std::static_pointer_cast<Player>(c)->GetPlayerId();
 
 	return c->GetObjectId(); // 몬스터/투사체 등
+}
+
+static PlayerSessionRef FindSessionByPlayerId(uint64 playerId)
+{
+	return GameSessionManager::GSessionManager->FindByPlayerId(playerId);
+}
+
+static void SendToPlayer(uint64 playerId, SendBufferRef sb)
+{
+	if (!sb) return;
+	if (auto s = FindSessionByPlayerId(playerId))
+		s->Send(sb);
 }
 
 
@@ -96,6 +110,13 @@ bool GameRoom::EnterRegister(PlayerSessionRef session, PlayerRef player)
 
 	// 1) 룸 소속 설정
 	player->SetRoom(shared_from_this());
+
+	auto room = shared_from_this();
+	session->Post([room](PlayerSessionRef ps)
+		{
+			ps->SetCurrentRoom(room);
+		});
+
 	_players.insert({ player->GetPlayerId(), player });
 
 	// 2) AOI Zone 계산 및 등록
@@ -135,7 +156,7 @@ void GameRoom::SendEnterSpawns(PlayerSessionRef session, PlayerRef player)
 			for (const PlayerRef& other : zone->players)
 			{
 				if (other != player)
-					other->GetSession()->Send(sendBuffer);
+					SendToPlayer(other->GetPlayerId(), sendBuffer);
 			}
 		}
 	}
@@ -252,6 +273,12 @@ void GameRoom::Leave(PlayerSessionRef session, PlayerRef player)
 	_players.erase(playerId);
 	player->SetRoom(nullptr);
 
+	auto room = shared_from_this();
+	session->Post([room](PlayerSessionRef ps)
+		{
+			ps->ClearCurrentRoom(room);
+		});
+
 	// 3. [Broadcast] 주변 유저들에게 "나 나갔음" 알림 (S_DESPAWN)
 	{
 		Protocol::S_DESPAWN despawnPkt;
@@ -340,7 +367,7 @@ void GameRoom::HandleMove(PlayerSessionRef session, PlayerRef player,Protocol::C
 				{
 					if (p->GetPlayerId() != playerId)
 					{
-						p->GetSession()->Send(sendBuffer);              // 걔네한테 내 정보 삭제
+						SendToPlayer(p->GetPlayerId(), sendBuffer);              // 걔네한테 내 정보 삭제
 						despawnToMePkt.add_objectids(p->GetPlayerId()); // 내 목록에서 걔네 삭제
 					}
 				}
@@ -383,7 +410,7 @@ void GameRoom::HandleMove(PlayerSessionRef session, PlayerRef player,Protocol::C
 				{
 					if (p->GetPlayerId() != playerId)
 					{
-						p->GetSession()->Send(mySpawnBuffer); // 걔네에게 나를 보냄
+						SendToPlayer(p->GetPlayerId(), mySpawnBuffer); // 걔네에게 나를 보냄
 						auto* otherInfo = othersSpawnPkt.add_players();
 						*otherInfo = *p->GetPlayerInfo();
 					}
@@ -421,7 +448,7 @@ void GameRoom::HandleMove(PlayerSessionRef session, PlayerRef player,Protocol::C
 				for (auto& p : zone.players)
 				{
 					if (p->GetPlayerId() != playerId)
-						p->GetSession()->Send(sendBuffer);
+						SendToPlayer(p->GetPlayerId(), sendBuffer);
 				}
 			}
 		}
@@ -509,7 +536,7 @@ void GameRoom::LeaveMonster(uint64 objectId)
 		{
 			for (const PlayerRef& p : zone->players)
 			{
-				p->GetSession()->Send(sendBuffer);
+				SendToPlayer(p->GetPlayerId(), sendBuffer);
 			}
 		}
 	}
@@ -586,7 +613,7 @@ void GameRoom::HandleMonsterDead(std::shared_ptr<Creature> attacker, MonsterRef 
 
 		Protocol::S_CHANGE_STAT st;
 		st.mutable_statinfo()->CopyFrom(*killer->GetStatInfo());
-		killer->GetSession()->Send(ClientPacketHandler::MakeSendBuffer(st));
+		SendToPlayer(killer->GetPlayerId(), ClientPacketHandler::MakeSendBuffer(st));
 	}
 
 	// 3) 드랍(루팅) = “즉시 인벤 지급” 방식 (바닥 루프 만들기용)
@@ -615,7 +642,8 @@ void GameRoom::HandleMonsterDead(std::shared_ptr<Creature> attacker, MonsterRef 
 
 				Protocol::S_CHANGE_ITEM ch;
 				ch.mutable_item()->CopyFrom(newItem);
-				killer->GetSession()->Send(ClientPacketHandler::MakeSendBuffer(ch));
+				SendToPlayer(killer->GetPlayerId(), ClientPacketHandler::MakeSendBuffer(ch));
+
 
 				// TODO: DB 저장(S2S INSERT ITEMS)
 			}
@@ -826,7 +854,7 @@ void GameRoom::BroadcastToZone(SendBufferRef sendBuffer, int32 zoneIndex, uint64
 		for (const PlayerRef& p : zone->players)
 		{
 			if (p->GetPlayerId() == exceptId) continue;
-			p->GetSession()->Send(sendBuffer);
+			SendToPlayer(p->GetPlayerId(), sendBuffer);
 		}
 	}
 }
@@ -836,8 +864,9 @@ void GameRoom::Broadcast(SendBufferRef sendBuffer, uint64 exceptId)
 	for (auto& item : _players)
 	{
 		PlayerRef p = item.second;
+		if (!p) continue;
 		if (p->GetPlayerId() == exceptId) continue;
-		p->GetSession()->Send(sendBuffer);
+		SendToPlayer(p->GetPlayerId(), sendBuffer);
 	}
 }
 
@@ -847,18 +876,12 @@ void GameRoom::BroadcastChat(const Protocol::S_CHAT_NTF& ntf)
 	for (auto it = _players.begin(); it != _players.end(); ++it)
 	{
 		PlayerRef player = it->second;
-		if (player == nullptr)
-			continue;
+		if (!player) continue;
 
-		auto ps = player->GetSession();
-		if (ps == nullptr)
-			continue;
-
-		// ✅ SendBuffer는 세션마다 새로 생성 (seq/crc 채움 구조 때문에 공유 금지)
 		Protocol::S_CHAT_NTF pkt;
 		pkt.CopyFrom(ntf);
 
 		auto sb = ClientPacketHandler::MakeSendBuffer(pkt);
-		ps->Send(sb);
+		SendToPlayer(player->GetPlayerId(), sb);
 	}
 }
