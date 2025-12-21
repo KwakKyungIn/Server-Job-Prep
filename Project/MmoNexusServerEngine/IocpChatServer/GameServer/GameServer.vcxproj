@@ -202,6 +202,7 @@
     <ClCompile Include="GameRoom.cpp" />
     <ClCompile Include="GameServer.cpp" />
     <ClCompile Include="GameSessionManager.cpp" />
+    <ClCompile Include="InstanceManagerCore.cpp" />
     <ClCompile Include="LoginSession.cpp" />
     <ClCompile Include="Monster.cpp" />
     <ClCompile Include="PartyManager.cpp" />
@@ -234,6 +235,8 @@
     <ClInclude Include="GameMap.h" />
     <ClInclude Include="GameRoom.h" />
     <ClInclude Include="GameSessionManager.h" />
+    <ClInclude Include="InstanceActor.h" />
+    <ClInclude Include="InstanceManagerCore.h" />
     <ClInclude Include="LoginSession.h" />
     <ClInclude Include="Monster.h" />
     <ClInclude Include="ObjectUtils.h" />

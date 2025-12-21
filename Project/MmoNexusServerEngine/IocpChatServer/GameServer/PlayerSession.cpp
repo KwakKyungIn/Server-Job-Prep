@@ -63,7 +63,7 @@ void PlayerSession::Ping()
 }
 
 
-bool PlayerSession::TryBeginMapChange(uint64 token, int32 targetMapId, const Protocol::PositionInfo& spawn)
+bool PlayerSession::TryBeginMapChange(uint64 token, int32 targetMapId, int64 targetInstanceId, const Protocol::PositionInfo& spawn)
 {
     std::lock_guard<std::mutex> lock(_mapChangeLock);
 
@@ -72,6 +72,7 @@ bool PlayerSession::TryBeginMapChange(uint64 token, int32 targetMapId, const Pro
 
     _mapChangeToken = token;
     _pendingTargetMapId = targetMapId;
+    _pendingTargetInstanceId = targetInstanceId; // 추가
     _pendingSpawn.CopyFrom(spawn);
 
     _mapChangeState.store(MAP_CHANGE_WAITING_ACK, std::memory_order_release);
@@ -83,12 +84,13 @@ void PlayerSession::ResetMapChangeState_Locked()
     // ⚠️ 이 함수는 _mapChangeLock을 이미 잡은 상태에서만 호출해야 한다.
     _mapChangeToken = 0;
     _pendingTargetMapId = 0;
+    _pendingTargetInstanceId = 0; // 추가
     _pendingSpawn.Clear();
 
     _mapChangeState.store(MAP_CHANGE_NONE, std::memory_order_release);
 }
 
-bool PlayerSession::TryConsumeMapChangeAck(uint64 token, int32& outTargetMapId, Protocol::PositionInfo& outSpawn)
+bool PlayerSession::TryConsumeMapChangeAck(uint64 token, int32& outTargetMapId, int64& outTargetInstanceId, Protocol::PositionInfo& outSpawn)
 {
     std::lock_guard<std::mutex> lock(_mapChangeLock);
 
@@ -99,6 +101,7 @@ bool PlayerSession::TryConsumeMapChangeAck(uint64 token, int32& outTargetMapId, 
         return false;
 
     outTargetMapId = _pendingTargetMapId;
+    outTargetInstanceId = _pendingTargetInstanceId;
     outSpawn.CopyFrom(_pendingSpawn);
 
     _mapChangeState.store(MAP_CHANGE_SWITCHING, std::memory_order_release);

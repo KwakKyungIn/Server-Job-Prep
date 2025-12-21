@@ -61,6 +61,10 @@ public class PacketManager
 		S_PARTY_INVITE_NTF = 1037,
 		C_PARTY_STATUS_REQ = 1038,
 		S_PARTY_STATUS_NTF = 1039,
+		C_DUNGEON_ENTER_REQ = 1040,
+		S_DUNGEON_ENTER_RES = 1041,
+		C_DUNGEON_EXIT_REQ = 1042,
+		S_DUNGEON_EXIT_RES = 1043,
 	}
 
 	public void Register()
@@ -109,6 +113,10 @@ public class PacketManager
 		_handler.Add((ushort)MsgId.S_PARTY_INVITE_NTF, PacketHandler.S_PARTY_INVITE_NTFHandler);
 		_onRecv.Add((ushort)MsgId.S_PARTY_STATUS_NTF, MakePacket<S_PARTY_STATUS_NTF>);
 		_handler.Add((ushort)MsgId.S_PARTY_STATUS_NTF, PacketHandler.S_PARTY_STATUS_NTFHandler);
+		_onRecv.Add((ushort)MsgId.S_DUNGEON_ENTER_RES, MakePacket<S_DUNGEON_ENTER_RES>);
+		_handler.Add((ushort)MsgId.S_DUNGEON_ENTER_RES, PacketHandler.S_DUNGEON_ENTER_RESHandler);
+		_onRecv.Add((ushort)MsgId.S_DUNGEON_EXIT_RES, MakePacket<S_DUNGEON_EXIT_RES>);
+		_handler.Add((ushort)MsgId.S_DUNGEON_EXIT_RES, PacketHandler.S_DUNGEON_EXIT_RESHandler);
 	}
 
 	public void OnRecvPacket(ServerSession session, ArraySegment<byte> buffer)

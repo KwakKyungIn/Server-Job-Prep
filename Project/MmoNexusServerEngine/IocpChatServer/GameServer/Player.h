@@ -31,6 +31,22 @@ public:
 	void SetMapId(int32 mapId) { _mapId = mapId; }
 	int32 GetMapId() const { return _mapId; }
 
+
+public:
+	void SetInstanceId(int64 instanceId) { _instanceId = instanceId; }
+	int64 GetInstanceId() const { return _instanceId; }
+
+	void SetReturnLocation(int32 mapId, int64 instanceId, const Protocol::PositionInfo& pos)
+	{
+		_returnMapId = mapId;
+		_returnInstanceId = instanceId;
+		_returnPos.CopyFrom(pos);
+	}
+
+	int32 GetReturnMapId() const { return _returnMapId; }
+	int64 GetReturnInstanceId() const { return _returnInstanceId; }
+	const Protocol::PositionInfo& GetReturnPos() const { return _returnPos; }
+
 public:
 	// [Network Link] Player만의 고유 기능 (세션 연결)
 	void					SetSession(std::shared_ptr<PlayerSession> session) { _session = session; }
@@ -79,6 +95,11 @@ protected:
 
 	int32 _channelId = 1;
 	int32 _mapId = 1;
+	int64 _instanceId = 0; // 0 = world
+	int32 _returnMapId = 1;              // 기본 복귀 맵
+	int64 _returnInstanceId = 0;         // 보통 0
+	Protocol::PositionInfo _returnPos;   // 복귀 좌표
+
 
 	// _room, _zoneIndex는 Creature로 이사 갔으니 삭제.
 };

@@ -49,6 +49,10 @@ public:
 		PKT_S_PARTY_INVITE_NTF = 1037,
 		PKT_C_PARTY_STATUS_REQ = 1038,
 		PKT_S_PARTY_STATUS_NTF = 1039,
+		PKT_C_DUNGEON_ENTER_REQ = 1040,
+		PKT_S_DUNGEON_ENTER_RES = 1041,
+		PKT_C_DUNGEON_EXIT_REQ = 1042,
+		PKT_S_DUNGEON_EXIT_RES = 1043,
 	};
 
 	static void Init()
@@ -77,6 +81,8 @@ public:
 		GPacketHandler[PKT_S_PARTY_RESULT] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S_PARTY_RESULT>(Handle_S_PARTY_RESULT, session, buffer, len); };
 		GPacketHandler[PKT_S_PARTY_INVITE_NTF] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S_PARTY_INVITE_NTF>(Handle_S_PARTY_INVITE_NTF, session, buffer, len); };
 		GPacketHandler[PKT_S_PARTY_STATUS_NTF] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S_PARTY_STATUS_NTF>(Handle_S_PARTY_STATUS_NTF, session, buffer, len); };
+		GPacketHandler[PKT_S_DUNGEON_ENTER_RES] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S_DUNGEON_ENTER_RES>(Handle_S_DUNGEON_ENTER_RES, session, buffer, len); };
+		GPacketHandler[PKT_S_DUNGEON_EXIT_RES] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S_DUNGEON_EXIT_RES>(Handle_S_DUNGEON_EXIT_RES, session, buffer, len); };
 	}
 
 	static bool HandlePacket(PacketSessionRef& session, BYTE* buffer, int32 len)
@@ -102,6 +108,8 @@ public:
 	static SendBufferRef MakeSendBuffer(Protocol::C_PARTY_KICK_REQ& pkt) { return MakeSendBuffer(pkt, PKT_C_PARTY_KICK_REQ); }
 	static SendBufferRef MakeSendBuffer(Protocol::C_PARTY_DISBAND_REQ& pkt) { return MakeSendBuffer(pkt, PKT_C_PARTY_DISBAND_REQ); }
 	static SendBufferRef MakeSendBuffer(Protocol::C_PARTY_STATUS_REQ& pkt) { return MakeSendBuffer(pkt, PKT_C_PARTY_STATUS_REQ); }
+	static SendBufferRef MakeSendBuffer(Protocol::C_DUNGEON_ENTER_REQ& pkt) { return MakeSendBuffer(pkt, PKT_C_DUNGEON_ENTER_REQ); }
+	static SendBufferRef MakeSendBuffer(Protocol::C_DUNGEON_EXIT_REQ& pkt) { return MakeSendBuffer(pkt, PKT_C_DUNGEON_EXIT_REQ); }
 
 public:
 	static PacketHandlerFunc GPacketHandler[UINT16_MAX];
@@ -128,6 +136,8 @@ public:
 	static bool Handle_S_PARTY_RESULT(PacketSessionRef& session, Protocol::S_PARTY_RESULT& pkt);
 	static bool Handle_S_PARTY_INVITE_NTF(PacketSessionRef& session, Protocol::S_PARTY_INVITE_NTF& pkt);
 	static bool Handle_S_PARTY_STATUS_NTF(PacketSessionRef& session, Protocol::S_PARTY_STATUS_NTF& pkt);
+	static bool Handle_S_DUNGEON_ENTER_RES(PacketSessionRef& session, Protocol::S_DUNGEON_ENTER_RES& pkt);
+	static bool Handle_S_DUNGEON_EXIT_RES(PacketSessionRef& session, Protocol::S_DUNGEON_EXIT_RES& pkt);
 
 private:
 	template<typename PacketType, typename ProcessFunc>

@@ -1,20 +1,17 @@
-#include "pch.h"
+Ôªø#include "pch.h"
 #include "RoomManager.h"
 #include "DataManager.h"
 
 std::shared_ptr<RoomManager> GRoomManager = nullptr;
 
-std::shared_ptr<GameRoom> RoomManager::GetOrCreateRoom(int32 channelId, int32 mapId)
+std::shared_ptr<GameRoom> RoomManager::GetOrCreateRoom(int32 channelId, int32 mapId, int64 instanceId)
 {
-
     DataManager* dm = DataManager::Instance();
     if (dm && dm->IsValidMapId(mapId) == false)
         mapId = dm->GetDefaultMapId();
 
+    RoomKey key{ channelId, mapId, instanceId }; //instanceId Ìè¨Ìï®
 
-    RoomKey key{ channelId, mapId };
-
-    // 1¬˜: ¿–±‚ ∂Ù¿∏∑Œ ¡∏¿Á ø©∫Œ »Æ¿Œ
     {
         READ_LOCK;
         auto it = _rooms.find(key);
@@ -22,12 +19,10 @@ std::shared_ptr<GameRoom> RoomManager::GetOrCreateRoom(int32 channelId, int32 ma
             return it->second;
     }
 
-    // æ¯¿∏∏È æ≤±‚ ∂Ù¿∏∑Œ ª˝º∫
     WRITE_LOCK;
     auto it = _rooms.find(key);
     if (it != _rooms.end())
         return it->second;
-
 
     const MapConfig* cfg = (dm ? dm->GetMapConfig(mapId) : nullptr);
 
@@ -36,10 +31,11 @@ std::shared_ptr<GameRoom> RoomManager::GetOrCreateRoom(int32 channelId, int32 ma
     const int32 zoneSize = cfg ? cfg->zoneSize : 10;
 
     auto room = MakeShared<GameRoom>();
-
-    
-
     room->Init(channelId, mapId, sizeX, sizeY, zoneSize);
+
+    // ‚úÖ GameRoomÏù¥ instanceIdÎ•º ÎÇ¥Î∂ÄÏóê Ï†ÄÏû•ÌïòÎèÑÎ°ù(Ï∂îÍ∞Ä ÏòàÏ†ï)
+    //room->SetInstanceId(instanceId);
+
     _rooms[key] = room;
     return room;
 }

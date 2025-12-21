@@ -1,57 +1,57 @@
-syntax = "proto3";
+癤퓋yntax = "proto3";
 package Protocol;
 
 import "Enum.proto";
 import "Struct.proto";
 
 // ============================================================
-// [LOGIN SERVER 전용] 
+// [LOGIN SERVER ONLY]
 // ============================================================
 
-// 1. 로그인 요청 (Client -> LoginServer)
-// 기존 C_LOGIN_REQ 대체
+// 1. Login Request (Client -> LoginServer)
+// Replaces existing C_LOGIN_REQ
 message C_LOGIN {
     string userId = 1;
-    string password = 2; // (일단 평문)
+    string password = 2; // (Plain text for now)
 }
 
-// 2. 로그인 응답 (LoginServer -> Client)
-// 기존 S_LOGIN_RES 대체
+// 2. Login Response (LoginServer -> Client)
+// Replaces existing S_LOGIN_RES
 message S_LOGIN {
     bool success = 1;
-    repeated ServerInfo serverList = 2; // 접속 가능한 게임 서버 목록
-    string token = 3; // [핵심] 발급된 인증 토큰
+    repeated ServerInfo serverList = 2; // List of accessible game servers
+    string token = 3; // [Core] Issued auth token
 }
 
-// 3. 서버 정보 구조체
+// 3. Server Info Structure
 message ServerInfo {
-    string name = 1; // "1채널"
-    string ip = 2;   // "127.0.0.1"
-    int32 port = 3;  // 7777
-    int32 congestion = 4; // 혼잡도
+    string name = 1; // e.g., "Channel 1"
+    string ip = 2;   // e.g., "127.0.0.1"
+    int32 port = 3;  // e.g., 7777
+    int32 congestion = 4; // Congestion level
 }
 
 // ============================================================
-// [GAME SERVER 전용] 
+// [GAME SERVER ONLY]
 // ============================================================
 
-// 4. 게임 서버 입장 요청 (Client -> GameServer)
-// 기존 C_ENTER_GAME_REQ 대체
-// 더 이상 캐릭터 인덱스(PlayerIndex)를 보내지 않는다. (LoginServer에서 이미 결정했다고 가정하거나, 여기서 Token만 보냄)
+// 4. Enter Game Request (Client -> GameServer)
+// Replaces existing C_ENTER_GAME_REQ
+// PlayerIndex is no longer sent. (Assuming decided by LoginServer or just sending Token)
 message C_ENTER_GAME {
-    string token    = 1; // [핵심] ID 대신 토큰
-    int32  channelId = 2; // [NEW] 클라이언트에서 선택한 채널
-    int32  mapId     = 3; // [NEW] 입장할 맵 (없으면 1로 사용해도 됨)
+    string token    = 1; // [Core] Token instead of ID
+    int32  channelId = 2; // [NEW] Channel selected by client
+    int32  mapId     = 3; // [NEW] Map to enter (Use 1 if empty/default)
 }
-// 5. 입장 응답 (GameServer -> Client)
-// 기존 S_ENTER_GAME_RES 대체
+// 5. Enter Game Response (GameServer -> Client)
+// Replaces existing S_ENTER_GAME_RES
 message S_ENTER_GAME {
     bool success = 1;
-    PlayerInfo myPlayer = 2; // 내 캐릭터 정보
+    PlayerInfo myPlayer = 2; // My character info
 }
 
 // ============================================================
-// [GAME LOGIC - MOVEMENT] (그대로 유지)
+// [GAME LOGIC - MOVEMENT] (Kept as is)
 // ============================================================
 message C_MOVE {
     PositionInfo posInfo = 1; 
@@ -63,7 +63,7 @@ message S_MOVE {
 }
 
 // ============================================================
-// [GAME LOGIC - VISIBILITY] (그대로 유지)
+// [GAME LOGIC - VISIBILITY] (Kept as is)
 // ============================================================
 message S_SPAWN {
     repeated PlayerInfo players = 1; 
@@ -74,7 +74,7 @@ message S_DESPAWN {
 }
 
 // ============================================================
-// [COMBAT] (그대로 유지)
+// [COMBAT] (Kept as is)
 // ============================================================
 message C_SKILL {
     int32 skillId = 1; 
@@ -82,18 +82,18 @@ message C_SKILL {
 
 message S_SKILL {
     uint64 objectId = 1; 
-    int32 skillId = 2;   
+    int32 skillId = 2;    
 }
 
 message S_CHANGE_HP {
     uint64 objectId = 1; 
     uint64 attackerId = 2; 
     int32 currentHp = 3; 
-    int32 damage = 4;    
+    int32 damage = 4;     
 }
 
 // ============================================================
-// [ITEM & INVENTORY] (그대로 유지)
+// [ITEM & INVENTORY] (Kept as is)
 // ============================================================
 message S_ITEM_LIST {
     repeated ItemInfo items = 1;
@@ -112,9 +112,9 @@ message S_REMOVE_ITEM {
 }
 
 message C_EQUIP_ITEM {
-    uint64 itemUid = 1;      
-    int32 slotIndex = 2;     
-    bool equip = 3;          
+    uint64 itemUid = 1;       
+    int32 slotIndex = 2;      
+    bool equip = 3;           
 }
 
 message S_EQUIP_ITEM {
@@ -128,27 +128,27 @@ message S_CHANGE_STAT {
 }
 
 // ============================================================
-// [GAME SERVER 전용] 
+// [GAME SERVER ONLY] 
 // ============================================================
 message C_MAP_CHANGE_REQ {
     int32 targetMapId = 1; 
 }
 message S_MAP_CHANGE_BEGIN {
-    uint64 token = 1; int32 targetMapId = 2; PositionInfo spawn = 3; 
+    uint64 token = 1; int32 targetMapId = 2; PositionInfo spawn = 3; int64 instanceid = 4; 
 }
 
 message C_MAP_CHANGE_ACK {
     uint64 token = 1; 
 }
 message S_MAP_CHANGE_END {
-    uint64 token = 1; int32 mapId = 2; PositionInfo pos = 3; 
+    uint64 token = 1; int32 mapId = 2; PositionInfo pos = 3; int64 instanceid = 4;
 }
 
 
 
 
 // ============================================================
-// [CHAT] (그대로 유지)
+// [CHAT] (Kept as is)
 // ============================================================
 message C_CHAT_REQ {
     string message = 1;
@@ -165,7 +165,7 @@ message S_CHAT_NTF {
 }
 
 // ============================================================
-// [HEARTBEAT] (그대로 유지)
+// [HEARTBEAT] (Kept as is)
 // ============================================================
 message S_HEART_BEAT_RES { } 
 message C_HEART_BEAT_REQ { }
@@ -194,11 +194,11 @@ message S_PARTY_INFO_NTF {
 // [PARTY - CONTROL] (NEW)
 // ============================================================
 
-// 파티 생성/초대/수락/거절/탈퇴/추방/해산 요청들
-// - op/reason enum은 Enum.proto에 정의할 것
+// Requests for Party Create/Invite/Accept/Reject/Leave/Kick/Disband
+// - op/reason enum should be defined in Enum.proto
 
 message C_PARTY_CREATE_REQ {
-    uint64 targetPlayerId = 1; // 처음 파티 시작: 상대 1명을 지정 (0이면 혼자 파티 생성도 가능)
+    uint64 targetPlayerId = 1; // Start party: Target 1 player (If 0, create party alone)
 }
 
 message C_PARTY_INVITE_REQ {
@@ -206,8 +206,8 @@ message C_PARTY_INVITE_REQ {
 }
 
 message C_PARTY_INVITE_ACCEPT_REQ {
-    uint64 partyId = 1;   // 초대 받은 파티
-    bool accept = 2;      // true=수락, false=거절
+    uint64 partyId = 1;    // Invited Party ID
+    bool accept = 2;       // true=Accept, false=Reject
 }
 
 message C_PARTY_LEAVE_REQ { }
@@ -218,8 +218,8 @@ message C_PARTY_KICK_REQ {
 
 message C_PARTY_DISBAND_REQ { }
 
-// 서버 -> 클라: 결과(공통)
-// op/reason은 Enum.proto에서: PartyOp, PartyResultReason 같은 걸로 정의
+// Server -> Client: Result (Common)
+// op/reason should be defined in Enum.proto (e.g., PartyOp, PartyResultReason)
 message S_PARTY_RESULT {
     int32 op = 1;         // PartyOp (enum)
     bool success = 2;
@@ -228,7 +228,7 @@ message S_PARTY_RESULT {
     uint32 version = 5;
 }
 
-// 서버 -> 클라: 파티 초대 알림
+// Server -> Client: Party Invite Notification
 message S_PARTY_INVITE_NTF {
     uint64 partyId = 1;
     uint64 inviterId = 2;
@@ -236,11 +236,11 @@ message S_PARTY_INVITE_NTF {
 }
 
 // ============================================================
-// [PARTY - STATUS] (NEW) 파티원 체력/레벨 등 상태 확인
+// [PARTY - STATUS] (NEW) Check party member HP/Level etc.
 // ============================================================
 
-// 파티원 상태(최소)
-// - objectId까지 넣으면 월드에서 찾을 때도 편함(없으면 0)
+// Party Member Status (Minimal)
+// - Adding objectId makes it easier to find in world (0 if not present)
 message PartyMemberStatus {
     uint64 playerId = 1;
     uint64 objectId = 2;
@@ -252,16 +252,55 @@ message PartyMemberStatus {
 
     int32 mapId = 7;
     int32 channelId = 8;
-    PositionInfo posInfo = 9; // 원하면 제거 가능(미니맵/추적용)
+    PositionInfo posInfo = 9; // Can remove if desired (For minimap/tracking)
 }
 
-// 클라 -> 서버: 파티 상태 스냅샷 요청 (UI 열 때 1번)
+// Client -> Server: Request Party Status Snapshot (Once when UI opens)
 message C_PARTY_STATUS_REQ { }
 
-// 서버 -> 클라: 파티 상태 스냅샷/갱신
-// - memberStatus는 전체 스냅샷을 보내도 되고, delta로 보내도 됨(일단 스냅샷부터)
+// Server -> Client: Party Status Snapshot/Update
+// - memberStatus can be full snapshot or delta (Start with snapshot)
 message S_PARTY_STATUS_NTF {
     uint64 partyId = 1;
     uint32 version = 2;
     repeated PartyMemberStatus members = 3;
+}
+
+
+// ===== Dungeon / Instance =====
+
+enum DungeonEnterFailReason {
+  DUNGEON_ENTER_OK = 0;
+  DUNGEON_ENTER_FAIL_NOT_IN_PARTY = 1;
+  DUNGEON_ENTER_FAIL_INVALID_MAP = 2;
+  DUNGEON_ENTER_FAIL_INTERNAL = 3;
+}
+
+message C_DUNGEON_ENTER_REQ {
+  int32 dungeonMapId = 1;
+}
+
+message S_DUNGEON_ENTER_RES {
+  bool  success = 1;
+  int32 dungeonMapId = 2;
+  int64 instanceid = 3;          
+  DungeonEnterFailReason reason = 4;
+}
+
+enum DungeonExitFailReason {
+  DUNGEON_EXIT_OK = 0;
+  DUNGEON_EXIT_FAIL_NOT_IN_DUNGEON = 1;
+  DUNGEON_EXIT_FAIL_NOT_IN_PARTY = 2;
+  DUNGEON_EXIT_FAIL_INTERNAL = 3;
+}
+
+message C_DUNGEON_EXIT_REQ {
+  // empty
+}
+
+message S_DUNGEON_EXIT_RES {
+  bool  success = 1;
+  int32 returnMapId = 2;
+  int64 returnInstanceid = 3; 
+  DungeonExitFailReason reason = 4;
 }

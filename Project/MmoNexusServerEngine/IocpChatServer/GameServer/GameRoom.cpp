@@ -237,7 +237,7 @@ void GameRoom::EnterMapChange(PlayerSessionRef session, PlayerRef player)
 	endPkt.set_token(session->GetMapChangeToken());
 	endPkt.set_mapid(_mapId);
 	endPkt.mutable_pos()->CopyFrom(*player->GetPosInfo()); // proto: PositionInfo pos = 3
-
+	endPkt.set_instanceid(player->GetInstanceId());
 	session->Send(ClientPacketHandler::MakeSendBuffer(endPkt));
 
 	// 2) 입력락 해제

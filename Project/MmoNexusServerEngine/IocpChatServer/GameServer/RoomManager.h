@@ -6,12 +6,12 @@ struct RoomKey
 {
     int32 channelId;
     int32 mapId;
-
+    int64 instanceId = 0; // 추가 (0 = world)
     bool operator<(const RoomKey& other) const
     {
-        if (channelId != other.channelId)
-            return channelId < other.channelId;
-        return mapId < other.mapId;
+        if (channelId != other.channelId) return channelId < other.channelId;
+        if (mapId != other.mapId)         return mapId < other.mapId;
+        return instanceId < other.instanceId;
     }
 };
 
@@ -21,7 +21,7 @@ public:
     RoomManager() = default;
     ~RoomManager() = default;
 
-    std::shared_ptr<GameRoom> GetOrCreateRoom(int32 channelId, int32 mapId);
+    std::shared_ptr<GameRoom> GetOrCreateRoom(int32 channelId, int32 mapId, int64 instanceId = 0);
 
     // 메인 루프에서 호출
     void UpdateAll();

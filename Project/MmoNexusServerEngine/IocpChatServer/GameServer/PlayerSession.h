@@ -57,8 +57,9 @@ public:
         return _mapChangeState.load(std::memory_order_acquire) == MAP_CHANGE_SWITCHING;
     }
 
-    bool TryBeginMapChange(uint64 token, int32 targetMapId, const Protocol::PositionInfo& spawn);
-    bool TryConsumeMapChangeAck(uint64 token, int32& outTargetMapId, Protocol::PositionInfo& outSpawn);
+    bool TryBeginMapChange(uint64 token, int32 targetMapId, int64 targetInstanceId, const Protocol::PositionInfo& spawn);
+    bool TryConsumeMapChangeAck(uint64 token, int32& outTargetMapId, int64& outTargetInstanceId, Protocol::PositionInfo& outSpawn);
+
 
     void EndMapChange();
     void CancelMapChange();
@@ -168,4 +169,5 @@ private:
     uint64 _mapChangeToken = 0;
     int32 _pendingTargetMapId = 0;
     Protocol::PositionInfo _pendingSpawn;
+    int64 _pendingTargetInstanceId = 0;
 };

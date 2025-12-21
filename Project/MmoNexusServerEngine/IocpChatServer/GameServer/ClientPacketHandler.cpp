@@ -13,7 +13,7 @@
 #include <chrono>
 #include "PartyActor.h"
 #include "PartyManagerCore.h"
-
+#include "InstanceActor.h"
 
 namespace
 {
@@ -273,9 +273,8 @@ bool ClientPacketHandler::Handle_C_MAP_CHANGE_REQ(PacketSessionRef& session, Pro
 		return true;
 
 	const int32 targetMapId = pkt.targetmapid();
+	const int64 targetInstanceId = 0; // ✅ 일반 맵 이동은 월드(0)로
 
-	// DataManager 읽기/검증은 여기서 해도 되지만,
-	// player/map 비교는 세션 Actor에서 하자.
 	DataManager* dm = DataManager::Instance();
 	if (!dm || !dm->IsValidMapId(targetMapId))
 		return false;
@@ -289,25 +288,29 @@ bool ClientPacketHandler::Handle_C_MAP_CHANGE_REQ(PacketSessionRef& session, Pro
 	spawn.set_y(cfg->spawnY);
 	spawn.set_z(cfg->spawnZ);
 
-	ps->PostPlayer([ps, targetMapId, spawn](PlayerSessionRef ps, PlayerRef player)
+	// ✅ 캡처에 ps 넣지 마라(파라미터 ps랑 이름 충돌 가능)
+	ps->PostPlayer([targetMapId, targetInstanceId, spawn](PlayerSessionRef self, PlayerRef player)
 		{
-			if (ps->IsMapChanging())
+			if (self->IsMapChanging())
 				return;
 
-			// 같은 맵이면 무시
-			if (player->GetMapId() == targetMapId)
+			// 같은 맵(월드)면 무시
+			if (player->GetMapId() == targetMapId && player->GetInstanceId() == targetInstanceId)
 				return;
 
-			const uint64 token = MakeMapChangeToken(player->GetPlayerId(), ps->GetSessionId());
-			if (ps->TryBeginMapChange(token, targetMapId, spawn) == false)
+			const uint64 token = MakeMapChangeToken(player->GetPlayerId(), self->GetSessionId());
+
+			// ✅ 시그니처 변경 반영 (instanceid 추가)
+			if (self->TryBeginMapChange(token, targetMapId, targetInstanceId, spawn) == false)
 				return;
 
 			Protocol::S_MAP_CHANGE_BEGIN beginPkt;
 			beginPkt.set_token(token);
 			beginPkt.set_targetmapid(targetMapId);
 			beginPkt.mutable_spawn()->CopyFrom(spawn);
+			beginPkt.set_instanceid(targetInstanceId); // ✅ 추가
 
-			ps->Send(MakeSendBuffer(beginPkt));
+			self->Send(MakeSendBuffer(beginPkt));
 		});
 
 	return true;
@@ -321,41 +324,45 @@ bool ClientPacketHandler::Handle_C_MAP_CHANGE_ACK(PacketSessionRef& session, Pro
 
 	const uint64 token = pkt.token();
 
-	ps->PostPlayer([token](PlayerSessionRef ps, PlayerRef player)
+	ps->PostPlayer([token](PlayerSessionRef self, PlayerRef player)
 		{
 			int32 targetMapId = 0;
+			int64 targetInstanceId = 0;
 			Protocol::PositionInfo spawn;
 
-			if (ps->TryConsumeMapChangeAck(token, targetMapId, spawn) == false)
+			if (self->TryConsumeMapChangeAck(token, targetMapId, targetInstanceId, spawn) == false)
 				return;
 
 			const int32 channelId = player->GetChannelId();
-			auto newRoom = GRoomManager->GetOrCreateRoom(channelId, targetMapId);
+			auto newRoom = GRoomManager->GetOrCreateRoom(channelId, targetMapId, targetInstanceId);
+
 			if (!newRoom)
 			{
-				ps->CancelMapChange();
+				self->CancelMapChange();
 				return;
 			}
 
-			// ✅ 여기! player->GetRoom() 금지. 캐시에서.
-			auto oldRoom = ps->GetCurrentRoom_ActorOnly();
+			auto oldRoom = self->GetCurrentRoom_ActorOnly();
 
 			if (!oldRoom)
 			{
 				player->SetMapId(targetMapId);
+				player->SetInstanceId(targetInstanceId);
 				player->GetPosInfo()->CopyFrom(spawn);
-				newRoom->PushJob(&GameRoom::EnterMapChange, ps, player);
+
+				newRoom->PushJob(&GameRoom::EnterMapChange, self, player);
 				return;
 			}
 
-			oldRoom->PushJob([ps, player, oldRoom, newRoom, targetMapId, spawn]()
+			oldRoom->PushJob([self, player, oldRoom, newRoom, targetMapId, targetInstanceId, spawn]()
 				{
-					oldRoom->Leave(ps, player);
+					oldRoom->Leave(self, player);
 
 					player->SetMapId(targetMapId);
+					player->SetInstanceId(targetInstanceId);
 					player->GetPosInfo()->CopyFrom(spawn);
 
-					newRoom->PushJob(&GameRoom::EnterMapChange, ps, player);
+					newRoom->PushJob(&GameRoom::EnterMapChange, self, player);
 				});
 		});
 
@@ -1010,6 +1017,258 @@ bool ClientPacketHandler::Handle_C_PARTY_STATUS_REQ(PacketSessionRef& session, P
 													req->Send(ClientPacketHandler::MakeSendBuffer(ntf));
 												}
 											});
+									});
+							}
+						});
+				});
+		});
+
+	return true;
+}
+
+bool ClientPacketHandler::Handle_C_DUNGEON_ENTER_REQ(PacketSessionRef& session, Protocol::C_DUNGEON_ENTER_REQ& pkt)
+{
+	PlayerSessionRef ps = static_pointer_cast<PlayerSession>(session);
+	if (!ps) return false;
+
+	const int32 dungeonMapId = pkt.dungeonmapid();
+
+	DataManager* dm = DataManager::Instance();
+	if (!dm || !dm->IsValidMapId(dungeonMapId))
+	{
+		ps->Post([dungeonMapId](PlayerSessionRef self)
+			{
+				Protocol::S_DUNGEON_ENTER_RES res;
+				res.set_success(false);
+				res.set_dungeonmapid(dungeonMapId);
+				res.set_instanceid(0);
+				res.set_reason(Protocol::DUNGEON_ENTER_FAIL_INVALID_MAP);
+				self->Send(MakeSendBuffer(res));
+			});
+		return true;
+	}
+
+	const MapConfig* cfg = dm->GetMapConfig(dungeonMapId);
+	if (!cfg) return true;
+
+	Protocol::PositionInfo spawn;
+	spawn.set_x(cfg->spawnX);
+	spawn.set_y(cfg->spawnY);
+	spawn.set_z(cfg->spawnZ);
+
+	ps->PostPlayer([dungeonMapId, spawn](PlayerSessionRef ps, PlayerRef player)
+		{
+			const uint64 requesterId = player->GetPlayerId();
+			const int32 channelId = player->GetChannelId();
+
+			PartyActor::Instance().Push([requesterId, channelId, dungeonMapId, spawn]()
+				{
+					auto& core = PartyActor::Instance().Core();
+					const uint64 partyId = core.GetPartyIdByPlayerId(requesterId);
+
+					if (partyId == 0)
+					{
+						if (auto s = GameSessionManager::GSessionManager->FindByPlayerId(requesterId))
+						{
+							s->Post([dungeonMapId](PlayerSessionRef self)
+								{
+									Protocol::S_DUNGEON_ENTER_RES res;
+									res.set_success(false);
+									res.set_dungeonmapid(dungeonMapId);
+									res.set_instanceid(0);
+									res.set_reason(Protocol::DUNGEON_ENTER_FAIL_NOT_IN_PARTY);
+									self->Send(MakeSendBuffer(res));
+								});
+						}
+						return;
+					}
+
+					std::vector<uint64> members;
+					core.GetMembers(partyId, members);
+
+					InstanceActor::Instance().Push([partyId, members, channelId, dungeonMapId, spawn, requesterId]()
+						{
+							InstanceManagerCore::InstanceInfo inst;
+							if (!InstanceActor::Instance().Core().CreateOrGetForParty(partyId, channelId, dungeonMapId, members, inst))
+							{
+								if (auto s = GameSessionManager::GSessionManager->FindByPlayerId(requesterId))
+								{
+									s->Post([dungeonMapId](PlayerSessionRef self)
+										{
+											Protocol::S_DUNGEON_ENTER_RES res;
+											res.set_success(false);
+											res.set_dungeonmapid(dungeonMapId);
+											res.set_instanceid(0);
+											res.set_reason(Protocol::DUNGEON_ENTER_FAIL_INTERNAL);
+											self->Send(MakeSendBuffer(res));
+										});
+								}
+								return;
+							}
+
+							const int64 instanceId = inst.instanceId;
+
+							// requester에게 결과 먼저
+							if (auto req = GameSessionManager::GSessionManager->FindByPlayerId(requesterId))
+							{
+								req->Post([dungeonMapId, instanceId](PlayerSessionRef self)
+									{
+										Protocol::S_DUNGEON_ENTER_RES res;
+										res.set_success(true);
+										res.set_dungeonmapid(dungeonMapId);
+										res.set_instanceid(instanceId);
+										res.set_reason(Protocol::DUNGEON_ENTER_OK);
+										self->Send(MakeSendBuffer(res));
+									});
+							}
+
+							// 파티원 전원 MapChangeBegin
+							for (uint64 pid : members)
+							{
+								auto ms = GameSessionManager::GSessionManager->FindByPlayerId(pid);
+								if (!ms) continue;
+
+								ms->PostPlayer([dungeonMapId, instanceId, spawn](PlayerSessionRef ms, PlayerRef p)
+									{
+										if (ms->IsMapChanging())
+											return;
+
+										// ✅ 여기서 “복귀 위치” 저장 (현재 월드 위치)
+										p->SetReturnLocation(p->GetMapId(), p->GetInstanceId(), *p->GetPosInfo());
+
+										const uint64 token = MakeMapChangeToken(p->GetPlayerId(), ms->GetSessionId());
+										if (!ms->TryBeginMapChange(token, dungeonMapId, instanceId, spawn))
+											return;
+
+										Protocol::S_MAP_CHANGE_BEGIN beginPkt;
+										beginPkt.set_token(token);
+										beginPkt.set_targetmapid(dungeonMapId);
+										beginPkt.mutable_spawn()->CopyFrom(spawn);
+										beginPkt.set_instanceid(instanceId);
+
+										ms->Send(MakeSendBuffer(beginPkt));
+									});
+							}
+						});
+				});
+		});
+
+	return true;
+}
+
+bool ClientPacketHandler::Handle_C_DUNGEON_EXIT_REQ(PacketSessionRef& session, Protocol::C_DUNGEON_EXIT_REQ& pkt)
+{
+	PlayerSessionRef ps = static_pointer_cast<PlayerSession>(session);
+	if (!ps) return false;
+
+	ps->PostPlayer([](PlayerSessionRef ps, PlayerRef player)
+		{
+			const uint64 requesterId = player->GetPlayerId();
+
+			// 0이면 던전 안임
+			if (player->GetInstanceId() == 0)
+			{
+				Protocol::S_DUNGEON_EXIT_RES res;
+				res.set_success(false);
+				res.set_returnmapid(player->GetMapId());
+				res.set_returninstanceid(player->GetInstanceId());
+				res.set_reason(Protocol::DUNGEON_EXIT_FAIL_NOT_IN_DUNGEON);
+				ps->Send(MakeSendBuffer(res));
+				return;
+			}
+
+			PartyActor::Instance().Push([requesterId]()
+				{
+					auto& core = PartyActor::Instance().Core();
+					const uint64 partyId = core.GetPartyIdByPlayerId(requesterId);
+
+					if (partyId == 0)
+					{
+						if (auto s = GameSessionManager::GSessionManager->FindByPlayerId(requesterId))
+						{
+							s->Post([](PlayerSessionRef self)
+								{
+									Protocol::S_DUNGEON_EXIT_RES res;
+									res.set_success(false);
+									res.set_returnmapid(1);
+									res.set_returninstanceid(0);
+									res.set_reason(Protocol::DUNGEON_EXIT_FAIL_NOT_IN_PARTY);
+									self->Send(MakeSendBuffer(res));
+								});
+						}
+						return;
+					}
+
+					std::vector<uint64> members;
+					core.GetMembers(partyId, members);
+
+					// ✅ InstanceActor에서 party 인스턴스 닫기(매핑 제거)
+					InstanceActor::Instance().Push([partyId, members, requesterId]()
+						{
+							int64 closedInstanceId = 0;
+							InstanceActor::Instance().Core().CloseForParty(partyId, closedInstanceId);
+							// closedInstanceId는 “삭제된 인스턴스 id” (참고용)
+
+							// requester에게 exit res (성공) 먼저
+							if (auto req = GameSessionManager::GSessionManager->FindByPlayerId(requesterId))
+							{
+								req->Post([](PlayerSessionRef self)
+									{
+										// 실제 리턴맵/좌표는 각자 Player에 저장돼있으니
+										// 여기선 “성공”만 알려도 됨. 그래도 필드는 채워주자.
+										self->PostPlayer([](PlayerSessionRef ps, PlayerRef p)
+											{
+												Protocol::S_DUNGEON_EXIT_RES res;
+												res.set_success(true);
+												res.set_returnmapid(p->GetReturnMapId());
+												res.set_returninstanceid(p->GetReturnInstanceId());
+												res.set_reason(Protocol::DUNGEON_EXIT_OK);
+												ps->Send(MakeSendBuffer(res));
+											});
+									});
+							}
+
+							// 파티원 전원 월드 복귀 MapChangeBegin
+							for (uint64 pid : members)
+							{
+								auto ms = GameSessionManager::GSessionManager->FindByPlayerId(pid);
+								if (!ms) continue;
+
+								ms->PostPlayer([](PlayerSessionRef ms, PlayerRef p)
+									{
+										if (ms->IsMapChanging())
+											return;
+
+										const int32 returnMapId = p->GetReturnMapId();
+										const int64 returnInstanceId = p->GetReturnInstanceId();
+										const Protocol::PositionInfo& returnPos = p->GetReturnPos();
+
+										// (방어) 리턴맵이 이상하면 default로
+										DataManager* dm = DataManager::Instance();
+										int32 safeReturnMap = returnMapId;
+										Protocol::PositionInfo safePos = returnPos;
+
+										if (!dm || !dm->IsValidMapId(safeReturnMap))
+										{
+											safeReturnMap = (dm ? dm->GetDefaultMapId() : 1);
+											const MapConfig* cfg = dm ? dm->GetMapConfig(safeReturnMap) : nullptr;
+											safePos.Clear();
+											safePos.set_x(cfg ? cfg->spawnX : 50.f);
+											safePos.set_y(cfg ? cfg->spawnY : 0.f);
+											safePos.set_z(cfg ? cfg->spawnZ : 50.f);
+										}
+
+										const uint64 token = MakeMapChangeToken(p->GetPlayerId(), ms->GetSessionId());
+										if (!ms->TryBeginMapChange(token, safeReturnMap, returnInstanceId, safePos))
+											return;
+
+										Protocol::S_MAP_CHANGE_BEGIN beginPkt;
+										beginPkt.set_token(token);
+										beginPkt.set_targetmapid(safeReturnMap);
+										beginPkt.mutable_spawn()->CopyFrom(safePos);
+										beginPkt.set_instanceid(returnInstanceId);
+
+										ms->Send(MakeSendBuffer(beginPkt));
 									});
 							}
 						});
