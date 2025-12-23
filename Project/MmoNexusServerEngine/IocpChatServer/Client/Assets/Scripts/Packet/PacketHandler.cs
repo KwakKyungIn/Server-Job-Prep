@@ -196,6 +196,8 @@ public class PacketHandler
     {
         S_MAP_CHANGE_BEGIN pkt = packet as S_MAP_CHANGE_BEGIN;
 
+        NetworkManager.Instance.BeginMapChange(pkt.Token);
+
         Debug.Log($"🗺️ [MapChange BEGIN] token={pkt.Token} targetMapId={pkt.TargetMapId} spawn=({pkt.Spawn.X},{pkt.Spawn.Y},{pkt.Spawn.Z})");
 
         // 1) (UI/입력락/월드클리어)는 이벤트로 위임 (ObjectManager나 NetworkManager가 처리하게)
@@ -219,6 +221,8 @@ public class PacketHandler
 
         // 1) 최종 처리(내 위치 이동, 입력락 해제, UI 내리기 등)는 이벤트로 위임
         OnMapChangeEnd?.Invoke(pkt);
+
+        NetworkManager.Instance.EndMapChange(pkt.Token);
     }
 
     public static void S_SKILLHandler(ServerSession session, IMessage packet)
