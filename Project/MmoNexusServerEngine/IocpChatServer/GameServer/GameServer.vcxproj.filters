@@ -120,7 +120,9 @@
     <ClCompile Include="PartyManagerCore.cpp">
       <Filter>GameContents\Party</Filter>
     </ClCompile>
-    <ClCompile Include="InstanceManagerCore.cpp" />
+    <ClCompile Include="InstanceManagerCore.cpp">
+      <Filter>GameContents\Party</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -198,8 +200,12 @@
     <ClInclude Include="PartyActor.h">
       <Filter>GameContents\Party</Filter>
     </ClInclude>
-    <ClInclude Include="InstanceManagerCore.h" />
-    <ClInclude Include="InstanceActor.h" />
+    <ClInclude Include="InstanceManagerCore.h">
+      <Filter>GameContents\Party</Filter>
+    </ClInclude>
+    <ClInclude Include="InstanceActor.h">
+      <Filter>GameContents\Party</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="ServerConfig.json" />

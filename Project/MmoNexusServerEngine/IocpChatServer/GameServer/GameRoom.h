@@ -22,6 +22,8 @@ public:
     void Init(int32 channelId, int32 mapId, int32 sizeX, int32 sizeY, int32 zoneSize = 50);
     void Update();
 
+
+
 public:
     // =========================================================
     // [Job System]
@@ -41,6 +43,24 @@ public:
         _jobQueue->Push(MakeShared<Job>(shared_from_this(), func,
             std::forward<A>(arg), std::forward<Args>(args)...));
     }
+
+
+public:
+    // =========================================================
+    // [Instance / Lifetime]
+    // =========================================================
+    void SetInstanceId(int64 instanceId) { _instanceId = instanceId; }
+    int64 GetInstanceId() const { return _instanceId; }
+    bool IsInstanceRoom() const { return _instanceId != 0; }
+
+    void MarkClosing(bool value = true) { _closing.store(value, std::memory_order_release); }
+    bool IsClosing() const { return _closing.load(std::memory_order_acquire); }
+
+    int32 GetPlayerCountApprox() const { return _playerCount.load(std::memory_order_acquire); }
+
+    // RoomManager purge 판단용 (다른 스레드에서 읽어도 안전)
+    bool ShouldPurge(uint64 nowMs) const;
+
 
 public:
     // [Content Logic]
@@ -85,6 +105,14 @@ private:
 
     int32 _channelId = 1;
     int32 _mapId = 1;
+
+    // =========================================================
+     //  Instance Lifetime State (RoomManager가 읽는 값들은 atomic)
+   // =========================================================
+    int64 _instanceId = 0; // 0 = world/field, >0 = instance
+    std::atomic<int32> _playerCount{ 0 };
+    std::atomic<bool>  _closing{ false };
+    std::atomic<uint64> _emptySinceMs{ 0 }; // playerCount==0이 된 시점(지연 purge 용)
 
 
     std::unique_ptr<BattleSystem> _battle; // 전투 로직 엔진

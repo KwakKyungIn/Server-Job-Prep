@@ -104,6 +104,12 @@ bool GameRoom::EnterRegister(PlayerSessionRef session, PlayerRef player)
 
 	if (player == nullptr) return false;
 
+	if (IsClosing())
+		return false;
+
+	player->SetInstanceId(_instanceId);
+
+
 	// 이미 들어와 있으면 실패 (중복 Enter 방지)
 	if (_players.find(player->GetPlayerId()) != _players.end())
 		return false;
@@ -118,6 +124,13 @@ bool GameRoom::EnterRegister(PlayerSessionRef session, PlayerRef player)
 		});
 
 	_players.insert({ player->GetPlayerId(), player });
+
+
+	// playerCount 증가 + emptySince 리셋
+	_playerCount.fetch_add(1, std::memory_order_acq_rel);
+	_emptySinceMs.store(0, std::memory_order_release);
+
+
 
 	// 2) AOI Zone 계산 및 등록
 	int32 zoneIndex = _grid.GetZoneIndex(*player->GetPosInfo());
@@ -278,6 +291,14 @@ void GameRoom::Leave(PlayerSessionRef session, PlayerRef player)
 		{
 			ps->ClearCurrentRoom(room);
 		});
+
+	const int32 after = _playerCount.fetch_sub(1, std::memory_order_acq_rel) - 1;
+	if (after == 0)
+	{
+		const uint64 nowMs = ::GetTickCount64();
+		_emptySinceMs.store(nowMs, std::memory_order_release);
+	}
+
 
 	// 3. [Broadcast] 주변 유저들에게 "나 나갔음" 알림 (S_DESPAWN)
 	{
@@ -884,4 +905,27 @@ void GameRoom::BroadcastChat(const Protocol::S_CHAT_NTF& ntf)
 		auto sb = ClientPacketHandler::MakeSendBuffer(pkt);
 		SendToPlayer(player->GetPlayerId(), sb);
 	}
+}
+
+
+#include <Windows.h> // GetTickCount64 (pch에 있으면 생략 가능)
+
+// closing=true && playerCount==0 && empty 상태가 일정 시간 유지되면 purge
+bool GameRoom::ShouldPurge(uint64 nowMs) const
+{
+	if (IsInstanceRoom() == false)
+		return false;
+
+	if (IsClosing() == false)
+		return false;
+
+	if (GetPlayerCountApprox() != 0)
+		return false;
+
+	const uint64 emptySince = _emptySinceMs.load(std::memory_order_acquire);
+	if (emptySince == 0)
+		return false;
+
+	constexpr uint64 GRACE_MS = 10'000; // 10초 지연 purge(안정성)
+	return (nowMs - emptySince) >= GRACE_MS;
 }
