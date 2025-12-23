@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include <memory>
 #include "JobQueue.h"
 #include "PartyManagerCore.h"
@@ -12,16 +12,19 @@ public:
         return inst;
     }
 
-    // PartyActor Àü¿ë Å¥¿¡ ÀÛ¾÷ µî·Ï
     template<typename Fn>
     void Push(Fn&& fn)
     {
         _queue->Push(ObjectPool<Job>::MakeShared(std::forward<Fn>(fn)));
     }
 
-    // PartyActor thread¿¡¼­¸¸ Core Á¢±ÙÇÏµµ·Ï ¡°ÇÚµé¡± Á¦°ø
     PartyManagerCore& Core() { return _core; }
     const PartyManagerCore& Core() const { return _core; }
+
+    // âœ… 6ë²ˆ ì—°ê²° ì§€ì : ì—¬ê¸°ë¡œ ëª¨ì•„ë¼
+    void LeaveAndHandleInstance(uint64 playerId);
+    void DisbandAndHandleInstance(uint64 leaderId);
+    void KickAndHandleInstance(uint64 leaderId, uint64 targetId);
 
 private:
     PartyActor()
@@ -31,5 +34,5 @@ private:
 
 private:
     std::shared_ptr<JobQueue> _queue;
-    PartyManagerCore _core; // ¶ô ¾øÀ½. PartyActor thread only.
+    PartyManagerCore _core;
 };

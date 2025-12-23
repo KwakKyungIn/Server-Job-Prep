@@ -152,9 +152,10 @@ bool PartyManagerCore::Leave(uint64 playerId, Party& outPartyAfter, bool& outDis
 
     auto it = _parties.find(partyId);
 
-    if (it->second.inDungeonTransition) return false;
-
+   
     if (it == _parties.end()) { _playerToParty.erase(pit); return false; }
+
+    if (it->second.inDungeonTransition) return false;
 
     it->second.members.erase(playerId);
     _playerToParty.erase(pit);
@@ -191,10 +192,11 @@ bool PartyManagerCore::Kick(uint64 leaderId, uint64 targetId, Party& outPartyAft
 
     auto it = _parties.find(partyId);
 
-    if (it->second.inDungeonTransition) return false;
+    
 
     if (it == _parties.end()) return false;
 
+    if (it->second.inDungeonTransition) return false;
     if (it->second.leaderId != leaderId) return false;
     if (it->second.members.find(targetId) == it->second.members.end()) return false;
 
@@ -221,10 +223,11 @@ bool PartyManagerCore::Disband(uint64 leaderId, Party& outDisbandedParty)
 
     auto it = _parties.find(partyId);
 
-    if (it->second.inDungeonTransition) return false;
+   
 
     if (it == _parties.end()) return false;
 
+    if (it->second.inDungeonTransition) return false;
     if (it->second.leaderId != leaderId) return false;
 
     outDisbandedParty = it->second;
@@ -303,5 +306,19 @@ bool PartyManagerCore::ClearPartyInstance(uint64 partyId)
     p.dungeonState = DungeonState::NONE;
     p.inDungeonTransition = false;
     p.version++;
+    return true;
+}
+
+void PartyManagerCore::MarkForceReturn(uint64 playerId)
+{
+    if (playerId == 0) return;
+    _forceReturn.insert(playerId);
+}
+
+bool PartyManagerCore::ConsumeForceReturn(uint64 playerId)
+{
+    auto it = _forceReturn.find(playerId);
+    if (it == _forceReturn.end()) return false;
+    _forceReturn.erase(it);
     return true;
 }

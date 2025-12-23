@@ -4,6 +4,9 @@
 #include "GameSessionManager.h"
 #include "GameRoom.h"
 #include "Player.h"
+#include "InstanceActor.h"
+#include "RoomManager.h"
+
 
 void PlayerSession::OnConnected()
 {
@@ -26,15 +29,32 @@ void PlayerSession::OnDisconnected()
 
             if (ps->_player)
             {
-                // ✅ player를 먼저 로컬로 잡는다 (shared_ptr 복사)
+                //  player를 먼저 로컬로 잡는다 (shared_ptr 복사)
                 PlayerRef player = ps->_player;
 
+                const uint64 playerId = player->GetPlayerId();
+
                 // 룸 나가기는 룸 Actor에게 요청
-                if (auto room = ps->GetRoom())   // ✅ 이제 session cache
+                if (auto room = ps->GetRoom())   // 이제 session cache
                 {
                     room->PushJob(&GameRoom::Leave, ps, player);
                 }
-                ps->SetCurrentRoom(nullptr);     // ✅ 더 이상 라우팅 안 타게 즉시 끊기
+                ps->SetCurrentRoom(nullptr);     // 더 이상 라우팅 안 타게 즉시 끊기
+
+                // 오프라인 강제 복귀 정책: 인스턴스 멤버십에서 제거
+                InstanceActor::Instance().Push([playerId]()
+                    {
+                        InstanceManagerCore::InstanceInfo closed;
+                        if (InstanceActor::Instance().Core().OnMemberOffline(playerId, closed))
+                        {
+                            // 마지막 멤버로 인해 close 되었으면 room closing 마킹
+                            if (closed.instanceId != 0 && GRoomManager)
+                            {
+                                auto room = GRoomManager->FindRoom(closed.channelId, closed.mapId, closed.instanceId);
+                                if (room) room->MarkClosing(true);
+                            }
+                        }
+                    });
 
                 // 순환 참조 해제는 세션이 처리
                 player->SetSession(nullptr);

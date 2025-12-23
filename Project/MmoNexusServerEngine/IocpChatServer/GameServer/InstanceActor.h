@@ -3,7 +3,8 @@
 #include "JobQueue.h"
 #include "Job.h"
 #include "InstanceManagerCore.h"
-
+#include "GameRoom.h" 
+#include "RoomManager.h"
 class InstanceActor
 {
 public:
@@ -20,6 +21,30 @@ public:
     }
 
     InstanceManagerCore& Core() { return _core; }
+
+    void TickTimeout()
+    {
+        const uint64 now = ::GetTickCount64();
+        std::vector<InstanceManagerCore::InstanceInfo> expired;
+        _core.CollectExpired(now, expired);
+
+        for (auto& inst : expired)
+        {
+            InstanceManagerCore::InstanceInfo closed;
+            if (_core.CloseForParty(inst.partyId, closed))
+            {
+                // room이 존재하면 closing 마킹 (purge 가능)
+                if (GRoomManager)
+                {
+                    auto room = GRoomManager->FindRoom(closed.channelId, closed.mapId, closed.instanceId);
+                    if (room) room->MarkClosing(true);
+                }
+            }
+        }
+    }
+
+
+
 
 private:
     InstanceActor()

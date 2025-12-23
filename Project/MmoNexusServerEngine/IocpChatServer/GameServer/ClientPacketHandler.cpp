@@ -30,6 +30,57 @@ namespace
 	}
 }
 
+// ===== [Helper] Dungeon에서 강제 월드 복귀 =====
+static void MakeSafeReturn(PlayerRef p, int32& outMapId, int64& outInstId, Protocol::PositionInfo& outPos)
+{
+	outMapId = p->GetReturnMapId();
+	outInstId = p->GetReturnInstanceId();
+	outPos = p->GetReturnPos();
+
+	DataManager* dm = DataManager::Instance();
+	if (!dm || !dm->IsValidMapId(outMapId))
+	{
+		outMapId = (dm ? dm->GetDefaultMapId() : 1);
+		outInstId = 0;
+
+		const MapConfig* cfg = dm ? dm->GetMapConfig(outMapId) : nullptr;
+		outPos.Clear();
+		outPos.set_x(cfg ? cfg->spawnX : 50.f);
+		outPos.set_y(cfg ? cfg->spawnY : 0.f);
+		outPos.set_z(cfg ? cfg->spawnZ : 50.f);
+	}
+}
+
+static void SendMapChangeBegin(PlayerSessionRef ms, PlayerRef p,
+	int32 targetMapId, int64 targetInstanceId, const Protocol::PositionInfo& spawn)
+{
+	if (!ms || !p) return;
+	if (ms->IsMapChanging()) return;
+
+	const uint64 token = MakeMapChangeToken(p->GetPlayerId(), ms->GetSessionId());
+	if (!ms->TryBeginMapChange(token, targetMapId, targetInstanceId, spawn))
+		return;
+
+	Protocol::S_MAP_CHANGE_BEGIN beginPkt;
+	beginPkt.set_token(token);
+	beginPkt.set_targetmapid(targetMapId);
+	beginPkt.mutable_spawn()->CopyFrom(spawn);
+	beginPkt.set_instanceid(targetInstanceId);
+	ms->Send(ClientPacketHandler::MakeSendBuffer(beginPkt));
+}
+
+static void ForceReturnToWorld(PlayerSessionRef ms)
+{
+	if (!ms) return;
+
+	ms->PostPlayer([](PlayerSessionRef self, PlayerRef p)
+		{
+			int32 rm = 0; int64 ri = 0; Protocol::PositionInfo rp;
+			MakeSafeReturn(p, rm, ri, rp);
+			SendMapChangeBegin(self, p, rm, ri, rp);
+		});
+}
+
 
 // Global DB Session Reference
 extern shared_ptr<PacketSession> G_DBSession;
@@ -706,9 +757,7 @@ bool ClientPacketHandler::Handle_C_PARTY_LEAVE_REQ(PacketSessionRef& session, Pr
 {
 	PlayerSessionRef ps = static_pointer_cast<PlayerSession>(session);
 	if (!ps) return true;
-
-	if (ps->IsMapChanging())
-		return true;
+	if (ps->IsMapChanging()) return true;
 
 	ps->PostPlayer([](PlayerSessionRef ps, PlayerRef player)
 		{
@@ -718,34 +767,62 @@ bool ClientPacketHandler::Handle_C_PARTY_LEAVE_REQ(PacketSessionRef& session, Pr
 				{
 					auto& core = PartyActor::Instance().Core();
 
-					const uint64 beforePartyId = core.GetPartyIdByPlayerId(pid);
+					const uint64 partyId = core.GetPartyIdByPlayerId(pid);
+					if (partyId == 0)
+					{
+						ps->Post([](PlayerSessionRef self)
+							{
+								Protocol::S_PARTY_RESULT res;
+								res.set_op(Protocol::PARTY_OP_LEAVE);
+								res.set_success(false);
+								res.set_reason(Protocol::PARTY_REASON_NOT_IN_PARTY);
+								res.set_partyid(0);
+								res.set_version(0);
+								self->Send(ClientPacketHandler::MakeSendBuffer(res));
+							});
+						return;
+					}
 
-					PartyManagerCore::Party after;
-					bool disbanded = false;
-					const bool ok = core.Leave(pid, after, disbanded);
+					const PartyManagerCore::Party before = core.GetSnapshot(partyId);
+					const bool wasInDungeon = (before.instanceId != 0);
 
-					const uint32 version = after.partyId ? after.version : 0;
+					// ✅ 실제 Leave + (던전이면) 인스턴스 Eject/Close/RoomClosing 처리
+					PartyActor::Instance().LeaveAndHandleInstance(pid);
 
-					// 결과 응답(요청자) - 세션 Actor에서
-					ps->Post([ok, beforePartyId, version](PlayerSessionRef self)
+					// ✅ 성공 판정: player->party 매핑이 제거됐으면 성공
+					const bool ok = (core.GetPartyIdByPlayerId(pid) == 0);
+
+					// 남은 파티 버전(있으면)
+					uint32 version = 0;
+					{
+						PartyManagerCore::Party afterSnap = core.GetSnapshot(partyId);
+						version = (afterSnap.partyId != 0) ? afterSnap.version : 0;
+					}
+
+					ps->Post([ok, partyId, version](PlayerSessionRef self)
 						{
 							Protocol::S_PARTY_RESULT res;
 							res.set_op(Protocol::PARTY_OP_LEAVE);
 							res.set_success(ok);
-							res.set_reason(ok ? Protocol::PARTY_REASON_OK : Protocol::PARTY_REASON_NOT_IN_PARTY);
-							res.set_partyid(beforePartyId);
+							res.set_reason(ok ? Protocol::PARTY_REASON_OK : Protocol::PARTY_REASON_INTERNAL_ERROR);
+							res.set_partyid(partyId);
 							res.set_version(version);
 							self->Send(ClientPacketHandler::MakeSendBuffer(res));
 						});
 
 					if (!ok) return;
 
-					// 떠난 사람은 party false
+					// 떠난 사람: 파티 없음
 					SendPartyInfoTo(ps, 0);
 
-					// 남은 파티원 갱신(Info만)
-					if (!disbanded && after.partyId != 0)
-						BroadcastPartyInfo(after.partyId);
+					// 남은 파티원 갱신(파티가 아직 존재하면)
+					PartyManagerCore::Party afterSnap = core.GetSnapshot(partyId);
+					if (afterSnap.partyId != 0)
+						BroadcastPartyInfo(partyId);
+
+					// ✅ 던전 내 Leave면 즉시 강제 복귀
+					if (wasInDungeon)
+						ForceReturnToWorld(ps);
 				});
 		});
 
@@ -756,7 +833,6 @@ bool ClientPacketHandler::Handle_C_PARTY_KICK_REQ(PacketSessionRef& session, Pro
 {
 	PlayerSessionRef ps = static_pointer_cast<PlayerSession>(session);
 	if (!ps) return true;
-
 	if (ps->IsMapChanging()) return true;
 
 	const uint64 targetId = pkt.targetplayerid();
@@ -769,13 +845,38 @@ bool ClientPacketHandler::Handle_C_PARTY_KICK_REQ(PacketSessionRef& session, Pro
 				{
 					auto& core = PartyActor::Instance().Core();
 
-					PartyManagerCore::Party after;
-					const bool ok = core.Kick(leaderId, targetId, after);
+					const uint64 partyId = core.GetPartyIdByPlayerId(leaderId);
+					if (partyId == 0)
+					{
+						ps->Post([](PlayerSessionRef self)
+							{
+								Protocol::S_PARTY_RESULT res;
+								res.set_op((int32)Protocol::PARTY_OP_KICK);
+								res.set_success(false);
+								res.set_reason((int32)Protocol::PARTY_REASON_NOT_IN_PARTY);
+								self->Send(ClientPacketHandler::MakeSendBuffer(res));
+							});
+						return;
+					}
 
-					const uint64 partyId = ok ? after.partyId : 0;
-					const uint32 version = ok ? after.version : 0;
+					const PartyManagerCore::Party before = core.GetSnapshot(partyId);
+					const bool wasInDungeon = (before.instanceId != 0);
 
-					// 요청자 결과
+					const bool wasMember = core.IsMember(partyId, targetId);
+
+					// ✅ Kick + (던전이면) 인스턴스 Eject/Close/RoomClosing 처리
+					PartyActor::Instance().KickAndHandleInstance(leaderId, targetId);
+
+					// ✅ 성공 판정: 원래 멤버였고, 지금은 멤버가 아니면 성공
+					const bool isMemberNow = core.IsMember(partyId, targetId);
+					const bool ok = (wasMember && !isMemberNow);
+
+					uint32 version = 0;
+					{
+						PartyManagerCore::Party afterSnap = core.GetSnapshot(partyId);
+						version = (afterSnap.partyId != 0) ? afterSnap.version : 0;
+					}
+
 					ps->Post([ok, partyId, version](PlayerSessionRef self)
 						{
 							Protocol::S_PARTY_RESULT res;
@@ -789,10 +890,12 @@ bool ClientPacketHandler::Handle_C_PARTY_KICK_REQ(PacketSessionRef& session, Pro
 
 					if (!ok) return;
 
-					// 남은 파티원 갱신(Info만)
-					BroadcastPartyInfo(after.partyId);
+					// 남은 파티원 갱신
+					PartyManagerCore::Party afterSnap = core.GetSnapshot(partyId);
+					if (afterSnap.partyId != 0)
+						BroadcastPartyInfo(partyId);
 
-					// 킥당한 사람: 파티 없음 (세션 Actor에서)
+					// 킥당한 사람: 파티 없음
 					auto kicked = GameSessionManager::GSessionManager->FindByPlayerId(targetId);
 					if (kicked)
 					{
@@ -802,6 +905,10 @@ bool ClientPacketHandler::Handle_C_PARTY_KICK_REQ(PacketSessionRef& session, Pro
 								self->Send(ClientPacketHandler::MakeSendBuffer(off));
 							});
 					}
+
+					// ✅ 던전 내 Kick이면 즉시 강제 복귀
+					if (wasInDungeon && kicked)
+						ForceReturnToWorld(kicked);
 				});
 		});
 
@@ -812,7 +919,6 @@ bool ClientPacketHandler::Handle_C_PARTY_DISBAND_REQ(PacketSessionRef& session, 
 {
 	PlayerSessionRef ps = static_pointer_cast<PlayerSession>(session);
 	if (!ps) return true;
-
 	if (ps->IsMapChanging()) return true;
 
 	ps->PostPlayer([](PlayerSessionRef ps, PlayerRef player)
@@ -823,28 +929,49 @@ bool ClientPacketHandler::Handle_C_PARTY_DISBAND_REQ(PacketSessionRef& session, 
 				{
 					auto& core = PartyActor::Instance().Core();
 
-					PartyManagerCore::Party disbanded;
-					const bool ok = core.Disband(leaderId, disbanded);
+					const uint64 partyId = core.GetPartyIdByPlayerId(leaderId);
+					if (partyId == 0)
+					{
+						ps->Post([](PlayerSessionRef self)
+							{
+								Protocol::S_PARTY_RESULT res;
+								res.set_op((int32)Protocol::PARTY_OP_DISBAND);
+								res.set_success(false);
+								res.set_reason((int32)Protocol::PARTY_REASON_NOT_IN_PARTY);
+								self->Send(ClientPacketHandler::MakeSendBuffer(res));
+							});
+						return;
+					}
 
-					const uint64 partyId = ok ? disbanded.partyId : 0;
-					const uint32 version = ok ? disbanded.version : 0;
+					// ✅ disband 전에 멤버/던전정보 확보 (disband 되면 party가 사라짐)
+					const PartyManagerCore::Party before = core.GetSnapshot(partyId);
+					std::vector<uint64> members;
+					members.reserve(before.members.size());
+					for (auto id : before.members) members.push_back(id);
 
-					// 요청자 결과
-					ps->Post([ok, partyId, version](PlayerSessionRef self)
+					const bool wasInDungeon = (before.instanceId != 0);
+
+					// ✅ Disband + (던전이면) 인스턴스 Close/RoomClosing 처리
+					PartyActor::Instance().DisbandAndHandleInstance(leaderId);
+
+					// ✅ 성공 판정: leader가 파티에서 빠졌으면 성공
+					const bool ok = (core.GetPartyIdByPlayerId(leaderId) == 0);
+
+					ps->Post([ok, partyId](PlayerSessionRef self)
 						{
 							Protocol::S_PARTY_RESULT res;
 							res.set_op((int32)Protocol::PARTY_OP_DISBAND);
 							res.set_success(ok);
 							res.set_reason(ok ? (int32)Protocol::PARTY_REASON_OK : (int32)Protocol::PARTY_REASON_INTERNAL_ERROR);
 							res.set_partyid(partyId);
-							res.set_version(version);
+							res.set_version(0);
 							self->Send(ClientPacketHandler::MakeSendBuffer(res));
 						});
 
 					if (!ok) return;
 
-					// 전원에게 "파티 없음" (각 세션 Actor에서)
-					for (uint64 id : disbanded.members)
+					// 전원에게 "파티 없음" + (던전이면) 강제 복귀
+					for (uint64 id : members)
 					{
 						auto ms = GameSessionManager::GSessionManager->FindByPlayerId(id);
 						if (!ms) continue;
@@ -854,6 +981,9 @@ bool ClientPacketHandler::Handle_C_PARTY_DISBAND_REQ(PacketSessionRef& session, 
 								Protocol::S_PARTY_INFO_NTF off = MakeNoPartyInfoNtf();
 								self->Send(ClientPacketHandler::MakeSendBuffer(off));
 							});
+
+						if (wasInDungeon)
+							ForceReturnToWorld(ms);
 					}
 				});
 		});
@@ -1066,6 +1196,7 @@ bool ClientPacketHandler::Handle_C_DUNGEON_ENTER_REQ(PacketSessionRef& session, 
 					auto& core = PartyActor::Instance().Core();
 					const uint64 partyId = core.GetPartyIdByPlayerId(requesterId);
 
+					// ✅ 1) 파티 체크가 먼저 (지금 네 코드는 이게 뒤에 있어서 버그났었음)
 					if (partyId == 0)
 					{
 						if (auto s = GameSessionManager::GSessionManager->FindByPlayerId(requesterId))
@@ -1083,14 +1214,65 @@ bool ClientPacketHandler::Handle_C_DUNGEON_ENTER_REQ(PacketSessionRef& session, 
 						return;
 					}
 
+					// (방어) 이미 던전 메타가 있으면 재진입 요청으로 판단 -> 지금은 막아
+					{
+						int64 curInst = 0; PartyManagerCore::DungeonState st; bool tr = false;
+						if (core.GetDungeonInfo(partyId, curInst, st, tr))
+						{
+							if (curInst != 0 || tr)
+							{
+								if (auto s = GameSessionManager::GSessionManager->FindByPlayerId(requesterId))
+								{
+									s->Post([dungeonMapId](PlayerSessionRef self)
+										{
+											Protocol::S_DUNGEON_ENTER_RES res;
+											res.set_success(false);
+											res.set_dungeonmapid(dungeonMapId);
+											res.set_instanceid(0);
+											res.set_reason(Protocol::DUNGEON_ENTER_FAIL_INTERNAL);
+											self->Send(MakeSendBuffer(res));
+										});
+								}
+								return;
+							}
+						}
+					}
+
+					// ✅ 2) Transition 시작 (실패하면 즉시 실패응답)
+					if (!core.TryBeginDungeonTransition(partyId, PartyManagerCore::DungeonState::ENTERING))
+					{
+						if (auto s = GameSessionManager::GSessionManager->FindByPlayerId(requesterId))
+						{
+							s->Post([dungeonMapId](PlayerSessionRef self)
+								{
+									Protocol::S_DUNGEON_ENTER_RES res;
+									res.set_success(false);
+									res.set_dungeonmapid(dungeonMapId);
+									res.set_instanceid(0);
+									res.set_reason(Protocol::DUNGEON_ENTER_FAIL_INTERNAL);
+									self->Send(MakeSendBuffer(res));
+								});
+						}
+						return;
+					}
+
 					std::vector<uint64> members;
 					core.GetMembers(partyId, members);
 
+					// ✅ 3) InstanceActor에서 인스턴스 생성/획득
 					InstanceActor::Instance().Push([partyId, members, channelId, dungeonMapId, spawn, requesterId]()
 						{
 							InstanceManagerCore::InstanceInfo inst;
 							if (!InstanceActor::Instance().Core().CreateOrGetForParty(partyId, channelId, dungeonMapId, members, inst))
 							{
+								// ✅ 실패면 Transition 롤백 (ENTERING 해제)
+								PartyActor::Instance().Push([partyId]()
+									{
+										auto& pc = PartyActor::Instance().Core();
+										pc.EndDungeonTransition(partyId, PartyManagerCore::DungeonState::NONE);
+										pc.ClearPartyInstance(partyId); // 혹시라도 남은 메타 정리
+									});
+
 								if (auto s = GameSessionManager::GSessionManager->FindByPlayerId(requesterId))
 								{
 									s->Post([dungeonMapId](PlayerSessionRef self)
@@ -1108,6 +1290,14 @@ bool ClientPacketHandler::Handle_C_DUNGEON_ENTER_REQ(PacketSessionRef& session, 
 
 							const int64 instanceId = inst.instanceId;
 
+							// ✅ 4) ENTER 성공 확정: party 메타 세팅 + transition 종료(IN_DUNGEON)
+							PartyActor::Instance().Push([partyId, instanceId]()
+								{
+									auto& pc = PartyActor::Instance().Core();
+									pc.SetPartyInstance(partyId, instanceId, PartyManagerCore::DungeonState::IN_DUNGEON);
+									pc.EndDungeonTransition(partyId, PartyManagerCore::DungeonState::IN_DUNGEON);
+								});
+
 							// requester에게 결과 먼저
 							if (auto req = GameSessionManager::GSessionManager->FindByPlayerId(requesterId))
 							{
@@ -1122,7 +1312,7 @@ bool ClientPacketHandler::Handle_C_DUNGEON_ENTER_REQ(PacketSessionRef& session, 
 									});
 							}
 
-							// 파티원 전원 MapChangeBegin
+							// 파티원 전원 MapChangeBegin (온라인만)
 							for (uint64 pid : members)
 							{
 								auto ms = GameSessionManager::GSessionManager->FindByPlayerId(pid);
@@ -1133,8 +1323,9 @@ bool ClientPacketHandler::Handle_C_DUNGEON_ENTER_REQ(PacketSessionRef& session, 
 										if (ms->IsMapChanging())
 											return;
 
-										// ✅ 여기서 “복귀 위치” 저장 (현재 월드 위치)
-										p->SetReturnLocation(p->GetMapId(), p->GetInstanceId(), *p->GetPosInfo());
+										// 복귀 위치 저장(월드 위치)
+										if (p->GetPosInfo())
+											p->SetReturnLocation(p->GetMapId(), p->GetInstanceId(), *p->GetPosInfo());
 
 										const uint64 token = MakeMapChangeToken(p->GetPlayerId(), ms->GetSessionId());
 										if (!ms->TryBeginMapChange(token, dungeonMapId, instanceId, spawn))
@@ -1165,7 +1356,7 @@ bool ClientPacketHandler::Handle_C_DUNGEON_EXIT_REQ(PacketSessionRef& session, P
 		{
 			const uint64 requesterId = player->GetPlayerId();
 
-			// 0이면 던전 안임
+			// 0이면 던전 아님
 			if (player->GetInstanceId() == 0)
 			{
 				Protocol::S_DUNGEON_EXIT_RES res;
@@ -1199,23 +1390,76 @@ bool ClientPacketHandler::Handle_C_DUNGEON_EXIT_REQ(PacketSessionRef& session, P
 						return;
 					}
 
+					// ✅ EXITING transition 시작 (실패하면 컷)
+					if (!core.TryBeginDungeonTransition(partyId, PartyManagerCore::DungeonState::EXITING))
+					{
+						if (auto s = GameSessionManager::GSessionManager->FindByPlayerId(requesterId))
+						{
+							s->Post([](PlayerSessionRef self)
+								{
+									Protocol::S_DUNGEON_EXIT_RES res;
+									res.set_success(false);
+									res.set_returnmapid(1);
+									res.set_returninstanceid(0);
+									res.set_reason(Protocol::DUNGEON_EXIT_FAIL_INTERNAL);
+									self->Send(MakeSendBuffer(res));
+								});
+						}
+						return;
+					}
+
 					std::vector<uint64> members;
 					core.GetMembers(partyId, members);
 
-					// ✅ InstanceActor에서 party 인스턴스 닫기(매핑 제거)
 					InstanceActor::Instance().Push([partyId, members, requesterId]()
 						{
-							int64 closedInstanceId = 0;
-							InstanceActor::Instance().Core().CloseForParty(partyId, closedInstanceId);
-							// closedInstanceId는 “삭제된 인스턴스 id” (참고용)
+							InstanceManagerCore::InstanceInfo closed;
+							const bool closedOk = InstanceActor::Instance().Core().CloseForParty(partyId, closed);
 
-							// requester에게 exit res (성공) 먼저
+							if (!closedOk)
+							{
+								// ✅ 실패면 transition 롤백 (대충 IN_DUNGEON으로 되돌림)
+								PartyActor::Instance().Push([partyId]()
+									{
+										auto& pc = PartyActor::Instance().Core();
+										pc.EndDungeonTransition(partyId, PartyManagerCore::DungeonState::IN_DUNGEON);
+									});
+
+								if (auto req = GameSessionManager::GSessionManager->FindByPlayerId(requesterId))
+								{
+									req->Post([](PlayerSessionRef self)
+										{
+											Protocol::S_DUNGEON_EXIT_RES res;
+											res.set_success(false);
+											res.set_returnmapid(1);
+											res.set_returninstanceid(0);
+											res.set_reason(Protocol::DUNGEON_EXIT_FAIL_INTERNAL);
+											self->Send(MakeSendBuffer(res));
+										});
+								}
+								return;
+							}
+
+							// ✅ room closing 마킹(purge 유도)
+							if (closed.instanceId != 0 && GRoomManager)
+							{
+								auto room = GRoomManager->FindRoom(closed.channelId, closed.mapId, closed.instanceId);
+								if (room) room->MarkClosing(true);
+							}
+
+							// ✅ party 메타 정리 + transition 종료(NONE)
+							PartyActor::Instance().Push([partyId]()
+								{
+									auto& pc = PartyActor::Instance().Core();
+									pc.ClearPartyInstance(partyId);
+									pc.EndDungeonTransition(partyId, PartyManagerCore::DungeonState::NONE);
+								});
+
+							// requester에게 exit res(성공)
 							if (auto req = GameSessionManager::GSessionManager->FindByPlayerId(requesterId))
 							{
 								req->Post([](PlayerSessionRef self)
 									{
-										// 실제 리턴맵/좌표는 각자 Player에 저장돼있으니
-										// 여기선 “성공”만 알려도 됨. 그래도 필드는 채워주자.
 										self->PostPlayer([](PlayerSessionRef ps, PlayerRef p)
 											{
 												Protocol::S_DUNGEON_EXIT_RES res;
@@ -1228,7 +1472,7 @@ bool ClientPacketHandler::Handle_C_DUNGEON_EXIT_REQ(PacketSessionRef& session, P
 									});
 							}
 
-							// 파티원 전원 월드 복귀 MapChangeBegin
+							// 파티원 전원 월드 복귀 MapChangeBegin (온라인만)
 							for (uint64 pid : members)
 							{
 								auto ms = GameSessionManager::GSessionManager->FindByPlayerId(pid);
@@ -1239,15 +1483,12 @@ bool ClientPacketHandler::Handle_C_DUNGEON_EXIT_REQ(PacketSessionRef& session, P
 										if (ms->IsMapChanging())
 											return;
 
-										const int32 returnMapId = p->GetReturnMapId();
-										const int64 returnInstanceId = p->GetReturnInstanceId();
-										const Protocol::PositionInfo& returnPos = p->GetReturnPos();
+										int32 safeReturnMap = p->GetReturnMapId();
+										int64 returnInstanceId = p->GetReturnInstanceId();
+										Protocol::PositionInfo safePos = p->GetReturnPos();
 
-										// (방어) 리턴맵이 이상하면 default로
+										// 방어: 리턴맵 검증
 										DataManager* dm = DataManager::Instance();
-										int32 safeReturnMap = returnMapId;
-										Protocol::PositionInfo safePos = returnPos;
-
 										if (!dm || !dm->IsValidMapId(safeReturnMap))
 										{
 											safeReturnMap = (dm ? dm->GetDefaultMapId() : 1);
@@ -1256,6 +1497,7 @@ bool ClientPacketHandler::Handle_C_DUNGEON_EXIT_REQ(PacketSessionRef& session, P
 											safePos.set_x(cfg ? cfg->spawnX : 50.f);
 											safePos.set_y(cfg ? cfg->spawnY : 0.f);
 											safePos.set_z(cfg ? cfg->spawnZ : 50.f);
+											returnInstanceId = 0;
 										}
 
 										const uint64 token = MakeMapChangeToken(p->GetPlayerId(), ms->GetSessionId());

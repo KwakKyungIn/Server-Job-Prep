@@ -56,10 +56,14 @@ public:
     bool SetPartyInstance(uint64 partyId, int64 instanceId, DungeonState state);
     bool ClearPartyInstance(uint64 partyId);
 
+    void MarkForceReturn(uint64 playerId);
+    bool ConsumeForceReturn(uint64 playerId);
 private:
     uint64 _nextPartyId = 1;
 
     std::unordered_map<uint64, Party> _parties;                 // partyId -> Party
     std::unordered_map<uint64, uint64> _playerToParty;          // playerId -> partyId
     std::unordered_map<uint64, PendingInvite> _pendingByTarget; // targetId -> invite
+
+    std::unordered_set<uint64> _forceReturn;
 };

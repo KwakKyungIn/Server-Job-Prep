@@ -205,6 +205,7 @@
     <ClCompile Include="InstanceManagerCore.cpp" />
     <ClCompile Include="LoginSession.cpp" />
     <ClCompile Include="Monster.cpp" />
+    <ClCompile Include="PartyActor.cpp" />
     <ClCompile Include="PartyManager.cpp" />
     <ClCompile Include="PartyManagerCore.cpp" />
     <ClCompile Include="pch.cpp">
@@ -231,6 +232,7 @@
     <ClInclude Include="Creature.h" />
     <ClInclude Include="DataManager.h" />
     <ClInclude Include="DBSession.h" />
+    <ClInclude Include="DungeonUtils.h" />
     <ClInclude Include="Enum.pb.h" />
     <ClInclude Include="GameMap.h" />
     <ClInclude Include="GameRoom.h" />
