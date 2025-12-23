@@ -68,6 +68,16 @@ bool PartyManagerCore::Invite(uint64 inviterId, uint64 targetId, PendingInvite& 
         partyId = it->second;
     }
 
+    // 파티 상태 확인
+    auto pit = _parties.find(partyId);
+    if (pit == _parties.end()) return false;
+
+    // ENTERING/EXITING 중 초대 금지
+    if (pit->second.inDungeonTransition) return false;
+
+    // 던전(인스턴스) 안에서는 초대 금지 (멤버십 꼬임 방지)
+    if (pit->second.instanceId != 0) return false;
+
     // 대상이 이미 파티 있으면 실패
     if (_playerToParty.find(targetId) != _playerToParty.end())
         return false;
@@ -113,6 +123,12 @@ bool PartyManagerCore::AcceptInvite(uint64 targetId, uint64 partyId, bool accept
     auto it = _parties.find(partyId);
     if (it == _parties.end()) { _pendingByTarget.erase(pit); return false; }
 
+    //ENTERING/EXITING 중 합류 금지
+    if (it->second.inDungeonTransition) { _pendingByTarget.erase(pit); return false; }
+
+    // 던전 중 합류 금지
+    if (it->second.instanceId != 0) { _pendingByTarget.erase(pit); return false; }
+
     it->second.members.insert(targetId);
     it->second.version++;
 
@@ -135,6 +151,9 @@ bool PartyManagerCore::Leave(uint64 playerId, Party& outPartyAfter, bool& outDis
     uint64 partyId = pit->second;
 
     auto it = _parties.find(partyId);
+
+    if (it->second.inDungeonTransition) return false;
+
     if (it == _parties.end()) { _playerToParty.erase(pit); return false; }
 
     it->second.members.erase(playerId);
@@ -171,6 +190,9 @@ bool PartyManagerCore::Kick(uint64 leaderId, uint64 targetId, Party& outPartyAft
     uint64 partyId = lp->second;
 
     auto it = _parties.find(partyId);
+
+    if (it->second.inDungeonTransition) return false;
+
     if (it == _parties.end()) return false;
 
     if (it->second.leaderId != leaderId) return false;
@@ -198,6 +220,9 @@ bool PartyManagerCore::Disband(uint64 leaderId, Party& outDisbandedParty)
     uint64 partyId = lp->second;
 
     auto it = _parties.find(partyId);
+
+    if (it->second.inDungeonTransition) return false;
+
     if (it == _parties.end()) return false;
 
     if (it->second.leaderId != leaderId) return false;
@@ -212,5 +237,71 @@ bool PartyManagerCore::Disband(uint64 leaderId, Party& outDisbandedParty)
     }
 
     _parties.erase(it);
+    return true;
+}
+
+bool PartyManagerCore::GetDungeonInfo(uint64 partyId, int64& outInstanceId, DungeonState& outState, bool& outTransition) const
+{
+    outInstanceId = 0;
+    outState = DungeonState::NONE;
+    outTransition = false;
+
+    auto it = _parties.find(partyId);
+    if (it == _parties.end()) return false;
+
+    outInstanceId = it->second.instanceId;
+    outState = it->second.dungeonState;
+    outTransition = it->second.inDungeonTransition;
+    return true;
+}
+
+bool PartyManagerCore::TryBeginDungeonTransition(uint64 partyId, DungeonState nextState)
+{
+    auto it = _parties.find(partyId);
+    if (it == _parties.end()) return false;
+
+    Party& p = it->second;
+    if (p.inDungeonTransition) return false;
+
+    p.inDungeonTransition = true;
+    p.dungeonState = nextState;
+    p.version++;
+    return true;
+}
+
+bool PartyManagerCore::EndDungeonTransition(uint64 partyId, DungeonState finalState)
+{
+    auto it = _parties.find(partyId);
+    if (it == _parties.end()) return false;
+
+    Party& p = it->second;
+    p.inDungeonTransition = false;
+    p.dungeonState = finalState;
+    p.version++;
+    return true;
+}
+
+bool PartyManagerCore::SetPartyInstance(uint64 partyId, int64 instanceId, DungeonState state)
+{
+    auto it = _parties.find(partyId);
+    if (it == _parties.end()) return false;
+
+    Party& p = it->second;
+    p.instanceId = instanceId;
+    p.dungeonState = state;
+    p.version++;
+    return true;
+}
+
+bool PartyManagerCore::ClearPartyInstance(uint64 partyId)
+{
+    auto it = _parties.find(partyId);
+    if (it == _parties.end()) return false;
+
+    Party& p = it->second;
+    p.instanceId = 0;
+    p.dungeonState = DungeonState::NONE;
+    p.inDungeonTransition = false;
+    p.version++;
     return true;
 }
