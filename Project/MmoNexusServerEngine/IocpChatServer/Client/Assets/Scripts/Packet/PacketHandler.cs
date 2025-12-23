@@ -37,7 +37,8 @@ public class PacketHandler
 
 
 
-
+    public static Action<S_DUNGEON_ENTER_RES> OnDungeonEnterRes;
+    public static Action<S_DUNGEON_EXIT_RES> OnDungeonExitRes;
 
     //====================나중에 채울거임===========================
     public static Action<S_PARTY_CHAT_NTF> OnPartyChatNtf;
@@ -310,6 +311,26 @@ public class PacketHandler
 
         Debug.Log($"[PartyStatus] partyId={pkt.PartyId} ver={pkt.Version} members={pkt.Members.Count}");
         OnPartyStatusNtf?.Invoke(pkt);
+    }
+
+    public static void S_DUNGEON_ENTER_RESHandler(ServerSession session, IMessage packet)
+    {
+        var pkt = packet as S_DUNGEON_ENTER_RES;
+        if (pkt == null) return;
+
+        Debug.Log($"[DungeonEnterRes] success={pkt.Success} map={pkt.DungeonMapId} inst={pkt.Instanceid} reason={pkt.Reason}");
+
+        OnDungeonEnterRes?.Invoke(pkt);
+    }
+
+    public static void S_DUNGEON_EXIT_RESHandler(ServerSession session, IMessage packet)
+    {
+        var pkt = packet as S_DUNGEON_EXIT_RES;
+        if (pkt == null) return;
+
+        Debug.Log($"[DungeonExitRes] success={pkt.Success} returnMap={pkt.ReturnMapId} returnInst={pkt.ReturnInstanceid} reason={pkt.Reason}");
+
+        OnDungeonExitRes?.Invoke(pkt);
     }
 }
 
