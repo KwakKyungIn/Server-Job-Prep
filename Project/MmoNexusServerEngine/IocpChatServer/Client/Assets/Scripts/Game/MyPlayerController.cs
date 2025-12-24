@@ -149,7 +149,12 @@ public class MyPlayerController : MonoBehaviour
         while (true)
         {
             if (NetworkManager.Instance != null && NetworkManager.Instance.IsMapChanging)
+            {
+                yield return null;   // ✅ 최소 1프레임 휴식
                 continue;
+            }
+
+            yield return new WaitForSeconds(0.2f);
 
 
             yield return new WaitForSeconds(0.2f);

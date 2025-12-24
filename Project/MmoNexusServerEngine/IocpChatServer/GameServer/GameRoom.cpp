@@ -59,8 +59,12 @@ void GameRoom::Init(int32 channelId, int32 mapId, int32 sizeX, int32 sizeY, int3
 	// AOI 초기화
 	_grid.Init(0, 0, sizeX, sizeY, zoneSize);
 
-	printf("[GameRoom] Init MapId: %d, Grid: (%d, %d), CellSize: %d\n",
-		mapId, sizeX, sizeY, zoneSize);
+	printf("[GameRoom] Init MapId: %d, MapSize: (%d, %d), CellSize: %d, Grid: (%d, %d)\n",
+		mapId,
+		sizeX, sizeY,
+		zoneSize,
+		_grid.GetGridSizeX(), _grid.GetGridSizeY());
+
 	
 	// [Test Spawn] 테스트용 몬스터 1마리 소환
 	MonsterRef slime = ObjectPool<Monster>::MakeShared();

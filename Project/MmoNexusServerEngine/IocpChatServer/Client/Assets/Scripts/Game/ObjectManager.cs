@@ -20,24 +20,52 @@ public class ObjectManager : MonoBehaviour
 
     void Awake()
     {
-        Instance = this;
-        Debug.Log("🔧 [ObjectManager] Awake - Instance created");
-    }
-
-    void Start()
-    {
         Debug.Log("🔧 [ObjectManager] Start - Registering events...");
+        Instance = this;
 
         PacketHandler.OnEnterGame += OnEnterGame;
         PacketHandler.OnSpawn += OnSpawn;
         PacketHandler.OnDespawn += OnDespawn;
         PacketHandler.OnMove += OnMove;
-
         PacketHandler.OnMapChangeBegin += OnMapChangeBegin;
         PacketHandler.OnMapChangeEnd += OnMapChangeEnd;
 
-
         Debug.Log("✅ [ObjectManager] Events registered successfully");
+        // 새 씬에 들어오자마자, 이미 DontDestroy로 남아있는 내 플레이어를 다시 카메라에 물림
+        TryAdoptMyPlayer();
+        Debug.Log("🔧 [ObjectManager] Awake - Instance created");
+    }
+
+    void Start()
+    {
+        
+    }
+
+    void OnDestroy()
+    {
+        PacketHandler.OnEnterGame -= OnEnterGame;
+        PacketHandler.OnSpawn -= OnSpawn;
+        PacketHandler.OnDespawn -= OnDespawn;
+        PacketHandler.OnMove -= OnMove;
+        PacketHandler.OnMapChangeBegin -= OnMapChangeBegin;
+        PacketHandler.OnMapChangeEnd -= OnMapChangeEnd;
+    }
+
+    void TryAdoptMyPlayer()
+    {
+        var my = GameObject.FindWithTag("MyPlayer");
+        if (my == null) return;
+
+        // 딕셔너리에 등록(없으면)
+        if (MyPlayerId != 0 && !_objects.ContainsKey(MyPlayerId))
+            _objects[MyPlayerId] = my;
+
+        var cam = Camera.main;
+        if (cam != null)
+        {
+            var follow = cam.GetComponent<FollowCamera>();
+            if (follow != null) follow.target = my.transform;
+        }
     }
 
     void OnEnterGame(S_ENTER_GAME pkt)
