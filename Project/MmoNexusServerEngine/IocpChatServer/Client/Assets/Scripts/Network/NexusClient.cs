@@ -104,7 +104,7 @@ public class NexusClient : MonoBehaviour
 
         yield return new WaitForSeconds(0.5f); // 접속 대기
 
-        SceneManager.LoadScene("03_Game");
+        SceneManager.LoadScene("03_Game_0001");
         yield return null;
 
 

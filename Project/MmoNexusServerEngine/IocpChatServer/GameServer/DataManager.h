@@ -1,6 +1,17 @@
+// ===============================
+// DataManager.h (FINAL)
+// ===============================
 #pragma once
 #include "Protocol.pb.h"
 #include "Protocol_S2S.pb.h"
+#include <map>
+#include <string>
+
+enum class MapType : uint8
+{
+	World,
+	Dungeon,
+};
 
 struct MapConfig
 {
@@ -12,9 +23,9 @@ struct MapConfig
 	float spawnX = 50.f;
 	float spawnY = 0.f;
 	float spawnZ = 50.f;
+
+	MapType type = MapType::World;
 };
-
-
 
 class DataManager
 {
@@ -31,26 +42,32 @@ public:
 
 	// Map Registry
 	bool IsValidMapId(int32 mapId) const;
-	int32 GetDefaultMapId() const { return 1; }
+	int32 GetDefaultMapId() const { return 1; } // (기존 유지)
 	const MapConfig* GetMapConfig(int32 mapId) const;
+
+	// [NEW] JSON 기반 MapConfig 로드
+	bool LoadMapConfigsFromJson(const std::string& path);
+
+	// [NEW] 월드/던전 구분용
+	int32 GetDefaultWorldMapId() const { return _defaultWorldMapId; }
+	bool IsDungeonMapId(int32 mapId) const;
+	bool IsWorldMapId(int32 mapId) const;
 
 	// [Getter] 데이터 조회 (없으면 nullptr 반환)
 	const Protocol::StatTemplateInfo* GetStatTemplate(int32 level);
 	const Protocol::ItemTemplateInfo* GetItemTemplate(int32 templateId);
-
-	//  스킬 정보 조회
 	const Protocol::SkillTemplateInfo* GetSkillTemplate(int32 skillId);
+
 private:
-
 	DataManager();                // 생성 시 맵 등록
-	void InitMapRegistry();
+	void InitMapRegistry();       // fallback용(기존 유지)
 
+private:
+	int32 _defaultWorldMapId = 1; // JSON 로드 시 갱신
 
 	// 빠른 검색을 위한 Map (Key: ID, Value: Data)
 	std::map<int32, Protocol::StatTemplateInfo> _statTemplates;
 	std::map<int32, Protocol::ItemTemplateInfo> _itemTemplates;
-
-	// [New] 스킬 데이터 저장소
 	std::map<int32, Protocol::SkillTemplateInfo> _skillTemplates;
 
 	std::map<int32, MapConfig> _mapConfigs;

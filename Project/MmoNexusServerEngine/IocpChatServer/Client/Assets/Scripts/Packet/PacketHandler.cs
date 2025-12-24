@@ -204,6 +204,8 @@ public class PacketHandler
         OnMapChangeBegin?.Invoke(pkt);
 
         // 2) 로딩 완료 ACK: 지금은 "즉시 ACK"로 처리 (나중에 실제 로딩 끝난 타이밍으로 옮기면 됨)
+
+        /*
         C_MAP_CHANGE_ACK ack = new C_MAP_CHANGE_ACK();
         ack.Token = pkt.Token;
 
@@ -211,6 +213,8 @@ public class PacketHandler
         NetworkManager.Instance.Send(ack, (ushort)PacketManager.MsgId.C_MAP_CHANGE_ACK);
 
         Debug.Log($"✅ [MapChange ACK Sent] token={ack.Token}");
+
+        */
     }
 
     public static void S_MAP_CHANGE_ENDHandler(ServerSession session, IMessage packet)

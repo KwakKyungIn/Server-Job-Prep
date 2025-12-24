@@ -157,7 +157,12 @@ public class MyPlayerController : MonoBehaviour
             yield return new WaitForSeconds(0.2f);
 
             if (NetworkManager.Instance != null && NetworkManager.Instance.IsMapChanging)
+            {
+                yield return null;   // ✅ 최소 1프레임 휴식
                 continue;
+            }
+
+            yield return new WaitForSeconds(0.2f);
 
             // 죽었으면 이동 패킷 안 보냄
             if (_isDead) continue;

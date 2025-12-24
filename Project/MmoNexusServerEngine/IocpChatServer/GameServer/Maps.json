@@ -1,0 +1,56 @@
+{
+  "defaultWorldMapId": 1,
+  "maps": [
+    {
+      "mapId": 1,
+      "type": "world",
+      "sizeX": 1000,
+      "sizeY": 1000,
+      "zoneSize": 100,
+      "spawnX": 500.0,
+      "spawnY": 0.0,
+      "spawnZ": 500.0
+    },
+    {
+      "mapId": 2,
+      "type": "world",
+      "sizeX": 1000,
+      "sizeY": 1000,
+      "zoneSize": 100,
+      "spawnX": 500.0,
+      "spawnY": 0.0,
+      "spawnZ": 500.0
+    },
+    {
+      "mapId": 3,
+      "type": "world",
+      "sizeX": 1000,
+      "sizeY": 1000,
+      "zoneSize": 100,
+      "spawnX": 500.0,
+      "spawnY": 0.0,
+      "spawnZ": 500.0
+    },
+
+    {
+      "mapId": 1001,
+      "type": "dungeon",
+      "sizeX": 1000,
+      "sizeY": 1000,
+      "zoneSize": 100,
+      "spawnX": 500.0,
+      "spawnY": 0.0,
+      "spawnZ": 500.0
+    },
+    {
+      "mapId": 1002,
+      "type": "dungeon",
+      "sizeX": 1000,
+      "sizeY": 1000,
+      "zoneSize": 100,
+      "spawnX": 500.0,
+      "spawnY": 0.0,
+      "spawnZ": 500.0
+    }
+  ]
+}

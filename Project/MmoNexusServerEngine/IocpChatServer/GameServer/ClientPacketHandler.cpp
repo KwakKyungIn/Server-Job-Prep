@@ -118,10 +118,24 @@ bool ClientPacketHandler::Handle_C_ENTER_GAME(PacketSessionRef& session, Protoco
 
 	int32 mapId = pkt.mapid();
 	DataManager* dm = DataManager::Instance();
-	if (!dm || !dm->IsValidMapId(mapId))
-		mapId = (dm ? dm->GetDefaultMapId() : 1);
+
+	// ✅ ENTER_GAME은 "월드맵만" 허용. 던전맵 요청이면 기본 월드맵으로 교정
+	if (!dm)
+	{
+		mapId = 1;
+	}
+	else
+	{
+		if (!dm->IsValidMapId(mapId) || !dm->IsWorldMapId(mapId))
+			mapId = dm->GetDefaultWorldMapId();
+
+		// 방어: cfg가 없으면 기본 월드맵으로 한번 더 교정
+		if (dm->GetMapConfig(mapId) == nullptr)
+			mapId = dm->GetDefaultWorldMapId();
+	}
 
 	const MapConfig* cfg = (dm ? dm->GetMapConfig(mapId) : nullptr);
+
 
 	// 2) Player 생성/초기화는 여기서 해도 OK (아직 공유 안 됨)
 	PlayerRef player = ObjectPool<Player>::MakeShared();
@@ -327,8 +341,14 @@ bool ClientPacketHandler::Handle_C_MAP_CHANGE_REQ(PacketSessionRef& session, Pro
 	const int64 targetInstanceId = 0; // ✅ 일반 맵 이동은 월드(0)로
 
 	DataManager* dm = DataManager::Instance();
-	if (!dm || !dm->IsValidMapId(targetMapId))
-		return false;
+
+	// ✅ 일반 맵이동은 "월드맵만" 허용 (던전맵으로는 /mapchange 못 함)
+	if (!dm || !dm->IsValidMapId(targetMapId) || !dm->IsWorldMapId(targetMapId))
+	{
+		std::cout << "❌ [MapChange] rejected. targetMapId=" << targetMapId << std::endl;
+		return true; // 프로토콜 에러로 끊지 말고 그냥 무시
+	}
+
 
 	const MapConfig* cfg = dm->GetMapConfig(targetMapId);
 	if (!cfg)
@@ -1173,6 +1193,21 @@ bool ClientPacketHandler::Handle_C_DUNGEON_ENTER_REQ(PacketSessionRef& session, 
 				res.set_dungeonmapid(dungeonMapId);
 				res.set_instanceid(0);
 				res.set_reason(Protocol::DUNGEON_ENTER_FAIL_INVALID_MAP);
+				self->Send(MakeSendBuffer(res));
+			});
+		return true;
+	}
+
+	// ✅ 던전 입장은 "Dungeon 타입 맵만" 허용
+	if (!dm->IsDungeonMapId(dungeonMapId))
+	{
+		ps->Post([dungeonMapId](PlayerSessionRef self)
+			{
+				Protocol::S_DUNGEON_ENTER_RES res;
+				res.set_success(false);
+				res.set_dungeonmapid(dungeonMapId);
+				res.set_instanceid(0);
+				res.set_reason(Protocol::DUNGEON_ENTER_FAIL_INVALID_MAP); // 타입도 invalid로 처리
 				self->Send(MakeSendBuffer(res));
 			});
 		return true;
