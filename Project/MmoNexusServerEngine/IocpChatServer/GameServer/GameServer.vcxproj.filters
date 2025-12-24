@@ -228,5 +228,7 @@
     <None Include="..\Common\Protobuf\bin\Enum.proto">
       <Filter>Protocol</Filter>
     </None>
+    <None Include="Maps.json" />
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>

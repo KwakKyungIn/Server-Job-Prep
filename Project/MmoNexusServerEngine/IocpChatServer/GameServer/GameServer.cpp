@@ -12,6 +12,10 @@
 #include <windows.h>
 #include "LoginSession.h"
 #include "RoomManager.h" // [NEW]
+#include "DataManager.h"
+#include <fstream> 
+
+
 
 // [External Reference] ClientPacketHandler.cpp에 있는 그 놈 가져오기
 //extern shared_ptr<GameRoom> GTestRoom;
@@ -33,10 +37,12 @@ BOOL WINAPI CtrlHandler(DWORD fdwCtrlType)
 	}
 }
 
+
 //=========================================임시 콘솔 테스트==========================================
 #include <sstream>
 #include <string>
 #include "GameSessionManager.h"
+
 
 void ConsoleThread()
 {
@@ -156,6 +162,36 @@ int main()
 
 	ClientPacketHandler::Init();
 	S2SPacketHandler::Init();
+
+	{
+		// ✅ 1) exe 옆 "Maps.json" 존재/오픈 검증 (CWD 기준)
+		std::ifstream ifs("Maps.json");
+		if (!ifs.is_open())
+		{
+			std::cout << "❌ [GameServer] Maps.json not found (expected next to exe). "
+				"Fallback InitMapRegistry() will be used.\n";
+		}
+		else
+		{
+			std::cout << "✅ [GameServer] Maps.json found.\n";
+		}
+		// 파일 핸들은 여기서 닫아도 되고(스코프 종료), 명시적으로 닫아도 됨
+		// ifs.close();
+
+		// ✅ 2) 실제 로드 (DataManager 내부에서 다시 열어서 파싱)
+		DataManager* dm = DataManager::Instance();
+		if (!dm->LoadMapConfigsFromJson("Maps.json"))
+		{
+			std::cout << "⚠️ [GameServer] Maps.json load failed. fallback InitMapRegistry() will be used.\n";
+		}
+		else
+		{
+			std::cout << "✅ [GameServer] Maps.json loaded.\n";
+		}
+	}
+
+
+
 
 	IocpCoreRef core = MakeShared<IocpCore>();
 
