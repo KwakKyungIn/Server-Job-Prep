@@ -123,6 +123,12 @@ public class MyPlayerController : MonoBehaviour
             NetworkManager.Instance.Send(req, (ushort)PacketManager.MsgId.C_MAP_CHANGE_REQ);
             Debug.Log("📤 [TEST] Sent C_MAP_CHANGE_REQ targetMapId=4");
         }
+        if (Input.GetKeyDown(KeyCode.F5))
+        {
+            C_DUNGEON_EXIT_REQ req = new C_DUNGEON_EXIT_REQ();
+            NetworkManager.Instance.Send(req, (ushort)PacketManager.MsgId.C_DUNGEON_EXIT_REQ);
+            Debug.Log("📤 [TEST] Sent C_DUNGEON_EXIT_REQ");
+        }
 
 
         // ============================================================
@@ -148,14 +154,13 @@ public class MyPlayerController : MonoBehaviour
 
         while (true)
         {
+            yield return new WaitForSeconds(0.2f);
+
             if (NetworkManager.Instance != null && NetworkManager.Instance.IsMapChanging)
             {
                 yield return null;   // ✅ 최소 1프레임 휴식
                 continue;
             }
-
-            yield return new WaitForSeconds(0.2f);
-
 
             yield return new WaitForSeconds(0.2f);
 
