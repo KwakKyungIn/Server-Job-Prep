@@ -8,6 +8,8 @@
 #include "DataManager.h"
 #include "GameRoom.h"
 #include "RoomManager.h"
+#include "LobbyRoom.h"
+
 
 extern shared_ptr<RoomManager> GRoomManager;
 
@@ -86,47 +88,25 @@ bool S2SPacketHandler::Handle_S2S_RES_LOAD_PLAYER_DATA(PacketSessionRef& session
 	PlayerSessionRef ps = GameSessionManager::GSessionManager->FindBySessionId(pkt.gamesessionid());
 	if (!ps) return true;
 
-	// ✅ 네트워크 스레드에서는 상태 건드리지 말고, 세션 Actor로 던진다.
 	if (!pkt.success())
 	{
 		ps->Post([](PlayerSessionRef self)
 			{
-				// 필요하면 실패 처리(로그/디스커넥트 등)
-				// self->Disconnect(L"LoadPlayerData failed");
+				// 필요하면 실패 처리
 			});
 		return true;
 	}
 
-	ps->PostPlayer([pkt](PlayerSessionRef self, PlayerRef player) mutable
-		{
-			// 1) Stat 반영
-			if (auto st = player->GetStatInfo())
-				st->CopyFrom(pkt.statinfo());
+	const uint64 playerId = GameSessionManager::GSessionManager->GetPlayerIdBySessionId(pkt.gamesessionid());
+	if (playerId == 0) return true;
 
-			// 2) 템플릿 기반 최종 스탯 갱신
-			player->RefreshStats();
-
-			std::cout << "👤 [Player] Stat Loaded. Lv:"
-				<< (player->GetStatInfo() ? player->GetStatInfo()->level() : 0)
-				<< " HP:" << (player->GetStatInfo() ? player->GetStatInfo()->hp() : 0)
-				<< std::endl;
-
-			// 3) 방 입장은 Room Actor로 넘기기 (Enter 시그니처: Enter(ps, player))
-			if (GRoomManager)
+	if (GLobbyRoom)
+	{
+		GLobbyRoom->Push([playerId, pkt]() mutable
 			{
-				const int32 channelId = player->GetChannelId();
-				const int32 mapId = player->GetMapId();
-
-				auto room = GRoomManager->GetOrCreateRoom(channelId, mapId);
-				if (room)
-				{
-					room->PushJob(&GameRoom::Enter, self, player); // ✅ 여기만 핵심 수정
-					std::cout << "🚪 [GameRoom] Player Entered Room! (Channel "
-						<< channelId << ", Map " << mapId << ")\n";
-				}
-			}
-		});
-
+				GLobbyRoom->OnStatLoaded(playerId, pkt);
+			});
+	}
 	return true;
 }
 
@@ -145,22 +125,16 @@ bool S2SPacketHandler::Handle_S2S_RES_ITEMS_LOAD(PacketSessionRef& session, Prot
 		return true;
 	}
 
-	ps->PostPlayer([pkt](PlayerSessionRef self, PlayerRef player) mutable
-		{
-			// 1) 인벤 반영
-			player->SetItems(pkt.items());
+	const uint64 playerId = GameSessionManager::GSessionManager->GetPlayerIdBySessionId(pkt.gamesessionid());
+	if (playerId == 0) return true;
 
-			// 2) 장착 보너스 포함 스탯 재계산
-			player->RefreshStats();
-
-			// 3) 클라 동기화 패킷 전송
-			Protocol::S_ITEM_LIST clientPkt;
-			clientPkt.mutable_items()->CopyFrom(pkt.items());
-			self->Send(ClientPacketHandler::MakeSendBuffer(clientPkt));
-
-			std::cout << "📦 [Inventory] Synced " << pkt.items_size() << " items.\n";
-		});
-
+	if (GLobbyRoom)
+	{
+		GLobbyRoom->Push([playerId, pkt]() mutable
+			{
+				GLobbyRoom->OnItemsLoaded(playerId, pkt);
+			});
+	}
 	return true;
 }
 

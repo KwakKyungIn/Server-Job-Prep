@@ -72,7 +72,7 @@ void Monster::Update()
 
 void Monster::UpdateIdle()
 {
-	std::shared_ptr<GameRoom> room = GetRoom();
+	std::shared_ptr<GameRoom> room = GetGameRoom();
 	if (room == nullptr) return;
 
 	std::shared_ptr<Player> target = room->FindNearestPlayer(GetPosInfo(), _searchRange);
@@ -114,7 +114,7 @@ void Monster::UpdateMove()
 	}
 
 	// ✅ Zone & Broadcast는 GameRoom에 위임
-	if (auto room = GetRoom())
+	if (auto room = GetGameRoom())
 	{
 		MonsterRef self = std::static_pointer_cast<Monster>(shared_from_this());
 		room->OnMonsterMoved(self);
@@ -150,7 +150,7 @@ void Monster::UpdateAttack()
 
 	// 타격
 	printf("🥊 [Monster] Attack! -> Player %llu\n", target->GetObjectId());
-	if (auto room = GetRoom())
+	if (auto room = GetGameRoom())
 	{
 		room->HandleSkill(static_pointer_cast<Creature>(shared_from_this()), 1); // 1번=평타
 	}
@@ -179,7 +179,7 @@ void Monster::OnDead(std::shared_ptr<Creature> attacker)
 
 	Creature::OnDead(attacker);
 
-	std::shared_ptr<GameRoom> room = GetRoom();
+	std::shared_ptr<GameRoom> room = GetGameRoom();
 	if (room)
 	{
 		MonsterRef self = std::static_pointer_cast<Monster>(shared_from_this());

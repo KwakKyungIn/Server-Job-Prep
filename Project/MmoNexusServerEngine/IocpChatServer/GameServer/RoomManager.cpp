@@ -53,6 +53,27 @@ std::shared_ptr<GameRoom> RoomManager::FindRoom(int32 channelId, int32 mapId, in
     return it->second;
 }
 
+std::shared_ptr<LobbyRoom> RoomManager::GetOrCreateLobby(int32 channelId)
+{
+    {
+        READ_LOCK;
+        auto it = _lobbies.find(channelId);
+        if (it != _lobbies.end())
+            return it->second;
+    }
+
+    WRITE_LOCK;
+    auto it = _lobbies.find(channelId);
+    if (it != _lobbies.end())
+        return it->second;
+
+    auto lobby = MakeShared<LobbyRoom>();
+    lobby->Init(channelId);
+    _lobbies[channelId] = lobby;
+    return lobby;
+}
+
+
 #include <Windows.h>
 
 void RoomManager::UpdateAll()
@@ -69,7 +90,7 @@ void RoomManager::UpdateAll()
     for (auto& room : roomsCopy)
     {
         if (!room) continue;
-        room->PushJob([room]()
+        room->Push([room]()
             {
                 room->Update();
             });

@@ -1,12 +1,11 @@
-#pragma once
+ï»¿#pragma once
 #include "GameRoom.h"
-#include <map>
-
+#include "LobbyRoom.h"
 struct RoomKey
 {
     int32 channelId;
     int32 mapId;
-    int64 instanceId = 0; // Ãß°¡ (0 = world)
+    int64 instanceId = 0; // ì¶”ê°€ (0 = world)
     bool operator<(const RoomKey& other) const
     {
         if (channelId != other.channelId) return channelId < other.channelId;
@@ -24,7 +23,11 @@ public:
     std::shared_ptr<GameRoom> GetOrCreateRoom(int32 channelId, int32 mapId, int64 instanceId = 0);
     std::shared_ptr<GameRoom> FindRoom(int32 channelId, int32 mapId, int64 instanceId = 0);
 
-    // ¸ŞÀÎ ·çÇÁ¿¡¼­ È£Ãâ
+    // âœ… ì±„ë„ë‹¹ 1ê°œ ë¡œë¹„ (Player staging / EnterGame -> Worldë¡œ transferìš©)
+    std::shared_ptr<LobbyRoom> GetOrCreateLobby(int32 channelId);
+
+
+    // ë©”ì¸ ë£¨í”„ì—ì„œ í˜¸ì¶œ
     void UpdateAll();
 
 private:
@@ -32,7 +35,11 @@ private:
     std::map<RoomKey, std::shared_ptr<GameRoom>> _rooms;
 
     void PurgeInstanceRooms(uint64 nowMs);
+
+    // âœ… channelId -> lobby
+    std::unordered_map<int32, std::shared_ptr<LobbyRoom>> _lobbies;
+
 };
 
-// Àü¿ª Æ÷ÀÎÅÍ (GameServer, ÇÚµé·¯¿¡¼­ °°ÀÌ ¾¸)
+// ì „ì—­ í¬ì¸í„° (GameServer, í•¸ë“¤ëŸ¬ì—ì„œ ê°™ì´ ì”€)
 extern std::shared_ptr<RoomManager> GRoomManager;

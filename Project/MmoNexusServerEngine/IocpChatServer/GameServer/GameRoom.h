@@ -3,17 +3,22 @@
 #include "Protocol.pb.h"
 #include "SpatialGrid.h"
 #include "BattleSystem.h"
+#include "RoomActor.h" 
 
 class GameMap;
 class Player;
 class Monster;
 class Creature;
 
+class PlayerSession;
+using PlayerSessionRef = std::shared_ptr<PlayerSession>;
+
+
 using GameMapRef = std::shared_ptr<GameMap>;
 using PlayerRef = std::shared_ptr<Player>;
 using MonsterRef = std::shared_ptr<Monster>;
 
-class GameRoom : public std::enable_shared_from_this<GameRoom>
+class GameRoom : public RoomActor, public std::enable_shared_from_this<GameRoom>
 {
 public:
     GameRoom();
@@ -21,6 +26,19 @@ public:
 
     void Init(int32 channelId, int32 mapId, int32 sizeX, int32 sizeY, int32 zoneSize = 50);
     void Update();
+
+public:
+    // =========================================================
+    // [RoomActor Interface]
+    // =========================================================
+    virtual RoomKind GetKind() const override { return RoomKind::Game; }
+
+    // 공통 Actor 실행 API (Session이 Room에 라우팅할 때 사용)
+    virtual void Push(std::function<void()> fn) override
+    {
+        // GameRoom은 JobQueue로 직렬 실행
+        _jobQueue->Push(MakeShared<Job>([fn = std::move(fn)]() mutable { fn(); }));
+    }
 
 
 
@@ -93,6 +111,28 @@ public:
     void HandleMonsterDead(std::shared_ptr<Creature> attacker, MonsterRef monster);
 
     void BroadcastChat(const Protocol::S_CHAT_NTF& ntf);
+
+    void LeaveById(PlayerSessionRef session, uint64 playerId);
+
+    // Room thread(잡큐)에서만 호출
+    PlayerRef FindPlayer_ActorOnly(uint64 playerId) const;
+    // [ById] Session은 PlayerRef 금지. Room thread에서 Find 후 처리한다.
+    void HandleMoveById(PlayerSessionRef session, uint64 playerId, Protocol::C_MOVE pkt);
+    void HandleUseItemById(PlayerSessionRef session, uint64 playerId, Protocol::C_USE_ITEM pkt);
+    void HandleEquipItemById(PlayerSessionRef session, uint64 playerId, Protocol::C_EQUIP_ITEM pkt);
+
+    // ===== [ById Router] (Room thread에서 Find 후 처리) =====
+    void HandleSkillById(PlayerSessionRef session, uint64 playerId, int32 skillId);
+    void HandleChatById(PlayerSessionRef session, uint64 playerId, const std::string& msg);
+
+    // ===== [MapChange] ACK 이후 실제 전이(OldRoom thread에서 수행) =====
+    void TransferMapChangeById(PlayerSessionRef session,
+        uint64 playerId,
+        int32 targetMapId,
+        int64 targetInstanceId,
+        const Protocol::PositionInfo& spawn);
+
+    void SaveReturnLocation_ActorOnly(uint64 playerId);
 
 private:
     GameMapRef              _map;

@@ -23,42 +23,51 @@ void PlayerSession::OnDisconnected()
 
     GameSessionManager::GSessionManager->Remove(self);
 
+    // ✅ 모든 정리는 Session Actor thread에서
     Post([=](PlayerSessionRef ps)
         {
             ps->CancelMapChange();
 
-            if (ps->_player)
+            // ✅ Session은 PlayerRef 금지. ID만 쓴다.
+            const uint64 playerId = ps->GetPlayerId_AnyThread();
+
+            // ✅ 라우팅 즉시 차단 (제일 먼저)
+            RoomActorRef room = ps->GetCurrentRoom_ActorOnly();
+            ps->SetCurrentRoom(nullptr);
+
+            // ✅ 바인딩 정리
+            if (playerId != 0)
             {
-                //  player를 먼저 로컬로 잡는다 (shared_ptr 복사)
-                PlayerRef player = ps->_player;
+                GameSessionManager::GSessionManager->UnbindPlayerId(playerId);
+                ps->ClearPlayerId_ActorOnly();
+            }
 
-                const uint64 playerId = player->GetPlayerId();
-
-                // 룸 나가기는 룸 Actor에게 요청
-                if (auto room = ps->GetRoom())   // 이제 session cache
+            // ✅ 룸에서 플레이어 제거(룸 스레드에서만)
+            if (playerId != 0 && room && room->GetKind() == RoomKind::Game)
+            {
+                auto gr = std::dynamic_pointer_cast<GameRoom>(room);
+                if (gr)
                 {
-                    room->PushJob(&GameRoom::Leave, ps, player);
+                    // LeaveById는 아래 2)에서 추가해라
+                    gr->PushJob(&GameRoom::LeaveById, ps, playerId);
                 }
-                ps->SetCurrentRoom(nullptr);     // 더 이상 라우팅 안 타게 즉시 끊기
+            }
 
-                // 오프라인 강제 복귀 정책: 인스턴스 멤버십에서 제거
+            // ✅ 오프라인 강제 복귀 정책(인스턴스 멤버십 제거)
+            if (playerId != 0)
+            {
                 InstanceActor::Instance().Push([playerId]()
                     {
                         InstanceManagerCore::InstanceInfo closed;
                         if (InstanceActor::Instance().Core().OnMemberOffline(playerId, closed))
                         {
-                            // 마지막 멤버로 인해 close 되었으면 room closing 마킹
                             if (closed.instanceId != 0 && GRoomManager)
                             {
-                                auto room = GRoomManager->FindRoom(closed.channelId, closed.mapId, closed.instanceId);
-                                if (room) room->MarkClosing(true);
+                                auto r = GRoomManager->FindRoom(closed.channelId, closed.mapId, closed.instanceId);
+                                if (r) r->MarkClosing(true);
                             }
                         }
                     });
-
-                // 순환 참조 해제는 세션이 처리
-                player->SetSession(nullptr);
-                ps->_player = nullptr;
             }
         });
 }

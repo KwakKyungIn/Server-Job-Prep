@@ -84,12 +84,21 @@ void Creature::UseSkill(int32 skillId)
     // 3. 룸에 "이 스킬 썼다" 요청만 던짐 (브로드캐스트/판정은 룸 책임)
     if (auto room = GetRoom())
     {
+        // Lobby에서는 스킬 처리 금지
+        if (room->GetKind() != RoomKind::Game)
+            return;
+
+        auto gr = std::dynamic_pointer_cast<GameRoom>(room);
+        if (!gr)
+            return;
+
         auto self = shared_from_this();
-        room->PushJob([room, self, skillId]()
+        gr->Push([gr, self, skillId]()
             {
-                room->HandleSkill(self, skillId);
+                gr->HandleSkill(self, skillId);
             });
     }
+
 
     printf("⚔️ [Skill] %s used Skill %d (Cooldown: %dms)\n",
         (GetObjectType() == Protocol::OBJECT_TYPE_PLAYER ? "Player" : "Monster"),

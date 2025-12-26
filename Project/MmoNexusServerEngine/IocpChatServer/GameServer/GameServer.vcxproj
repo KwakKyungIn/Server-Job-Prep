@@ -203,6 +203,7 @@
     <ClCompile Include="GameServer.cpp" />
     <ClCompile Include="GameSessionManager.cpp" />
     <ClCompile Include="InstanceManagerCore.cpp" />
+    <ClCompile Include="LobbyRoom.cpp" />
     <ClCompile Include="LoginSession.cpp" />
     <ClCompile Include="Monster.cpp" />
     <ClCompile Include="PartyActor.cpp" />
@@ -239,6 +240,7 @@
     <ClInclude Include="GameSessionManager.h" />
     <ClInclude Include="InstanceActor.h" />
     <ClInclude Include="InstanceManagerCore.h" />
+    <ClInclude Include="LobbyRoom.h" />
     <ClInclude Include="LoginSession.h" />
     <ClInclude Include="Monster.h" />
     <ClInclude Include="ObjectUtils.h" />
@@ -250,6 +252,7 @@
     <ClInclude Include="PlayerSession.h" />
     <ClInclude Include="Protocol.pb.h" />
     <ClInclude Include="Protocol_S2S.pb.h" />
+    <ClInclude Include="RoomActor.h" />
     <ClInclude Include="RoomManager.h" />
     <ClInclude Include="S2SPacketHandler.h" />
     <ClInclude Include="SpatialGrid.h" />

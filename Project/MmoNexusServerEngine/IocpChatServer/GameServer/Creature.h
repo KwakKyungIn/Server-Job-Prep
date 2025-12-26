@@ -1,60 +1,64 @@
-#pragma once
-#include "Protocol.pb.h" // ObjectType æ≤∑¡∏È « ø‰
+Ôªø// Creature.h
 
+#pragma once
+#include "Protocol.pb.h"
+#include "GameRoom.h"
+#include <memory>
+#include <map>
+
+// forward
+class RoomActor;
 class GameRoom;
+
+using RoomActorRef = std::shared_ptr<RoomActor>;
 
 class Creature : public enable_shared_from_this<Creature>
 {
 public:
-	// ª˝º∫¿⁄ø°º≠ ≈∏¿‘(Player/Monster)¿ª πﬁ¥¬¥Ÿ.
-	Creature(Protocol::ObjectType type);
-	virtual ~Creature();
+    Creature(Protocol::ObjectType type);
+    virtual ~Creature();
 
-	// [Identity]
-	// ¿Ã¡¶ ∞°ªÛ«‘ºˆ∞° æ∆¥œ∂Û ∏‚πˆ ∫Øºˆ π›»Ø
-	uint64					GetObjectId() const { return _objectId; }
-	Protocol::ObjectType	GetObjectType() const { return _objectType; }
+    uint64 GetObjectId() const { return _objectId; }
+    Protocol::ObjectType GetObjectType() const { return _objectType; }
 
-	// [Movement]
-	void					SetRoom(std::shared_ptr<GameRoom> room) { _room = room; }
-	std::shared_ptr<GameRoom> GetRoom() { return _room.lock(); }
+    // [Room Link] Ïù¥Ï†ú RoomActorÎ°ú ÌÜµÏùº
+    void SetRoom(RoomActorRef room) { _room = room; }
+    RoomActorRef GetRoom() const { return _room.lock(); }
 
-	void					SetZoneIndex(int32 index) { _zoneIndex = index; }
-	int32					GetZoneIndex() const { return _zoneIndex; }
+    // [Helper] Monster/Ï†ÑÌà¨ Î°úÏßÅÏùÄ GameRoomÏù¥ ÌïÑÏöîÌïòÎãà Ï∫êÏä§ÌåÖ Ìó¨Ìçº Ï†úÍ≥µ
+    std::shared_ptr<GameRoom> GetGameRoom() const
+    {
+        return std::dynamic_pointer_cast<GameRoom>(_room.lock());
+    }
 
-	Protocol::PositionInfo* GetPosInfo() { return _posInfo; }
-	void					SetPosInfo(Protocol::PositionInfo* info) { _posInfo = info; }
+    void SetZoneIndex(int32 index) { _zoneIndex = index; }
+    int32 GetZoneIndex() const { return _zoneIndex; }
 
-	// [Stat]
-	Protocol::StatInfo* GetStatInfo() { return _statInfo; }
-	void					SetStatInfo(Protocol::StatInfo* info) { _statInfo = info; }
+    Protocol::PositionInfo* GetPosInfo() { return _posInfo; }
+    void SetPosInfo(Protocol::PositionInfo* info) { _posInfo = info; }
 
-	// [Combat]
-	virtual void			OnDamaged(std::shared_ptr<Creature> attacker, int32 damage);
-	virtual void			OnDead(std::shared_ptr<Creature> attacker);
+    Protocol::StatInfo* GetStatInfo() { return _statInfo; }
+    void SetStatInfo(Protocol::StatInfo* info) { _statInfo = info; }
 
-	// Ω∫≈≥ ªÁøÎ ∞°¥… ø©∫Œ √º≈© (ƒ≈∏¿”, ªÛ≈¬¿ÃªÛ µÓ)
-	bool CanUseSkill(int32 skillId);
+    virtual void OnDamaged(std::shared_ptr<Creature> attacker, int32 damage);
+    virtual void OnDead(std::shared_ptr<Creature> attacker);
 
-	// Ω∫≈≥ Ω««‡ (Ω«¡¶ ∑Œ¡˜)
-	void UseSkill(int32 skillId);
+    bool CanUseSkill(int32 skillId);
+    void UseSkill(int32 skillId);
 
 protected:
-	// [Identity]
-	uint64					_objectId = 0;
-	Protocol::ObjectType	_objectType = Protocol::OBJECT_TYPE_NONE;
+    uint64 _objectId = 0;
+    Protocol::ObjectType _objectType = Protocol::OBJECT_TYPE_NONE;
 
-	// [References]
-	Protocol::PositionInfo* _posInfo = nullptr;
-	Protocol::StatInfo* _statInfo = nullptr;
+    Protocol::PositionInfo* _posInfo = nullptr;
+    Protocol::StatInfo* _statInfo = nullptr;
 
-	std::weak_ptr<GameRoom> _room;
-	int32					_zoneIndex = -1;
+    // ‚úÖ RoomActorÎ°ú Î≥ÄÍ≤Ω
+    std::weak_ptr<RoomActor> _room;
+    int32 _zoneIndex = -1;
 
-	// Key: SkillID, Value: ¥Ÿ¿Ω ªÁøÎ ∞°¥… Ω√∞£ (Tick)
-	std::map<int32, uint64> _cooldowns;
+    std::map<int32, uint64> _cooldowns;
 
 private:
-	// ID πﬂ±ﬁ±‚ (Ω∫∑πµÂ æ»¿¸)
-	static std::atomic<uint64> s_idGenerator;
+    static std::atomic<uint64> s_idGenerator;
 };

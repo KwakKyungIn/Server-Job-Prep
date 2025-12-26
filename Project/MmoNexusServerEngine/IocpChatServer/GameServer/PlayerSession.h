@@ -1,14 +1,12 @@
-﻿#pragma once
+﻿// PlayerSession.h (REPLACE ALL)
+#pragma once
 #include "Session.h"
 #include "JobQueue.h"
 #include "Job.h"
 #include "Protocol.pb.h"
-#include "Player.h" // [중요] Player 클래스 정의를 알아야 위임 가능
-
+#include "RoomActor.h"   // ✅ currentRoom 타입
 #include <atomic>
 #include <mutex>
-
-class GameRoom;
 
 class PlayerSession : public PacketSession
 {
@@ -25,17 +23,21 @@ public:
     virtual void OnSend(int32 len) override;
     virtual void Ping() override;
 
-    // 외부가 잡 넣는 건 허용(Actor mailbox)
     void PushJob(shared_ptr<Job> job) { _jobQueue->Push(job); }
 
 public:
-    // [Logic Object Link]
-    // ※ 원칙: SetPlayer도 가능하면 Post 안에서만 호출해라(네가 지켜주면 됨)
-    void SetPlayer(shared_ptr<Player> player) { _player = player; }
+    // ============================================================
+    // [Player Identity] (Session은 PlayerRef 금지. ID만)
+    // ============================================================
+    uint64 GetPlayerId_AnyThread() const { return _playerId.load(std::memory_order_acquire); }
+
+    // 웬만하면 Actor thread(Post 안)에서만 호출
+    void SetPlayerId_ActorOnly(uint64 pid) { _playerId.store(pid, std::memory_order_release); }
+    void ClearPlayerId_ActorOnly() { _playerId.store(0, std::memory_order_release); }
 
 public:
     // ============================================================
-    // [MAP CHANGE STATE] (그대로)
+    // [MAP CHANGE STATE] (그대로 유지)
     // ============================================================
     enum : int32
     {
@@ -60,15 +62,13 @@ public:
     bool TryBeginMapChange(uint64 token, int32 targetMapId, int64 targetInstanceId, const Protocol::PositionInfo& spawn);
     bool TryConsumeMapChangeAck(uint64 token, int32& outTargetMapId, int64& outTargetInstanceId, Protocol::PositionInfo& outSpawn);
 
-
     void EndMapChange();
     void CancelMapChange();
-
     uint64 GetMapChangeToken() const;
 
 public:
     // ============================================================
-    // [Actor Post API] (외부는 이것만 써라)
+    // [Actor Post API] (외부는 이것만)
     // ============================================================
     template<typename F>
     void Post(F&& fn)
@@ -80,22 +80,23 @@ public:
             }));
     }
 
+    // ✅ Session 라우팅: "현재 Room"에만 던진다.
     template<typename F>
-    void PostPlayer(F&& fn)
+    void PostRoom(F&& fn)
     {
-        Post([fn = std::forward<F>(fn)](PlayerSessionRef self) mutable
+        Post([fn = std::forward<F>(fn)](std::shared_ptr<PlayerSession> self) mutable
             {
-                auto player = self->_player;
-                if (!player) return;
-                fn(self, player);
+                auto room = self->_currentRoom.lock();
+                if (!room) return;
+                fn(self, room);
             });
     }
 
 public:
-    // ✅ Room Actor가 session->Post(...)로만 호출하게 쓸 것
-    void SetCurrentRoom(std::shared_ptr<GameRoom> room) { _currentRoom = room; }
+    // ✅ Room Actor가 session->Post(...)로만 호출
+    void SetCurrentRoom(RoomActorRef room) { _currentRoom = room; }
 
-    void ClearCurrentRoom(std::shared_ptr<GameRoom> room)
+    void ClearCurrentRoom(RoomActorRef room)
     {
         if (!room)
         {
@@ -108,59 +109,20 @@ public:
             _currentRoom.reset();
     }
 
-public:
-    // ⚠️ Actor thread(Post/PostPlayer 안)에서만 사용
-    std::shared_ptr<GameRoom> GetCurrentRoom_ActorOnly() const
-    {
-        return _currentRoom.lock();
-    }
-
-    // (세션 + 플레이어 + 룸) 3종 세팅을 보장해서 넘겨주는 헬퍼
-    template<typename F>
-    void PostPlayerRoom(F&& fn)
-    {
-        PostPlayer([fn = std::forward<F>(fn)](PlayerSessionRef ps, PlayerRef player) mutable
-            {
-                auto room = ps->_currentRoom.lock();
-                if (!room) return;
-                fn(ps, player, room);
-            });
-    }
-
-private:
-    // ============================================================
-    // [Helper / Wrapper]  <-- 이제 외부 접근 금지
-    // ============================================================
-    shared_ptr<Player> GetPlayer() { return _player; }
-
-    Protocol::PlayerInfo* GetPlayerInfo()
-    {
-        if (_player) return _player->GetPlayerInfo();
-        return nullptr;
-    }
-
-    uint64 GetPlayerId()
-    {
-        if (_player) return _player->GetPlayerId();
-        return 0;
-    }
-
-    shared_ptr<GameRoom> GetRoom()
-    {
-        return _currentRoom.lock();
-    }
+    // Actor thread에서만 읽는 용도(디버그/검증)
+    RoomActorRef GetCurrentRoom_ActorOnly() const { return _currentRoom.lock(); }
 
 private:
     void ResetMapChangeState_Locked();
 
 private:
-    // 이제 _jobQueue 외부 노출 금지
     shared_ptr<JobQueue> _jobQueue;
-    // ✅ Session Actor 소유: "현재 방" 캐시
-    // ⚠️ Session Actor thread(Post/PostPlayer)에서만 읽고/쓴다.
-    std::weak_ptr<GameRoom> _currentRoom;
-protected:
-    shared_ptr<Player> _player;
+
+    // ✅ playerId만 유지
+    std::atomic<uint64> _playerId{ 0 };
+
+    // ✅ currentRoom 타입 통일
+    std::weak_ptr<RoomActor> _currentRoom;
 
 private:
     mutable std::mutex _mapChangeLock;
@@ -171,3 +133,4 @@ private:
     Protocol::PositionInfo _pendingSpawn;
     int64 _pendingTargetInstanceId = 0;
 };
+using PlayerSessionRef = std::shared_ptr<PlayerSession>;

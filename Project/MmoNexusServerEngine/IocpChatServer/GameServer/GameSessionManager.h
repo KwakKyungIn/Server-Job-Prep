@@ -21,6 +21,11 @@ public:
 
     void Broadcast(SendBufferRef sendBuffer);
 
+    uint64 GetPlayerIdBySessionId(uint64 sessionId);
+
+    void SetPlayerName(uint64 playerId, const std::string& name);
+    std::string GetPlayerName(uint64 playerId);
+
 private:
     USE_LOCK;
 
@@ -29,4 +34,6 @@ private:
 
     // ✅ 핵심: 우회 접근 막기용 역인덱스
     std::unordered_map<uint64, uint64> _playerIdBySessionId;     // sessionId -> playerId
+
+    std::unordered_map<uint64, std::string> _nameByPlayerId;     // playerId -> name
 };

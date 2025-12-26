@@ -31,7 +31,10 @@ void GameSessionManager::Remove(PlayerSessionRef session)
         _playerIdBySessionId.erase(it);
 
         if (playerId != 0)
+        {
             _byPlayerId.erase(playerId);
+            _nameByPlayerId.erase(playerId); // ✅ 이름도 정리
+        }
     }
 }
 
@@ -78,6 +81,7 @@ void GameSessionManager::UnbindPlayerId(uint64 playerId)
 
         _byPlayerId.erase(it);
     }
+    _nameByPlayerId.erase(playerId);
 }
 
 PlayerSessionRef GameSessionManager::FindBySessionId(uint64 sessionId)
@@ -107,4 +111,30 @@ void GameSessionManager::Broadcast(SendBufferRef sendBuffer)
         PlayerSessionRef s = it->second;
         if (s) s->Send(sendBuffer);
     }
+}
+
+uint64 GameSessionManager::GetPlayerIdBySessionId(uint64 sessionId)
+{
+    READ_LOCK;
+    auto it = _playerIdBySessionId.find(sessionId);
+    if (it == _playerIdBySessionId.end())
+        return 0;
+    return it->second;
+}
+
+void GameSessionManager::SetPlayerName(uint64 playerId, const std::string& name)
+{
+    if (playerId == 0) return;
+
+    WRITE_LOCK;
+    _nameByPlayerId[playerId] = name;
+}
+
+std::string GameSessionManager::GetPlayerName(uint64 playerId)
+{
+    READ_LOCK;
+    auto it = _nameByPlayerId.find(playerId);
+    if (it == _nameByPlayerId.end())
+        return std::string();
+    return it->second;
 }

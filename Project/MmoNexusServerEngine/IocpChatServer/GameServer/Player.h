@@ -3,8 +3,6 @@
 #include "Protocol.pb.h"
 
 class PlayerSession;
-// GameRoom은 Creature.h에서 전방 선언 되어 있거나 포함되어 있으면 생략 가능하지만, 안전하게 둠
-class GameRoom;
 
 // [Inheritance] Creature 상속 (이제 shared_from_this 기능도 Creature가 물려줌)
 class Player : public Creature

@@ -11,7 +11,7 @@
 #include "Zone.h"
 #include "Creature.h"
 #include "GameSessionManager.h"
-
+#include "RoomManager.h"
 
 // util: 네트워크로 나가는 ID는 "플레이어=playerId, 몬스터=objectId"로 통일
 static uint64 NetId(const std::shared_ptr<Creature>& c)
@@ -316,6 +316,27 @@ void GameRoom::Leave(PlayerSessionRef session, PlayerRef player)
 	printf("[ROOM] Player %llu Left Zone[%d].\n", playerId, zoneIndex);
 }
 
+void GameRoom::LeaveById(PlayerSessionRef session, uint64 playerId)
+{
+	auto it = _players.find(playerId);
+	if (it == _players.end())
+		return;
+
+	PlayerRef player = it->second;
+
+	// 기존 Leave 로직 재사용(지금 단계에선 이게 제일 빠름)
+	Leave(session, player);
+}
+
+PlayerRef GameRoom::FindPlayer_ActorOnly(uint64 playerId) const
+{
+	auto it = _players.find(playerId);
+	if (it == _players.end())
+		return nullptr;
+	return it->second;
+}
+
+
 void GameRoom::HandleMove(PlayerSessionRef session, PlayerRef player,Protocol::C_MOVE pkt)
 {
 	
@@ -488,6 +509,15 @@ void GameRoom::HandleMove(PlayerSessionRef session, PlayerRef player,Protocol::C
 			player->SetZoneIndex(newZoneIndex);
 		}
 	}
+}
+
+void GameRoom::HandleMoveById(PlayerSessionRef session, uint64 playerId, Protocol::C_MOVE pkt)
+{
+	auto it = _players.find(playerId);
+	if (it == _players.end())
+		return;
+
+	HandleMove(session, it->second, pkt); // 기존 로직 재사용
 }
 
 void GameRoom::EnterMonster(MonsterRef monster)
@@ -758,6 +788,20 @@ void GameRoom::HandleSkill(std::shared_ptr<Creature> attacker, int32 skillId)
 	}
 }
 
+void GameRoom::HandleSkillById(PlayerSessionRef session, uint64 playerId, int32 skillId)
+{
+	auto it = _players.find(playerId);
+	if (it == _players.end())
+		return;
+
+	PlayerRef player = it->second;
+	if (!player) return;
+
+	std::shared_ptr<Creature> attacker = std::static_pointer_cast<Creature>(player);
+	HandleSkill(attacker, skillId);
+}
+
+
 void GameRoom::HandleUseItem(PlayerSessionRef session, PlayerRef player, Protocol::C_USE_ITEM pkt)
 {
 	
@@ -831,6 +875,60 @@ void GameRoom::HandleUseItem(PlayerSessionRef session, PlayerRef player, Protoco
 	// TODO: DB 반영(S2S 아이템 count 업데이트, hp 저장 정책)
 }
 
+void GameRoom::HandleUseItemById(PlayerSessionRef session, uint64 playerId, Protocol::C_USE_ITEM pkt)
+{
+	auto it = _players.find(playerId);
+	if (it == _players.end())
+		return;
+
+	HandleUseItem(session, it->second, pkt); // 기존 로직 재사용
+}
+
+void GameRoom::HandleEquipItemById(PlayerSessionRef session, uint64 playerId, Protocol::C_EQUIP_ITEM pkt)
+{
+	auto it = _players.find(playerId);
+	if (it == _players.end())
+		return;
+
+	PlayerRef player = it->second;
+	if (!player) return;
+
+	Protocol::ItemInfo* targetItem = nullptr;
+	auto& items = player->GetItems();
+
+	for (auto& item : items)
+	{
+		if (item.itemuid() == pkt.itemuid())
+		{
+			targetItem = &item;
+			break;
+		}
+	}
+
+	if (!targetItem)
+		return;
+
+	targetItem->set_isequipped(pkt.equip());
+	player->RefreshStats();
+
+	// 장착 결과
+	{
+		Protocol::S_EQUIP_ITEM res;
+		res.set_itemuid(pkt.itemuid());
+		res.set_equipped(pkt.equip());
+		res.set_slotindex(pkt.slotindex());
+		session->Send(ClientPacketHandler::MakeSendBuffer(res));
+	}
+
+	// 스탯 갱신
+	{
+		Protocol::S_CHANGE_STAT st;
+		st.mutable_statinfo()->CopyFrom(*player->GetStatInfo());
+		session->Send(ClientPacketHandler::MakeSendBuffer(st));
+	}
+
+	// TODO: DB 저장은 Step 뒤에서 붙이면 됨
+}
 
 
 void GameRoom::OnMonsterMoved(MonsterRef monster)
@@ -910,6 +1008,88 @@ void GameRoom::BroadcastChat(const Protocol::S_CHAT_NTF& ntf)
 		SendToPlayer(player->GetPlayerId(), sb);
 	}
 }
+
+void GameRoom::HandleChatById(PlayerSessionRef session, uint64 playerId, const std::string& msg)
+{
+	auto it = _players.find(playerId);
+	if (it == _players.end())
+		return;
+
+	PlayerRef player = it->second;
+	if (!player) return;
+
+	Protocol::S_CHAT_NTF ntf;
+	ntf.set_playerid(player->GetPlayerId());
+	ntf.set_name(player->GetName());
+	ntf.set_message(msg);
+
+	BroadcastChat(ntf);
+}
+
+void GameRoom::TransferMapChangeById(PlayerSessionRef session,
+	uint64 playerId,
+	int32 targetMapId,
+	int64 targetInstanceId,
+	const Protocol::PositionInfo& spawn)
+{
+	if (!session) return;
+
+	auto it = _players.find(playerId);
+	if (it == _players.end())
+	{
+		session->CancelMapChange();
+		return;
+	}
+
+	PlayerRef player = it->second;
+	if (!player)
+	{
+		session->CancelMapChange();
+		return;
+	}
+
+	// 1) 현재 룸에서 정상 Leave (AOI/Despawn/CurrentRoom clear 등 기존 로직 재사용)
+	Leave(session, player);
+
+	// 2) Player 상태 갱신 (Room 소유)
+	player->SetMapId(targetMapId);
+	player->SetInstanceId(targetInstanceId);
+	player->GetPosInfo()->CopyFrom(spawn);
+
+	// 3) 새 룸으로 입장
+	if (!GRoomManager)
+	{
+		session->CancelMapChange();
+		return;
+	}
+
+	const int32 channelId = _channelId; // ✅ old room의 채널 그대로
+	auto newRoom = GRoomManager->GetOrCreateRoom(channelId, targetMapId, targetInstanceId);
+	if (!newRoom)
+	{
+		session->CancelMapChange();
+		return;
+	}
+
+	newRoom->Push([newRoom, session, player]()
+		{
+			newRoom->EnterMapChange(session, player);
+		});
+}
+
+// GameRoom.cpp
+void GameRoom::SaveReturnLocation_ActorOnly(uint64 playerId)
+{
+	PlayerRef p = FindPlayer_ActorOnly(playerId);
+	if (!p) return;
+
+	auto pos = p->GetPosInfo();
+	if (!pos) return;
+
+	// ✅ 정책: return map/instance는 "Player가 들고있는 값" 기준
+	p->SetReturnLocation(p->GetMapId(), p->GetInstanceId(), *pos);
+}
+
 
 
 #include <Windows.h> // GetTickCount64 (pch에 있으면 생략 가능)

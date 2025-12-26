@@ -13,6 +13,7 @@
 #include "LoginSession.h"
 #include "RoomManager.h" // [NEW]
 #include "DataManager.h"
+#include "LobbyRoom.h"
 #include <fstream> 
 
 
@@ -21,6 +22,7 @@
 //extern shared_ptr<GameRoom> GTestRoom;
 extern shared_ptr<LoginSession> G_LoginSession;
 extern std::atomic<bool> GIsRunning; // 전역 변수 참조
+
 
 // [Ctrl+C 핸들러]
 BOOL WINAPI CtrlHandler(DWORD fdwCtrlType)
@@ -232,6 +234,8 @@ int main()
 	ASSERT_CRASH(gameService->Start());
 
 	GRoomManager = MakeShared<RoomManager>();
+	GLobbyRoom = MakeShared<LobbyRoom>();
+
 
 	GThreadManager->Launch([=]() { ConsoleThread(); });
 

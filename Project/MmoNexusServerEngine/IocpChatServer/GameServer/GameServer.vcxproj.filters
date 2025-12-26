@@ -31,9 +31,6 @@
     <Filter Include="Session_Login">
       <UniqueIdentifier>{234bab62-2006-443d-8401-a2d14a0de215}</UniqueIdentifier>
     </Filter>
-    <Filter Include="GameContents\Acotr">
-      <UniqueIdentifier>{dd7a14bb-4519-49b6-83a3-763a059380c1}</UniqueIdentifier>
-    </Filter>
     <Filter Include="GameContents\Map">
       <UniqueIdentifier>{0c7b8b8c-376b-4b86-8f8c-dbf6ac298c2c}</UniqueIdentifier>
     </Filter>
@@ -48,6 +45,9 @@
     </Filter>
     <Filter Include="GameContents\Party">
       <UniqueIdentifier>{583353aa-8414-4d72-b54a-b5701de272e8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameContents\Actor">
+      <UniqueIdentifier>{dd7a14bb-4519-49b6-83a3-763a059380c1}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -91,13 +91,13 @@
       <Filter>Session_Login</Filter>
     </ClCompile>
     <ClCompile Include="Creature.cpp">
-      <Filter>GameContents\Acotr</Filter>
+      <Filter>GameContents\Actor</Filter>
     </ClCompile>
     <ClCompile Include="Monster.cpp">
-      <Filter>GameContents\Acotr</Filter>
+      <Filter>GameContents\Actor</Filter>
     </ClCompile>
     <ClCompile Include="Player.cpp">
-      <Filter>GameContents\Acotr</Filter>
+      <Filter>GameContents\Actor</Filter>
     </ClCompile>
     <ClCompile Include="GameMap.cpp">
       <Filter>GameContents\Map</Filter>
@@ -125,6 +125,9 @@
     </ClCompile>
     <ClCompile Include="PartyActor.cpp">
       <Filter>GameContents\Party</Filter>
+    </ClCompile>
+    <ClCompile Include="LobbyRoom.cpp">
+      <Filter>GameContents\Room</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -168,13 +171,13 @@
       <Filter>Session_Login</Filter>
     </ClInclude>
     <ClInclude Include="Creature.h">
-      <Filter>GameContents\Acotr</Filter>
+      <Filter>GameContents\Actor</Filter>
     </ClInclude>
     <ClInclude Include="Monster.h">
-      <Filter>GameContents\Acotr</Filter>
+      <Filter>GameContents\Actor</Filter>
     </ClInclude>
     <ClInclude Include="Player.h">
-      <Filter>GameContents\Acotr</Filter>
+      <Filter>GameContents\Actor</Filter>
     </ClInclude>
     <ClInclude Include="GameMap.h">
       <Filter>GameContents\Map</Filter>
@@ -210,6 +213,12 @@
       <Filter>GameContents\Party</Filter>
     </ClInclude>
     <ClInclude Include="DungeonUtils.h" />
+    <ClInclude Include="LobbyRoom.h">
+      <Filter>GameContents\Room</Filter>
+    </ClInclude>
+    <ClInclude Include="RoomActor.h">
+      <Filter>GameContents\Room</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="ServerConfig.json" />
