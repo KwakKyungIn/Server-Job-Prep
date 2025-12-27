@@ -44,7 +44,7 @@ public:
     void EnterGame(PlayerSessionRef ps, uint64 playerId, int32 channelId, int32 mapId, const Protocol::PositionInfo& spawn);
     void OnItemsLoaded(uint64 playerId, const Protocol::S2S_RES_ITEMS_LOAD& pkt);
     void OnStatLoaded(uint64 playerId, const Protocol::S2S_RES_LOAD_PLAYER_DATA& pkt);
-
+    void TryEnterWorldIfReady(uint64 playerId); // Actor thread only
     // Transfer 단계(네가 Step4에서 붙일 때 편하게)
     bool      IsReady(uint64 playerId) const;      // Actor thread only
     PlayerRef DetachIfReady(uint64 playerId);      // Actor thread only

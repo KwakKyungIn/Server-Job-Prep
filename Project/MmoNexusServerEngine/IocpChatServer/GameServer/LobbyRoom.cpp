@@ -5,14 +5,17 @@
 #include "PlayerSession.h"
 #include "ClientPacketHandler.h"  // 인벤 동기화 보내려면 필요
 #include "S2SPacketHandler.h"
-
+#include "RoomManager.h"
 std::shared_ptr<LobbyRoom> GLobbyRoom;
 
 void LobbyRoom::EnterGame(PlayerSessionRef ps, uint64 playerId, int32 channelId, int32 mapId, const Protocol::PositionInfo& spawn)
 {
-    if (!ps) return;
-    if (playerId == 0) return;
+    printf("3번 여기가 문제임\n");
 
+    if (!ps) return;
+    printf("4번 여기가 문제임\n");
+    if (playerId == 0) return;
+    printf("5번 여기가 문제임\n");
     // 로비는 채널 단위로 운용할 거면 channelId mismatch 방어
     // (필요 없으면 지워도 됨)
     if (channelId != _channelId)
@@ -21,7 +24,7 @@ void LobbyRoom::EnterGame(PlayerSessionRef ps, uint64 playerId, int32 channelId,
         // 지금은 강제 교정해준다.
         channelId = _channelId;
     }
-
+    printf("6번 여기가 문제임\n");
     auto& slot = _players[playerId];
 
     // 새로 만들거나, 있으면 갱신(재접속/중복 EnterGame)
@@ -62,6 +65,50 @@ void LobbyRoom::EnterGame(PlayerSessionRef ps, uint64 playerId, int32 channelId,
     Adopt(slot.player);
 }
 
+void LobbyRoom::TryEnterWorldIfReady(uint64 playerId)
+{
+    // Lobby actor thread only
+    if (!IsReady(playerId))
+        return;
+
+    PlayerRef p = DetachIfReady(playerId);
+    if (!p)
+        return;
+
+    PlayerSessionRef ps = p->GetSession();
+    if (!ps)
+    {
+        // 세션이 없으면 유실 방지로 다시 보관
+        Adopt(p);
+        return;
+    }
+
+    if (!GRoomManager)
+    {
+        Adopt(p);
+        return;
+    }
+
+    // 여기서는 "player 값"으로 월드 진입 위치 결정 (현재 설계 기준 OK)
+    const int32 ch = p->GetChannelId();
+    const int32 mapId = p->GetMapId();
+    const int64 instId = 0;
+
+    auto world = GRoomManager->GetOrCreateRoom(ch, mapId, instId);
+    if (!world)
+    {
+        Adopt(p);
+        return;
+    }
+
+    // ✅ 여기서 네가 준 GameRoom::Enter()를 호출한다
+    world->Push([world, ps, p]() mutable
+        {
+            world->Enter(ps, p);
+        });
+}
+
+
 void LobbyRoom::OnItemsLoaded(uint64 playerId, const Protocol::S2S_RES_ITEMS_LOAD& pkt)
 {
     auto it = _players.find(playerId);
@@ -85,6 +132,7 @@ void LobbyRoom::OnItemsLoaded(uint64 playerId, const Protocol::S2S_RES_ITEMS_LOA
     }
 
     it->second.itemsLoaded = true;
+    TryEnterWorldIfReady(playerId);
 }
 
 void LobbyRoom::OnStatLoaded(uint64 playerId, const Protocol::S2S_RES_LOAD_PLAYER_DATA& pkt)
@@ -101,6 +149,7 @@ void LobbyRoom::OnStatLoaded(uint64 playerId, const Protocol::S2S_RES_LOAD_PLAYE
     p->RefreshStats();
 
     it->second.statLoaded = true;
+    TryEnterWorldIfReady(playerId);
 }
 
 bool LobbyRoom::IsReady(uint64 playerId) const
@@ -123,6 +172,7 @@ PlayerRef LobbyRoom::DetachIfReady(uint64 playerId)
 
 void LobbyRoom::Adopt(PlayerRef player)
 {
+    printf("8번 여기가 문제임\n");
     if (!player) return;
 
     const uint64 pid = player->GetPlayerId();

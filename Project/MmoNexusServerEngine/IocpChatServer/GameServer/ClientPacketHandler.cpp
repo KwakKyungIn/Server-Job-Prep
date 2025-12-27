@@ -174,7 +174,7 @@ bool ClientPacketHandler::Handle_C_ENTER_GAME(PacketSessionRef& session, Protoco
 	ps->Post([playerId, channelId, mapId, spawn](PlayerSessionRef ps) mutable
 		{
 			GameSessionManager::GSessionManager->BindPlayerId(ps, playerId);
-
+			ps->SetPlayerId_ActorOnly(playerId);
 			if (GLobbyRoom)
 			{
 				GLobbyRoom->Push([ps, playerId, channelId, mapId, spawn]() mutable
