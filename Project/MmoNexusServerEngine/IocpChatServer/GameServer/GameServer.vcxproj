@@ -199,7 +199,16 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="GameMap.cpp" />
-    <ClCompile Include="GameRoom.cpp" />
+    <ClCompile Include="GameRoom.AOI.cpp" />
+    <ClCompile Include="GameRoom.Chat.cpp" />
+    <ClCompile Include="GameRoom.Combat.cpp" />
+    <ClCompile Include="GameRoom.EnterLeave.cpp" />
+    <ClCompile Include="GameRoom.Items.cpp" />
+    <ClCompile Include="GameRoom.LifeTime.cpp" />
+    <ClCompile Include="GameRoom.MapChange.cpp" />
+    <ClCompile Include="GameRoom.Monster.cpp" />
+    <ClCompile Include="GameRoom.Move.cpp" />
+    <ClCompile Include="GameRoom.Net.cpp" />
     <ClCompile Include="GameServer.cpp" />
     <ClCompile Include="GameSessionManager.cpp" />
     <ClCompile Include="InstanceManagerCore.cpp" />
@@ -237,6 +246,7 @@
     <ClInclude Include="Enum.pb.h" />
     <ClInclude Include="GameMap.h" />
     <ClInclude Include="GameRoom.h" />
+    <ClInclude Include="GameRoom.Net.h" />
     <ClInclude Include="GameSessionManager.h" />
     <ClInclude Include="InstanceActor.h" />
     <ClInclude Include="InstanceManagerCore.h" />

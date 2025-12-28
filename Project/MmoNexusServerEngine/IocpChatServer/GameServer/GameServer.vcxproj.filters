@@ -102,9 +102,6 @@
     <ClCompile Include="GameMap.cpp">
       <Filter>GameContents\Map</Filter>
     </ClCompile>
-    <ClCompile Include="GameRoom.cpp">
-      <Filter>GameContents\Room</Filter>
-    </ClCompile>
     <ClCompile Include="SpatialGrid.cpp">
       <Filter>GameContents\AOI</Filter>
     </ClCompile>
@@ -127,6 +124,36 @@
       <Filter>GameContents\Party</Filter>
     </ClCompile>
     <ClCompile Include="LobbyRoom.cpp">
+      <Filter>GameContents\Room</Filter>
+    </ClCompile>
+    <ClCompile Include="GameRoom.Net.cpp">
+      <Filter>GameContents\Room</Filter>
+    </ClCompile>
+    <ClCompile Include="GameRoom.LifeTime.cpp">
+      <Filter>GameContents\Room</Filter>
+    </ClCompile>
+    <ClCompile Include="GameRoom.EnterLeave.cpp">
+      <Filter>GameContents\Room</Filter>
+    </ClCompile>
+    <ClCompile Include="GameRoom.AOI.cpp">
+      <Filter>GameContents\Room</Filter>
+    </ClCompile>
+    <ClCompile Include="GameRoom.Move.cpp">
+      <Filter>GameContents\Room</Filter>
+    </ClCompile>
+    <ClCompile Include="GameRoom.Monster.cpp">
+      <Filter>GameContents\Room</Filter>
+    </ClCompile>
+    <ClCompile Include="GameRoom.Combat.cpp">
+      <Filter>GameContents\Room</Filter>
+    </ClCompile>
+    <ClCompile Include="GameRoom.Items.cpp">
+      <Filter>GameContents\Room</Filter>
+    </ClCompile>
+    <ClCompile Include="GameRoom.Chat.cpp">
+      <Filter>GameContents\Room</Filter>
+    </ClCompile>
+    <ClCompile Include="GameRoom.MapChange.cpp">
       <Filter>GameContents\Room</Filter>
     </ClCompile>
   </ItemGroup>
@@ -217,6 +244,9 @@
       <Filter>GameContents\Room</Filter>
     </ClInclude>
     <ClInclude Include="RoomActor.h">
+      <Filter>GameContents\Room</Filter>
+    </ClInclude>
+    <ClInclude Include="GameRoom.Net.h">
       <Filter>GameContents\Room</Filter>
     </ClInclude>
   </ItemGroup>
