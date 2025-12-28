@@ -1,16 +1,7 @@
 ﻿#include "pch.h"
 #include "GameRoom.h"
-#include "GameMap.h"
 #include "Player.h"
 #include "PlayerSession.h"
-#include "ClientPacketHandler.h"
-#include "Monster.h"
-#include "DataManager.h"
-#include "ObjectUtils.h"
-#include "BattleSystem.h"
-#include "Zone.h"
-#include "Creature.h"
-#include "GameSessionManager.h"
 #include "RoomManager.h"
 
 bool GameRoom::EnterRegister(PlayerSessionRef session, PlayerRef player)

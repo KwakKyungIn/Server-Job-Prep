@@ -1,7 +1,4 @@
-// GameRoom.Net.h
 #pragma once
-#include <memory>
-#include <cstdint>
 
 // forward declarations (°¡º±°Ô)
 class Creature;

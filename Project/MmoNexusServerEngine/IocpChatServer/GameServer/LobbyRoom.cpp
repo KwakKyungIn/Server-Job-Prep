@@ -1,9 +1,7 @@
-﻿// LobbyRoom.cpp
-#include "pch.h"
+﻿#include "pch.h"
 #include "LobbyRoom.h"
 #include "Player.h"
 #include "PlayerSession.h"
-#include "ClientPacketHandler.h"  // 인벤 동기화 보내려면 필요
 #include "S2SPacketHandler.h"
 #include "RoomManager.h"
 std::shared_ptr<LobbyRoom> GLobbyRoom;

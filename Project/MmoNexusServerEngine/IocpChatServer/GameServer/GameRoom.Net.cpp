@@ -1,8 +1,5 @@
-// GameRoom.Net.cpp
 #include "pch.h"
 #include "GameRoom.Net.h"
-
-#include "Creature.h"
 #include "Player.h"
 #include "PlayerSession.h"
 #include "GameSessionManager.h"
