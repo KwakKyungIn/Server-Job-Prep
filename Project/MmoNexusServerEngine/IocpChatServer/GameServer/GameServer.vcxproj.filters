@@ -72,9 +72,6 @@
     <ClCompile Include="Protocol_S2S.pb.cc">
       <Filter>Protocol</Filter>
     </ClCompile>
-    <ClCompile Include="ClientPacketHandler.cpp">
-      <Filter>Handler</Filter>
-    </ClCompile>
     <ClCompile Include="S2SPacketHandler.cpp">
       <Filter>Handler</Filter>
     </ClCompile>
@@ -155,6 +152,30 @@
     </ClCompile>
     <ClCompile Include="GameRoom.MapChange.cpp">
       <Filter>GameContents\Room</Filter>
+    </ClCompile>
+    <ClCompile Include="ClientPacketHandler.Core.cpp">
+      <Filter>Handler</Filter>
+    </ClCompile>
+    <ClCompile Include="ClientPacketHandler.EnterGame.cpp">
+      <Filter>Handler</Filter>
+    </ClCompile>
+    <ClCompile Include="ClientPacketHandler.MapChangeUtil.cpp">
+      <Filter>Handler</Filter>
+    </ClCompile>
+    <ClCompile Include="ClientPacketHandler.GamePlay.cpp">
+      <Filter>Handler</Filter>
+    </ClCompile>
+    <ClCompile Include="ClientPacketHandler.MapChange.cpp">
+      <Filter>Handler</Filter>
+    </ClCompile>
+    <ClCompile Include="ClientPacketHandler.Party.cpp">
+      <Filter>Handler</Filter>
+    </ClCompile>
+    <ClCompile Include="ClientPacketHandler.Dungeon.cpp">
+      <Filter>Handler</Filter>
+    </ClCompile>
+    <ClCompile Include="ClientPacketHandler.Misc.cpp">
+      <Filter>Handler</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -248,6 +269,9 @@
     </ClInclude>
     <ClInclude Include="GameRoom.Net.h">
       <Filter>GameContents\Room</Filter>
+    </ClInclude>
+    <ClInclude Include="ClientPacketHandler.MapChangeUtil.h">
+      <Filter>Handler</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

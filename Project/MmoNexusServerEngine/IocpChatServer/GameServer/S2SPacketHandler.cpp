@@ -11,8 +11,6 @@
 #include "LobbyRoom.h"
 
 
-extern shared_ptr<RoomManager> GRoomManager;
-
 PacketHandlerFunc S2SPacketHandler::GPacketHandler[UINT16_MAX];
 
 bool S2SPacketHandler::Handle_INVALID(PacketSessionRef& session, BYTE* buffer, int32 len)

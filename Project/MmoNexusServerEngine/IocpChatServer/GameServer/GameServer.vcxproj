@@ -191,7 +191,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="BattleSystem.cpp" />
-    <ClCompile Include="ClientPacketHandler.cpp" />
+    <ClCompile Include="ClientPacketHandler.Core.cpp" />
+    <ClCompile Include="ClientPacketHandler.Dungeon.cpp" />
+    <ClCompile Include="ClientPacketHandler.EnterGame.cpp" />
+    <ClCompile Include="ClientPacketHandler.GamePlay.cpp" />
+    <ClCompile Include="ClientPacketHandler.MapChange.cpp" />
+    <ClCompile Include="ClientPacketHandler.MapChangeUtil.cpp" />
+    <ClCompile Include="ClientPacketHandler.Misc.cpp" />
+    <ClCompile Include="ClientPacketHandler.Party.cpp" />
     <ClCompile Include="Creature.cpp" />
     <ClCompile Include="DataManager.cpp" />
     <ClCompile Include="DBSession.cpp" />
@@ -239,6 +246,7 @@
   <ItemGroup>
     <ClInclude Include="BattleSystem.h" />
     <ClInclude Include="ClientPacketHandler.h" />
+    <ClInclude Include="ClientPacketHandler.MapChangeUtil.h" />
     <ClInclude Include="Creature.h" />
     <ClInclude Include="DataManager.h" />
     <ClInclude Include="DBSession.h" />
