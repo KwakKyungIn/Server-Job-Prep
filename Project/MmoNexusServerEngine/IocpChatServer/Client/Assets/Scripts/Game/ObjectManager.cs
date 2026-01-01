@@ -218,9 +218,18 @@ public class ObjectManager : MonoBehaviour
             if (pc != null)
             {
                 pc.SetTargetPosition(new Vector3(pkt.PosInfo.X, pkt.PosInfo.Y, pkt.PosInfo.Z));
+                pc.SetTargetYaw(pkt.PosInfo.Yaw); // ✅ 회전도 같이 보간
             }
+
+            CreatureAnimator ca = go.GetComponent<CreatureAnimator>();
+            if (ca != null)
+                ca.SetMoveState(pkt.PosInfo.State);
+
+            if (pkt.PosInfo.ActionState == ActionState.ActionDead && ca != null)
+                ca.SetDead();
         }
     }
+
 
     void Spawn(PlayerInfo info, bool isMine)
     {

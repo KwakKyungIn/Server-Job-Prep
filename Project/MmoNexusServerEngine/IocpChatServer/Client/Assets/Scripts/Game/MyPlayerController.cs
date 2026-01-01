@@ -1,12 +1,19 @@
 ﻿using UnityEngine;
 using Protocol;
 using System.Collections;
-using System.Collections.Generic;
 
 public class MyPlayerController : MonoBehaviour
 {
     float _speed = 5.0f;
+
     Vector3 _lastSentPos;
+    float _lastSentYaw = 0f; // ✅ 마지막으로 보낸 Yaw
+
+    MoveState _lastSentMoveState = MoveState.MoveIdle; // ✅ 마지막으로 보낸 이동 상태
+    MoveState _curMoveState = MoveState.MoveIdle;      // ✅ 현재 입력 기반 이동 상태
+
+    // ✅ 내 캐릭터 애니를 로컬에서 바로 갱신하기 위한 Animator 래퍼
+    CreatureAnimator _anim;
 
     // [New] 상태 관리용
     bool _isDead = false;
@@ -14,41 +21,45 @@ public class MyPlayerController : MonoBehaviour
 
     void Start()
     {
+        _anim = GetComponent<CreatureAnimator>(); // ✅ 추가
+
+        _lastSentPos = transform.position;
+        _lastSentYaw = transform.eulerAngles.y;
+
         StartCoroutine(CoSendPacket());
 
         // [New] 피격 이벤트 구독 (내가 죽었는지 확인)
         PacketHandler.OnChangeHp += OnChangeHp;
     }
 
-    // [New] 이벤트 해제 (습관 들이기)
     void OnDestroy()
     {
         PacketHandler.OnChangeHp -= OnChangeHp;
     }
 
-    // [New] 피격 핸들러
     void OnChangeHp(S_CHANGE_HP pkt)
     {
-        // 내 아이디랑 맞는지 확인
         if (pkt.ObjectId == ObjectManager.MyPlayerId)
         {
             if (pkt.CurrentHp <= 0)
             {
                 _isDead = true;
                 Debug.Log("💀 [Die] You are dead!");
-                // 여기서 애니메이션 처리 (GetComponent<Animator>().SetTrigger("Die");)
+                _anim?.SetDead(); // ✅ 내 캐릭터도 즉시 죽음 애니 반영
+            }
+            else
+            {
+                // (선택) 맞을 때 히트 애니
+                // _anim?.PlayHit();
             }
         }
     }
 
     void Update()
     {
-
         if (NetworkManager.Instance != null && NetworkManager.Instance.IsMapChanging)
             return;
 
-
-        // [New] 죽었으면 조작 불가
         if (_isDead) return;
 
         // ============================================================
@@ -58,15 +69,12 @@ public class MyPlayerController : MonoBehaviour
         {
             Debug.Log("⚔️ [Input] Spacebar -> Attack!");
 
+            // (선택) 로컬 선행 애니 (서버 승인 S_SKILL 도입 전까지는 체감용으로 OK)
+            _anim?.PlayAttack(); // ✅ 추가
+
             C_SKILL skillPkt = new C_SKILL();
             skillPkt.SkillId = 1; // 1번 = 평타
-
-            // 패킷 전송
             NetworkManager.Instance.Send(skillPkt, (ushort)PacketManager.MsgId.C_SKILL);
-
-            // (선택) 클라단 쿨타임 처리나 애니메이션 선행 실행
-            // _isAttacking = true;
-            // Invoke("ResetAttack", 0.5f); 
         }
 
         // ============================================================
@@ -74,13 +82,13 @@ public class MyPlayerController : MonoBehaviour
         // ============================================================
         if (Input.GetKeyDown(KeyCode.E))
         {
-            // ... (기존 아이템 장착 로직 유지) ...
             var allItems = InventoryManager.Instance.GetAllItems();
             if (allItems.Count > 0)
             {
                 var enumerator = allItems.GetEnumerator();
                 enumerator.MoveNext();
                 ItemInfo item = enumerator.Current.Value;
+
                 C_EQUIP_ITEM pkt = new C_EQUIP_ITEM();
                 pkt.ItemUid = item.ItemUid;
                 pkt.SlotIndex = item.Slot;
@@ -89,12 +97,13 @@ public class MyPlayerController : MonoBehaviour
             }
         }
 
-        //임시 테스트 코드
+        // ============================================================
+        // [Map Test] F1~F5
+        // ============================================================
         if (Input.GetKeyDown(KeyCode.F1))
         {
             C_MAP_CHANGE_REQ req = new C_MAP_CHANGE_REQ();
-            req.TargetMapId = 1; // 테스트용
-
+            req.TargetMapId = 1;
             NetworkManager.Instance.Send(req, (ushort)PacketManager.MsgId.C_MAP_CHANGE_REQ);
             Debug.Log("📤 [TEST] Sent C_MAP_CHANGE_REQ targetMapId=1");
         }
@@ -102,27 +111,27 @@ public class MyPlayerController : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.F2))
         {
             C_MAP_CHANGE_REQ req = new C_MAP_CHANGE_REQ();
-            req.TargetMapId = 2; // 테스트용
-
+            req.TargetMapId = 2;
             NetworkManager.Instance.Send(req, (ushort)PacketManager.MsgId.C_MAP_CHANGE_REQ);
             Debug.Log("📤 [TEST] Sent C_MAP_CHANGE_REQ targetMapId=2");
         }
+
         if (Input.GetKeyDown(KeyCode.F3))
         {
             C_MAP_CHANGE_REQ req = new C_MAP_CHANGE_REQ();
-            req.TargetMapId = 3; // 테스트용
-
+            req.TargetMapId = 3;
             NetworkManager.Instance.Send(req, (ushort)PacketManager.MsgId.C_MAP_CHANGE_REQ);
             Debug.Log("📤 [TEST] Sent C_MAP_CHANGE_REQ targetMapId=3");
         }
+
         if (Input.GetKeyDown(KeyCode.F4))
         {
             C_MAP_CHANGE_REQ req = new C_MAP_CHANGE_REQ();
-            req.TargetMapId = 4; // 테스트용
-
+            req.TargetMapId = 4;
             NetworkManager.Instance.Send(req, (ushort)PacketManager.MsgId.C_MAP_CHANGE_REQ);
             Debug.Log("📤 [TEST] Sent C_MAP_CHANGE_REQ targetMapId=4");
         }
+
         if (Input.GetKeyDown(KeyCode.F5))
         {
             C_DUNGEON_EXIT_REQ req = new C_DUNGEON_EXIT_REQ();
@@ -130,55 +139,63 @@ public class MyPlayerController : MonoBehaviour
             Debug.Log("📤 [TEST] Sent C_DUNGEON_EXIT_REQ");
         }
 
-
         // ============================================================
-        // [Movement]
+        // [Movement] 입력 기반으로 현재 MoveState 계산 (정지 상태도 계산해야 함)
         // ============================================================
         float h = Input.GetAxis("Horizontal");
         float v = Input.GetAxis("Vertical");
 
-        if (h == 0 && v == 0) return;
+        bool moving = (Mathf.Abs(h) > 0.001f || Mathf.Abs(v) > 0.001f);
+        _curMoveState = moving ? MoveState.MoveRun : MoveState.MoveIdle;
+
+        // ✅ 내 캐릭터도 로컬에서 바로 애니 반영
+        _anim?.SetMoveState(_curMoveState);
+
+        // 실제 위치 이동은 moving일 때만
+        if (!moving) return;
 
         Vector3 dir = new Vector3(h, 0, v).normalized;
         transform.position += dir * _speed * Time.deltaTime;
 
         if (dir != Vector3.zero)
-        {
             transform.rotation = Quaternion.LookRotation(dir);
-        }
     }
 
     IEnumerator CoSendPacket()
     {
-
+        WaitForSeconds tick = new WaitForSeconds(0.2f);
 
         while (true)
         {
-            yield return new WaitForSeconds(0.2f);
+            yield return tick;
 
             if (NetworkManager.Instance != null && NetworkManager.Instance.IsMapChanging)
-            {
-                yield return null;   // ✅ 최소 1프레임 휴식
                 continue;
-            }
 
-            yield return new WaitForSeconds(0.2f);
-
-            // 죽었으면 이동 패킷 안 보냄
             if (_isDead) continue;
 
-            if (Vector3.Distance(transform.position, _lastSentPos) > 0.1f)
+            bool posChanged = Vector3.Distance(transform.position, _lastSentPos) > 0.1f;
+            bool stateChanged = (_curMoveState != _lastSentMoveState);
+
+            float curYaw = transform.eulerAngles.y;
+            bool yawChanged = Mathf.Abs(Mathf.DeltaAngle(curYaw, _lastSentYaw)) > 2.0f; // ✅ 회전만 해도 전송
+
+            // ✅ 위치/상태/방향 중 하나라도 바뀌면 전송
+            if (posChanged || stateChanged || yawChanged)
             {
                 C_MOVE movePkt = new C_MOVE();
                 movePkt.PosInfo = new PositionInfo();
                 movePkt.PosInfo.X = transform.position.x;
                 movePkt.PosInfo.Y = transform.position.y;
                 movePkt.PosInfo.Z = transform.position.z;
-                movePkt.PosInfo.Yaw = transform.eulerAngles.y;
-                movePkt.PosInfo.State = MoveState.MoveRun;
+                movePkt.PosInfo.Yaw = curYaw;
+                movePkt.PosInfo.State = _curMoveState;
 
                 NetworkManager.Instance.Send(movePkt, (ushort)PacketManager.MsgId.C_MOVE);
+
                 _lastSentPos = transform.position;
+                _lastSentMoveState = _curMoveState;
+                _lastSentYaw = curYaw; // ✅ 갱신
             }
         }
     }

@@ -1,28 +1,45 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
     Vector3 _targetPos;
-    float _speed = 5.0f;
+    Quaternion _targetRot;
+
+    float _moveSpeed = 5.0f;
+    float _rotSpeed = 12.0f; // íšŒì „ ìŠ¤ë¬´ë”© ì†ë„(ì·¨í–¥)
 
     void Start()
     {
         _targetPos = transform.position;
+        _targetRot = transform.rotation;
     }
 
     void Update()
     {
-        // [Smoothing] ÇöÀç À§Ä¡¿¡¼­ ¸ñÇ¥ À§Ä¡·Î ºÎµå·´°Ô ÀÌµ¿ (Lerp)
-        // ½ÇÁ¦ °ÔÀÓ¿¡¼­´Â Dead Reckoning µî ´õ º¹ÀâÇÑ ¾Ë°í¸®ÁòÀ» ¾²Áö¸¸, ÀÏ´Ü ÀÌ°É·Î ÃæºĞÇÔ.
+        // =========================
+        // Position Smoothing
+        // =========================
         if (Vector3.Distance(transform.position, _targetPos) > 0.01f)
         {
-            float step = _speed * Time.deltaTime;
+            float step = _moveSpeed * Time.deltaTime;
             transform.position = Vector3.MoveTowards(transform.position, _targetPos, step);
         }
+
+        // =========================
+        // Rotation Smoothing
+        // =========================
+        // ëª©í‘œ íšŒì „ìœ¼ë¡œ ë¶€ë“œëŸ½ê²Œ ë”°ë¼ê°€ê¸°
+        transform.rotation = Quaternion.Slerp(transform.rotation, _targetRot, Time.deltaTime * _rotSpeed);
     }
 
     public void SetTargetPosition(Vector3 pos)
     {
         _targetPos = pos;
+    }
+
+    // âœ… ìƒˆë¡œ ì¶”ê°€: yawë§Œ ë°›ì•„ì„œ íšŒì „ íƒ€ê²Ÿ ì„¤ì •
+    public void SetTargetYaw(float yaw)
+    {
+        _targetRot = Quaternion.Euler(0f, yaw, 0f);
     }
 }
