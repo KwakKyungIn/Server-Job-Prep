@@ -27,6 +27,7 @@ public class ObjectManager : MonoBehaviour
         PacketHandler.OnSpawn += OnSpawn;
         PacketHandler.OnDespawn += OnDespawn;
         PacketHandler.OnMove += OnMove;
+        PacketHandler.OnSkill += OnSkill;
         PacketHandler.OnMapChangeBegin += OnMapChangeBegin;
         PacketHandler.OnMapChangeEnd += OnMapChangeEnd;
 
@@ -47,6 +48,7 @@ public class ObjectManager : MonoBehaviour
         PacketHandler.OnSpawn -= OnSpawn;
         PacketHandler.OnDespawn -= OnDespawn;
         PacketHandler.OnMove -= OnMove;
+        PacketHandler.OnSkill -= OnSkill;
         PacketHandler.OnMapChangeBegin -= OnMapChangeBegin;
         PacketHandler.OnMapChangeEnd -= OnMapChangeEnd;
     }
@@ -228,6 +230,20 @@ public class ObjectManager : MonoBehaviour
             if (pkt.PosInfo.ActionState == ActionState.ActionDead && ca != null)
                 ca.SetDead();
         }
+    }
+    void OnSkill(S_SKILL pkt)
+    {
+        if (pkt.ObjectId == MyPlayerId) return;
+
+        if (_objects.TryGetValue(pkt.ObjectId, out GameObject go) == false || go == null)
+            return;
+
+        CreatureAnimator ca = go.GetComponent<CreatureAnimator>();
+        if (ca == null)
+            return;
+
+        // ✅ 몬스터/플레이어 공통으로 공격 트리거
+        ca.PlayAttack();
     }
 
 

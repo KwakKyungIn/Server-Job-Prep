@@ -24,7 +24,6 @@ private:
 	void			UpdateIdle();
 	void			UpdateMove();
 	void			UpdateAttack();
-	void			UpdateDead();
 
 	// [Helper]
 	std::shared_ptr<Creature> GetTarget(); // 현재 타겟 유효성 검증

@@ -232,7 +232,7 @@ public class PacketHandler
     public static void S_SKILLHandler(ServerSession session, IMessage packet)
     {
         S_SKILL pkt = packet as S_SKILL;
-        // Debug.Log($"[Skill] Object {pkt.ObjectId} used Skill {pkt.SkillId}");
+        Debug.Log($"[Skill] Object {pkt.ObjectId} used Skill {pkt.SkillId}");
 
         if (OnSkill != null)
             OnSkill.Invoke(pkt);

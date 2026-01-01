@@ -50,7 +50,7 @@ public class UI_HUD : MonoBehaviour
         if (hpBar) hpBar.value = (float)_hp / _maxHp;
         if (hpText) hpText.text = $"{_hp} / {_maxHp}";
 
-        if (levelText) levelText.text = $"Lv {_level}";
+        if (levelText) levelText.text = $"{_level}";
         if (expText) expText.text = $"EXP {_totalExp}";
 
         // exp %는 서버가 "다음 레벨 필요 exp"를 안 보내면 정확히 못 만듦.
