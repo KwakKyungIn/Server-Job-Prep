@@ -19,12 +19,19 @@ public class MyPlayerController : MonoBehaviour
     bool _isDead = false;
     bool _isAttacking = false;
 
+    // ✅ [ADD] 카메라 기준 이동을 위한 FollowCamera 참조
+    public FollowCamera followCam;
+
     void Start()
     {
         _anim = GetComponent<CreatureAnimator>(); // ✅ 추가
 
         _lastSentPos = transform.position;
         _lastSentYaw = transform.eulerAngles.y;
+
+        // ✅ [ADD] 자동 바인딩 (인스펙터에서 안 넣어도 동작)
+        if (followCam == null && Camera.main != null)
+            followCam = Camera.main.GetComponent<FollowCamera>();
 
         StartCoroutine(CoSendPacket());
 
@@ -154,7 +161,25 @@ public class MyPlayerController : MonoBehaviour
         // 실제 위치 이동은 moving일 때만
         if (!moving) return;
 
-        Vector3 dir = new Vector3(h, 0, v).normalized;
+        // ✅ [FIX] 카메라 기준 이동 방향 계산 (RMB로 카메라 돌리고 WASD하면 그 방향으로 움직임)
+        Vector3 dir;
+        if (followCam != null)
+        {
+            dir = (followCam.GetPlanarForward() * v + followCam.GetPlanarRight() * h);
+        }
+        else if (Camera.main != null)
+        {
+            Vector3 f = Camera.main.transform.forward; f.y = 0f; f.Normalize();
+            Vector3 r = Camera.main.transform.right; r.y = 0f; r.Normalize();
+            dir = (f * v + r * h);
+        }
+        else
+        {
+            dir = new Vector3(h, 0, v);
+        }
+
+        dir = dir.normalized;
+
         transform.position += dir * _speed * Time.deltaTime;
 
         if (dir != Vector3.zero)
