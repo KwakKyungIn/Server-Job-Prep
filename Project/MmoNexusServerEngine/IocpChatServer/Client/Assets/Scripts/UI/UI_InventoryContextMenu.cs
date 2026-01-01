@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -7,7 +7,7 @@ using Protocol;
 public class UI_InventoryContextMenu : MonoBehaviour
 {
     [Header("Wiring")]
-    public RectTransform panel;       // º¸Åë ÀÌ ½ºÅ©¸³Æ®°¡ ºÙÀº ¿ÀºêÁ§Æ® RectTransform ³Ö¾îµµ µÊ
+    public RectTransform panel;       // ë³´í†µ ì´ ìŠ¤í¬ë¦½íŠ¸ê°€ ë¶™ì€ ì˜¤ë¸Œì íŠ¸ RectTransform ë„£ì–´ë„ ë¨
     public Button equipButton;
     public TMP_Text equipLabel;
     public Button detailsButton;
@@ -17,28 +17,36 @@ public class UI_InventoryContextMenu : MonoBehaviour
 
     Canvas _canvas;
     RectTransform _canvasRect;
+    RectTransform _parentRect;
     int _openFrame = -1;
 
     void Awake()
     {
         if (!panel) panel = (RectTransform)transform;
-        _canvas = GetComponentInParent<Canvas>(true); // [FIX] includeInactive
-        _canvasRect = _canvas ? _canvas.transform as RectTransform : null;
-
-        Hide();
-    }
-
-    // [FIX] ContextMenu°¡ ºñÈ°¼ºÀ¸·Î ½ÃÀÛÇÏ¸é Awake°¡ ´Ê°Ô/¾È ºÒ¸± ¼ö ÀÖÀ¸´Ï Show¿¡¼­ º¸°­
-    bool EnsureCanvas()
-    {
-        if (_canvasRect != null) return true;
 
         _canvas = GetComponentInParent<Canvas>(true); // includeInactive
         _canvasRect = _canvas ? _canvas.transform as RectTransform : null;
 
+        _parentRect = panel.parent as RectTransform;
+
+        Hide();
+    }
+
+    // ë¹„í™œì„± ì‹œì‘/ì¬ë¶€ëª¨ ëŒ€ë¹„: Showì—ì„œ ëŠ¦ê²Œë¼ë„ ì¡ê¸°
+    bool EnsureRects()
+    {
         if (_canvasRect == null)
         {
-            Debug.LogWarning("[UI_InventoryContextMenu] Canvas not found in parents.");
+            _canvas = GetComponentInParent<Canvas>(true);
+            _canvasRect = _canvas ? _canvas.transform as RectTransform : null;
+        }
+
+        if (_parentRect == null && panel != null)
+            _parentRect = panel.parent as RectTransform;
+
+        if (_canvasRect == null || _parentRect == null)
+        {
+            Debug.LogWarning("[UI_InventoryContextMenu] Canvas/Parent Rect not found.");
             return false;
         }
 
@@ -56,7 +64,7 @@ public class UI_InventoryContextMenu : MonoBehaviour
             return;
         }
 
-        // ¹Ù±ù Å¬¸¯ÇÏ¸é ´İ±â
+        // ë°”ê¹¥ í´ë¦­í•˜ë©´ ë‹«ê¸°
         if (Input.GetMouseButtonDown(0) || Input.GetMouseButtonDown(1))
         {
             var cam = (_canvas != null && _canvas.renderMode != RenderMode.ScreenSpaceOverlay) ? _canvas.worldCamera : null;
@@ -67,17 +75,16 @@ public class UI_InventoryContextMenu : MonoBehaviour
 
     public void Show(int slotIndex, ItemInfo item, Vector2 screenPos, Action onEquip, Action onDetails)
     {
-        // [FIX] Awake Ä³½Ã ½ÇÆĞ/Áö¿¬ ´ëºñ
-        if (!EnsureCanvas())
+        if (!EnsureRects())
             return;
 
         SlotIndex = slotIndex;
 
-        // ¶óº§
+        // ë¼ë²¨
         if (equipLabel)
             equipLabel.text = item.IsEquipped ? "Unequip" : "Equip";
 
-        // ¹öÆ° ¸®½º³Ê
+        // ë²„íŠ¼ ë¦¬ìŠ¤ë„ˆ
         if (equipButton)
         {
             equipButton.onClick.RemoveAllListeners();
@@ -92,30 +99,33 @@ public class UI_InventoryContextMenu : MonoBehaviour
 
         gameObject.SetActive(true);
 
-        // À§Ä¡ Àâ±â (Screen -> Canvas Local)
-        var cam = (_canvas.renderMode != RenderMode.ScreenSpaceOverlay) ? _canvas.worldCamera : null;
+        // âœ… í•µì‹¬ FIX:
+        // ScreenPos -> "panelì˜ ë¶€ëª¨ RectTransform" ê¸°ì¤€ localPosë¡œ ë³€í™˜í•´ì•¼ anchoredPositionì´ ì•ˆ íŠ„ë‹¤.
+        var cam = (_canvas != null && _canvas.renderMode != RenderMode.ScreenSpaceOverlay) ? _canvas.worldCamera : null;
 
-        if (RectTransformUtility.ScreenPointToLocalPointInRectangle(_canvasRect, screenPos, cam, out Vector2 localPos))
+        if (RectTransformUtility.ScreenPointToLocalPointInRectangle(_parentRect, screenPos, cam, out Vector2 localPos))
         {
-            panel.anchoredPosition = ClampToCanvas(localPos);
+            panel.anchoredPosition = ClampToParent(localPos);
         }
 
-        _openFrame = Time.frameCount; // ¿­¸° ÇÁ·¹ÀÓ¿£ Áï½Ã ´İÈ÷Áö ¾Ê°Ô
+        _openFrame = Time.frameCount; // ì—´ë¦° í”„ë ˆì„ì—” ì¦‰ì‹œ ë‹«íˆì§€ ì•Šê²Œ
     }
 
-    Vector2 ClampToCanvas(Vector2 anchoredPos)
+    Vector2 ClampToParent(Vector2 anchoredPos)
     {
-        // Canvas pivotÀÌ (0.5,0.5)ÀÎ ÀÏ¹İÀûÀÎ ÄÉÀÌ½º ±âÁØ Å¬·¥ÇÁ
-        // ³Ê Canvas/Panel pivotÀÌ ´Ù¸£¸é ¿©±â¸¸ »ìÂ¦ ¼öÁ¤ÇÏ¸é µÊ.
-        if (!_canvasRect) return anchoredPos;
+        if (_parentRect == null) return anchoredPos;
 
-        Vector2 canvasSize = _canvasRect.rect.size;
+        Vector2 parentSize = _parentRect.rect.size;
         Vector2 panelSize = panel.rect.size;
+        Vector2 pivot = panel.pivot;
 
-        float minX = -canvasSize.x * 0.5f + panelSize.x * 0.5f;
-        float maxX = canvasSize.x * 0.5f - panelSize.x * 0.5f;
-        float minY = -canvasSize.y * 0.5f + panelSize.y * 0.5f;
-        float maxY = canvasSize.y * 0.5f - panelSize.y * 0.5f;
+        // parent pivotì´ (0.5,0.5)ë¼ê³  ê°€ì •(ëŒ€ë¶€ë¶„ UI íŒ¨ë„ì€ ì´ê±°ì„)
+        // pivot ê³ ë ¤í•´ì„œ "ë©”ë‰´ê°€ í™”ë©´ ë°–ìœ¼ë¡œ ë‚˜ê°€ì§€ ì•Šê²Œ" í´ë¨í”„
+        float minX = -parentSize.x * 0.5f + panelSize.x * pivot.x;
+        float maxX = parentSize.x * 0.5f - panelSize.x * (1f - pivot.x);
+
+        float minY = -parentSize.y * 0.5f + panelSize.y * pivot.y;
+        float maxY = parentSize.y * 0.5f - panelSize.y * (1f - pivot.y);
 
         anchoredPos.x = Mathf.Clamp(anchoredPos.x, minX, maxX);
         anchoredPos.y = Mathf.Clamp(anchoredPos.y, minY, maxY);
