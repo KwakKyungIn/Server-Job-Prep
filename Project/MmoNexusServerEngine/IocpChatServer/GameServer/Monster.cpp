@@ -173,7 +173,7 @@ void Monster::UpdateAttack()
 	// 3) 쿨타임 체크 (지금 static이라 "전체 몬스터 공용"임. 일단은 유지)
 	uint64 now = ::GetTickCount64();
 	if (now - s_lastAttackTime < 1000) return;
-	s_lastAttackTime = now;`
+	s_lastAttackTime = now;
 
 	// 4) 스킬 실행 → S_SKILL 브로드캐스트는 GameRoom::HandleSkill에서 함
 	printf("🥊 [Monster] Attack! -> Player %llu\n", target->GetObjectId());
