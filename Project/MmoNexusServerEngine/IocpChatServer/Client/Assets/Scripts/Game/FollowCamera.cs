@@ -1,4 +1,5 @@
-using UnityEngine;
+ï»¿using UnityEngine;
+using UnityEngine.EventSystems; // âœ… ì¶”ê°€
 
 public class FollowCamera : MonoBehaviour
 {
@@ -24,7 +25,6 @@ public class FollowCamera : MonoBehaviour
     {
         if (target == null) return;
 
-        // ÇöÀç Ä«¸Þ¶ó ¹æÇâ¿¡¼­ ÃÊ±â yaw/pitch ÃßÁ¤
         Vector3 dir = (transform.position - target.position);
         if (dir.sqrMagnitude < 0.001f) dir = new Vector3(0, height, -distance);
 
@@ -38,44 +38,49 @@ public class FollowCamera : MonoBehaviour
     {
         if (target == null) return;
 
-        // ¿ìÅ¬¸¯ ´©¸£´Â µ¿¾È¸¸ È¸Àü (MMO ±âº»)
-        if (Input.GetMouseButton(1))
+        // âœ… í•µì‹¬: ë§ˆìš°ìŠ¤ê°€ UI ìœ„ë©´ ì¹´ë©”ë¼ ìž…ë ¥ì„ ë¨¹ì§€ ì•ŠëŠ”ë‹¤
+        bool overUI = (EventSystem.current != null) && EventSystem.current.IsPointerOverGameObject();
+        if (overUI)
         {
-            _yaw += Input.GetAxis("Mouse X") * mouseSensitivity;
-            _pitch -= Input.GetAxis("Mouse Y") * mouseSensitivity;
-            _pitch = ClampAngle(_pitch, pitchMin, pitchMax);
-
-            // ¸¶¿ì½º È¸Àü Áß Ä¿¼­ °íÁ¤Àº ¿É¼Ç
-            Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible = false;
+            // UI ì¡°ìž‘ ì¤‘ ì»¤ì„œ ë½ í’€ê¸°(ì¹´ë©”ë¼ê°€ ìž¡ì•„ì±„ëŠ” ëŠë‚Œ ì œê±°)
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
         }
         else
         {
-            Cursor.lockState = CursorLockMode.None;
-            Cursor.visible = true;
+            // ìš°í´ë¦­ ëˆ„ë¥´ëŠ” ë™ì•ˆë§Œ íšŒì „ (MMO ê¸°ë³¸)
+            if (Input.GetMouseButton(1))
+            {
+                _yaw += Input.GetAxis("Mouse X") * mouseSensitivity;
+                _pitch -= Input.GetAxis("Mouse Y") * mouseSensitivity;
+                _pitch = ClampAngle(_pitch, pitchMin, pitchMax);
+
+                Cursor.lockState = CursorLockMode.Locked;
+                Cursor.visible = false;
+            }
+            else
+            {
+                Cursor.lockState = CursorLockMode.None;
+                Cursor.visible = true;
+            }
         }
 
         Quaternion rot = Quaternion.Euler(_pitch, _yaw, 0f);
 
-        // target ±âÁØÀ¸·Î "µÚ·Î distance" + À§·Î height
         Vector3 desiredPos = target.position + rot * new Vector3(0f, height, -distance);
-
         transform.position = Vector3.Lerp(transform.position, desiredPos, followSpeed * Time.deltaTime);
 
-        // ½Ã¼±µµ ºÎµå·´°Ô
         Quaternion desiredRot = Quaternion.LookRotation((target.position + Vector3.up * 1.5f) - transform.position);
         transform.rotation = Quaternion.Slerp(transform.rotation, desiredRot, rotateSpeed * Time.deltaTime);
     }
 
     static float ClampAngle(float angle, float min, float max)
     {
-        // 0~360 º¸Á¤
         while (angle > 180f) angle -= 360f;
         while (angle < -180f) angle += 360f;
         return Mathf.Clamp(angle, min, max);
     }
 
-    // ÇÃ·¹ÀÌ¾î°¡ Ä«¸Þ¶ó ±âÁØ ÀÌµ¿ÇÏ·Á¸é "Ä«¸Þ¶ó forward/right"°¡ ÇÊ¿ä
     public Vector3 GetPlanarForward()
     {
         Vector3 f = transform.forward;
