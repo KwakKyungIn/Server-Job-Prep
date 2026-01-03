@@ -136,6 +136,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>C:\dev\vcpkg\installed\x64-windows\include\recastnavigation</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -222,6 +223,7 @@
     <ClCompile Include="LobbyRoom.cpp" />
     <ClCompile Include="LoginSession.cpp" />
     <ClCompile Include="Monster.cpp" />
+    <ClCompile Include="NavSystem.cpp" />
     <ClCompile Include="PartyActor.cpp" />
     <ClCompile Include="PartyManager.cpp" />
     <ClCompile Include="PartyManagerCore.cpp" />
@@ -261,6 +263,7 @@
     <ClInclude Include="LobbyRoom.h" />
     <ClInclude Include="LoginSession.h" />
     <ClInclude Include="Monster.h" />
+    <ClInclude Include="NavSystem.h" />
     <ClInclude Include="ObjectUtils.h" />
     <ClInclude Include="PartyActor.h" />
     <ClInclude Include="PartyManager.h" />

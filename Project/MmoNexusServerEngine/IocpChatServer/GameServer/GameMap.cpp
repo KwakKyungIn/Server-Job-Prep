@@ -1,51 +1,60 @@
-#include "pch.h"
+ï»¿#include "pch.h"
 #include "GameMap.h"
+#include "NavSystem.h" // êµ¬í˜„ë¶€ì—ì„  í¬í•¨
 
 GameMap::GameMap()
 {
+    _navSystem = std::make_shared<NavSystem>();
 }
 
 GameMap::~GameMap()
 {
 }
 
-void GameMap::Init(int32 mapId, int32 sizeX, int32 sizeY)
+bool GameMap::Init(const MapConfig* config)
 {
-	_mapId = mapId;
-	_minX = 0;
-	_maxX = sizeX;
-	_minY = 0;
-	_maxY = sizeY;
+    if (config == nullptr) return false;
 
-	// [Init] 2D ¹è¿­ ÇÒ´ç (0À¸·Î ÃÊ±âÈ­)
-	_collision = vector<vector<int32>>(sizeY, vector<int32>(sizeX, 0));
+    _mapId = config->mapId;
+    _sizeX = config->sizeX;
+    _sizeY = config->sizeY;
 
-	// [Test] ¸Ê Å×µÎ¸®¿¡ º®(1) ¼¼¿ì±â
-	for (int y = 0; y < sizeY; y++)
-	{
-		for (int x = 0; x < sizeX; x++)
-		{
-			if (x == 0 || x == sizeX - 1 || y == 0 || y == sizeY - 1)
-				_collision[y][x] = 1;
-		}
-	}
+    // NavMesh ë¡œë”©
+    if (!config->navMeshPath.empty())
+    {
+        if (_navSystem->Load(config->navMeshPath))
+        {
+            std::cout << "âœ… [GameMap] NavMesh Loaded: " << config->navMeshPath << std::endl;
+        }
+        else
+        {
+            std::cout << "âŒ [GameMap] NavMesh Load Failed: " << config->navMeshPath << std::endl;
+            // ì‹¤íŒ¨ ì‹œ ë¡œì§? (ì¼ë‹¨ ì§„í–‰í•˜ë˜ ì´ë™ ë¶ˆê°€ ì²˜ë¦¬ë˜ê² ì§€)
+        }
+    }
+
+    return true;
 }
 
 bool GameMap::CanGo(const Protocol::PositionInfo& posInfo)
 {
-	// Unity ÁÂÇ¥(Float) -> ¼­¹ö ±×¸®µå(Int) º¯È¯
-	// Unity(x, y, z) -> Server(x, z) ¸ÅÇÎ (y´Â ³ôÀÌÀÌ¹Ç·Î ¹«½Ã)
-	int32 x = static_cast<int32>(posInfo.x());
-	int32 y = static_cast<int32>(posInfo.z());
+    // Deprecated: êµ¬ì‹ ì½”ë“œ í˜¸í™˜ìš©
+    // í˜„ì¬ ìœ„ì¹˜ê°€ NavMesh ìœ„ì¸ì§€ ì²´í¬
+    float x = posInfo.x();
+    float y = posInfo.z(); // ì„œë²„ ì¢Œí‘œê³„ ì£¼ì˜ (yê°€ ë†’ì´ì¸ì§€ zê°€ ë†’ì´ì¸ì§€ í”„ë¡œì íŠ¸ë§ˆë‹¤ ë‹¤ë¦„. ìœ ë‹ˆí‹°ëŠ” yê°€ ë†’ì´)
+    // *ì£¼ì˜*: ìœ ë‹ˆí‹°(x,y,z) -> ì„œë²„(x,y,z) ê·¸ëŒ€ë¡œ ì“´ë‹¤ë©´:
 
-	// 1. ¸Ê ¹üÀ§ Ã¼Å©
-	if (x < _minX || x >= _maxX) return false;
-	if (y < _minY || y >= _maxY) return false;
+    // ìœ íš¨ì„± ì²´í¬ìš©ìœ¼ë¡œë§Œ ì”€
+    float dummyY;
+    return _navSystem->ResolvePoint(posInfo.x(), posInfo.y(), posInfo.z(), dummyY);
+}
 
-	// 2. Ãæµ¹Ã¼(º®) Ã¼Å©
-	// 0ÀÌ¸é Pass, 1ÀÌ¸é Block
-	// ¹è¿­ ÀÎµ¦½º´Â [y][x] ¼ø¼­ÀÓ¿¡ ÁÖÀÇ
-	if (_collision[y][x] == 1) return false;
+bool GameMap::ValidateMove(const Protocol::PositionInfo& current, const Protocol::PositionInfo& next, Protocol::PositionInfo& outFixed)
+{
+    return _navSystem->ValidateMove(current, next, outFixed);
+}
 
-	return true;
+uint32 GameMap::GetConnectivityId(float x, float y, float z)
+{
+    return _navSystem->GetConnectivityId(x, y, z);
 }

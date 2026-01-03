@@ -4,53 +4,30 @@
     {
       "mapId": 1,
       "type": "world",
-      "sizeX": 1000,
-      "sizeY": 1000,
-      "zoneSize": 100,
+      "sizeX": 1024,
+      "sizeY": 1024,
+      "zoneSize": 64,
       "spawnX": 500.0,
       "spawnY": 0.0,
-      "spawnZ": 500.0
-    },
-    {
-      "mapId": 2,
-      "type": "world",
-      "sizeX": 1000,
-      "sizeY": 1000,
-      "zoneSize": 100,
-      "spawnX": 500.0,
-      "spawnY": 0.0,
-      "spawnZ": 500.0
-    },
-    {
-      "mapId": 3,
-      "type": "world",
-      "sizeX": 1000,
-      "sizeY": 1000,
-      "zoneSize": 100,
-      "spawnX": 500.0,
-      "spawnY": 0.0,
-      "spawnZ": 500.0
-    },
+      "spawnZ": 500.0,
 
+      "navMeshPath": "MapData/NavMesh_Map001.bin",
+      "aoiCellSize": 64,
+      "interestRadius": 150.0
+    },
     {
       "mapId": 1001,
       "type": "dungeon",
-      "sizeX": 1000,
-      "sizeY": 1000,
-      "zoneSize": 100,
-      "spawnX": 500.0,
+      "sizeX": 512,
+      "sizeY": 512,
+      "zoneSize": 64,
+      "spawnX": 100.0,
       "spawnY": 0.0,
-      "spawnZ": 500.0
-    },
-    {
-      "mapId": 1002,
-      "type": "dungeon",
-      "sizeX": 1000,
-      "sizeY": 1000,
-      "zoneSize": 100,
-      "spawnX": 500.0,
-      "spawnY": 0.0,
-      "spawnZ": 500.0
+      "spawnZ": 100.0,
+
+      "navMeshPath": "MapData/NavMesh_Dungeon001.bin",
+      "aoiCellSize": 64,
+      "interestRadius": 100.0
     }
   ]
 }

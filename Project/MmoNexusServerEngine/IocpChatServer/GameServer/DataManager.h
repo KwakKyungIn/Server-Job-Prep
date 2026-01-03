@@ -13,16 +13,25 @@ enum class MapType : uint8
 	Dungeon,
 };
 
+// 구조체만 변경, 나머지는 그대로
 struct MapConfig
 {
 	int32 mapId = 1;
 	int32 sizeX = 100;
 	int32 sizeY = 100;
-	int32 zoneSize = 10;
 
+	// [AOI & Zone]
+	int32 zoneSize = 64;       // Grid Cell Size와 동일하게 맞추는 게 정석
+	int32 aoiCellSize = 64;    // (New) AOI 계산용
+	float interestRadius = 150.f; // (New) 시야 거리
+
+	// [Spawn]
 	float spawnX = 50.f;
 	float spawnY = 0.f;
 	float spawnZ = 50.f;
+
+	// [Path]
+	std::string navMeshPath;   // (New) .bin 파일 경로
 
 	MapType type = MapType::World;
 };

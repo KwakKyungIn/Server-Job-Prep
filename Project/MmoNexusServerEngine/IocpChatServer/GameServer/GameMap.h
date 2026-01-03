@@ -1,37 +1,39 @@
 #pragma once
 #include "Protocol.pb.h"
+#include "DataManager.h" // MapConfig
+
+class NavSystem; // Forward Declaration (헤더 의존성 최소화)
 
 class GameMap
 {
 public:
-	GameMap();
-	~GameMap();
+    GameMap();
+    ~GameMap();
 
-	void Init(int32 mapId, int32 sizeX, int32 sizeY);
+    // MapConfig 전체를 받도록 변경
+    bool Init(const MapConfig* config);
 
-	// [Collision Check]
-	// 좌표 유효성 및 벽 충돌 체크
-	bool CanGo(const Protocol::PositionInfo& posInfo);
+    // [Collision Check] -> [Move Validation]
+    // 단순히 bool이 아니라, 보정된 위치를 반환할 수 있어야 함
+    // (지금은 인터페이스 유지를 위해 기존 CanGo를 수정하되, 내부적으로 NavSystem 호출)
+    bool CanGo(const Protocol::PositionInfo& posInfo);
 
-	// [Getter]
-	int32 GetMinX() const { return _minX; }
-	int32 GetMaxX() const { return _maxX; }
-	int32 GetMinY() const { return _minY; }
-	int32 GetMaxY() const { return _maxY; }
+    // [New] Role B: 이동 검증 & 보정 API
+    bool ValidateMove(const Protocol::PositionInfo& current, const Protocol::PositionInfo& next, Protocol::PositionInfo& outFixed);
 
-	// [New] AOI 그리드 계산용 사이즈 반환
-	int32 GetSizeX() const { return _maxX - _minX; }
-	int32 GetSizeY() const { return _maxY - _minY; }
+    // [New] Role A가 쓸 Connectivity API
+    uint32 GetConnectivityId(float x, float y, float z);
 
-	int32 GetMapId() const { return _mapId; }
+    int32 GetMapId() const { return _mapId; }
+    int32 GetSizeX() const { return _sizeX; }
+    int32 GetSizeY() const { return _sizeY; }
 
 private:
-	int32 _mapId = 0;
-	int32 _minX = 0;
-	int32 _maxX = 0;
-	int32 _minY = 0;
-	int32 _maxY = 0;
+    int32 _mapId = 0;
+    int32 _sizeX = 0;
+    int32 _sizeY = 0;
 
-	// 2D 격자 충돌 배열 (0: 이동가능, 1: 벽)
-	vector<vector<int32>> _collision;
+    // 더 이상 2D 배열 _collision은 없다.
+    // NavSystem이 권위자다.
+    std::shared_ptr<NavSystem> _navSystem;
 };

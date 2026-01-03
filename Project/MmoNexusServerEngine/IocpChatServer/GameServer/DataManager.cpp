@@ -135,13 +135,19 @@ bool DataManager::LoadMapConfigsFromJson(const std::string& path)
 		return false;
 	}
 
+	// LoadMapConfigsFromJson 내부 루프 안쪽
 	for (const auto& m : j["maps"])
 	{
 		MapConfig cfg;
 		cfg.mapId = m.value("mapId", 0);
 		cfg.sizeX = m.value("sizeX", 100);
 		cfg.sizeY = m.value("sizeY", 100);
-		cfg.zoneSize = m.value("zoneSize", 10);
+
+		// AOI & Nav
+		cfg.zoneSize = m.value("zoneSize", 64);
+		cfg.aoiCellSize = m.value("aoiCellSize", 64);
+		cfg.interestRadius = m.value("interestRadius", 150.0f);
+		cfg.navMeshPath = m.value("navMeshPath", ""); // Default Empty
 
 		cfg.spawnX = m.value("spawnX", 50.0f);
 		cfg.spawnY = m.value("spawnY", 0.0f);

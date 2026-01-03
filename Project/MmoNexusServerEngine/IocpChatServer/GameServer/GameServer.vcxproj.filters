@@ -177,6 +177,9 @@
     <ClCompile Include="ClientPacketHandler.Misc.cpp">
       <Filter>Handler</Filter>
     </ClCompile>
+    <ClCompile Include="NavSystem.cpp">
+      <Filter>GameContents\Map</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -272,6 +275,9 @@
     </ClInclude>
     <ClInclude Include="ClientPacketHandler.MapChangeUtil.h">
       <Filter>Handler</Filter>
+    </ClInclude>
+    <ClInclude Include="NavSystem.h">
+      <Filter>GameContents\Map</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
