@@ -43,7 +43,7 @@ public class UI_PartyMemberRow : MonoBehaviour
             levelText.text = $"Lv{m.Level}";
 
         if (hpText != null)
-            hpText.text = $"HP {m.Hp}/{m.MaxHp}";
+            hpText.text = $"{m.Hp}/{m.MaxHp}";
 
         UpdateKickButton();
     }
