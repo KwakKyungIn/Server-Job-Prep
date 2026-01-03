@@ -292,6 +292,9 @@ public class PacketHandler
 
         Debug.Log($"[PartyInfo] hasParty={pkt.HasParty} partyId={pkt.PartyId} leader={pkt.LeaderId} members={pkt.MemberIds.Count} ver={pkt.Version}");
         OnPartyInfoNtf?.Invoke(pkt);
+
+        if (pkt.HasParty)
+            PartyApi.RequestStatus();
     }
 
     public static void S_PARTY_RESULTHandler(ServerSession session, IMessage packet)

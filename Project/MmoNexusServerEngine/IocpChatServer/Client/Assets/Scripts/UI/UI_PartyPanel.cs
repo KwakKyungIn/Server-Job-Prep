@@ -90,9 +90,10 @@ public class UI_PartyPanel : MonoBehaviour
         if (headerText != null)
         {
             headerText.text = pc.HasParty
-                ? $"PartyId={pc.PartyId} Leader={pc.LeaderId} Ver={pc.Version} Members={pc.MemberIds.Count}"
-                : "Party: NONE";
+                ? (pc.IsLeader ? "Party: My Party" : $"Party: {pc.LeaderId}'s Party")
+                : "Party:";
         }
+
 
         bool hasParty = pc.HasParty;
         bool isLeader = pc.IsLeader;

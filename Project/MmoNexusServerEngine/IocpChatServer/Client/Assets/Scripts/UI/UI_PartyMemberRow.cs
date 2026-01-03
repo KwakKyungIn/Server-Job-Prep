@@ -2,9 +2,15 @@
 using UnityEngine.UI;
 using Protocol;
 using TMPro;
+
 public class UI_PartyMemberRow : MonoBehaviour
 {
-    public TMP_Text text;
+    [Header("Texts")]
+    public TMP_Text nameText;
+    public TMP_Text levelText;
+    public TMP_Text hpText;
+
+    [Header("Controls")]
     public Button btnKick;
 
     ulong _playerId;
@@ -18,7 +24,10 @@ public class UI_PartyMemberRow : MonoBehaviour
     public void BindFallback(ulong playerId)
     {
         _playerId = playerId;
-        if (text != null) text.text = $"[{playerId}] (no status)";
+
+        if (nameText != null) nameText.text = $"[{playerId}]";
+        if (levelText != null) levelText.text = "-";
+        if (hpText != null) hpText.text = "(no status)";
 
         UpdateKickButton();
     }
@@ -27,8 +36,14 @@ public class UI_PartyMemberRow : MonoBehaviour
     {
         _playerId = m.PlayerId;
 
-        if (text != null)
-            text.text = $"{m.Name} ({m.PlayerId}) Lv{m.Level} HP {m.Hp}/{m.MaxHp}";
+        if (nameText != null)
+            nameText.text = string.IsNullOrEmpty(m.Name) ? $"[{m.PlayerId}]" : $"{m.Name} ({m.PlayerId})";
+
+        if (levelText != null)
+            levelText.text = $"Lv{m.Level}";
+
+        if (hpText != null)
+            hpText.text = $"HP {m.Hp}/{m.MaxHp}";
 
         UpdateKickButton();
     }
@@ -40,7 +55,7 @@ public class UI_PartyMemberRow : MonoBehaviour
         bool leader = PartyClient.Instance != null && PartyClient.Instance.IsLeader;
         bool isMe = _playerId != 0 && _playerId == ObjectManager.MyPlayerId;
 
-        // ✅ 리더만 Kick 보임 + 내 자신은 Kick 금지
+        // 리더만 Kick 보임 + 내 자신은 Kick 금지
         btnKick.gameObject.SetActive(leader && !isMe);
     }
 
