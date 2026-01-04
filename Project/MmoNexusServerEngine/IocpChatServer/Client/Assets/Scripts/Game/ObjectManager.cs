@@ -207,30 +207,50 @@ public class ObjectManager : MonoBehaviour
         Vector3 pos = new Vector3(pkt.Pos.X, pkt.Pos.Y, pkt.Pos.Z);
         myGo.transform.position = pos;
 
+        var myCtrl = myGo.GetComponent<MyPlayerController>();
+        if (myCtrl != null)
+            myCtrl.ResetSendBaseline();
+
+
         Debug.Log($"[ObjectManager] MyPlayer warped to {pos}");
     }
 
     void OnMove(S_MOVE pkt)
     {
-        if (pkt.ObjectId == MyPlayerId) return;
+        if (_objects.TryGetValue(pkt.ObjectId, out GameObject go) == false || go == null)
+            return;
 
-        if (_objects.TryGetValue(pkt.ObjectId, out GameObject go))
+        Vector3 serverPos = new Vector3(pkt.PosInfo.X, pkt.PosInfo.Y, pkt.PosInfo.Z);
+        float serverYaw = pkt.PosInfo.Yaw;
+
+        // ✅ 내 캐릭터도 서버 권위 반영
+        if (pkt.ObjectId == MyPlayerId)
         {
-            PlayerController pc = go.GetComponent<PlayerController>();
-            if (pc != null)
-            {
-                pc.SetTargetPosition(new Vector3(pkt.PosInfo.X, pkt.PosInfo.Y, pkt.PosInfo.Z));
-                pc.SetTargetYaw(pkt.PosInfo.Yaw); // ✅ 회전도 같이 보간
-            }
+            var my = go.GetComponent<MyPlayerController>();
+            if (my != null)
+                my.ApplyServerMove(serverPos, serverYaw, pkt.PosInfo.State);
+            else
+                go.transform.SetPositionAndRotation(serverPos, Quaternion.Euler(0f, serverYaw, 0f));
 
-            CreatureAnimator ca = go.GetComponent<CreatureAnimator>();
-            if (ca != null)
-                ca.SetMoveState(pkt.PosInfo.State);
-
-            if (pkt.PosInfo.ActionState == ActionState.ActionDead && ca != null)
-                ca.SetDead();
+            return;
         }
+
+        // ===== 다른 플레이어는 기존대로 보간 =====
+        PlayerController pc = go.GetComponent<PlayerController>();
+        if (pc != null)
+        {
+            pc.SetTargetPosition(serverPos);
+            pc.SetTargetYaw(serverYaw);
+        }
+
+        CreatureAnimator ca = go.GetComponent<CreatureAnimator>();
+        if (ca != null)
+            ca.SetMoveState(pkt.PosInfo.State);
+
+        if (pkt.PosInfo.ActionState == ActionState.ActionDead && ca != null)
+            ca.SetDead();
     }
+
     void OnSkill(S_SKILL pkt)
     {
         if (pkt.ObjectId == MyPlayerId) return;
