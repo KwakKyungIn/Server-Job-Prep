@@ -282,6 +282,9 @@
     <ClInclude Include="NavSystem.h">
       <Filter>GameContents\Map</Filter>
     </ClInclude>
+    <ClInclude Include="MoveValidationUtils.h">
+      <Filter>GameContents</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="ServerConfig.json" />

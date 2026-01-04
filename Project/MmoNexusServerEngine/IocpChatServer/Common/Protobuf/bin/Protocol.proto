@@ -54,7 +54,10 @@ message S_ENTER_GAME {
 // [GAME LOGIC - MOVEMENT] (Kept as is)
 // ============================================================
 message C_MOVE {
-    PositionInfo posInfo = 1; 
+
+    PositionInfo posInfo = 1;
+    uint32 move_seq = 2;
+    uint32 client_time_ms = 3;
 }
 
 message S_MOVE {

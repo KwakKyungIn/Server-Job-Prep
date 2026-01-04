@@ -72,6 +72,10 @@ void Player::Init(const Protocol::PlayerInfo& info)
 		_posInfo->set_z(50.0f);
 		_posInfo->set_yaw(0.0f);
 	}
+
+	// ===== [A] MoveStamp 초기화 (Room thread ONLY) =====
+	ResetMoveStamp_ActorOnly();
+	_lastAcceptedPos.CopyFrom(*_posInfo); // anchor (첫 move clamp 방지용 기준점)
 }
 
 void Player::RefreshStats()

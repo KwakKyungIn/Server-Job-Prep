@@ -264,6 +264,7 @@
     <ClInclude Include="LobbyRoom.h" />
     <ClInclude Include="LoginSession.h" />
     <ClInclude Include="Monster.h" />
+    <ClInclude Include="MoveValidationUtils.h" />
     <ClInclude Include="NavSystem.h" />
     <ClInclude Include="ObjectUtils.h" />
     <ClInclude Include="PartyActor.h" />

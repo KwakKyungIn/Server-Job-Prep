@@ -1303,6 +1303,8 @@ class C_MOVE final :
 
   enum : int {
     kPosInfoFieldNumber = 1,
+    kMoveSeqFieldNumber = 2,
+    kClientTimeMsFieldNumber = 3,
   };
   // .Protocol.PositionInfo posInfo = 1;
   bool has_posinfo() const;
@@ -1322,6 +1324,24 @@ class C_MOVE final :
       ::Protocol::PositionInfo* posinfo);
   ::Protocol::PositionInfo* unsafe_arena_release_posinfo();
 
+  // uint32 move_seq = 2;
+  void clear_move_seq();
+  uint32_t move_seq() const;
+  void set_move_seq(uint32_t value);
+  private:
+  uint32_t _internal_move_seq() const;
+  void _internal_set_move_seq(uint32_t value);
+  public:
+
+  // uint32 client_time_ms = 3;
+  void clear_client_time_ms();
+  uint32_t client_time_ms() const;
+  void set_client_time_ms(uint32_t value);
+  private:
+  uint32_t _internal_client_time_ms() const;
+  void _internal_set_client_time_ms(uint32_t value);
+  public:
+
   // @@protoc_insertion_point(class_scope:Protocol.C_MOVE)
  private:
   class _Internal;
@@ -1331,6 +1351,8 @@ class C_MOVE final :
   typedef void DestructorSkippable_;
   struct Impl_ {
     ::Protocol::PositionInfo* posinfo_;
+    uint32_t move_seq_;
+    uint32_t client_time_ms_;
     mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   };
   union { Impl_ _impl_; };
@@ -8454,6 +8476,46 @@ inline void C_MOVE::set_allocated_posinfo(::Protocol::PositionInfo* posinfo) {
   }
   _impl_.posinfo_ = posinfo;
   // @@protoc_insertion_point(field_set_allocated:Protocol.C_MOVE.posInfo)
+}
+
+// uint32 move_seq = 2;
+inline void C_MOVE::clear_move_seq() {
+  _impl_.move_seq_ = 0u;
+}
+inline uint32_t C_MOVE::_internal_move_seq() const {
+  return _impl_.move_seq_;
+}
+inline uint32_t C_MOVE::move_seq() const {
+  // @@protoc_insertion_point(field_get:Protocol.C_MOVE.move_seq)
+  return _internal_move_seq();
+}
+inline void C_MOVE::_internal_set_move_seq(uint32_t value) {
+  
+  _impl_.move_seq_ = value;
+}
+inline void C_MOVE::set_move_seq(uint32_t value) {
+  _internal_set_move_seq(value);
+  // @@protoc_insertion_point(field_set:Protocol.C_MOVE.move_seq)
+}
+
+// uint32 client_time_ms = 3;
+inline void C_MOVE::clear_client_time_ms() {
+  _impl_.client_time_ms_ = 0u;
+}
+inline uint32_t C_MOVE::_internal_client_time_ms() const {
+  return _impl_.client_time_ms_;
+}
+inline uint32_t C_MOVE::client_time_ms() const {
+  // @@protoc_insertion_point(field_get:Protocol.C_MOVE.client_time_ms)
+  return _internal_client_time_ms();
+}
+inline void C_MOVE::_internal_set_client_time_ms(uint32_t value) {
+  
+  _impl_.client_time_ms_ = value;
+}
+inline void C_MOVE::set_client_time_ms(uint32_t value) {
+  _internal_set_client_time_ms(value);
+  // @@protoc_insertion_point(field_set:Protocol.C_MOVE.client_time_ms)
 }
 
 // -------------------------------------------------------------------

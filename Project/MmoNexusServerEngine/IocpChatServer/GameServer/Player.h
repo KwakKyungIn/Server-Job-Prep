@@ -97,6 +97,36 @@ public:
 
 	std::vector<Protocol::ItemInfo>& GetItems() { return _items; }
 
+	// ===== Move Validation (Room thread ONLY) =====
+	bool HasMoveStamp_ActorOnly() const { return _hasMoveStamp; }
+
+	uint32 LastMoveSeq_ActorOnly() const { return _lastMoveSeq; }
+	uint32 LastClientTimeMs_ActorOnly() const { return _lastClientTimeMs; }
+
+	const Protocol::PositionInfo& LastAcceptedPos_ActorOnly() const { return _lastAcceptedPos; }
+	uint64 LastAcceptedServerMs_ActorOnly() const { return _lastAcceptedServerMs; }
+
+	void SetMoveStamp_ActorOnly(uint32 seq, uint32 timeMs,
+		const Protocol::PositionInfo& acceptedPos,
+		uint64 serverMs)
+	{
+		_hasMoveStamp = true;
+		_lastMoveSeq = seq;
+		_lastClientTimeMs = timeMs;
+		_lastAcceptedPos = acceptedPos;
+		_lastAcceptedServerMs = serverMs;
+	}
+
+	void ResetMoveStamp_ActorOnly()
+	{
+		_hasMoveStamp = false;
+		_lastMoveSeq = 0;
+		_lastClientTimeMs = 0;
+		_lastAcceptedServerMs = 0;
+		_lastAcceptedPos.Clear();
+	}
+
+
 protected:
 	// [Core Data] Player ∞Ì¿Ø µ•¿Ã≈Õ
 	Protocol::PlayerInfo	_playerInfo;
@@ -111,6 +141,13 @@ protected:
 	int32 _returnMapId = 1;              // ±‚∫ª ∫π±Õ ∏ 
 	int64 _returnInstanceId = 0;         // ∫∏≈Î 0
 	Protocol::PositionInfo _returnPos;   // ∫π±Õ ¡¬«•
+
+	// ===== Move Validation (Room thread ONLY) =====
+	bool _hasMoveStamp = false;
+	uint32 _lastMoveSeq = 0;
+	uint32 _lastClientTimeMs = 0;
+	uint64 _lastAcceptedServerMs = 0;     // debug
+	Protocol::PositionInfo _lastAcceptedPos; // debug/anchor
 
 
 	// _room, _zoneIndex¥¬ Creature∑Œ ¿ÃªÁ ∞¨¿∏¥œ ªË¡¶.

@@ -167,78 +167,105 @@ bool NavSystem::Load(const std::string& path)
 	return true;
 }
 
-bool NavSystem::ValidateMove(const Protocol::PositionInfo& current, const Protocol::PositionInfo& target, Protocol::PositionInfo& outAdjusted)
+bool NavSystem::ValidateMove(const Protocol::PositionInfo& current,
+	const Protocol::PositionInfo& target,
+	Protocol::PositionInfo& outAdjusted)
 {
 	float startPos[3] = { current.x(), current.y(), current.z() };
-	float endPos[3] = { target.x(), target.y(), target.z() };
+	float endPos[3] = { target.x(),  target.y(),  target.z() };
 
-	// 1. 시작점이 NavMesh 위에 있는지 확인
+	// 1) [Start Check] 시작점 유효성 검사
 	dtPolyRef startRef = FindNearestPoly(startPos, _polyPickExt);
 	if (!startRef)
 	{
-		// [Debug] 여기가 뜨면 좌표계(X축 반전) 문제거나, 맵 밖으로 떨어진 것임
-		std::cout << "❌ [Nav] StartPos Not Found! Cur:(" << startPos[0] << ", " << startPos[1] << ", " << startPos[2] << ")" << std::endl;
+		std::cout << "❌ [Nav] OUTSIDE_NAV_DROP" << std::endl;
 		return false;
 	}
 
+	// 2) [Raycast] 1차 검증 (직선 구간 확인)
 	float t = 0.0f;
 	float hitNormal[3];
 	dtPolyRef path[32];
 	int pathCount = 0;
 
-	// MaxPath 32 설정
-	_navQuery->raycast(startRef, startPos, endPos, &_filter,
-		&t, hitNormal, path, &pathCount, 32);
+	_navQuery->raycast(startRef, startPos, endPos, &_filter, &t, hitNormal, path, &pathCount, 32);
 
-	if (t < 1.0f) // 벽 충돌 발생
+	// 3) [Result Handling]
+	if (t >= 1.0f)
 	{
-		// [Debug] 벽 충돌 로그
-		// std::cout << "🚧 [Nav] Hit Wall at t=" << t << std::endl;
-
-		// 1. 충돌 지점(x, z) 계산
-		float hitX = startPos[0] + (endPos[0] - startPos[0]) * t;
-		float hitZ = startPos[2] + (endPos[2] - startPos[2]) * t;
-
-		// 2. 높이(Y) 보정: 충돌 지점의 NavMesh 높이를 구한다.
-		float hitY = startPos[1] + (endPos[1] - startPos[1]) * t; // 임시 높이
-		float correctedY;
-
-		if (ResolvePoint(hitX, hitY, hitZ, correctedY))
-		{
-			// 성공 시 스냅된 위치로 설정 (벽 앞에서 멈춤)
-			outAdjusted.set_x(hitX);
-			outAdjusted.set_y(correctedY);
-			outAdjusted.set_z(hitZ);
-		}
-		else
-		{
-			// [Safety] NavMesh 위를 못 찾으면 차라리 시작 위치로 롤백 (끼임 방지)
-			outAdjusted.set_x(startPos[0]);
-			outAdjusted.set_y(startPos[1]);
-			outAdjusted.set_z(startPos[2]);
-		}
-	}
-	else
-	{
-		// 이동 성공
-		float finalY;
-		// 도착 지점의 정확한 높이(Y)를 구해서 스냅핑
+		// [Case A] 충돌 없음 (직진 성공) -> Height Snap
+		float finalY = endPos[1];
 		if (ResolvePoint(endPos[0], endPos[1], endPos[2], finalY))
 		{
 			outAdjusted.set_x(endPos[0]);
 			outAdjusted.set_y(finalY);
 			outAdjusted.set_z(endPos[2]);
+			outAdjusted.set_yaw(target.yaw());
+
+			std::cout << "✅ [Nav] VALIDATE_OK" << std::endl;
+			return true;
 		}
 		else
 		{
-			// 도착점이 NavMesh 밖이면 이동 취소 (혹은 startPos로)
+			// 직선은 뚫렸는데 도착지가 NavMesh 밖(경계 오차 등)
 			return false;
 		}
 	}
+	else
+	{
+		// [Case B] 벽 충돌 (t < 1.0)
 
-	outAdjusted.set_yaw(target.yaw());
-	return true;
+		// 1) 충돌 지점(HitPos) 계산 (Fallback용)
+		float hitPos[3];
+		dtVlerp(hitPos, startPos, endPos, t);
+
+		// 2) moveAlongSurface 시도 (슬라이딩)
+		float slidePos[3];
+		dtPolyRef visited[16];
+		int nVisited = 0;
+
+		dtStatus status = _navQuery->moveAlongSurface(
+			startRef, startPos, endPos, &_filter,
+			slidePos, visited, &nVisited, 16);
+
+		// 2-A) 슬라이딩 성공 조건: status 성공 + 방문 폴리 존재 + height snap 성공
+		float slideY = slidePos[1];
+		if (dtStatusSucceed(status) && nVisited > 0 &&
+			ResolvePoint(slidePos[0], slidePos[1], slidePos[2], slideY))
+		{
+			outAdjusted.set_x(slidePos[0]);
+			outAdjusted.set_y(slideY);
+			outAdjusted.set_z(slidePos[2]);
+			outAdjusted.set_yaw(target.yaw());
+
+			std::cout << "🚧 [Nav] COLLIDE_SLIDE_OK" << std::endl;
+			return true;
+		}
+
+		// 3) [Fallback 1] 충돌 지점(HitPos) 스냅 시도
+		float hitY = hitPos[1];
+		if (ResolvePoint(hitPos[0], hitPos[1], hitPos[2], hitY))
+		{
+			outAdjusted.set_x(hitPos[0]);
+			outAdjusted.set_y(hitY);
+			outAdjusted.set_z(hitPos[2]);
+			outAdjusted.set_yaw(target.yaw());
+
+			std::cout << "⚠️ [Nav] COLLIDE_SLIDE_FAIL_HITSNAP" << std::endl;
+			return true;
+		}
+
+		// 4) [Fallback 2] 다 안되면 Current 롤백 (강제 동기화)
+		outAdjusted.set_x(startPos[0]);
+		outAdjusted.set_y(startPos[1]);
+		outAdjusted.set_z(startPos[2]);
+		outAdjusted.set_yaw(target.yaw());
+
+		std::cout << "❌ [Nav] COLLIDE_FAIL_ROLLBACK" << std::endl;
+		return true;
+	}
 }
+
 dtPolyRef NavSystem::FindNearestPoly(const float* center, const float* extents, float* nearestPt)
 {
 	dtPolyRef ref = 0;
