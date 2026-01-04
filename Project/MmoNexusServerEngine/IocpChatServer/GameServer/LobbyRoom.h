@@ -51,7 +51,7 @@ public:
 
 public:
     // Lobby는 "보관/이동"만 한다. AOI/전투/아이템 사용 같은 로직 금지.
-    void Adopt(PlayerRef player);
+    void Adopt(PlayerRef player, bool isTransfer = false);
     PlayerRef Detach(uint64 playerId);
     PlayerRef Find(uint64 playerId) const;
 

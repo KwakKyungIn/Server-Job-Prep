@@ -5,6 +5,7 @@
 #include "RoomManager.h"
 #include "GameRoom.Net.h"
 #include "Monster.h"
+#include "PartyActor.h"
 bool GameRoom::EnterRegister(PlayerSessionRef session, PlayerRef player)
 {
 	printf("1번 여기가 문제임\n");
@@ -92,11 +93,13 @@ void GameRoom::EnterMapChange(PlayerSessionRef session, PlayerRef player)
 
 	if (player == nullptr) return;
 
+	const uint64 playerId = player->GetPlayerId();
+
 	// 1) END 응답 먼저
 	Protocol::S_MAP_CHANGE_END endPkt;
 	endPkt.set_token(session->GetMapChangeToken());
 	endPkt.set_mapid(_mapId);
-	endPkt.mutable_pos()->CopyFrom(*player->GetPosInfo()); // proto: PositionInfo pos = 3
+	endPkt.mutable_pos()->CopyFrom(*player->GetPosInfo());
 	endPkt.set_instanceid(player->GetInstanceId());
 	session->Send(ClientPacketHandler::MakeSendBuffer(endPkt));
 
@@ -106,10 +109,36 @@ void GameRoom::EnterMapChange(PlayerSessionRef session, PlayerRef player)
 	// 3) 스폰은 그 다음
 	UpdateAOI(session, player, true /*forceFullSnapshot*/);
 
-	printf("✅ [MapChange-END] Player %llu -> Map %d (Token=%llu)\n",
-		player->GetPlayerId(), _mapId, endPkt.token());
-}
+	// ✅ 4) 파티 정보 재전송 (맵 이동 시 클라이언트 동기화)
+	PartyActor::Instance().Push([session, playerId]()
+		{
+			auto& core = PartyActor::Instance().Core();
+			const uint64 partyId = core.GetPartyIdByPlayerId(playerId);
 
+			if (partyId != 0)
+			{
+				auto snap = core.GetSnapshot(partyId);
+				if (snap.partyId != 0)
+				{
+					Protocol::S_PARTY_INFO_NTF info;
+					info.set_hasparty(true);
+					info.set_partyid(snap.partyId);
+					info.set_leaderid(snap.leaderId);
+					info.set_version(snap.version);
+					for (uint64 id : snap.members)
+						info.add_memberids(id);
+
+					session->Post([info](PlayerSessionRef s) mutable
+						{
+							s->Send(ClientPacketHandler::MakeSendBuffer(info));
+						});
+				}
+			}
+		});
+
+	printf("✅ [MapChange-END] Player %llu -> Map %d (Token=%llu)\n",
+		playerId, _mapId, endPkt.token());
+}
 
 void GameRoom::Leave(PlayerSessionRef session, PlayerRef player)
 {

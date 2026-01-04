@@ -8,22 +8,30 @@ std::shared_ptr<LobbyRoom> GLobbyRoom;
 
 void LobbyRoom::EnterGame(PlayerSessionRef ps, uint64 playerId, int32 channelId, int32 mapId, const Protocol::PositionInfo& spawn)
 {
-    printf("3번 여기가 문제임\n");
-
     if (!ps) return;
-    printf("4번 여기가 문제임\n");
     if (playerId == 0) return;
-    printf("5번 여기가 문제임\n");
-    // 로비는 채널 단위로 운용할 거면 channelId mismatch 방어
-    // (필요 없으면 지워도 됨)
+
+    // ✅ Transfer 중이면 거부
+    if (ps->IsMapChanging())
+    {
+        printf("⚠️ [Lobby] EnterGame blocked - MapChanging in progress: %llu\n", playerId);
+        return;
+    }
+
+    // channelId 검증
     if (channelId != _channelId)
     {
-        // 채널 로비를 따로 두는 설계면 여기서 그냥 return 해도 됨.
-        // 지금은 강제 교정해준다.
         channelId = _channelId;
     }
-    printf("6번 여기가 문제임\n");
+
     auto& slot = _players[playerId];
+
+    // ✅ Transfer 슬롯이 이미 있고 Ready 상태면 재생성 금지
+    if (slot.player && slot.itemsLoaded && slot.statLoaded)
+    {
+        printf("⚠️ [Lobby] EnterGame blocked - Player already ready: %llu\n", playerId);
+        return;
+    }
 
     // 새로 만들거나, 있으면 갱신(재접속/중복 EnterGame)
     if (!slot.player)
@@ -39,8 +47,6 @@ void LobbyRoom::EnterGame(PlayerSessionRef ps, uint64 playerId, int32 channelId,
         p->SetChannelId(channelId);
         p->SetMapId(mapId);
         p->SetInstanceId(0);
-
-        // 약결합(weak) OK
         p->SetSession(ps);
 
         slot.player = p;
@@ -59,10 +65,9 @@ void LobbyRoom::EnterGame(PlayerSessionRef ps, uint64 playerId, int32 channelId,
     slot.itemsLoaded = false;
     slot.statLoaded = false;
 
-    // Lobby가 소유 + “어떤 Room에도 속함” 보장
-    Adopt(slot.player);
+    // Lobby가 소유 + "어떤 Room에도 속함" 보장
+    Adopt(slot.player, false);  // ✅ isTransfer = false
 }
-
 void LobbyRoom::TryEnterWorldIfReady(uint64 playerId)
 {
     // Lobby actor thread only
@@ -168,24 +173,43 @@ PlayerRef LobbyRoom::DetachIfReady(uint64 playerId)
 // 기존 API들 (Pending 구조로 맞춰서 수정)
 // =========================================================
 
-void LobbyRoom::Adopt(PlayerRef player)
+void LobbyRoom::Adopt(PlayerRef player, bool isTransfer)
 {
-    printf("8번 여기가 문제임\n");
     if (!player) return;
 
     const uint64 pid = player->GetPlayerId();
     if (pid == 0) return;
 
-    // slot 없으면 생성
-    auto& slot = _players[pid];
-    slot.player = player;
+    // ✅ Transfer 중에는 find로 먼저 체크 (operator[] 함정 회피)
+    if (isTransfer)
+    {
+        auto it = _players.find(pid);
+        if (it != _players.end())
+        {
+            // 이미 있으면 덮어쓰기 (재진입 방지)
+            it->second.player = player;
+            it->second.itemsLoaded = true;
+            it->second.statLoaded = true;
+        }
+        else
+        {
+            // Transfer인데 slot 없으면 새로 만들되, 즉시 Ready 상태
+            Pending& slot = _players[pid];
+            slot.player = player;
+            slot.itemsLoaded = true;
+            slot.statLoaded = true;
+        }
+    }
+    else
+    {
+        // 로그인: 기존 로직 (DB 로딩 대기)
+        auto& slot = _players[pid];
+        slot.player = player;
+        // itemsLoaded, statLoaded는 false 유지
+    }
 
-    // ✅ Player는 "항상 어떤 Room"에 속해야 한다.
-    // 주의: 이 SetRoom의 타입이 GameRoom(LobbyRoom)까지 받을 수 있어야 함.
-    // (너가 말한 Step1에서 Creature::SetRoom 타입 정리하는 걸로 해결)
     player->SetRoom(shared_from_this());
 }
-
 PlayerRef LobbyRoom::Detach(uint64 playerId)
 {
     auto it = _players.find(playerId);

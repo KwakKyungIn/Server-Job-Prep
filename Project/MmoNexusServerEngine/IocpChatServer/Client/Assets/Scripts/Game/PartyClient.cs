@@ -67,9 +67,21 @@ public class PartyClient : MonoBehaviour
 
     void HandlePartyStatus(S_PARTY_STATUS_NTF pkt)
     {
-        if (pkt.PartyId == 0) return;
-        if (!HasParty) return;
-        if (pkt.PartyId != PartyId) return;
+        Debug.Log($"[HandlePartyStatus] PartyId={pkt.PartyId}, HasParty={HasParty}");
+
+        if (pkt.PartyId == 0)
+        {
+            ClearParty();
+            return;
+        }
+
+        // ✅ STATUS만 와도 파티 복원
+        if (!HasParty || pkt.PartyId != PartyId)
+        {
+            Debug.Log($"[HandlePartyStatus] Restoring party: {pkt.PartyId}");
+            HasParty = true;
+            PartyId = pkt.PartyId;
+        }
 
         if (pkt.Version < Version) return;
         Version = pkt.Version;
