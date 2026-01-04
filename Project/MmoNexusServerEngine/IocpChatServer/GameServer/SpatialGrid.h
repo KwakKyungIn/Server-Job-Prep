@@ -19,7 +19,10 @@ public:
     int32 GetZoneIndex(const Protocol::PositionInfo& posInfo) const;
 
     void GetNearbyZoneIndices(int32 zoneIndex, Vector<int32>& outIndices) const;
+
     void GetNearbyZones(int32 zoneIndex, Vector<Zone*>& outZones);
+
+    void GetNearbyZones(int32 zoneIndex, int32 radiusCells, Vector<Zone*>& outZones);
 
     // Zone 직접 접근이 필요할 때
     Zone& GetZone(int32 zoneIndex);

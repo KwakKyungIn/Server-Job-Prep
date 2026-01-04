@@ -71,6 +71,20 @@ public:
 	}
 
 public:
+	// ===== AOI v2 (Room thread ONLY) =====
+	std::unordered_set<uint64>& VisiblePlayers_ActorOnly() { return _visiblePlayers; }
+	std::unordered_set<uint64>& VisibleMonsters_ActorOnly() { return _visibleMonsters; }
+
+	const Protocol::PositionInfo& LastAoiPos_ActorOnly() const { return _lastAoiPos; }
+	void SetLastAoiPos_ActorOnly(const Protocol::PositionInfo& p) { _lastAoiPos = p; }
+
+	uint64 LastAoiTickMs_ActorOnly() const { return _lastAoiTickMs; }
+	void SetLastAoiTickMs_ActorOnly(uint64 v) { _lastAoiTickMs = v; }
+
+	uint32 SnapshotSeq_ActorOnly() const { return _snapshotSeq; }
+	uint32 NextSnapshotSeq_ActorOnly() { return ++_snapshotSeq; }
+
+public:
 	// [Inventory]
 	void SetItems(const google::protobuf::RepeatedPtrField<Protocol::ItemInfo>& items)
 	{
@@ -100,4 +114,16 @@ protected:
 
 
 	// _room, _zoneIndex는 Creature로 이사 갔으니 삭제.
+
+	private:
+		// visible set (ids)
+		std::unordered_set<uint64> _visiblePlayers;
+		std::unordered_set<uint64> _visibleMonsters; // monster objectId
+
+		// lazy update state
+		Protocol::PositionInfo _lastAoiPos;
+		uint64 _lastAoiTickMs = 0;
+
+		// snapshot seq
+		uint32 _snapshotSeq = 0;
 };

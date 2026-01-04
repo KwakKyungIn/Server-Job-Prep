@@ -66,8 +66,12 @@ message S_MOVE {
 // [GAME LOGIC - VISIBILITY] (Kept as is)
 // ============================================================
 message S_SPAWN {
-    repeated PlayerInfo players = 1; 
-    repeated MonsterInfo monsters = 2; 
+  uint32 snapshot_id = 10;
+  bool snapshot_begin = 11;
+  bool snapshot_end = 12;
+
+  repeated PlayerInfo players = 1;
+  repeated MonsterInfo monsters = 2;
 }
 message S_DESPAWN {
     repeated uint64 objectIds = 1; 

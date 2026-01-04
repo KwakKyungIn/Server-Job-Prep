@@ -7,9 +7,9 @@
       "sizeX": 1024,
       "sizeY": 1024,
       "zoneSize": 64,
-      "spawnX": 500.0,
+      "spawnX": 512.0,
       "spawnY": 0.0,
-      "spawnZ": 500.0,
+      "spawnZ": 512.0,
 
       "navMeshPath": "MapData/NavMesh_Map001.bin",
       "aoiCellSize": 64,

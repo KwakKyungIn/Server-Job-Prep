@@ -17,39 +17,59 @@ void GameRoom::Update()
 
 void GameRoom::EnterMonster(MonsterRef monster)
 {
-	if (monster == nullptr) return;
-	if (_monsters.find(monster->GetObjectId()) != _monsters.end())
+	if (!monster) return;
+	const uint64 mid = monster->GetObjectId();
+	if (_monsters.find(mid) != _monsters.end())
 		return;
 
-	_monsters.insert({ monster->GetObjectId(), monster });
+	_monsters.insert({ mid, monster });
 	monster->SetRoom(shared_from_this());
 
-	// [CHANGED] AOI: zoneIndex 계산을 SpatialGrid로
 	int32 zoneIndex = _grid.GetZoneIndex(*monster->GetPosInfo());
 	monster->SetZoneIndex(zoneIndex);
+	_grid.GetZone(zoneIndex).monsters.insert(monster);
 
-	printf("👾 [EnterMonster] Monster ID=%llu entering Zone[%d]\n",
-		monster->GetObjectId(), zoneIndex);
-	printf("    Position: (%.1f, %.1f, %.1f)\n",
-		monster->GetPosInfo()->x(),
-		monster->GetPosInfo()->y(),
-		monster->GetPosInfo()->z());
+	// v2: 주변 플레이어 중 "필터 통과한 애들"에게만 spawn
+	Vector<Zone*> zones;
+	_grid.GetNearbyZones(zoneIndex, EffectiveAoiRadiusCells(), zones);
 
-	// [CHANGED] 해당 Zone의 몬스터 집합에 추가
-	Zone& zone = _grid.GetZone(zoneIndex);
-	zone.monsters.insert(monster);
+	Protocol::S_SPAWN spawnPkt;
+	auto* mInfo = spawnPkt.add_monsters();
+	*mInfo = *monster->GetMonsterInfo();
+	SendBufferRef sb = ClientPacketHandler::MakeSendBuffer(spawnPkt);
 
-	printf("    Zone[%d] now has %zu monsters\n",
-		zoneIndex, zone.monsters.size());
+	auto& viewers = monster->Viewers_ActorOnly();
+	viewers.clear();
 
-	// 주변 유저들에게 몬스터 스폰 알림
+	const auto& mp = *monster->GetPosInfo();
+	const uint32 mConn = GetConnectivityId_ActorOnly(mp);
+
+	for (Zone* z : zones)
 	{
-		Protocol::S_SPAWN spawnPkt;
-		Protocol::MonsterInfo* mInfo = spawnPkt.add_monsters();
-		*mInfo = *monster->GetMonsterInfo();
+		for (const PlayerRef& p : z->players)
+		{
+			if (!p) continue;
 
-		SendBufferRef sendBuffer = ClientPacketHandler::MakeSendBuffer(spawnPkt);
-		BroadcastToZone(sendBuffer, zoneIndex);
+			const auto& pp = *p->GetPosInfo();
+			if (!PassDistance2D(mp, pp, _interestRadius))
+				continue;
+
+			const uint32 pConn = GetConnectivityId_ActorOnly(pp);
+			if (pConn != mConn)
+				continue;
+
+			// 서버 상태 동기화: 양쪽 set 갱신
+			if (p->VisibleMonsters_ActorOnly().insert(mid).second)
+			{
+				viewers.insert(p->GetPlayerId());
+				SendToPlayer(p->GetPlayerId(), sb);
+			}
+			else
+			{
+				// 이미 보던 상태면 viewers만 보정
+				viewers.insert(p->GetPlayerId());
+			}
+		}
 	}
 }
 
@@ -58,74 +78,138 @@ void GameRoom::LeaveMonster(uint64 objectId)
 	auto it = _monsters.find(objectId);
 	if (it == _monsters.end()) return;
 
-	MonsterRef monster = it->second;
-	int32 zoneIndex = monster->GetZoneIndex();
+	MonsterRef m = it->second;
+	if (!m) return;
 
-	// [CHANGED] AOI: Zone에서 제거
+	const int32 zoneIndex = m->GetZoneIndex();
+
+	// v2: 이 몬스터를 보던 플레이어들에게만 despawn
+	{
+		Protocol::S_DESPAWN pkt;
+		pkt.add_objectids(objectId);
+		SendBufferRef sb = ClientPacketHandler::MakeSendBuffer(pkt);
+
+		// viewers 순회하면서 플레이어 visibleMonsters에서도 제거
+		auto& viewers = m->Viewers_ActorOnly();
+		for (uint64 pid : viewers)
+		{
+			PlayerRef p = FindPlayer_ActorOnly(pid);
+			if (p)
+				p->VisibleMonsters_ActorOnly().erase(objectId);
+
+			SendToPlayer(pid, sb);
+		}
+		viewers.clear();
+	}
+
+	// grid / map remove
 	int32 totalZones = _grid.GetGridSizeX() * _grid.GetGridSizeY();
 	if (zoneIndex >= 0 && zoneIndex < totalZones)
-	{
-		Zone& zone = _grid.GetZone(zoneIndex);
-		zone.monsters.erase(monster);
-	}
+		_grid.GetZone(zoneIndex).monsters.erase(m);
 
 	_monsters.erase(objectId);
-	monster->SetRoom(nullptr);
-
-	// 주변 유저들에게 몬스터 사라짐 알림
-	// 주변 유저들에게 몬스터 사라짐 알림 (9-grid 기준)
-	{
-		Protocol::S_DESPAWN despawnPkt;
-		despawnPkt.add_objectids(objectId);
-		SendBufferRef sendBuffer = ClientPacketHandler::MakeSendBuffer(despawnPkt);
-
-		Vector<Zone*> nearbyZones;
-		_grid.GetNearbyZones(zoneIndex, nearbyZones);
-
-		for (Zone* zone : nearbyZones)
-		{
-			for (const PlayerRef& p : zone->players)
-			{
-				SendToPlayer(p->GetPlayerId(), sendBuffer);
-			}
-		}
-	}
-
+	m->SetRoom(nullptr);
 }
 
 void GameRoom::OnMonsterMoved(MonsterRef monster)
 {
-	if (monster == nullptr)
-		return;
+	if (!monster) return;
+
+	const uint64 mid = monster->GetObjectId();
 
 	int32 oldZoneIndex = monster->GetZoneIndex();
 	int32 newZoneIndex = _grid.GetZoneIndex(*monster->GetPosInfo());
 
-	int32 totalZones = _grid.GetGridSizeX() * _grid.GetGridSizeY();
-
-	// 존 변경 처리
+	// zone membership 이동
 	if (newZoneIndex != oldZoneIndex)
 	{
+		int32 totalZones = _grid.GetGridSizeX() * _grid.GetGridSizeY();
 		if (oldZoneIndex >= 0 && oldZoneIndex < totalZones)
-		{
-			Zone& oldZone = _grid.GetZone(oldZoneIndex);
-			oldZone.monsters.erase(monster);
-		}
+			_grid.GetZone(oldZoneIndex).monsters.erase(monster);
 
-		Zone& newZone = _grid.GetZone(newZoneIndex);
-		newZone.monsters.insert(monster);
+		_grid.GetZone(newZoneIndex).monsters.insert(monster);
 		monster->SetZoneIndex(newZoneIndex);
 	}
 
-	// 위치 브로드캐스트
-	Protocol::S_MOVE movePkt;
-	movePkt.set_objectid(monster->GetObjectId());
-	*movePkt.mutable_posinfo() = *monster->GetPosInfo();
+	// ---- 새 viewers 계산 ----
+	std::unordered_set<uint64> newViewers;
 
-	SendBufferRef sendBuffer = ClientPacketHandler::MakeSendBuffer(movePkt);
+	Vector<Zone*> zones;
+	_grid.GetNearbyZones(monster->GetZoneIndex(), EffectiveAoiRadiusCells(), zones);
 
-	int32 zoneIndex = monster->GetZoneIndex();
-	BroadcastToZone(sendBuffer, zoneIndex);
+	const auto& mp = *monster->GetPosInfo();
+	const uint32 mConn = GetConnectivityId_ActorOnly(mp);
+
+	for (Zone* z : zones)
+	{
+		for (const PlayerRef& p : z->players)
+		{
+			if (!p) continue;
+
+			const auto& pp = *p->GetPosInfo();
+			if (!PassDistance2D(mp, pp, _interestRadius))
+				continue;
+
+			const uint32 pConn = GetConnectivityId_ActorOnly(pp);
+			if (pConn != mConn)
+				continue;
+
+			newViewers.insert(p->GetPlayerId());
+		}
+	}
+
+	auto& oldViewers = monster->Viewers_ActorOnly();
+
+	// ---- despawn: old - new ----
+	{
+		Protocol::S_DESPAWN pkt;
+		pkt.add_objectids(mid);
+		SendBufferRef sb = ClientPacketHandler::MakeSendBuffer(pkt);
+
+		for (uint64 pid : oldViewers)
+		{
+			if (newViewers.find(pid) != newViewers.end())
+				continue;
+
+			PlayerRef p = FindPlayer_ActorOnly(pid);
+			if (p) p->VisibleMonsters_ActorOnly().erase(mid);
+
+			SendToPlayer(pid, sb);
+		}
+	}
+
+	// ---- spawn: new - old ----
+	{
+		Protocol::S_SPAWN pkt;
+		auto* mInfo = pkt.add_monsters();
+		*mInfo = *monster->GetMonsterInfo();
+		SendBufferRef sb = ClientPacketHandler::MakeSendBuffer(pkt);
+
+		for (uint64 pid : newViewers)
+		{
+			if (oldViewers.find(pid) != oldViewers.end())
+				continue;
+
+			PlayerRef p = FindPlayer_ActorOnly(pid);
+			if (p) p->VisibleMonsters_ActorOnly().insert(mid);
+
+			SendToPlayer(pid, sb);
+		}
+	}
+
+	// ---- move: intersection (newViewers) ----
+	{
+		Protocol::S_MOVE movePkt;
+		movePkt.set_objectid(mid);
+		*movePkt.mutable_posinfo() = *monster->GetPosInfo();
+		SendBufferRef sb = ClientPacketHandler::MakeSendBuffer(movePkt);
+
+		for (uint64 pid : newViewers)
+			SendToPlayer(pid, sb);
+	}
+
+	// 최종 viewers 갱신
+	oldViewers = std::move(newViewers);
 }
 
 PlayerRef GameRoom::FindNearestPlayer(Protocol::PositionInfo* pos, float range)
@@ -134,7 +218,7 @@ PlayerRef GameRoom::FindNearestPlayer(Protocol::PositionInfo* pos, float range)
 	int32 zoneIndex = _grid.GetZoneIndex(*pos);
 
 	Vector<Zone*> zones;
-	_grid.GetNearbyZones(zoneIndex, zones);
+	_grid.GetNearbyZones(zoneIndex, EffectiveAoiRadiusCells(), zones);
 
 	PlayerRef target = nullptr;
 	float minDistSqr = range * range;

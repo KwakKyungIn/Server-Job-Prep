@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using Protocol;
 using System.Collections;
-
+using UnityEngine.AI;
 public class MyPlayerController : MonoBehaviour
 {
     float _speed = 5.0f;
@@ -180,10 +180,32 @@ public class MyPlayerController : MonoBehaviour
 
         dir = dir.normalized;
 
-        transform.position += dir * _speed * Time.deltaTime;
-
+        // =========================================================
+        // [GigaChad Logic] 클라이언트 사전 충돌 감지 (Raycast)
+        // =========================================================
         if (dir != Vector3.zero)
+        {
+            // 1. 가고 싶은 위치 계산
+            Vector3 moveDelta = dir * _speed * Time.deltaTime;
+            Vector3 nextPos = transform.position + moveDelta;
+
+            NavMeshHit hit;
+
+            // 2. NavMesh 데이터상 벽이 있는지 레이저 쏴서 확인
+            if (NavMesh.Raycast(transform.position, nextPos, out hit, NavMesh.AllAreas))
+            {
+                // 🚧 벽 발견! 뚫지 말고 벽 바로 앞(hit.position)까지만 이동
+                transform.position = hit.position;
+            }
+            else
+            {
+                // 🚀 길 뚫림! 원래 가려던 곳으로 이동
+                transform.position = nextPos;
+            }
+
+            // 회전 적용 (여기서 한 번만 하면 됨)
             transform.rotation = Quaternion.LookRotation(dir);
+        }
     }
 
     IEnumerator CoSendPacket()

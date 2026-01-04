@@ -1629,6 +1629,9 @@ class S_SPAWN final :
   enum : int {
     kPlayersFieldNumber = 1,
     kMonstersFieldNumber = 2,
+    kSnapshotIdFieldNumber = 10,
+    kSnapshotBeginFieldNumber = 11,
+    kSnapshotEndFieldNumber = 12,
   };
   // repeated .Protocol.PlayerInfo players = 1;
   int players_size() const;
@@ -1666,6 +1669,33 @@ class S_SPAWN final :
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::Protocol::MonsterInfo >&
       monsters() const;
 
+  // uint32 snapshot_id = 10;
+  void clear_snapshot_id();
+  uint32_t snapshot_id() const;
+  void set_snapshot_id(uint32_t value);
+  private:
+  uint32_t _internal_snapshot_id() const;
+  void _internal_set_snapshot_id(uint32_t value);
+  public:
+
+  // bool snapshot_begin = 11;
+  void clear_snapshot_begin();
+  bool snapshot_begin() const;
+  void set_snapshot_begin(bool value);
+  private:
+  bool _internal_snapshot_begin() const;
+  void _internal_set_snapshot_begin(bool value);
+  public:
+
+  // bool snapshot_end = 12;
+  void clear_snapshot_end();
+  bool snapshot_end() const;
+  void set_snapshot_end(bool value);
+  private:
+  bool _internal_snapshot_end() const;
+  void _internal_set_snapshot_end(bool value);
+  public:
+
   // @@protoc_insertion_point(class_scope:Protocol.S_SPAWN)
  private:
   class _Internal;
@@ -1676,6 +1706,9 @@ class S_SPAWN final :
   struct Impl_ {
     ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::Protocol::PlayerInfo > players_;
     ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::Protocol::MonsterInfo > monsters_;
+    uint32_t snapshot_id_;
+    bool snapshot_begin_;
+    bool snapshot_end_;
     mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   };
   union { Impl_ _impl_; };
@@ -8535,6 +8568,66 @@ inline void S_MOVE::set_allocated_posinfo(::Protocol::PositionInfo* posinfo) {
 // -------------------------------------------------------------------
 
 // S_SPAWN
+
+// uint32 snapshot_id = 10;
+inline void S_SPAWN::clear_snapshot_id() {
+  _impl_.snapshot_id_ = 0u;
+}
+inline uint32_t S_SPAWN::_internal_snapshot_id() const {
+  return _impl_.snapshot_id_;
+}
+inline uint32_t S_SPAWN::snapshot_id() const {
+  // @@protoc_insertion_point(field_get:Protocol.S_SPAWN.snapshot_id)
+  return _internal_snapshot_id();
+}
+inline void S_SPAWN::_internal_set_snapshot_id(uint32_t value) {
+  
+  _impl_.snapshot_id_ = value;
+}
+inline void S_SPAWN::set_snapshot_id(uint32_t value) {
+  _internal_set_snapshot_id(value);
+  // @@protoc_insertion_point(field_set:Protocol.S_SPAWN.snapshot_id)
+}
+
+// bool snapshot_begin = 11;
+inline void S_SPAWN::clear_snapshot_begin() {
+  _impl_.snapshot_begin_ = false;
+}
+inline bool S_SPAWN::_internal_snapshot_begin() const {
+  return _impl_.snapshot_begin_;
+}
+inline bool S_SPAWN::snapshot_begin() const {
+  // @@protoc_insertion_point(field_get:Protocol.S_SPAWN.snapshot_begin)
+  return _internal_snapshot_begin();
+}
+inline void S_SPAWN::_internal_set_snapshot_begin(bool value) {
+  
+  _impl_.snapshot_begin_ = value;
+}
+inline void S_SPAWN::set_snapshot_begin(bool value) {
+  _internal_set_snapshot_begin(value);
+  // @@protoc_insertion_point(field_set:Protocol.S_SPAWN.snapshot_begin)
+}
+
+// bool snapshot_end = 12;
+inline void S_SPAWN::clear_snapshot_end() {
+  _impl_.snapshot_end_ = false;
+}
+inline bool S_SPAWN::_internal_snapshot_end() const {
+  return _impl_.snapshot_end_;
+}
+inline bool S_SPAWN::snapshot_end() const {
+  // @@protoc_insertion_point(field_get:Protocol.S_SPAWN.snapshot_end)
+  return _internal_snapshot_end();
+}
+inline void S_SPAWN::_internal_set_snapshot_end(bool value) {
+  
+  _impl_.snapshot_end_ = value;
+}
+inline void S_SPAWN::set_snapshot_end(bool value) {
+  _internal_set_snapshot_end(value);
+  // @@protoc_insertion_point(field_set:Protocol.S_SPAWN.snapshot_end)
+}
 
 // repeated .Protocol.PlayerInfo players = 1;
 inline int S_SPAWN::_internal_players_size() const {

@@ -38,16 +38,13 @@ bool GameMap::Init(const MapConfig* config)
 
 bool GameMap::CanGo(const Protocol::PositionInfo& posInfo)
 {
-    // Deprecated: 구식 코드 호환용
-    // 현재 위치가 NavMesh 위인지 체크
-    float x = posInfo.x();
-    float y = posInfo.z(); // 서버 좌표계 주의 (y가 높이인지 z가 높이인지 프로젝트마다 다름. 유니티는 y가 높이)
-    // *주의*: 유니티(x,y,z) -> 서버(x,y,z) 그대로 쓴다면:
+    // Deprecated: legacy check (NavMesh 위인지 여부만)
+    if (!_navSystem) return false;
 
-    // 유효성 체크용으로만 씀
-    float dummyY;
+    float dummyY = 0.f;
     return _navSystem->ResolvePoint(posInfo.x(), posInfo.y(), posInfo.z(), dummyY);
 }
+
 
 bool GameMap::ValidateMove(const Protocol::PositionInfo& current, const Protocol::PositionInfo& next, Protocol::PositionInfo& outFixed)
 {

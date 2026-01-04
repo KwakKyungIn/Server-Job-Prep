@@ -32,6 +32,8 @@ void GameRoom::Init(int32 channelId, int32 mapId, int32 sizeX, int32 sizeY, int3
 		// Grid도 Config의 aoiCellSize에 맞춰 초기화
 		_grid.Init(0, 0, config->sizeX, config->sizeY, config->aoiCellSize);
 
+		_interestRadius = config->interestRadius;   // A의 AOI 필터 반경이 맵별로 달라짐
+
 		printf("✅ [GameRoom] Init with Config - MapId: %d, Size: (%d, %d), Cell: %d, Nav: %s\n",
 			mapId, config->sizeX, config->sizeY, config->aoiCellSize,
 			config->navMeshPath.empty() ? "None" : "Load");

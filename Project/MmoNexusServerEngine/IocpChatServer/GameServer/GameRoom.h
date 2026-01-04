@@ -157,4 +157,37 @@ private:
 
     std::unique_ptr<BattleSystem> _battle; // 전투 로직 엔진
 
+private:
+    // ===== AOI v2 Params (일단 고정값) =====
+    int32 _aoiNeighborRadiusCells = 2; // 5x5
+    float _interestRadius = 150.f;
+    float _lazyUpdateDist = 10.f;      // 10m
+    uint64 _lazyUpdateTickMs = 500;    // 0.5s
+
+    int32 _batchSpawnPlayers = 50;
+    int32 _batchSpawnMonsters = 100;
+    int32 _batchDespawn = 200;
+
+private:
+    void UpdateAOI(PlayerSessionRef session, PlayerRef me, bool forceFullSnapshot);
+    bool ShouldUpdateAOI(PlayerRef me, bool zoneChanged) const;
+
+    void CollectCandidates(int32 zoneIndex, Vector<PlayerRef>& outPlayers, Vector<MonsterRef>& outMonsters);
+
+    bool PassDistance2D(const Protocol::PositionInfo& a, const Protocol::PositionInfo& b, float r) const;
+
+    uint32 GetConnectivityId_ActorOnly(const Protocol::PositionInfo& pos) const;
+
+
+    // 배칭 전송
+    void SendSpawnBatchedToMe(PlayerSessionRef session,
+        const Vector<PlayerRef>& spawnPlayers,
+        const Vector<MonsterRef>& spawnMonsters,
+        bool snapshotMode,
+        uint32 snapshotId);
+
+    void SendDespawnBatchedToMe(PlayerSessionRef session, const Vector<uint64>& objectIds);
+
+    int32 EffectiveAoiRadiusCells() const;
+
 };

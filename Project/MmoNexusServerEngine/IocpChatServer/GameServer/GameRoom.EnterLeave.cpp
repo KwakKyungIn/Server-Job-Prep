@@ -3,7 +3,8 @@
 #include "Player.h"
 #include "PlayerSession.h"
 #include "RoomManager.h"
-
+#include "GameRoom.Net.h"
+#include "Monster.h"
 bool GameRoom::EnterRegister(PlayerSessionRef session, PlayerRef player)
 {
 	printf("1번 여기가 문제임\n");
@@ -74,7 +75,7 @@ void GameRoom::Enter(PlayerSessionRef session, PlayerRef player)
 	session->Send(ClientPacketHandler::MakeSendBuffer(enterPkt));
 
 	// 2) 스폰 전송은 그 다음
-	SendEnterSpawns(session, player);
+	UpdateAOI(session, player, true /*forceFullSnapshot*/);
 
 	printf("✅ [Enter-Login] Player %llu\n", player->GetPlayerId());
 }
@@ -103,7 +104,7 @@ void GameRoom::EnterMapChange(PlayerSessionRef session, PlayerRef player)
 	session->EndMapChange();
 
 	// 3) 스폰은 그 다음
-	SendEnterSpawns(session, player);
+	UpdateAOI(session, player, true /*forceFullSnapshot*/);
 
 	printf("✅ [MapChange-END] Player %llu -> Map %d (Token=%llu)\n",
 		player->GetPlayerId(), _mapId, endPkt.token());
@@ -112,49 +113,55 @@ void GameRoom::EnterMapChange(PlayerSessionRef session, PlayerRef player)
 
 void GameRoom::Leave(PlayerSessionRef session, PlayerRef player)
 {
-	if (player == nullptr) return;
+	if (!session || !player) return;
 
-	uint64 playerId = player->GetPlayerId();
-	if (_players.find(playerId) == _players.end()) return;
+	const uint64 meId = player->GetPlayerId();
+	auto itMe = _players.find(meId);
+	if (itMe == _players.end()) return;
 
-	int32 zoneIndex = player->GetZoneIndex();
-
-	// 1. Zone에서 제거 (AOI)
-	int32 totalZones = _grid.GetGridSizeX() * _grid.GetGridSizeY();
-	if (zoneIndex >= 0 && zoneIndex < totalZones)
+	// 1) 내가 보던 플레이어들에게 "나 despawn" + 상대 set에서 나 제거
 	{
-		Zone& zone = _grid.GetZone(zoneIndex);
-		zone.players.erase(player);
+		Protocol::S_DESPAWN pkt;
+		pkt.add_objectids(meId);
+		SendBufferRef sb = ClientPacketHandler::MakeSendBuffer(pkt);
+
+		auto& visP = player->VisiblePlayers_ActorOnly();
+		for (uint64 vid : visP)
+		{
+			PlayerRef other = FindPlayer_ActorOnly(vid);
+			if (!other) continue;
+			other->VisiblePlayers_ActorOnly().erase(meId);
+			SendToPlayer(vid, sb);
+		}
+		visP.clear();
+
+		// ✅ [추가] 내가 보던 몬스터들의 viewers에서 나 제거
+		auto& visM = player->VisibleMonsters_ActorOnly();
+		for (uint64 mid : visM)
+		{
+			auto it = _monsters.find(mid);
+			if (it != _monsters.end() && it->second)
+				it->second->Viewers_ActorOnly().erase(meId);
+		}
+		visM.clear();
 	}
 
-	// 2. 전체 명단 제거
-	_players.erase(playerId);
+	// 2) grid에서 제거
+	int32 zoneIndex = player->GetZoneIndex();
+	int32 totalZones = _grid.GetGridSizeX() * _grid.GetGridSizeY();
+	if (zoneIndex >= 0 && zoneIndex < totalZones)
+		_grid.GetZone(zoneIndex).players.erase(player);
+
+	// 3) 맵에서 제거
+	_players.erase(meId);
 	player->SetRoom(nullptr);
 
 	auto room = shared_from_this();
-	session->Post([room](PlayerSessionRef ps)
-		{
-			ps->ClearCurrentRoom(room);
-		});
+	session->Post([room](PlayerSessionRef ps) { ps->ClearCurrentRoom(room); });
 
 	const int32 after = _playerCount.fetch_sub(1, std::memory_order_acq_rel) - 1;
 	if (after == 0)
-	{
-		const uint64 nowMs = ::GetTickCount64();
-		_emptySinceMs.store(nowMs, std::memory_order_release);
-	}
-
-
-	// 3. [Broadcast] 주변 유저들에게 "나 나갔음" 알림 (S_DESPAWN)
-	{
-		Protocol::S_DESPAWN despawnPkt;
-		despawnPkt.add_objectids(playerId);
-		SendBufferRef sendBuffer = ClientPacketHandler::MakeSendBuffer(despawnPkt);
-
-		BroadcastToZone(sendBuffer, zoneIndex, 0);
-	}
-
-	printf("[ROOM] Player %llu Left Zone[%d].\n", playerId, zoneIndex);
+		_emptySinceMs.store(::GetTickCount64(), std::memory_order_release);
 }
 
 void GameRoom::LeaveById(PlayerSessionRef session, uint64 playerId)

@@ -86,6 +86,23 @@ void SpatialGrid::GetNearbyZones(int32 zoneIndex, Vector<Zone*>& outZones)
     }
 }
 
+void SpatialGrid::GetNearbyZones(int32 zoneIndex, int32 radiusCells, Vector<Zone*>& outZones)
+{
+    outZones.clear();
+    if (zoneIndex < 0 || zoneIndex >= (int32)_zones.size()) return;
+
+    int32 x = zoneIndex % _gridSizeX;
+    int32 y = zoneIndex / _gridSizeX;
+
+    for (int32 dy = -radiusCells; dy <= radiusCells; dy++)
+        for (int32 dx = -radiusCells; dx <= radiusCells; dx++)
+        {
+            int32 nx = x + dx, ny = y + dy;
+            if (nx < 0 || nx >= _gridSizeX || ny < 0 || ny >= _gridSizeY) continue;
+            outZones.push_back(&_zones[ny * _gridSizeX + nx]);
+        }
+}
+
 Zone& SpatialGrid::GetZone(int32 zoneIndex)
 {
     ASSERT_CRASH(zoneIndex >= 0 && zoneIndex < static_cast<int32>(_zones.size()));

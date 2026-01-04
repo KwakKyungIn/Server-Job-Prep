@@ -180,6 +180,9 @@
     <ClCompile Include="NavSystem.cpp">
       <Filter>GameContents\Map</Filter>
     </ClCompile>
+    <ClCompile Include="GameRoom.AOI.v2.cpp">
+      <Filter>GameContents\Room</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">

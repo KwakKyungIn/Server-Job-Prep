@@ -19,6 +19,9 @@ public:
 	// GameRoom에서 S_SPAWN 패킷 만들 때 가져가야 함
 	Protocol::MonsterInfo* GetMonsterInfo() { return &_monsterInfo; }
 
+	std::unordered_set<uint64>& Viewers_ActorOnly() { return _viewers; }
+	const std::unordered_set<uint64>& Viewers_ActorOnly() const { return _viewers; }
+
 private:
 	// [AI State Machine]
 	void			UpdateIdle();
@@ -36,4 +39,6 @@ private:
 	std::weak_ptr<Creature> _target; // 현재 쫓고 있는 대상
 	float		_searchRange = 10.0f; // 인식 범위
 	float		_attackRange = 1.5f;  // 공격 사거리
+
+	std::unordered_set<uint64> _viewers;
 };

@@ -208,6 +208,7 @@
     </ClCompile>
     <ClCompile Include="GameMap.cpp" />
     <ClCompile Include="GameRoom.AOI.cpp" />
+    <ClCompile Include="GameRoom.AOI.v2.cpp" />
     <ClCompile Include="GameRoom.Chat.cpp" />
     <ClCompile Include="GameRoom.Combat.cpp" />
     <ClCompile Include="GameRoom.EnterLeave.cpp" />
