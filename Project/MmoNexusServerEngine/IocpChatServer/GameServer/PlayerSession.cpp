@@ -6,7 +6,8 @@
 #include "Player.h"
 #include "InstanceActor.h"
 #include "RoomManager.h"
-
+#include "AutoCommitService.h"
+#include "PersistenceService.h"
 
 void PlayerSession::OnConnected()
 {
@@ -38,6 +39,12 @@ void PlayerSession::OnDisconnected()
             // ✅ 바인딩 정리
             if (playerId != 0)
             {
+                // ✅ [A] 안전빵: disconnect면 저장 트리거
+            // (최적화는 나중에: invDirty 실제로 있을 때만 찍도록 바꿔도 됨)
+                Persistence::PersistenceService::I().MarkDirty_PlayerCore(playerId);
+                Persistence::PersistenceService::I().MarkDirty_Inventory(playerId);
+                Persistence::AutoCommitService::I().RequestFlushNow(playerId);
+
                 GameSessionManager::GSessionManager->UnbindPlayerId(playerId);
                 ps->ClearPlayerId_ActorOnly();
             }

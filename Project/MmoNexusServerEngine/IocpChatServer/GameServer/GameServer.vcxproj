@@ -191,6 +191,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AutoCommitService.cpp" />
     <ClCompile Include="BattleSystem.cpp" />
     <ClCompile Include="ClientPacketHandler.Core.cpp" />
     <ClCompile Include="ClientPacketHandler.Dungeon.cpp" />
@@ -231,6 +232,7 @@
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="PersistenceService.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="PlayerSession.cpp" />
     <ClCompile Include="Protocol.pb.cc">
@@ -239,6 +241,7 @@
     <ClCompile Include="Protocol_S2S.pb.cc">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="RedisCodec.cpp" />
     <ClCompile Include="RoomManager.cpp" />
     <ClCompile Include="S2SPacketHandler.cpp" />
     <ClCompile Include="SpatialGrid.cpp" />
@@ -247,6 +250,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AutoCommitService.h" />
     <ClInclude Include="BattleSystem.h" />
     <ClInclude Include="ClientPacketHandler.h" />
     <ClInclude Include="ClientPacketHandler.MapChangeUtil.h" />
@@ -271,10 +275,13 @@
     <ClInclude Include="PartyManager.h" />
     <ClInclude Include="PartyManagerCore.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="PersistenceService.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="PlayerSession.h" />
     <ClInclude Include="Protocol.pb.h" />
     <ClInclude Include="Protocol_S2S.pb.h" />
+    <ClInclude Include="RedisCodec.h" />
+    <ClInclude Include="RedisKeys.h" />
     <ClInclude Include="RoomActor.h" />
     <ClInclude Include="RoomManager.h" />
     <ClInclude Include="S2SPacketHandler.h" />

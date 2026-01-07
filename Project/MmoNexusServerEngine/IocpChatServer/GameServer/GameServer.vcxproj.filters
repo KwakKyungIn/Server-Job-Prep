@@ -49,6 +49,9 @@
     <Filter Include="GameContents\Actor">
       <UniqueIdentifier>{dd7a14bb-4519-49b6-83a3-763a059380c1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Persistence">
+      <UniqueIdentifier>{17447283-0490-4f20-ac51-55e34ec42203}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GameServer.cpp">
@@ -183,6 +186,15 @@
     <ClCompile Include="GameRoom.AOI.v2.cpp">
       <Filter>GameContents\Room</Filter>
     </ClCompile>
+    <ClCompile Include="RedisCodec.cpp">
+      <Filter>Persistence</Filter>
+    </ClCompile>
+    <ClCompile Include="AutoCommitService.cpp">
+      <Filter>Persistence</Filter>
+    </ClCompile>
+    <ClCompile Include="PersistenceService.cpp">
+      <Filter>Persistence</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -284,6 +296,18 @@
     </ClInclude>
     <ClInclude Include="MoveValidationUtils.h">
       <Filter>GameContents</Filter>
+    </ClInclude>
+    <ClInclude Include="RedisKeys.h">
+      <Filter>Persistence</Filter>
+    </ClInclude>
+    <ClInclude Include="RedisCodec.h">
+      <Filter>Persistence</Filter>
+    </ClInclude>
+    <ClInclude Include="AutoCommitService.h">
+      <Filter>Persistence</Filter>
+    </ClInclude>
+    <ClInclude Include="PersistenceService.h">
+      <Filter>Persistence</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

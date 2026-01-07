@@ -3,6 +3,7 @@
 #include "PlayerSession.h" // Session 기능을 쓰려면 포함
 #include "GameRoom.h"
 #include "DataManager.h"
+#include "PersistenceService.h"
 
 // [수정 포인트 1] 부모 생성자(Creature) 호출 및 타입 지정
 Player::Player() : Creature(Protocol::OBJECT_TYPE_PLAYER)
@@ -38,9 +39,19 @@ void Player::OnDamaged(std::shared_ptr<Creature> attacker, int32 damage)
 	// 1. 부모 로직 (HP 차감 및 사망 체크)
 	Creature::OnDamaged(attacker, damage);
 
-	// 2. 플레이어 전용 로직 (예: 피격 사운드, 화면 붉어짐 패킷 등)
-	// 현재는 로그만
-	// printf("[Player Hit] HP: %d\n", _statInfo->hp());
+	auto st = GetStatInfo();
+	if (!st) return;
+
+	const uint64 pid = GetPlayerId();
+
+	// ✅ [A] 런타임 변화 -> Redis + Dirty
+	Persistence::PersistenceService::I().UpdatePlayerCore(
+		pid,
+		st->level(),
+		st->hp(),
+		st->totalexp(),
+		true
+	);
 }
 
 void Player::OnDead(std::shared_ptr<Creature> attacker)
@@ -96,7 +107,7 @@ void Player::RefreshStats()
 	stat->set_attack(baseStat->attack());
 	stat->set_defense(baseStat->defense());
 	stat->set_speed(baseStat->speed());
-	stat->set_totalexp(baseStat->totalexp());
+	//stat->set_totalexp(baseStat->totalexp());
 
 	// 2. 장착 아이템 스탯 합산 (Item Bonus)
 	for (const auto& item : _items)
