@@ -4,6 +4,7 @@
 #include "PlayerSession.h"
 #include "S2SPacketHandler.h"
 #include "RoomManager.h"
+#include "PersistenceService.h"
 std::shared_ptr<LobbyRoom> GLobbyRoom;
 
 void LobbyRoom::EnterGame(PlayerSessionRef ps, uint64 playerId, int32 channelId, int32 mapId, const Protocol::PositionInfo& spawn)
@@ -126,6 +127,8 @@ void LobbyRoom::OnItemsLoaded(uint64 playerId, const Protocol::S2S_RES_ITEMS_LOA
     // 2) 장착 보너스 포함 스탯 재계산(Stat 먼저 와도, Item 먼저 와도 재계산 계속 해도 됨)
     p->RefreshStats();
 
+    Persistence::PersistenceService::I().PrimeFromDb_Inventory(playerId, pkt.items());
+
     // 3) 클라 동기화(인벤)
     if (auto ps = p->GetSession())
     {
@@ -150,6 +153,10 @@ void LobbyRoom::OnStatLoaded(uint64 playerId, const Protocol::S2S_RES_LOAD_PLAYE
         st->CopyFrom(pkt.statinfo());
 
     p->RefreshStats();
+
+    // Prime은 core에 level/hp/totalExp만 박는다.
+    if (auto st = p->GetStatInfo())
+        Persistence::PersistenceService::I().PrimeFromDb_PlayerCore(playerId, *st);
 
     it->second.statLoaded = true;
     TryEnterWorldIfReady(playerId);

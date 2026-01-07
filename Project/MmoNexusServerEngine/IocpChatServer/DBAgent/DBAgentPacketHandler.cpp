@@ -137,23 +137,19 @@ bool DBAgentPacketHandler::Handle_S2S_REQ_ITEMS_LOAD(PacketSessionRef& session, 
 				SQLLEN len = 0;
 
 				// [Query]
-				if (conn->Prepare(L"SELECT item_uid, template_id, slot_index, count, is_equipped, enchant_level FROM ITEMS WHERE owner_id = ?"))
+				if (conn->Prepare(L"SELECT item_uid, template_id, slot_index, count, is_equipped FROM ITEMS WHERE owner_id = ?"))
 				{
 					conn->BindParam(1, SQL_C_SBIGINT, SQL_BIGINT, sizeof(int64), &dbOwnerId, &len);
 
-					// 결과 바인딩 (순서 중요)
 					conn->BindCol(1, SQL_C_SBIGINT, sizeof(int64), &outItemUid, &len);
 					conn->BindCol(2, SQL_C_SLONG, sizeof(int32), &outTemplateId, &len);
 					conn->BindCol(3, SQL_C_SLONG, sizeof(int32), &outSlot, &len);
 					conn->BindCol(4, SQL_C_SLONG, sizeof(int32), &outCount, &len);
 					conn->BindCol(5, SQL_C_BIT, sizeof(unsigned char), &outEquipped, &len);
-					conn->BindCol(6, SQL_C_SLONG, sizeof(int32), &outEnchant, &len);
 
 					if (conn->Execute())
 					{
 						resPkt.set_success(true);
-
-						// Loop 돌면서 모든 아이템 획득
 						while (conn->Fetch())
 						{
 							Protocol::ItemInfo* item = resPkt.add_items();
@@ -162,8 +158,6 @@ bool DBAgentPacketHandler::Handle_S2S_REQ_ITEMS_LOAD(PacketSessionRef& session, 
 							item->set_slot(outSlot);
 							item->set_count(outCount);
 							item->set_isequipped(outEquipped != 0);
-							// Enchant는 ItemInfo 구조체에 없다면 추가 필요, 일단은 스킵하거나 구조체 수정.
-							// 구조체에 enchant가 없다면 생략.
 						}
 						std::cout << "✅ [DB] Loaded Items for Player: " << pkt.playerid() << " Count: " << resPkt.items_size() << std::endl;
 					}
@@ -403,6 +397,221 @@ bool DBAgentPacketHandler::Handle_S2S_REQ_HEART_BEAT(PacketSessionRef& session, 
 	Protocol::S2S_RES_HEART_BEAT resPkt;
 	auto sendBuffer = DBAgentPacketHandler::MakeSendBuffer(resPkt);
 	session->Send(sendBuffer);
+
+	return true;
+}
+
+bool DBAgentPacketHandler::Handle_S2S_REQ_SAVE_PLAYER_CORE(PacketSessionRef& session, Protocol::S2S_REQ_SAVE_PLAYER_CORE& pkt)
+{
+	shared_ptr<GameSession> gameSession = static_pointer_cast<GameSession>(session);
+
+	gameSession->PushJob(ObjectPool<Job>::MakeShared([gameSession, pkt]()
+		{
+			DBConnection* conn = GDBConnectionPool->Pop();
+			if (conn == nullptr) return;
+
+			Protocol::S2S_RES_SAVE_PLAYER_CORE resPkt;
+			resPkt.set_playerid(pkt.playerid());
+			resPkt.set_success(false);
+
+			bool ok = true;
+
+			conn->Unbind();
+
+			int64 dbPlayerId = (int64)pkt.playerid();
+			int32 level = pkt.level();
+			int32 hp = pkt.hp();
+			int64 totalExp = (int64)pkt.totalexp();
+			SQLLEN len = 0;
+
+			if (conn->Prepare(L"UPDATE PLAYERS SET level = ?, hp = ?, total_exp = ? WHERE playerId = ?"))
+			{
+				ok &= conn->BindParam(1, SQL_C_SLONG, SQL_INTEGER, sizeof(int32), &level, &len);
+				ok &= conn->BindParam(2, SQL_C_SLONG, SQL_INTEGER, sizeof(int32), &hp, &len);
+				ok &= conn->BindParam(3, SQL_C_SBIGINT, SQL_BIGINT, sizeof(int64), &totalExp, &len);
+				ok &= conn->BindParam(4, SQL_C_SBIGINT, SQL_BIGINT, sizeof(int64), &dbPlayerId, &len);
+
+				if (ok)
+					ok = conn->Execute();
+			}
+			else ok = false;
+
+			resPkt.set_success(ok);
+
+			GDBConnectionPool->Push(conn);
+
+			auto sendBuffer = DBAgentPacketHandler::MakeSendBuffer(resPkt);
+			gameSession->Send(sendBuffer);
+		}));
+
+	return true;
+}
+
+bool DBAgentPacketHandler::Handle_S2S_REQ_SAVE_INVENTORY(PacketSessionRef& session, Protocol::S2S_REQ_SAVE_INVENTORY& pkt)
+{
+	shared_ptr<GameSession> gameSession = static_pointer_cast<GameSession>(session);
+
+	gameSession->PushJob(ObjectPool<Job>::MakeShared([gameSession, pkt]()
+		{
+			DBConnection* conn = GDBConnectionPool->Pop();
+			if (conn == nullptr) return;
+
+			Protocol::S2S_RES_SAVE_INVENTORY resPkt;
+			resPkt.set_playerid(pkt.playerid());
+			resPkt.set_success(false);
+
+			bool ok = true;
+			int64 dbPlayerId = (int64)pkt.playerid();
+			SQLLEN len = 0;
+
+			// BEGIN TRAN
+			conn->Unbind();
+			ok = conn->Execute(L"BEGIN TRAN");
+
+			// 1) DELETE tombstones
+			if (ok)
+			{
+				for (int i = 0; i < pkt.deleteditemuids_size(); ++i)
+				{
+					conn->Unbind();
+
+					int64 dbItemUid = (int64)pkt.deleteditemuids(i);
+
+					if (!conn->Prepare(L"DELETE FROM ITEMS WHERE owner_id = ? AND item_uid = ?"))
+					{
+						ok = false; break;
+					}
+
+					ok &= conn->BindParam(1, SQL_C_SBIGINT, SQL_BIGINT, sizeof(int64), &dbPlayerId, &len);
+					ok &= conn->BindParam(2, SQL_C_SBIGINT, SQL_BIGINT, sizeof(int64), &dbItemUid, &len);
+
+					if (!ok || !conn->Execute())
+					{
+						ok = false; break;
+					}
+				}
+			}
+
+			// 2) UPDATE all items snapshot
+			if (ok)
+			{
+				for (int i = 0; i < pkt.items_size(); ++i)
+				{
+					conn->Unbind();
+
+					const Protocol::ItemInfo& it = pkt.items(i);
+
+					int64 dbItemUid = (int64)it.itemuid();
+					int32 templateId = it.templateid();
+					int32 slotIndex = it.slot();
+					int32 count = it.count();
+					unsigned char equipped = it.isequipped() ? 1 : 0;
+
+					if (!conn->Prepare(L"UPDATE ITEMS SET template_id = ?, slot_index = ?, count = ?, is_equipped = ? WHERE owner_id = ? AND item_uid = ?"))
+					{
+						ok = false; break;
+					}
+
+					ok &= conn->BindParam(1, SQL_C_SLONG, SQL_INTEGER, sizeof(int32), &templateId, &len);
+					ok &= conn->BindParam(2, SQL_C_SLONG, SQL_INTEGER, sizeof(int32), &slotIndex, &len);
+					ok &= conn->BindParam(3, SQL_C_SLONG, SQL_INTEGER, sizeof(int32), &count, &len);
+					ok &= conn->BindParam(4, SQL_C_BIT, SQL_BIT, sizeof(unsigned char), &equipped, &len);
+					ok &= conn->BindParam(5, SQL_C_SBIGINT, SQL_BIGINT, sizeof(int64), &dbPlayerId, &len);
+					ok &= conn->BindParam(6, SQL_C_SBIGINT, SQL_BIGINT, sizeof(int64), &dbItemUid, &len);
+
+					if (!ok || !conn->Execute())
+					{
+						ok = false; break;
+					}
+
+					// 정합성 체크(선택): 없던 uid면 0 row -> 실패 처리 가능
+					int32 affected = conn->GetRowCount();
+					if (affected == 0)
+					{
+						ok = false; break;
+					}
+				}
+			}
+
+			// COMMIT / ROLLBACK
+			conn->Unbind();
+			if (ok) conn->Execute(L"COMMIT TRAN");
+			else    conn->Execute(L"ROLLBACK TRAN");
+
+			resPkt.set_success(ok);
+
+			GDBConnectionPool->Push(conn);
+
+			auto sendBuffer = DBAgentPacketHandler::MakeSendBuffer(resPkt);
+			gameSession->Send(sendBuffer);
+		}));
+
+	return true;
+}
+
+bool DBAgentPacketHandler::Handle_S2S_REQ_ITEM_CREATE(PacketSessionRef& session, Protocol::S2S_REQ_ITEM_CREATE& pkt)
+{
+	shared_ptr<GameSession> gameSession = static_pointer_cast<GameSession>(session);
+
+	gameSession->PushJob(ObjectPool<Job>::MakeShared([gameSession, pkt]()
+		{
+			DBConnection* conn = GDBConnectionPool->Pop();
+			if (conn == nullptr) return;
+
+			Protocol::S2S_RES_ITEM_CREATE resPkt;
+			resPkt.set_success(false);
+			resPkt.set_playerid(pkt.playerid());
+			resPkt.set_templateid(pkt.templateid());
+			resPkt.set_slotindex(pkt.slotindex());
+			resPkt.set_count(pkt.count());
+			resPkt.set_isequipped(pkt.isequipped());
+			resPkt.set_requestid(pkt.requestid());
+
+			bool ok = true;
+			SQLLEN len = 0;
+
+			int64 ownerId = (int64)pkt.playerid();
+			int32 templateId = pkt.templateid();
+			int32 slotIndex = pkt.slotindex();
+			int32 count = pkt.count();
+			unsigned char equipped = pkt.isequipped() ? 1 : 0;
+
+			int64 outItemUid = 0;
+			SQLLEN outLen = 0;
+
+			conn->Unbind();
+
+			if (conn->Prepare(L"INSERT INTO ITEMS (owner_id, template_id, slot_index, count, is_equipped) OUTPUT INSERTED.item_uid VALUES (?, ?, ?, ?, ?)"))
+			{
+				ok &= conn->BindParam(1, SQL_C_SBIGINT, SQL_BIGINT, sizeof(int64), &ownerId, &len);
+				ok &= conn->BindParam(2, SQL_C_SLONG, SQL_INTEGER, sizeof(int32), &templateId, &len);
+				ok &= conn->BindParam(3, SQL_C_SLONG, SQL_INTEGER, sizeof(int32), &slotIndex, &len);
+				ok &= conn->BindParam(4, SQL_C_SLONG, SQL_INTEGER, sizeof(int32), &count, &len);
+				ok &= conn->BindParam(5, SQL_C_BIT, SQL_BIT, sizeof(unsigned char), &equipped, &len);
+
+				// OUTPUT 결과 바인딩
+				ok &= conn->BindCol(1, SQL_C_SBIGINT, sizeof(int64), &outItemUid, &outLen);
+
+				if (ok && conn->Execute())
+				{
+					if (conn->Fetch())
+					{
+						resPkt.set_itemuid((uint64)outItemUid);
+						resPkt.set_success(true);
+					}
+					else ok = false;
+				}
+				else ok = false;
+			}
+			else ok = false;
+
+			if (!ok) resPkt.set_success(false);
+
+			GDBConnectionPool->Push(conn);
+
+			auto sendBuffer = DBAgentPacketHandler::MakeSendBuffer(resPkt);
+			gameSession->Send(sendBuffer);
+		}));
 
 	return true;
 }

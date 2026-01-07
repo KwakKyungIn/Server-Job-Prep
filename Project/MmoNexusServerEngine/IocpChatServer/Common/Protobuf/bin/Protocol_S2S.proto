@@ -80,4 +80,56 @@ message S2S_RES_LOAD_GAME_DATA {
 message S2S_RES_HEART_BEAT { } 
 message S2S_REQ_HEART_BEAT { }
 
+// ============================================================
+// [SAVE] Redis -> DB commit
+// (AutoCommitService / FlushNow에서 쓰는 저장 요청)
+// ============================================================
+
+message S2S_REQ_SAVE_PLAYER_CORE {
+    uint64 playerId = 1;
+    int32 level = 2;
+    int32 hp = 3;
+    int64 totalExp = 4;
+}
+
+message S2S_RES_SAVE_PLAYER_CORE {
+    bool success = 1;
+    uint64 playerId = 2;
+}
+
+message S2S_REQ_SAVE_INVENTORY {
+    uint64 playerId = 1;
+    repeated ItemInfo items = 2;          // 전체 스냅샷(인벤 24개라 OK)
+    repeated uint64 deletedItemUids = 3;  // tombstone
+}
+
+message S2S_RES_SAVE_INVENTORY {
+    bool success = 1;
+    uint64 playerId = 2;
+}
+
+// ============================================================
+// [CREATE ITEM] DB IDENTITY uid 발급
+// ============================================================
+
+message S2S_REQ_ITEM_CREATE {
+    uint64 playerId = 1;
+    int32 templateId = 2;
+    int32 slotIndex = 3;
+    int32 count = 4;
+    bool isEquipped = 5;
+    uint64 requestId = 6;
+}
+
+message S2S_RES_ITEM_CREATE {
+    bool success = 1;
+    uint64 playerId = 2;
+    uint64 itemUid = 3;
+    int32 templateId = 4;
+    int32 slotIndex = 5;
+    int32 count = 6;
+    bool isEquipped = 7;
+    uint64 requestId = 8;
+}
+
 

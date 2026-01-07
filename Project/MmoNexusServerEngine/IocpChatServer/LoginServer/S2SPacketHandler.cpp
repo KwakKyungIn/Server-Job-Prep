@@ -96,7 +96,11 @@ bool S2SPacketHandler::Handle_S2S_RES_LOGIN(PacketSessionRef& session, Protocol:
 }
 
 // 나머지 미사용 핸들러
-bool S2SPacketHandler::Handle_S2S_RES_LOAD_PLAYER_DATA(PacketSessionRef& session, Protocol::S2S_RES_LOAD_PLAYER_DATA& pkt) { return false; }
-bool S2SPacketHandler::Handle_S2S_RES_ITEMS_LOAD(PacketSessionRef& session, Protocol::S2S_RES_ITEMS_LOAD& pkt) { return false; }
-bool S2SPacketHandler::Handle_S2S_RES_LOAD_GAME_DATA(PacketSessionRef& session, Protocol::S2S_RES_LOAD_GAME_DATA& pkt) { return false; }
-bool S2SPacketHandler::Handle_S2S_RES_HEART_BEAT(PacketSessionRef& session, Protocol::S2S_RES_HEART_BEAT& pkt) { return true; }
+bool S2SPacketHandler::Handle_S2S_RES_LOAD_PLAYER_DATA(PacketSessionRef&, Protocol::S2S_RES_LOAD_PLAYER_DATA&) { return true; }
+bool S2SPacketHandler::Handle_S2S_RES_ITEMS_LOAD(PacketSessionRef&, Protocol::S2S_RES_ITEMS_LOAD&) { return true; }
+bool S2SPacketHandler::Handle_S2S_RES_LOAD_GAME_DATA(PacketSessionRef&, Protocol::S2S_RES_LOAD_GAME_DATA&) { return true; }
+bool S2SPacketHandler::Handle_S2S_RES_HEART_BEAT(PacketSessionRef&, Protocol::S2S_RES_HEART_BEAT&) { return true; }
+bool S2SPacketHandler::Handle_S2S_RES_SAVE_PLAYER_CORE(PacketSessionRef&, Protocol::S2S_RES_SAVE_PLAYER_CORE&) { return true; }
+bool S2SPacketHandler::Handle_S2S_RES_SAVE_INVENTORY(PacketSessionRef&, Protocol::S2S_RES_SAVE_INVENTORY&) { return true; }
+bool S2SPacketHandler::Handle_S2S_RES_ITEM_CREATE(PacketSessionRef&, Protocol::S2S_RES_ITEM_CREATE&) { return true; }
+

@@ -19,6 +19,12 @@ public:
 		PKT_S2S_RES_LOAD_GAME_DATA = 2007,
 		PKT_S2S_RES_HEART_BEAT = 2008,
 		PKT_S2S_REQ_HEART_BEAT = 2009,
+		PKT_S2S_REQ_SAVE_PLAYER_CORE = 2010,
+		PKT_S2S_RES_SAVE_PLAYER_CORE = 2011,
+		PKT_S2S_REQ_SAVE_INVENTORY = 2012,
+		PKT_S2S_RES_SAVE_INVENTORY = 2013,
+		PKT_S2S_REQ_ITEM_CREATE = 2014,
+		PKT_S2S_RES_ITEM_CREATE = 2015,
 	};
 
 	static void Init()
@@ -30,6 +36,9 @@ public:
 		GPacketHandler[PKT_S2S_REQ_ITEMS_LOAD] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S2S_REQ_ITEMS_LOAD>(Handle_S2S_REQ_ITEMS_LOAD, session, buffer, len); };
 		GPacketHandler[PKT_S2S_REQ_LOAD_GAME_DATA] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S2S_REQ_LOAD_GAME_DATA>(Handle_S2S_REQ_LOAD_GAME_DATA, session, buffer, len); };
 		GPacketHandler[PKT_S2S_REQ_HEART_BEAT] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S2S_REQ_HEART_BEAT>(Handle_S2S_REQ_HEART_BEAT, session, buffer, len); };
+		GPacketHandler[PKT_S2S_REQ_SAVE_PLAYER_CORE] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S2S_REQ_SAVE_PLAYER_CORE>(Handle_S2S_REQ_SAVE_PLAYER_CORE, session, buffer, len); };
+		GPacketHandler[PKT_S2S_REQ_SAVE_INVENTORY] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S2S_REQ_SAVE_INVENTORY>(Handle_S2S_REQ_SAVE_INVENTORY, session, buffer, len); };
+		GPacketHandler[PKT_S2S_REQ_ITEM_CREATE] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S2S_REQ_ITEM_CREATE>(Handle_S2S_REQ_ITEM_CREATE, session, buffer, len); };
 	}
 
 	static bool HandlePacket(PacketSessionRef& session, BYTE* buffer, int32 len)
@@ -42,6 +51,9 @@ public:
 	static SendBufferRef MakeSendBuffer(Protocol::S2S_RES_ITEMS_LOAD& pkt) { return MakeSendBuffer(pkt, PKT_S2S_RES_ITEMS_LOAD); }
 	static SendBufferRef MakeSendBuffer(Protocol::S2S_RES_LOAD_GAME_DATA& pkt) { return MakeSendBuffer(pkt, PKT_S2S_RES_LOAD_GAME_DATA); }
 	static SendBufferRef MakeSendBuffer(Protocol::S2S_RES_HEART_BEAT& pkt) { return MakeSendBuffer(pkt, PKT_S2S_RES_HEART_BEAT); }
+	static SendBufferRef MakeSendBuffer(Protocol::S2S_RES_SAVE_PLAYER_CORE& pkt) { return MakeSendBuffer(pkt, PKT_S2S_RES_SAVE_PLAYER_CORE); }
+	static SendBufferRef MakeSendBuffer(Protocol::S2S_RES_SAVE_INVENTORY& pkt) { return MakeSendBuffer(pkt, PKT_S2S_RES_SAVE_INVENTORY); }
+	static SendBufferRef MakeSendBuffer(Protocol::S2S_RES_ITEM_CREATE& pkt) { return MakeSendBuffer(pkt, PKT_S2S_RES_ITEM_CREATE); }
 
 public:
 	static PacketHandlerFunc GPacketHandler[UINT16_MAX];
@@ -51,6 +63,9 @@ public:
 	static bool Handle_S2S_REQ_ITEMS_LOAD(PacketSessionRef& session, Protocol::S2S_REQ_ITEMS_LOAD& pkt);
 	static bool Handle_S2S_REQ_LOAD_GAME_DATA(PacketSessionRef& session, Protocol::S2S_REQ_LOAD_GAME_DATA& pkt);
 	static bool Handle_S2S_REQ_HEART_BEAT(PacketSessionRef& session, Protocol::S2S_REQ_HEART_BEAT& pkt);
+	static bool Handle_S2S_REQ_SAVE_PLAYER_CORE(PacketSessionRef& session, Protocol::S2S_REQ_SAVE_PLAYER_CORE& pkt);
+	static bool Handle_S2S_REQ_SAVE_INVENTORY(PacketSessionRef& session, Protocol::S2S_REQ_SAVE_INVENTORY& pkt);
+	static bool Handle_S2S_REQ_ITEM_CREATE(PacketSessionRef& session, Protocol::S2S_REQ_ITEM_CREATE& pkt);
 
 private:
 	template<typename PacketType, typename ProcessFunc>

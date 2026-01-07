@@ -9,6 +9,8 @@
 #include "GameRoom.h"
 #include "RoomManager.h"
 #include "LobbyRoom.h"
+#include "PersistenceService.h"
+#include "AutoCommitService.h"
 
 
 PacketHandlerFunc S2SPacketHandler::GPacketHandler[UINT16_MAX];
@@ -93,5 +95,39 @@ bool S2SPacketHandler::Handle_S2S_RES_LOAD_GAME_DATA(PacketSessionRef& session, 
 
 bool S2SPacketHandler::Handle_S2S_RES_HEART_BEAT(PacketSessionRef& session, Protocol::S2S_RES_HEART_BEAT& pkt)
 {
+	return true;
+}
+
+bool S2SPacketHandler::Handle_S2S_RES_SAVE_PLAYER_CORE(PacketSessionRef& session, Protocol::S2S_RES_SAVE_PLAYER_CORE& pkt)
+{
+	const uint64 pid = pkt.playerid();
+
+	if (pkt.success())
+		Persistence::PersistenceService::I().ClearDirtyOnCommitSuccess(pid, /*coreOk=*/true, /*invOk=*/false);
+
+	// inflight 해제
+	Persistence::AutoCommitService::I().OnCommitFinished(pid);
+
+	return true;
+}
+
+
+bool S2SPacketHandler::Handle_S2S_RES_SAVE_INVENTORY(PacketSessionRef& session, Protocol::S2S_RES_SAVE_INVENTORY& pkt)
+{
+	const uint64 pid = pkt.playerid();
+
+	if (pkt.success())
+		Persistence::PersistenceService::I().ClearDirtyOnCommitSuccess(pid, /*coreOk=*/false, /*invOk=*/true);
+
+	Persistence::AutoCommitService::I().OnCommitFinished(pid);
+
+	return true;
+}
+
+
+bool S2SPacketHandler::Handle_S2S_RES_ITEM_CREATE(PacketSessionRef& session, Protocol::S2S_RES_ITEM_CREATE& pkt)
+{
+	// 성공/실패 포함해서 서비스에 넘겨라 (실패면 서비스가 재시도/로그)
+	//Persistence::AutoCommitService::I().OnItemCreateResult(pkt);
 	return true;
 }
