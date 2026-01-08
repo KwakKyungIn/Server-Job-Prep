@@ -11,7 +11,7 @@
 #include "LobbyRoom.h"
 #include "PersistenceService.h"
 #include "AutoCommitService.h"
-
+#include "GameItemUidGen.h"
 
 PacketHandlerFunc S2SPacketHandler::GPacketHandler[UINT16_MAX];
 
@@ -129,5 +129,18 @@ bool S2SPacketHandler::Handle_S2S_RES_ITEM_CREATE(PacketSessionRef& session, Pro
 {
 	// 성공/실패 포함해서 서비스에 넘겨라 (실패면 서비스가 재시도/로그)
 	//Persistence::AutoCommitService::I().OnItemCreateResult(pkt);
+	return true;
+}
+
+bool S2SPacketHandler::Handle_S2S_RES_GAME_ITEM_UID_SEED(PacketSessionRef& session, Protocol::S2S_RES_GAME_ITEM_UID_SEED& pkt)
+{
+	if (!pkt.success() || pkt.next_uid() == 0)
+	{
+		std::cout << "❌ [UID] Seed load failed" << std::endl;
+		return true;
+	}
+
+	GameItemUidGen::Init(pkt.next_uid());
+	std::cout << "✅ [UID] Seed initialized. next_uid=" << pkt.next_uid() << std::endl;
 	return true;
 }

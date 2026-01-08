@@ -48,6 +48,9 @@ struct TableStruct_Protocol_5fS2S_2eproto {
 };
 extern const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_Protocol_5fS2S_2eproto;
 namespace Protocol {
+class S2S_REQ_GAME_ITEM_UID_SEED;
+struct S2S_REQ_GAME_ITEM_UID_SEEDDefaultTypeInternal;
+extern S2S_REQ_GAME_ITEM_UID_SEEDDefaultTypeInternal _S2S_REQ_GAME_ITEM_UID_SEED_default_instance_;
 class S2S_REQ_HEART_BEAT;
 struct S2S_REQ_HEART_BEATDefaultTypeInternal;
 extern S2S_REQ_HEART_BEATDefaultTypeInternal _S2S_REQ_HEART_BEAT_default_instance_;
@@ -72,6 +75,9 @@ extern S2S_REQ_SAVE_INVENTORYDefaultTypeInternal _S2S_REQ_SAVE_INVENTORY_default
 class S2S_REQ_SAVE_PLAYER_CORE;
 struct S2S_REQ_SAVE_PLAYER_COREDefaultTypeInternal;
 extern S2S_REQ_SAVE_PLAYER_COREDefaultTypeInternal _S2S_REQ_SAVE_PLAYER_CORE_default_instance_;
+class S2S_RES_GAME_ITEM_UID_SEED;
+struct S2S_RES_GAME_ITEM_UID_SEEDDefaultTypeInternal;
+extern S2S_RES_GAME_ITEM_UID_SEEDDefaultTypeInternal _S2S_RES_GAME_ITEM_UID_SEED_default_instance_;
 class S2S_RES_HEART_BEAT;
 struct S2S_RES_HEART_BEATDefaultTypeInternal;
 extern S2S_RES_HEART_BEATDefaultTypeInternal _S2S_RES_HEART_BEAT_default_instance_;
@@ -98,6 +104,7 @@ struct S2S_RES_SAVE_PLAYER_COREDefaultTypeInternal;
 extern S2S_RES_SAVE_PLAYER_COREDefaultTypeInternal _S2S_RES_SAVE_PLAYER_CORE_default_instance_;
 }  // namespace Protocol
 PROTOBUF_NAMESPACE_OPEN
+template<> ::Protocol::S2S_REQ_GAME_ITEM_UID_SEED* Arena::CreateMaybeMessage<::Protocol::S2S_REQ_GAME_ITEM_UID_SEED>(Arena*);
 template<> ::Protocol::S2S_REQ_HEART_BEAT* Arena::CreateMaybeMessage<::Protocol::S2S_REQ_HEART_BEAT>(Arena*);
 template<> ::Protocol::S2S_REQ_ITEMS_LOAD* Arena::CreateMaybeMessage<::Protocol::S2S_REQ_ITEMS_LOAD>(Arena*);
 template<> ::Protocol::S2S_REQ_ITEM_CREATE* Arena::CreateMaybeMessage<::Protocol::S2S_REQ_ITEM_CREATE>(Arena*);
@@ -106,6 +113,7 @@ template<> ::Protocol::S2S_REQ_LOAD_PLAYER_DATA* Arena::CreateMaybeMessage<::Pro
 template<> ::Protocol::S2S_REQ_LOGIN* Arena::CreateMaybeMessage<::Protocol::S2S_REQ_LOGIN>(Arena*);
 template<> ::Protocol::S2S_REQ_SAVE_INVENTORY* Arena::CreateMaybeMessage<::Protocol::S2S_REQ_SAVE_INVENTORY>(Arena*);
 template<> ::Protocol::S2S_REQ_SAVE_PLAYER_CORE* Arena::CreateMaybeMessage<::Protocol::S2S_REQ_SAVE_PLAYER_CORE>(Arena*);
+template<> ::Protocol::S2S_RES_GAME_ITEM_UID_SEED* Arena::CreateMaybeMessage<::Protocol::S2S_RES_GAME_ITEM_UID_SEED>(Arena*);
 template<> ::Protocol::S2S_RES_HEART_BEAT* Arena::CreateMaybeMessage<::Protocol::S2S_RES_HEART_BEAT>(Arena*);
 template<> ::Protocol::S2S_RES_ITEMS_LOAD* Arena::CreateMaybeMessage<::Protocol::S2S_RES_ITEMS_LOAD>(Arena*);
 template<> ::Protocol::S2S_RES_ITEM_CREATE* Arena::CreateMaybeMessage<::Protocol::S2S_RES_ITEM_CREATE>(Arena*);
@@ -2831,6 +2839,283 @@ class S2S_RES_ITEM_CREATE final :
   union { Impl_ _impl_; };
   friend struct ::TableStruct_Protocol_5fS2S_2eproto;
 };
+// -------------------------------------------------------------------
+
+class S2S_REQ_GAME_ITEM_UID_SEED final :
+    public ::PROTOBUF_NAMESPACE_ID::internal::ZeroFieldsBase /* @@protoc_insertion_point(class_definition:Protocol.S2S_REQ_GAME_ITEM_UID_SEED) */ {
+ public:
+  inline S2S_REQ_GAME_ITEM_UID_SEED() : S2S_REQ_GAME_ITEM_UID_SEED(nullptr) {}
+  explicit PROTOBUF_CONSTEXPR S2S_REQ_GAME_ITEM_UID_SEED(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+
+  S2S_REQ_GAME_ITEM_UID_SEED(const S2S_REQ_GAME_ITEM_UID_SEED& from);
+  S2S_REQ_GAME_ITEM_UID_SEED(S2S_REQ_GAME_ITEM_UID_SEED&& from) noexcept
+    : S2S_REQ_GAME_ITEM_UID_SEED() {
+    *this = ::std::move(from);
+  }
+
+  inline S2S_REQ_GAME_ITEM_UID_SEED& operator=(const S2S_REQ_GAME_ITEM_UID_SEED& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline S2S_REQ_GAME_ITEM_UID_SEED& operator=(S2S_REQ_GAME_ITEM_UID_SEED&& from) noexcept {
+    if (this == &from) return *this;
+    if (GetOwningArena() == from.GetOwningArena()
+  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+        && GetOwningArena() != nullptr
+  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+    ) {
+      InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return default_instance().GetMetadata().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return default_instance().GetMetadata().reflection;
+  }
+  static const S2S_REQ_GAME_ITEM_UID_SEED& default_instance() {
+    return *internal_default_instance();
+  }
+  static inline const S2S_REQ_GAME_ITEM_UID_SEED* internal_default_instance() {
+    return reinterpret_cast<const S2S_REQ_GAME_ITEM_UID_SEED*>(
+               &_S2S_REQ_GAME_ITEM_UID_SEED_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    16;
+
+  friend void swap(S2S_REQ_GAME_ITEM_UID_SEED& a, S2S_REQ_GAME_ITEM_UID_SEED& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(S2S_REQ_GAME_ITEM_UID_SEED* other) {
+    if (other == this) return;
+  #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetOwningArena() != nullptr &&
+        GetOwningArena() == other->GetOwningArena()) {
+   #else  // PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetOwningArena() == other->GetOwningArena()) {
+  #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(S2S_REQ_GAME_ITEM_UID_SEED* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetOwningArena() == other->GetOwningArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  S2S_REQ_GAME_ITEM_UID_SEED* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
+    return CreateMaybeMessage<S2S_REQ_GAME_ITEM_UID_SEED>(arena);
+  }
+  using ::PROTOBUF_NAMESPACE_ID::internal::ZeroFieldsBase::CopyFrom;
+  inline void CopyFrom(const S2S_REQ_GAME_ITEM_UID_SEED& from) {
+    ::PROTOBUF_NAMESPACE_ID::internal::ZeroFieldsBase::CopyImpl(*this, from);
+  }
+  using ::PROTOBUF_NAMESPACE_ID::internal::ZeroFieldsBase::MergeFrom;
+  void MergeFrom(const S2S_REQ_GAME_ITEM_UID_SEED& from) {
+    ::PROTOBUF_NAMESPACE_ID::internal::ZeroFieldsBase::MergeImpl(*this, from);
+  }
+  public:
+
+  private:
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "Protocol.S2S_REQ_GAME_ITEM_UID_SEED";
+  }
+  protected:
+  explicit S2S_REQ_GAME_ITEM_UID_SEED(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                       bool is_message_owned = false);
+  public:
+
+  static const ClassData _class_data_;
+  const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*GetClassData() const final;
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // @@protoc_insertion_point(class_scope:Protocol.S2S_REQ_GAME_ITEM_UID_SEED)
+ private:
+  class _Internal;
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  struct Impl_ {
+  };
+  friend struct ::TableStruct_Protocol_5fS2S_2eproto;
+};
+// -------------------------------------------------------------------
+
+class S2S_RES_GAME_ITEM_UID_SEED final :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:Protocol.S2S_RES_GAME_ITEM_UID_SEED) */ {
+ public:
+  inline S2S_RES_GAME_ITEM_UID_SEED() : S2S_RES_GAME_ITEM_UID_SEED(nullptr) {}
+  ~S2S_RES_GAME_ITEM_UID_SEED() override;
+  explicit PROTOBUF_CONSTEXPR S2S_RES_GAME_ITEM_UID_SEED(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+
+  S2S_RES_GAME_ITEM_UID_SEED(const S2S_RES_GAME_ITEM_UID_SEED& from);
+  S2S_RES_GAME_ITEM_UID_SEED(S2S_RES_GAME_ITEM_UID_SEED&& from) noexcept
+    : S2S_RES_GAME_ITEM_UID_SEED() {
+    *this = ::std::move(from);
+  }
+
+  inline S2S_RES_GAME_ITEM_UID_SEED& operator=(const S2S_RES_GAME_ITEM_UID_SEED& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline S2S_RES_GAME_ITEM_UID_SEED& operator=(S2S_RES_GAME_ITEM_UID_SEED&& from) noexcept {
+    if (this == &from) return *this;
+    if (GetOwningArena() == from.GetOwningArena()
+  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+        && GetOwningArena() != nullptr
+  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+    ) {
+      InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return default_instance().GetMetadata().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return default_instance().GetMetadata().reflection;
+  }
+  static const S2S_RES_GAME_ITEM_UID_SEED& default_instance() {
+    return *internal_default_instance();
+  }
+  static inline const S2S_RES_GAME_ITEM_UID_SEED* internal_default_instance() {
+    return reinterpret_cast<const S2S_RES_GAME_ITEM_UID_SEED*>(
+               &_S2S_RES_GAME_ITEM_UID_SEED_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    17;
+
+  friend void swap(S2S_RES_GAME_ITEM_UID_SEED& a, S2S_RES_GAME_ITEM_UID_SEED& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(S2S_RES_GAME_ITEM_UID_SEED* other) {
+    if (other == this) return;
+  #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetOwningArena() != nullptr &&
+        GetOwningArena() == other->GetOwningArena()) {
+   #else  // PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetOwningArena() == other->GetOwningArena()) {
+  #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(S2S_RES_GAME_ITEM_UID_SEED* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetOwningArena() == other->GetOwningArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  S2S_RES_GAME_ITEM_UID_SEED* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
+    return CreateMaybeMessage<S2S_RES_GAME_ITEM_UID_SEED>(arena);
+  }
+  using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
+  void CopyFrom(const S2S_RES_GAME_ITEM_UID_SEED& from);
+  using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
+  void MergeFrom( const S2S_RES_GAME_ITEM_UID_SEED& from) {
+    S2S_RES_GAME_ITEM_UID_SEED::MergeImpl(*this, from);
+  }
+  private:
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg);
+  public:
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  uint8_t* _InternalSerialize(
+      uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
+
+  private:
+  void SharedCtor(::PROTOBUF_NAMESPACE_ID::Arena* arena, bool is_message_owned);
+  void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(S2S_RES_GAME_ITEM_UID_SEED* other);
+
+  private:
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "Protocol.S2S_RES_GAME_ITEM_UID_SEED";
+  }
+  protected:
+  explicit S2S_RES_GAME_ITEM_UID_SEED(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                       bool is_message_owned = false);
+  public:
+
+  static const ClassData _class_data_;
+  const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*GetClassData() const final;
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kNextUidFieldNumber = 2,
+    kSuccessFieldNumber = 1,
+  };
+  // uint64 next_uid = 2;
+  void clear_next_uid();
+  uint64_t next_uid() const;
+  void set_next_uid(uint64_t value);
+  private:
+  uint64_t _internal_next_uid() const;
+  void _internal_set_next_uid(uint64_t value);
+  public:
+
+  // bool success = 1;
+  void clear_success();
+  bool success() const;
+  void set_success(bool value);
+  private:
+  bool _internal_success() const;
+  void _internal_set_success(bool value);
+  public:
+
+  // @@protoc_insertion_point(class_scope:Protocol.S2S_RES_GAME_ITEM_UID_SEED)
+ private:
+  class _Internal;
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  struct Impl_ {
+    uint64_t next_uid_;
+    bool success_;
+    mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  };
+  union { Impl_ _impl_; };
+  friend struct ::TableStruct_Protocol_5fS2S_2eproto;
+};
 // ===================================================================
 
 
@@ -4029,9 +4314,61 @@ inline void S2S_RES_ITEM_CREATE::set_requestid(uint64_t value) {
   // @@protoc_insertion_point(field_set:Protocol.S2S_RES_ITEM_CREATE.requestId)
 }
 
+// -------------------------------------------------------------------
+
+// S2S_REQ_GAME_ITEM_UID_SEED
+
+// -------------------------------------------------------------------
+
+// S2S_RES_GAME_ITEM_UID_SEED
+
+// bool success = 1;
+inline void S2S_RES_GAME_ITEM_UID_SEED::clear_success() {
+  _impl_.success_ = false;
+}
+inline bool S2S_RES_GAME_ITEM_UID_SEED::_internal_success() const {
+  return _impl_.success_;
+}
+inline bool S2S_RES_GAME_ITEM_UID_SEED::success() const {
+  // @@protoc_insertion_point(field_get:Protocol.S2S_RES_GAME_ITEM_UID_SEED.success)
+  return _internal_success();
+}
+inline void S2S_RES_GAME_ITEM_UID_SEED::_internal_set_success(bool value) {
+  
+  _impl_.success_ = value;
+}
+inline void S2S_RES_GAME_ITEM_UID_SEED::set_success(bool value) {
+  _internal_set_success(value);
+  // @@protoc_insertion_point(field_set:Protocol.S2S_RES_GAME_ITEM_UID_SEED.success)
+}
+
+// uint64 next_uid = 2;
+inline void S2S_RES_GAME_ITEM_UID_SEED::clear_next_uid() {
+  _impl_.next_uid_ = uint64_t{0u};
+}
+inline uint64_t S2S_RES_GAME_ITEM_UID_SEED::_internal_next_uid() const {
+  return _impl_.next_uid_;
+}
+inline uint64_t S2S_RES_GAME_ITEM_UID_SEED::next_uid() const {
+  // @@protoc_insertion_point(field_get:Protocol.S2S_RES_GAME_ITEM_UID_SEED.next_uid)
+  return _internal_next_uid();
+}
+inline void S2S_RES_GAME_ITEM_UID_SEED::_internal_set_next_uid(uint64_t value) {
+  
+  _impl_.next_uid_ = value;
+}
+inline void S2S_RES_GAME_ITEM_UID_SEED::set_next_uid(uint64_t value) {
+  _internal_set_next_uid(value);
+  // @@protoc_insertion_point(field_set:Protocol.S2S_RES_GAME_ITEM_UID_SEED.next_uid)
+}
+
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------

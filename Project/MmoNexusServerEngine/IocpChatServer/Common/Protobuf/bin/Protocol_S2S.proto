@@ -133,3 +133,11 @@ message S2S_RES_ITEM_CREATE {
 }
 
 
+message S2S_REQ_GAME_ITEM_UID_SEED {
+  // 필요하면 serverId 같은 거 넣어도 되는데, 지금은 비워도 됨
+}
+
+message S2S_RES_GAME_ITEM_UID_SEED {
+  bool success = 1;
+  uint64 next_uid = 2; // DB에서 계산한 MAX(game_item_uid)+1
+}

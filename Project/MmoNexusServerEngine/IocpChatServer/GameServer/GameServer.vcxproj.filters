@@ -195,6 +195,7 @@
     <ClCompile Include="PersistenceService.cpp">
       <Filter>Persistence</Filter>
     </ClCompile>
+    <ClCompile Include="GameItemUidGen.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -309,6 +310,7 @@
     <ClInclude Include="PersistenceService.h">
       <Filter>Persistence</Filter>
     </ClInclude>
+    <ClInclude Include="GameItemUidGen.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ServerConfig.json" />

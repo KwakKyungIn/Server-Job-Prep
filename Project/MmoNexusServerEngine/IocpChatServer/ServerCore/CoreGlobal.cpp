@@ -74,6 +74,8 @@ CoreGlobal::CoreGlobal()
 	// 실제론 Config에서 읽어와야 하지만 지금은 하드코딩
 	GRedisManager->Connect("127.0.0.1", 6379);
 
+
+
 	std::cout << "CoreGlobal Initialized" << std::endl;
 }
 

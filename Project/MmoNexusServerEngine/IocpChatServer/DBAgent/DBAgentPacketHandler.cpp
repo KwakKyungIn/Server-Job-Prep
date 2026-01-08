@@ -137,7 +137,7 @@ bool DBAgentPacketHandler::Handle_S2S_REQ_ITEMS_LOAD(PacketSessionRef& session, 
 				SQLLEN len = 0;
 
 				// [Query]
-				if (conn->Prepare(L"SELECT item_uid, template_id, slot_index, count, is_equipped FROM ITEMS WHERE owner_id = ?"))
+				if (conn->Prepare(L"SELECT game_item_uid, template_id, slot_index, count, is_equipped FROM ITEMS WHERE owner_id = ?"))
 				{
 					conn->BindParam(1, SQL_C_SBIGINT, SQL_BIGINT, sizeof(int64), &dbOwnerId, &len);
 
@@ -477,7 +477,7 @@ bool DBAgentPacketHandler::Handle_S2S_REQ_SAVE_INVENTORY(PacketSessionRef& sessi
 
 					int64 dbItemUid = (int64)pkt.deleteditemuids(i);
 
-					if (!conn->Prepare(L"DELETE FROM ITEMS WHERE owner_id = ? AND item_uid = ?"))
+					if (!conn->Prepare(L"DELETE FROM ITEMS WHERE owner_id = ? AND game_item_uid = ?"))
 					{
 						ok = false; break;
 					}
@@ -507,7 +507,7 @@ bool DBAgentPacketHandler::Handle_S2S_REQ_SAVE_INVENTORY(PacketSessionRef& sessi
 					int32 count = it.count();
 					unsigned char equipped = it.isequipped() ? 1 : 0;
 
-					if (!conn->Prepare(L"UPDATE ITEMS SET template_id = ?, slot_index = ?, count = ?, is_equipped = ? WHERE owner_id = ? AND item_uid = ?"))
+					if (!conn->Prepare(L"UPDATE ITEMS SET template_id = ?, slot_index = ?, count = ?, is_equipped = ? WHERE owner_id = ? AND game_item_uid = ?"))
 					{
 						ok = false; break;
 					}
@@ -528,7 +528,27 @@ bool DBAgentPacketHandler::Handle_S2S_REQ_SAVE_INVENTORY(PacketSessionRef& sessi
 					int32 affected = conn->GetRowCount();
 					if (affected == 0)
 					{
-						ok = false; break;
+						conn->Unbind();
+
+						// game uid = it.itemuid() (이름은 itemuid지만 의미는 game_item_uid)
+						int64 gameItemUid = (int64)it.itemuid();
+
+						if (!conn->Prepare(L"INSERT INTO ITEMS (owner_id, game_item_uid, template_id, slot_index, count, is_equipped) VALUES (?, ?, ?, ?, ?, ?)"))
+						{
+							ok = false; break;
+						}
+
+						ok &= conn->BindParam(1, SQL_C_SBIGINT, SQL_BIGINT, sizeof(int64), &dbPlayerId, &len);
+						ok &= conn->BindParam(2, SQL_C_SBIGINT, SQL_BIGINT, sizeof(int64), &gameItemUid, &len);
+						ok &= conn->BindParam(3, SQL_C_SLONG, SQL_INTEGER, sizeof(int32), &templateId, &len);
+						ok &= conn->BindParam(4, SQL_C_SLONG, SQL_INTEGER, sizeof(int32), &slotIndex, &len);
+						ok &= conn->BindParam(5, SQL_C_SLONG, SQL_INTEGER, sizeof(int32), &count, &len);
+						ok &= conn->BindParam(6, SQL_C_BIT, SQL_BIT, sizeof(unsigned char), &equipped, &len);
+
+						if (!ok || !conn->Execute())
+						{
+							ok = false; break;
+						}
 					}
 				}
 			}
@@ -551,65 +571,44 @@ bool DBAgentPacketHandler::Handle_S2S_REQ_SAVE_INVENTORY(PacketSessionRef& sessi
 
 bool DBAgentPacketHandler::Handle_S2S_REQ_ITEM_CREATE(PacketSessionRef& session, Protocol::S2S_REQ_ITEM_CREATE& pkt)
 {
-	shared_ptr<GameSession> gameSession = static_pointer_cast<GameSession>(session);
+	
+	return true;
+}
+
+bool DBAgentPacketHandler::Handle_S2S_REQ_GAME_ITEM_UID_SEED(PacketSessionRef& session, Protocol::S2S_REQ_GAME_ITEM_UID_SEED& pkt)
+{
+	auto gameSession = static_pointer_cast<GameSession>(session);
 
 	gameSession->PushJob(ObjectPool<Job>::MakeShared([gameSession, pkt]()
 		{
 			DBConnection* conn = GDBConnectionPool->Pop();
-			if (conn == nullptr) return;
+			if (!conn) return;
 
-			Protocol::S2S_RES_ITEM_CREATE resPkt;
-			resPkt.set_success(false);
-			resPkt.set_playerid(pkt.playerid());
-			resPkt.set_templateid(pkt.templateid());
-			resPkt.set_slotindex(pkt.slotindex());
-			resPkt.set_count(pkt.count());
-			resPkt.set_isequipped(pkt.isequipped());
-			resPkt.set_requestid(pkt.requestid());
-
-			bool ok = true;
-			SQLLEN len = 0;
-
-			int64 ownerId = (int64)pkt.playerid();
-			int32 templateId = pkt.templateid();
-			int32 slotIndex = pkt.slotindex();
-			int32 count = pkt.count();
-			unsigned char equipped = pkt.isequipped() ? 1 : 0;
-
-			int64 outItemUid = 0;
-			SQLLEN outLen = 0;
+			Protocol::S2S_RES_GAME_ITEM_UID_SEED res;
+			res.set_success(false);
+			res.set_next_uid(0);
 
 			conn->Unbind();
 
-			if (conn->Prepare(L"INSERT INTO ITEMS (owner_id, template_id, slot_index, count, is_equipped) OUTPUT INSERTED.item_uid VALUES (?, ?, ?, ?, ?)"))
+			int64 nextUid = 0;
+			SQLLEN len = 0;
+
+			// 핵심 쿼리
+			// (ITEMS 비어있으면 1000000부터 시작하게 999999 + 1)
+			if (conn->Prepare(L"SELECT ISNULL(MAX(game_item_uid), 999999) + 1 AS next_uid FROM ITEMS"))
 			{
-				ok &= conn->BindParam(1, SQL_C_SBIGINT, SQL_BIGINT, sizeof(int64), &ownerId, &len);
-				ok &= conn->BindParam(2, SQL_C_SLONG, SQL_INTEGER, sizeof(int32), &templateId, &len);
-				ok &= conn->BindParam(3, SQL_C_SLONG, SQL_INTEGER, sizeof(int32), &slotIndex, &len);
-				ok &= conn->BindParam(4, SQL_C_SLONG, SQL_INTEGER, sizeof(int32), &count, &len);
-				ok &= conn->BindParam(5, SQL_C_BIT, SQL_BIT, sizeof(unsigned char), &equipped, &len);
+				conn->BindCol(1, SQL_C_SBIGINT, sizeof(int64), &nextUid, &len);
 
-				// OUTPUT 결과 바인딩
-				ok &= conn->BindCol(1, SQL_C_SBIGINT, sizeof(int64), &outItemUid, &outLen);
-
-				if (ok && conn->Execute())
+				if (conn->Execute() && conn->Fetch())
 				{
-					if (conn->Fetch())
-					{
-						resPkt.set_itemuid((uint64)outItemUid);
-						resPkt.set_success(true);
-					}
-					else ok = false;
+					res.set_success(true);
+					res.set_next_uid((uint64)nextUid);
 				}
-				else ok = false;
 			}
-			else ok = false;
-
-			if (!ok) resPkt.set_success(false);
 
 			GDBConnectionPool->Push(conn);
 
-			auto sendBuffer = DBAgentPacketHandler::MakeSendBuffer(resPkt);
+			auto sendBuffer = DBAgentPacketHandler::MakeSendBuffer(res);
 			gameSession->Send(sendBuffer);
 		}));
 

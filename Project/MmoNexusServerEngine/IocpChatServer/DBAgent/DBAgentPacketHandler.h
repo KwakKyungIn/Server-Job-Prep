@@ -25,6 +25,8 @@ public:
 		PKT_S2S_RES_SAVE_INVENTORY = 2013,
 		PKT_S2S_REQ_ITEM_CREATE = 2014,
 		PKT_S2S_RES_ITEM_CREATE = 2015,
+		PKT_S2S_REQ_GAME_ITEM_UID_SEED = 2016,
+		PKT_S2S_RES_GAME_ITEM_UID_SEED = 2017,
 	};
 
 	static void Init()
@@ -39,6 +41,7 @@ public:
 		GPacketHandler[PKT_S2S_REQ_SAVE_PLAYER_CORE] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S2S_REQ_SAVE_PLAYER_CORE>(Handle_S2S_REQ_SAVE_PLAYER_CORE, session, buffer, len); };
 		GPacketHandler[PKT_S2S_REQ_SAVE_INVENTORY] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S2S_REQ_SAVE_INVENTORY>(Handle_S2S_REQ_SAVE_INVENTORY, session, buffer, len); };
 		GPacketHandler[PKT_S2S_REQ_ITEM_CREATE] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S2S_REQ_ITEM_CREATE>(Handle_S2S_REQ_ITEM_CREATE, session, buffer, len); };
+		GPacketHandler[PKT_S2S_REQ_GAME_ITEM_UID_SEED] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S2S_REQ_GAME_ITEM_UID_SEED>(Handle_S2S_REQ_GAME_ITEM_UID_SEED, session, buffer, len); };
 	}
 
 	static bool HandlePacket(PacketSessionRef& session, BYTE* buffer, int32 len)
@@ -54,6 +57,7 @@ public:
 	static SendBufferRef MakeSendBuffer(Protocol::S2S_RES_SAVE_PLAYER_CORE& pkt) { return MakeSendBuffer(pkt, PKT_S2S_RES_SAVE_PLAYER_CORE); }
 	static SendBufferRef MakeSendBuffer(Protocol::S2S_RES_SAVE_INVENTORY& pkt) { return MakeSendBuffer(pkt, PKT_S2S_RES_SAVE_INVENTORY); }
 	static SendBufferRef MakeSendBuffer(Protocol::S2S_RES_ITEM_CREATE& pkt) { return MakeSendBuffer(pkt, PKT_S2S_RES_ITEM_CREATE); }
+	static SendBufferRef MakeSendBuffer(Protocol::S2S_RES_GAME_ITEM_UID_SEED& pkt) { return MakeSendBuffer(pkt, PKT_S2S_RES_GAME_ITEM_UID_SEED); }
 
 public:
 	static PacketHandlerFunc GPacketHandler[UINT16_MAX];
@@ -66,6 +70,7 @@ public:
 	static bool Handle_S2S_REQ_SAVE_PLAYER_CORE(PacketSessionRef& session, Protocol::S2S_REQ_SAVE_PLAYER_CORE& pkt);
 	static bool Handle_S2S_REQ_SAVE_INVENTORY(PacketSessionRef& session, Protocol::S2S_REQ_SAVE_INVENTORY& pkt);
 	static bool Handle_S2S_REQ_ITEM_CREATE(PacketSessionRef& session, Protocol::S2S_REQ_ITEM_CREATE& pkt);
+	static bool Handle_S2S_REQ_GAME_ITEM_UID_SEED(PacketSessionRef& session, Protocol::S2S_REQ_GAME_ITEM_UID_SEED& pkt);
 
 private:
 	template<typename PacketType, typename ProcessFunc>

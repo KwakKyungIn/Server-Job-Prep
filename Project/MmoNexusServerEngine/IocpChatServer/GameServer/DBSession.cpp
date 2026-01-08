@@ -15,6 +15,9 @@ void DBSession::OnConnected()
 	auto sendBuffer = S2SPacketHandler::MakeSendBuffer(pkt);
 	Send(sendBuffer);
 
+	Protocol::S2S_REQ_GAME_ITEM_UID_SEED req;
+	Send(S2SPacketHandler::MakeSendBuffer(req));
+
 	std::cout << "🚀 [GameServer] Request Loading Game Data..." << std::endl;
 }
 

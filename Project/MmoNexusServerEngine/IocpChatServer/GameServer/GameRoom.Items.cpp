@@ -6,8 +6,8 @@
 #include "DataManager.h"
 #include "RoomManager.h"
 #include "GameRoom.Net.h"
-
-static std::atomic<uint64> GItemUidGen{ 1000000 }; // 서버 발급 itemUid (DB가 identity면 나중에 정책 바꿔야 함)
+#include "PersistenceService.h"
+#include "GameItemUidGen.h"
 
 static int32 FindEmptySlot(const std::vector<Protocol::ItemInfo>& items, int32 maxSlots)
 {
@@ -94,6 +94,15 @@ void GameRoom::HandleUseItem(PlayerSessionRef session, PlayerRef player, Protoco
 	const int32 newHp = min(stat->hp() + heal, stat->maxhp());
 	stat->set_hp(newHp);
 
+	// ===== Persistence (HP dirty) =====
+	Persistence::PersistenceService::I().UpdatePlayerCore(
+		playerId,
+		stat->level(),
+		stat->hp(),
+		stat->totalexp(),
+		true
+	);
+
 	// 2) 아이템 카운트 감소
 	it->set_count(it->count() - 1);
 
@@ -103,6 +112,9 @@ void GameRoom::HandleUseItem(PlayerSessionRef session, PlayerRef player, Protoco
 		const uint64 removedUid = it->itemuid();
 		items.erase(it);
 
+		// ===== Persistence (item removed tombstone + inv dirty) =====
+		Persistence::PersistenceService::I().RemoveInventoryItem(playerId, removedUid, true);
+
 		Protocol::S_REMOVE_ITEM rm;
 		rm.set_itemuid(removedUid);
 		session->Send(ClientPacketHandler::MakeSendBuffer(rm));
@@ -111,6 +123,17 @@ void GameRoom::HandleUseItem(PlayerSessionRef session, PlayerRef player, Protoco
 	{
 		Protocol::S_CHANGE_ITEM ch;
 		ch.mutable_item()->CopyFrom(*it);
+
+		Persistence::PersistenceService::I().UpdateInventoryItem(
+			playerId,
+			it->itemuid(),
+			it->templateid(),
+			it->slot(),
+			it->count(),
+			it->isequipped(),
+			true
+		);
+
 		session->Send(ClientPacketHandler::MakeSendBuffer(ch));
 	}
 
@@ -158,6 +181,16 @@ void GameRoom::HandleEquipItemById(PlayerSessionRef session, uint64 playerId, Pr
 		return;
 
 	targetItem->set_isequipped(pkt.equip());
+
+	Persistence::PersistenceService::I().UpdateInventoryItem(
+		playerId,
+		targetItem->itemuid(),
+		targetItem->templateid(),
+		targetItem->slot(),
+		targetItem->count(),
+		targetItem->isequipped(),
+		true
+	);
 	player->RefreshStats();
 
 	// 장착 결과
@@ -199,8 +232,20 @@ void GameRoom::HandleMonsterDead(std::shared_ptr<Creature> attacker, MonsterRef 
 	// 2) 경험치 지급
 	if (killer)
 	{
-		const int64 exp = 10; // TODO: 몬스터 템플릿에서 읽기
+		const int64 exp = 1000; // TODO: 몬스터 템플릿에서 읽기
 		AddExpAndLevelUp(killer, exp);
+
+		auto* stInfo = killer->GetStatInfo();
+		if (stInfo)
+		{
+			Persistence::PersistenceService::I().UpdatePlayerCore(
+				killer->GetPlayerId(),
+				stInfo->level(),
+				stInfo->hp(),
+				stInfo->totalexp(),
+				true
+			);
+		}
 
 		Protocol::S_CHANGE_STAT st;
 		st.mutable_statinfo()->CopyFrom(*killer->GetStatInfo());
@@ -208,39 +253,82 @@ void GameRoom::HandleMonsterDead(std::shared_ptr<Creature> attacker, MonsterRef 
 	}
 
 	// 3) 드랍(루팅) = “즉시 인벤 지급” 방식 (바닥 루프 만들기용)
+	// 3) 드랍(루팅) = “즉시 인벤 지급” 방식 (저장 테스트용)
 	if (killer)
 	{
-		// TODO: 드랍 테이블 생기면 여기 교체
-		const int32 dropTemplateId = 103; // 예: 포션 템플릿 ID (네 ITEM_TEMPLATE에 맞춰서 바꿔)
+		const int32 dropTemplateId = 3001;
+		const int32 dropCount = 10;
 
 		const Protocol::ItemTemplateInfo* tpl = DataManager::Instance()->GetItemTemplate(dropTemplateId);
-		if (tpl && static_cast<Protocol::ItemType>(tpl->itemtype()) != Protocol::ITEM_TYPE_NONE)
+		if (tpl == nullptr || static_cast<Protocol::ItemType>(tpl->itemtype()) == Protocol::ITEM_TYPE_NONE)
+		{
+			// 템플릿 없으면 그냥 종료
+		}
+		else
 		{
 			auto& items = killer->GetItems();
-			const int32 maxSlots = 24; // 너 인벤 고정이면 그대로
-			int32 emptySlot = FindEmptySlot(items, maxSlots);
+			const int32 maxSlots = 24;
 
-			if (emptySlot >= 0)
+			// 1) 같은 템플릿 아이템 있으면 스택 증가(인벤 꽉 차도 테스트 가능)
+			auto stackIt = std::find_if(items.begin(), items.end(),
+				[&](const Protocol::ItemInfo& it)
+				{
+					return it.templateid() == dropTemplateId && it.isequipped() == false;
+				});
+
+			if (stackIt != items.end())
 			{
-				Protocol::ItemInfo newItem;
-				newItem.set_itemuid(GItemUidGen.fetch_add(1));
-				newItem.set_templateid(dropTemplateId);
-				newItem.set_count(1);
-				newItem.set_slot(emptySlot);
-				newItem.set_isequipped(false);
+				stackIt->set_count(stackIt->count() + dropCount);
 
-				items.push_back(newItem);
+				// Redis dirty
+				Persistence::PersistenceService::I().UpdateInventoryItem(
+					killer->GetPlayerId(),
+					stackIt->itemuid(),     // game_item_uid 의미
+					stackIt->templateid(),
+					stackIt->slot(),
+					stackIt->count(),
+					stackIt->isequipped(),
+					true
+				);
 
 				Protocol::S_CHANGE_ITEM ch;
-				ch.mutable_item()->CopyFrom(newItem);
+				ch.mutable_item()->CopyFrom(*stackIt);
 				SendToPlayer(killer->GetPlayerId(), ClientPacketHandler::MakeSendBuffer(ch));
-
-
-				// TODO: DB 저장(S2S INSERT ITEMS)
 			}
 			else
 			{
-				// 인벤 꽉 참: 지금은 그냥 드랍 폐기 or TODO: 월드 드랍 오브젝트
+				// 2) 없으면 새 슬롯 생성
+				int32 emptySlot = FindEmptySlot(items, maxSlots);
+				if (emptySlot >= 0)
+				{
+					Protocol::ItemInfo newItem;
+					newItem.set_itemuid(GameItemUidGen::Alloc()); // game_item_uid
+					newItem.set_templateid(dropTemplateId);
+					newItem.set_count(dropCount);
+					newItem.set_slot(emptySlot);
+					newItem.set_isequipped(false);
+
+					items.push_back(newItem);
+
+					// Redis dirty
+					Persistence::PersistenceService::I().UpdateInventoryItem(
+						killer->GetPlayerId(),
+						newItem.itemuid(),
+						newItem.templateid(),
+						newItem.slot(),
+						newItem.count(),
+						newItem.isequipped(),
+						true
+					);
+
+					Protocol::S_CHANGE_ITEM ch;
+					ch.mutable_item()->CopyFrom(newItem);
+					SendToPlayer(killer->GetPlayerId(), ClientPacketHandler::MakeSendBuffer(ch));
+				}
+				else
+				{
+					// 인벤 꽉 찼으면 그냥 드랍 폐기(테스트니까 OK)
+				}
 			}
 		}
 	}

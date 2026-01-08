@@ -207,6 +207,7 @@
     <ClCompile Include="Enum.pb.cc">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="GameItemUidGen.cpp" />
     <ClCompile Include="GameMap.cpp" />
     <ClCompile Include="GameRoom.AOI.cpp" />
     <ClCompile Include="GameRoom.AOI.v2.cpp" />
@@ -259,6 +260,7 @@
     <ClInclude Include="DBSession.h" />
     <ClInclude Include="DungeonUtils.h" />
     <ClInclude Include="Enum.pb.h" />
+    <ClInclude Include="GameItemUidGen.h" />
     <ClInclude Include="GameMap.h" />
     <ClInclude Include="GameRoom.h" />
     <ClInclude Include="GameRoom.Net.h" />

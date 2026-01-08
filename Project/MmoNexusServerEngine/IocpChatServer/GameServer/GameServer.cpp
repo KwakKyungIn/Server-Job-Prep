@@ -15,13 +15,18 @@
 #include "DataManager.h"
 #include "LobbyRoom.h"
 #include <fstream> 
+#include "PersistenceService.h"
+#include "AutoCommitService.h"
+
 
 
 
 // [External Reference] ClientPacketHandler.cpp에 있는 그 놈 가져오기
 //extern shared_ptr<GameRoom> GTestRoom;
 extern shared_ptr<LoginSession> G_LoginSession;
+extern std::shared_ptr<PacketSession> G_DBSession;
 extern std::atomic<bool> GIsRunning; // 전역 변수 참조
+extern RedisManager* GRedisManager;
 
 
 // [Ctrl+C 핸들러]
@@ -236,6 +241,28 @@ int main()
 	GRoomManager = MakeShared<RoomManager>();
 	GLobbyRoom = MakeShared<LobbyRoom>();
 
+	Persistence::PersistenceService::I().Init(GRedisManager);
+
+	Persistence::AutoCommitService::I().Init(
+		GRedisManager,
+		[](const Protocol::S2S_REQ_SAVE_PLAYER_CORE& pkt)
+		{
+			if (!G_DBSession) return;
+			auto tmp = pkt;
+			auto sb = S2SPacketHandler::MakeSendBuffer(tmp);
+			G_DBSession->Send(sb);
+		},
+		[](const Protocol::S2S_REQ_SAVE_INVENTORY& pkt)
+		{
+			if (!G_DBSession) return;
+			auto tmp = pkt;
+			auto sb = S2SPacketHandler::MakeSendBuffer(tmp);
+			G_DBSession->Send(sb);
+		}
+	);
+
+
+	Persistence::AutoCommitService::I().Start();
 
 	GThreadManager->Launch([=]() { ConsoleThread(); });
 
