@@ -1,4 +1,4 @@
-using TMPro;
+﻿using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
@@ -48,16 +48,22 @@ public class UI_ItemSlot : MonoBehaviour, IPointerClickHandler
             return;
         }
 
-        if (icon) icon.gameObject.SetActive(true);
-        if (countText) countText.text = item.Count > 1 ? item.Count.ToString() : "";
-        if (equipMark) equipMark.gameObject.SetActive(item.IsEquipped);
-
-        // �ӽ� ������(��)
         if (icon)
         {
-            if (item.TemplateId == 101) icon.color = Color.red;
-            else if (item.TemplateId == 102) icon.color = Color.blue;
-            else icon.color = Color.white;
+            icon.gameObject.SetActive(true);
+
+            // ✅ 진짜 아이콘 적용
+            icon.sprite = ItemIconDB.Get(item.TemplateId);
+
+            // sprite가 없으면 아예 숨기고 싶으면 이거
+            // icon.gameObject.SetActive(icon.sprite != null);
+
+            // 색은 기본 흰색으로 (원본 스프라이트 컬러 유지)
+            icon.color = Color.white;
         }
+
+        if (countText) countText.text = item.Count > 1 ? item.Count.ToString() : "";
+        if (equipMark) equipMark.gameObject.SetActive(item.IsEquipped);
     }
+
 }

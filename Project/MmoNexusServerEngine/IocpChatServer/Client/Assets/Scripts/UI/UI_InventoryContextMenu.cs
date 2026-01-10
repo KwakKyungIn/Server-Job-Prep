@@ -7,10 +7,18 @@ using Protocol;
 public class UI_InventoryContextMenu : MonoBehaviour
 {
     [Header("Wiring")]
-    public RectTransform panel;       // 보통 이 스크립트가 붙은 오브젝트 RectTransform 넣어도 됨
+    public RectTransform panel; // 보통 이 스크립트가 붙은 오브젝트 RectTransform 넣어도 됨
+
+    [Header("Buttons")]
     public Button equipButton;
-    public TMP_Text equipLabel;
+    public Button unequipButton;
+    public Button useButton;
     public Button detailsButton;
+
+    [Header("Labels (Optional)")]
+    public TMP_Text equipLabel;
+    public TMP_Text unequipLabel;
+    public TMP_Text useLabel;
 
     public bool IsOpen => gameObject.activeSelf;
     public int SlotIndex { get; private set; } = -1;
@@ -32,7 +40,6 @@ public class UI_InventoryContextMenu : MonoBehaviour
         Hide();
     }
 
-    // 비활성 시작/재부모 대비: Show에서 늦게라도 잡기
     bool EnsureRects()
     {
         if (_canvasRect == null)
@@ -73,42 +80,94 @@ public class UI_InventoryContextMenu : MonoBehaviour
         }
     }
 
-    public void Show(int slotIndex, ItemInfo item, Vector2 screenPos, Action onEquip, Action onDetails)
+    static bool IsConsumable(ItemInfo item)
+    {
+        if (item == null) return false;
+        int tid = item.TemplateId;
+        return (tid >= 3000 && tid <= 3999); // "3000대는 전부 사용아이템"
+    }
+
+    public void Show(
+        int slotIndex,
+        ItemInfo item,
+        Vector2 screenPos,
+        Action onEquip,
+        Action onUnequip,
+        Action onUse,
+        Action onDetails)
     {
         if (!EnsureRects())
             return;
 
         SlotIndex = slotIndex;
 
-        // 라벨
-        if (equipLabel)
-            equipLabel.text = item.IsEquipped ? "Unequip" : "Equip";
+        bool consumable = IsConsumable(item);
+        bool equipped = item != null && item.IsEquipped;
 
-        // 버튼 리스너
+        // 라벨(선택)
+        if (equipLabel) equipLabel.text = "Equip";
+        if (unequipLabel) unequipLabel.text = "Unequip";
+        if (useLabel) useLabel.text = "Use";
+
+        // 버튼 노출 규칙
+        // - 사용아이템(3000대): Use만
+        // - 장비아이템(그 외): Equip/Unequip 중 하나만
+        if (equipButton) equipButton.gameObject.SetActive(!consumable && !equipped);
+        if (unequipButton) unequipButton.gameObject.SetActive(!consumable && equipped);
+        if (useButton) useButton.gameObject.SetActive(consumable);
+        if (detailsButton) detailsButton.gameObject.SetActive(true);
+
+        // 리스너 세팅
         if (equipButton)
         {
             equipButton.onClick.RemoveAllListeners();
-            equipButton.onClick.AddListener(() => onEquip?.Invoke());
+            equipButton.onClick.AddListener(() =>
+            {
+                onEquip?.Invoke();
+                Hide();
+            });
+        }
+
+        if (unequipButton)
+        {
+            unequipButton.onClick.RemoveAllListeners();
+            unequipButton.onClick.AddListener(() =>
+            {
+                onUnequip?.Invoke();
+                Hide();
+            });
+        }
+
+        if (useButton)
+        {
+            useButton.onClick.RemoveAllListeners();
+            useButton.onClick.AddListener(() =>
+            {
+                onUse?.Invoke();
+                Hide();
+            });
         }
 
         if (detailsButton)
         {
             detailsButton.onClick.RemoveAllListeners();
-            detailsButton.onClick.AddListener(() => onDetails?.Invoke());
+            detailsButton.onClick.AddListener(() =>
+            {
+                onDetails?.Invoke();
+                // 디테일 열면 메뉴는 닫는 게 보통 UX 좋음 (원하면 주석)
+                Hide();
+            });
         }
 
         gameObject.SetActive(true);
 
-        // ✅ 핵심 FIX:
-        // ScreenPos -> "panel의 부모 RectTransform" 기준 localPos로 변환해야 anchoredPosition이 안 튄다.
+        // ScreenPos -> 부모 Rect 기준 localPos로 변환
         var cam = (_canvas != null && _canvas.renderMode != RenderMode.ScreenSpaceOverlay) ? _canvas.worldCamera : null;
 
         if (RectTransformUtility.ScreenPointToLocalPointInRectangle(_parentRect, screenPos, cam, out Vector2 localPos))
-        {
             panel.anchoredPosition = ClampToParent(localPos);
-        }
 
-        _openFrame = Time.frameCount; // 열린 프레임엔 즉시 닫히지 않게
+        _openFrame = Time.frameCount;
     }
 
     Vector2 ClampToParent(Vector2 anchoredPos)
@@ -119,8 +178,6 @@ public class UI_InventoryContextMenu : MonoBehaviour
         Vector2 panelSize = panel.rect.size;
         Vector2 pivot = panel.pivot;
 
-        // parent pivot이 (0.5,0.5)라고 가정(대부분 UI 패널은 이거임)
-        // pivot 고려해서 "메뉴가 화면 밖으로 나가지 않게" 클램프
         float minX = -parentSize.x * 0.5f + panelSize.x * pivot.x;
         float maxX = parentSize.x * 0.5f - panelSize.x * (1f - pivot.x);
 
@@ -137,6 +194,8 @@ public class UI_InventoryContextMenu : MonoBehaviour
         SlotIndex = -1;
 
         if (equipButton) equipButton.onClick.RemoveAllListeners();
+        if (unequipButton) unequipButton.onClick.RemoveAllListeners();
+        if (useButton) useButton.onClick.RemoveAllListeners();
         if (detailsButton) detailsButton.onClick.RemoveAllListeners();
 
         gameObject.SetActive(false);

@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Google.Protobuf.Collections;
@@ -7,68 +7,59 @@ using UnityEngine;
 
 public class InventoryManager
 {
-    // [Singleton] ¾îµğ¼­µç Á¢±Ù °¡´ÉÇÏ°Ô
     private static InventoryManager _instance = new InventoryManager();
     public static InventoryManager Instance { get { return _instance; } }
 
-    // [Data] ½½·Ô ¹øÈ£(Int)¸¦ Key·Î »ç¿ëÇÏ¿© ºü¸¥ °Ë»ö Áö¿ø
-    // Listº¸´Ù Dictionary°¡ Æ¯Á¤ ½½·Ô ºñ¿ì±â/Ã¤¿ì±â¿¡ ÈÎ¾À È¿À²ÀûÀÌ´Ù.
     private Dictionary<int, ItemInfo> _items = new Dictionary<int, ItemInfo>();
 
-    // [Event] ÀÎº¥Åä¸®°¡ º¯ÇßÀ» ¶§ UI¿¡°Ô "±×·Á¶ó"¶ó°í ¾Ë¸®´Â ½ÅÈ£
     public Action OnInventoryUpdated;
 
     public void Init()
     {
-        // PacketHandler°¡ ¹ŞÀº ¼Ò½ÄÀ» ³»°¡ °¡·ÎÃ¤¼­ Ã³¸®ÇÑ´Ù.
         PacketHandler.OnItemList += HandleItemList;
         PacketHandler.OnUpdateItem += HandleUpdateItem;
         PacketHandler.OnRemoveItem += HandleRemoveItem;
 
+        // âœ… [ADD] Equip/Unequip ê²°ê³¼ë„ ì¸ë²¤ì— ë°˜ì˜í•´ì•¼ UIê°€ ë°”ë€œ
+        PacketHandler.OnEquipItem += HandleEquipItem;
+
         Debug.Log("[InventoryManager] Initialized & Listening...");
     }
 
-    // 1. ÀüÃ¼ ¸®½ºÆ® ·Îµù (·Î±×ÀÎ Á÷ÈÄ)
+    // (ì„ íƒ) ë„¤ê°€ ë”°ë¡œ Dispose/Reset ë§Œë“¤ì–´ë‘ë©´ ì—¬ê¸°ì„œ í•´ì œí•´ë¼
+    public void Shutdown()
+    {
+        PacketHandler.OnItemList -= HandleItemList;
+        PacketHandler.OnUpdateItem -= HandleUpdateItem;
+        PacketHandler.OnRemoveItem -= HandleRemoveItem;
+
+        // âœ… [ADD]
+        PacketHandler.OnEquipItem -= HandleEquipItem;
+    }
+
     private void HandleItemList(RepeatedField<ItemInfo> items)
     {
         _items.Clear();
 
         foreach (ItemInfo item in items)
-        {
-            _items.Add(item.Slot, item);
-        }
+            _items[item.Slot] = item;
 
         Debug.Log($"[InventoryManager] Full Load Complete. Count: {_items.Count}");
-
-        // UI °»½Å ¾Ë¸²
         OnInventoryUpdated?.Invoke();
     }
 
-    // 2. ¾ÆÀÌÅÛ 1°³ º¯°æ/Ãß°¡ (È¹µæ, ÀÌµ¿, »ç¿ë µî)
     private void HandleUpdateItem(ItemInfo item)
     {
-        // ÀÌ¹Ì ÇØ´ç ½½·Ô¿¡ ¹«¾ğ°¡ ÀÖ´Ù¸é µ¤¾î¾²±â, ¾øÀ¸¸é Ãß°¡
-        if (_items.ContainsKey(item.Slot))
-        {
-            _items[item.Slot] = item;
-        }
-        else
-        {
-            _items.Add(item.Slot, item);
-        }
+        _items[item.Slot] = item;
 
-        Debug.Log($"[InventoryManager] Updated Slot {item.Slot} ({item.TemplateId})");
+        Debug.Log($"[InventoryManager] Updated Slot {item.Slot} ({item.TemplateId}) equipped={item.IsEquipped}");
         OnInventoryUpdated?.Invoke();
     }
 
-    // 3. ¾ÆÀÌÅÛ »èÁ¦ (¹ö¸®±â, ´Ù ¾¸)
     private void HandleRemoveItem(ulong itemUid)
     {
-        // UID·Î ½½·ÔÀ» Ã£¾Æ¾ß ÇÔ (¼­¹ö°¡ UID¸¸ ÁáÀ¸´Ï±î)
-        // Linq¸¦ ½á¼­ UID°¡ °°Àº ³ğÀÇ Key(Slot)¸¦ Ã£´Â´Ù.
-        var itemInSlot = _items.FirstOrDefault(x => x.Value.ItemUid == itemUid);
+        var itemInSlot = _items.FirstOrDefault(x => x.Value != null && x.Value.ItemUid == itemUid);
 
-        // KeyValuePair´Â struct¶ó null Ã¼Å© ´ë½Å Key À¯È¿¼º Ã¼Å©
         if (itemInSlot.Value != null)
         {
             _items.Remove(itemInSlot.Key);
@@ -77,11 +68,38 @@ public class InventoryManager
         }
     }
 
-    // ============================================================
-    // [Helper Methods] UI³ª ·ÎÁ÷¿¡¼­ °¡Á®´Ù ¾µ ÇÔ¼öµé
-    // ============================================================
+    // âœ… [NEW] ì„œë²„ê°€ ë³´ë‚´ëŠ” S_EQUIP_ITEMì„ ì¸ë²¤ ìºì‹œì— ë°˜ì˜
+    private void HandleEquipItem(S_EQUIP_ITEM pkt)
+    {
+        // ì„œë²„ê°€ slotIndexë„ ì£¼ë‹ˆê¹Œ ìš°ì„  ê·¸ ìŠ¬ë¡¯ì„ ì‹ ë¢°
+        if (_items.TryGetValue(pkt.SlotIndex, out ItemInfo item) && item != null && item.ItemUid == pkt.ItemUid)
+        {
+            item.IsEquipped = pkt.Equipped;     // âœ… í•µì‹¬
+            _items[pkt.SlotIndex] = item;       // (ItemInfoê°€ classë¼ë©´ ì—†ì–´ë„ ë˜ì§€ë§Œ ì•ˆì „í•˜ê²Œ ê°±ì‹ )
 
-    // Æ¯Á¤ ½½·Ô¿¡ ¾ÆÀÌÅÛÀÌ ÀÖ³Ä?
+            Debug.Log($"[InventoryManager] Equip Updated (by slot) slot={pkt.SlotIndex} uid={pkt.ItemUid} equipped={pkt.Equipped}");
+            OnInventoryUpdated?.Invoke();
+            return;
+        }
+
+        // ìŠ¬ë¡¯ì´ ë‹¤ë¥´ê±°ë‚˜(í´ë¼/ì„œë²„ ë¶ˆì¼ì¹˜), slotì— ë‹¤ë¥¸ ì•„ì´í…œì´ ìˆìœ¼ë©´ UIDë¡œ í•œë²ˆ ë” ì°¾ëŠ”ë‹¤
+        var found = _items.FirstOrDefault(x => x.Value != null && x.Value.ItemUid == pkt.ItemUid);
+        if (found.Value != null)
+        {
+            found.Value.IsEquipped = pkt.Equipped;
+            _items[found.Key] = found.Value;
+
+            Debug.Log($"[InventoryManager] Equip Updated (by uid) slot={found.Key} uid={pkt.ItemUid} equipped={pkt.Equipped}");
+            OnInventoryUpdated?.Invoke();
+            return;
+        }
+
+        // ëª» ì°¾ìœ¼ë©´ ë¡œê·¸ë§Œ (ì¸ë²¤/íŒ¨í‚· ìˆœì„œ ë¬¸ì œì¼ ìˆ˜ ìˆìŒ)
+        Debug.LogWarning($"[InventoryManager] EquipItem received but item not found. uid={pkt.ItemUid} slotIndex={pkt.SlotIndex}");
+    }
+
+    // ================= Helper =================
+
     public ItemInfo GetItem(int slot)
     {
         if (_items.TryGetValue(slot, out ItemInfo item))
@@ -89,16 +107,14 @@ public class InventoryManager
         return null;
     }
 
-    // ÀüÃ¼ ¾ÆÀÌÅÛ ³»³ö (UI°¡ ·çÇÁ µ¹¸± ¶§ »ç¿ë)
     public Dictionary<int, ItemInfo> GetAllItems()
     {
         return _items;
     }
 
-    // ºó ½½·Ô Ã£±â (È¤½Ã Å¬¶ó¿¡¼­ ¿¹ÃøÇØ¼­ ³ÖÀ» ¶§ ÇÊ¿ä)
     public int GetEmptySlot()
     {
-        for (int i = 0; i < 20; i++) // °¡¹æ Å©±â 20Ä­ °¡Á¤
+        for (int i = 0; i < 20; i++)
         {
             if (!_items.ContainsKey(i))
                 return i;

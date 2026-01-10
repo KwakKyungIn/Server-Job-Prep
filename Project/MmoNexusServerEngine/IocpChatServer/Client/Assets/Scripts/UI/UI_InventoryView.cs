@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+ï»¿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -14,7 +14,7 @@ public class UI_InventoryView : MonoBehaviour
     [Header("Context Menu")]
     public UI_InventoryContextMenu contextMenu;
 
-    [Header("Detail Popup (Details ´­·¶À» ¶§¸¸ ÄÑÁü)")]
+    [Header("Detail Popup (Details ëˆŒë €ì„ ë•Œë§Œ ì¼œì§)")]
     public GameObject detailPopupRoot;
     public Image detailIcon;
     public TMP_Text detailName;
@@ -27,7 +27,6 @@ public class UI_InventoryView : MonoBehaviour
 
     void Start()
     {
-        // ½½·Ô »ı¼º
         for (int i = 0; i < slotCount; i++)
         {
             var slot = Instantiate(slotPrefab, slotRoot);
@@ -67,7 +66,6 @@ public class UI_InventoryView : MonoBehaviour
             _slots[i].SetSelected(i == _selectedSlot);
         }
 
-        // ¼±ÅÃµÈ ½½·ÔÀÌ ºñ¾úÀ¸¸é ¼±ÅÃ ÇØÁ¦
         if (_selectedSlot >= 0 && InventoryManager.Instance.GetItem(_selectedSlot) == null)
         {
             _selectedSlot = -1;
@@ -75,22 +73,18 @@ public class UI_InventoryView : MonoBehaviour
                 _slots[i].SetSelected(false);
         }
 
-        // ¸Ş´º°¡ ¶°ÀÖ´Âµ¥ ÇØ´ç ½½·ÔÀÌ ºñ¾î¹ö¸®¸é ´İ±â
         if (contextMenu && contextMenu.IsOpen)
         {
             if (InventoryManager.Instance.GetItem(contextMenu.SlotIndex) == null)
                 contextMenu.Hide();
         }
 
-        // µğÅ×ÀÏ ÆË¾÷ÀÌ ¶°ÀÖ´Âµ¥ ¾ÆÀÌÅÛÀÌ »ç¶óÁö¸é ´İ±â
         if (detailPopupRoot && detailPopupRoot.activeSelf)
         {
             if (_detailSlot < 0 || InventoryManager.Instance.GetItem(_detailSlot) == null)
                 CloseDetail();
         }
     }
-
-    // ========== Slot Events ==========
 
     public void OnSlotLeftClick(int slotIndex)
     {
@@ -99,7 +93,6 @@ public class UI_InventoryView : MonoBehaviour
         for (int i = 0; i < _slots.Count; i++)
             _slots[i].SetSelected(i == _selectedSlot);
 
-        // UX: ÁÂÅ¬¸¯ÇÏ¸é ¸Ş´º´Â ´İ¾ÆÁÜ
         if (contextMenu && contextMenu.IsOpen)
             contextMenu.Hide();
     }
@@ -123,23 +116,23 @@ public class UI_InventoryView : MonoBehaviour
             slotIndex,
             item,
             screenPos,
-            onEquip: () => RequestEquipToggle(slotIndex),
+            onEquip: () => RequestEquip(slotIndex, true),
+            onUnequip: () => RequestEquip(slotIndex, false),
+            onUse: () => RequestUseItem(slotIndex),
             onDetails: () => OpenDetail(slotIndex)
         );
     }
 
-    // ========== Actions ==========
+    // ===================== Actions =====================
 
-    void RequestEquipToggle(int slotIndex)
+    void RequestEquip(int slotIndex, bool equip)
     {
         var item = InventoryManager.Instance.GetItem(slotIndex);
         if (item == null) return;
 
-        // ÇÊ¿äÇÏ¸é ÀüÈ¯ Áß Â÷´Ü
         if (NetworkManager.Instance != null && NetworkManager.Instance.IsMapChanging)
         {
-            Debug.Log("[UI] Equip blocked during map change.");
-            if (contextMenu) contextMenu.Hide();
+            Debug.Log("[UI] Equip/Unequip blocked during map change.");
             return;
         }
 
@@ -147,12 +140,33 @@ public class UI_InventoryView : MonoBehaviour
         {
             ItemUid = item.ItemUid,
             SlotIndex = item.Slot,
-            Equip = !item.IsEquipped
+            Equip = equip
         };
 
         NetworkManager.Instance.Send(pkt, (ushort)PacketManager.MsgId.C_EQUIP_ITEM);
+    }
 
-        if (contextMenu) contextMenu.Hide();
+    void RequestUseItem(int slotIndex)
+    {
+        var item = InventoryManager.Instance.GetItem(slotIndex);
+        if (item == null) return;
+
+        if (NetworkManager.Instance != null && NetworkManager.Instance.IsMapChanging)
+        {
+            Debug.Log("[UI] Use blocked during map change.");
+            return;
+        }
+
+        // âœ… Protocol.proto ê¸°ì¤€: C_USE_ITEMì€ itemUidë§Œ ë³´ëƒ„
+        C_USE_ITEM pkt = new C_USE_ITEM
+        {
+            ItemUid = item.ItemUid
+        };
+
+        NetworkManager.Instance.Send(pkt, (ushort)PacketManager.MsgId.C_USE_ITEM);
+
+        // (ì„ íƒ) ë¡œì»¬ ë¡œê·¸
+        Debug.Log($"[UI] UseItem sent. template={item.TemplateId} uid={item.ItemUid}");
     }
 
     void OpenDetail(int slotIndex)
@@ -173,8 +187,6 @@ public class UI_InventoryView : MonoBehaviour
 
         if (detailName) detailName.text = $"Template {item.TemplateId}";
         if (detailDesc) detailDesc.text = $"UID: {item.ItemUid}\nSlot: {item.Slot}\nCount: {item.Count}\nEquipped: {item.IsEquipped}";
-
-        if (contextMenu) contextMenu.Hide();
     }
 
     void CloseDetail()
