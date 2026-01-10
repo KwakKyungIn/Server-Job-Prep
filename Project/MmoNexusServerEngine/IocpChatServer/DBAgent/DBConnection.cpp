@@ -1,4 +1,4 @@
-#include "pch.h"
+ï»¿#include "pch.h"
 #include "DBConnection.h"
 #include <iostream>
 #include <locale>
@@ -6,7 +6,7 @@
 
 bool DBConnection::Connect(SQLHENV henv, const WCHAR* connectionString)
 {
-    // DB ¿¬°á ÇÚµé ÇÒ´ç
+    // DB ì—°ê²° í•¸ë“¤ í• ë‹¹
     if (::SQLAllocHandle(SQL_HANDLE_DBC, henv, &_connection) != SQL_SUCCESS)
         return false;
 
@@ -16,7 +16,7 @@ bool DBConnection::Connect(SQLHENV henv, const WCHAR* connectionString)
     WCHAR resultString[MAX_PATH] = { 0 };
     SQLSMALLINT resultStringLen = 0;
 
-    // ½ÇÁ¦ DB ¿¬°á ½Ãµµ
+    // ì‹¤ì œ DB ì—°ê²° ì‹œë„
     SQLRETURN ret = ::SQLDriverConnectW(
         _connection,
         NULL,
@@ -28,7 +28,7 @@ bool DBConnection::Connect(SQLHENV henv, const WCHAR* connectionString)
         SQL_DRIVER_NOPROMPT
     );
 
-    // statement ÇÚµé ÇÒ´ç
+    // statement í•¸ë“¤ í• ë‹¹
     if (::SQLAllocHandle(SQL_HANDLE_STMT, _connection, &_statement) != SQL_SUCCESS)
         return false;
 
@@ -37,7 +37,7 @@ bool DBConnection::Connect(SQLHENV henv, const WCHAR* connectionString)
 
 void DBConnection::Clear()
 {
-    // ÇÚµé Á¤¸®
+    // í•¸ë“¤ ì •ë¦¬
     if (_connection != SQL_NULL_HANDLE)
     {
         ::SQLFreeHandle(SQL_HANDLE_DBC, _connection);
@@ -53,7 +53,7 @@ void DBConnection::Clear()
 
 bool DBConnection::Prepare(const WCHAR* query)
 {
-    // Äõ¸® ÁØºñ (ÇÁ¸®ÄÄÆÄÀÏ)
+    // ì¿¼ë¦¬ ì¤€ë¹„ (í”„ë¦¬ì»´íŒŒì¼)
     SQLRETURN ret = ::SQLPrepareW(_statement, (SQLWCHAR*)query, SQL_NTSL);
     if (ret != SQL_SUCCESS && ret != SQL_SUCCESS_WITH_INFO)
     {
@@ -65,33 +65,51 @@ bool DBConnection::Prepare(const WCHAR* query)
 
 bool DBConnection::Execute()
 {
-    // ÁØºñµÈ Äõ¸® ½ÇÇà
+    // ì¤€ë¹„ëœ ì¿¼ë¦¬ ì‹¤í–‰
     SQLRETURN ret = ::SQLExecute(_statement);
-    if (ret != SQL_SUCCESS && ret != SQL_SUCCESS_WITH_INFO)
+
+    switch (ret)
     {
+    case SQL_SUCCESS:
+    case SQL_SUCCESS_WITH_INFO:
+        return true;
+
+    case SQL_NO_DATA:
+        // âœ… UPDATE/DELETEì—ì„œ "ë§¤ì¹­ 0í–‰"ì„ ë“œë¼ì´ë²„ê°€ SQL_NO_DATAë¡œ ì£¼ëŠ” ì¼€ì´ìŠ¤ ëŒ€ì‘
+        // ì´ ê²½ìš°ëŠ” 'ì‹¤íŒ¨'ê°€ ì•„ë‹ˆë¼ 'ì •ìƒ ì‹¤í–‰(0 row)'ë¡œ ì·¨ê¸‰í•´ì•¼
+        // ìƒìœ„ì—ì„œ RowCount==0 ë³´ê³  INSERTë¡œ ê°ˆ ìˆ˜ ìˆë‹¤.
+        return true;
+
+    default:
         HandleError(ret);
         return false;
     }
-
-    return true;
 }
 
 bool DBConnection::Execute(const WCHAR* query)
 {
-    // Äõ¸® ¹Ù·Î ½ÇÇà (Prepare ¾ÈÇÏ°í ¹Ù·Î)
+    // ì¿¼ë¦¬ ë°”ë¡œ ì‹¤í–‰ (Prepare ì—†ì´ ë°”ë¡œ)
     SQLRETURN ret = ::SQLExecDirectW(_statement, (SQLWCHAR*)query, SQL_NTSL);
-    if (ret == SQL_SUCCESS || ret == SQL_SUCCESS_WITH_INFO)
-    {
-        return true;
-    }
 
-    HandleError(ret);
-    return false;
+    switch (ret)
+    {
+    case SQL_SUCCESS:
+    case SQL_SUCCESS_WITH_INFO:
+        return true;
+
+    case SQL_NO_DATA:
+        // âœ… ìœ„ì™€ ë™ì¼: ì •ìƒ ì‹¤í–‰(0 row)
+        return true;
+
+    default:
+        HandleError(ret);
+        return false;
+    }
 }
 
 bool DBConnection::Fetch()
 {
-    // °á°ú¼Â¿¡¼­ ´ÙÀ½ Çà ºÒ·¯¿À±â
+    // ê²°ê³¼ì…‹ì—ì„œ ë‹¤ìŒ í–‰ ë¶ˆëŸ¬ì˜¤ê¸°
     SQLRETURN ret = ::SQLFetch(_statement);
 
     switch (ret)
@@ -105,14 +123,14 @@ bool DBConnection::Fetch()
         HandleError(ret);
         return false;
     default:
-        // ¾ÆÁ÷ ½ÇÇà ÁßÀÎ °æ¿ì(SQL_STILL_EXECUTING µî)
+        // ì•„ì§ ì‹¤í–‰ ì¤‘ì¸ ê²½ìš°(SQL_STILL_EXECUTING ë“±)
         return true;
     }
 }
 
 int32 DBConnection::GetRowCount()
 {
-    // ½ÇÇàµÈ Äõ¸® °á°ú Çà ¼ö °¡Á®¿À±â
+    // ì‹¤í–‰ëœ ì¿¼ë¦¬ ê²°ê³¼ í–‰ ìˆ˜ ê°€ì ¸ì˜¤ê¸°
     SQLLEN count = 0;
     SQLRETURN ret = ::SQLRowCount(_statement, OUT & count);
 
@@ -124,16 +142,16 @@ int32 DBConnection::GetRowCount()
 
 void DBConnection::Unbind()
 {
-    // ½ÇÇà ÀÌÈÄ ¹ÙÀÎµù/Ä¿¼­ Á¤¸®
-    ::SQLFreeStmt(_statement, SQL_CLOSE);         // Ä¿¼­ ´İ±â
-    ::SQLFreeStmt(_statement, SQL_RESET_PARAMS);  // ÆÄ¶ó¹ÌÅÍ ¹ÙÀÎµù ÇØÁ¦
-    ::SQLFreeStmt(_statement, SQL_UNBIND);        // ÄÃ·³ ¹ÙÀÎµù ÇØÁ¦
+    // ì‹¤í–‰ ì´í›„ ë°”ì¸ë”©/ì»¤ì„œ ì •ë¦¬
+    ::SQLFreeStmt(_statement, SQL_CLOSE);         // ì»¤ì„œ ë‹«ê¸°
+    ::SQLFreeStmt(_statement, SQL_RESET_PARAMS);  // íŒŒë¼ë¯¸í„° ë°”ì¸ë”© í•´ì œ
+    ::SQLFreeStmt(_statement, SQL_UNBIND);        // ì»¬ëŸ¼ ë°”ì¸ë”© í•´ì œ
 
 }
 
 bool DBConnection::BindParam(SQLUSMALLINT paramIndex, SQLSMALLINT cType, SQLSMALLINT sqlType, SQLULEN len, SQLPOINTER ptr, SQLLEN* index)
 {
-    // Äõ¸® ÆÄ¶ó¹ÌÅÍ ¹ÙÀÎµù
+    // ì¿¼ë¦¬ íŒŒë¼ë¯¸í„° ë°”ì¸ë”©
     SQLRETURN ret = ::SQLBindParameter(_statement, paramIndex, SQL_PARAM_INPUT, cType, sqlType, len, 0, ptr, 0, index);
     if (ret != SQL_SUCCESS && ret != SQL_SUCCESS_WITH_INFO)
     {
@@ -146,7 +164,7 @@ bool DBConnection::BindParam(SQLUSMALLINT paramIndex, SQLSMALLINT cType, SQLSMAL
 
 bool DBConnection::BindCol(SQLUSMALLINT columnIndex, SQLSMALLINT cType, SQLULEN len, SQLPOINTER value, SQLLEN* index)
 {
-    // °á°ú ÄÃ·³ ¹ÙÀÎµù
+    // ê²°ê³¼ ì»¬ëŸ¼ ë°”ì¸ë”©
     SQLRETURN ret = ::SQLBindCol(_statement, columnIndex, cType, value, len, index);
     if (ret != SQL_SUCCESS && ret != SQL_SUCCESS_WITH_INFO)
     {
@@ -188,7 +206,7 @@ void DBConnection::HandleError(SQLRETURN ret)
         if (errorRet != SQL_SUCCESS && errorRet != SQL_SUCCESS_WITH_INFO)
             break;
 
-        // ¿¡·¯ ¸Ş½ÃÁö Ãâ·Â (°£´Ü ·Î±×)
+        // ì—ëŸ¬ ë©”ì‹œì§€ ì¶œë ¥ (ê°„ë‹¨ ë¡œê·¸)
         std::wcout.imbue(std::locale("kor"));
         std::wcout << L"DB Error: " << errMsg << std::endl;
 

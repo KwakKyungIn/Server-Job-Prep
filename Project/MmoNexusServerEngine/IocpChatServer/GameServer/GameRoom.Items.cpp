@@ -256,7 +256,7 @@ void GameRoom::HandleMonsterDead(std::shared_ptr<Creature> attacker, MonsterRef 
 	// 3) 드랍(루팅) = “즉시 인벤 지급” 방식 (저장 테스트용)
 	if (killer)
 	{
-		const int32 dropTemplateId = 3001;
+		const int32 dropTemplateId = 2001;
 		const int32 dropCount = 10;
 
 		const Protocol::ItemTemplateInfo* tpl = DataManager::Instance()->GetItemTemplate(dropTemplateId);
