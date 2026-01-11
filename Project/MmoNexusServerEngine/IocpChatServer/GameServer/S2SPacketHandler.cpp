@@ -37,22 +37,26 @@ bool S2SPacketHandler::Handle_S2S_RES_LOAD_PLAYER_DATA(PacketSessionRef& session
 	{
 		ps->Post([](PlayerSessionRef self)
 			{
-				// 필요하면 실패 처리
+				// TODO: 실패 처리(클라에게 에러패킷/디스커넥트 등)
 			});
 		return true;
 	}
 
-	const uint64 playerId = GameSessionManager::GSessionManager->GetPlayerIdBySessionId(pkt.gamesessionid());
+	const uint64 playerId = pkt.playerid(); // ✅ 패킷에 있음. 이게 제일 정직함.
 	if (playerId == 0) return true;
 
-	if (GLobbyRoom)
-	{
-		GLobbyRoom->Push([playerId, pkt]() mutable
-			{
-				GLobbyRoom->OnStatLoaded(playerId, pkt);
-			});
-	}
-	printf("1번 잘되냐ㅕ\n");
+	const int32 ch = ps->GetPendingChannelId_AnyThread();
+	if (ch <= 0 || GRoomManager == nullptr)
+		return true;
+
+	auto lobby = GRoomManager->GetOrCreateLobby(ch);
+	if (!lobby) return true;
+
+	lobby->Push([playerId, pkt, lobby]() mutable
+		{
+			lobby->OnStatLoaded(playerId, pkt);
+		});
+
 	return true;
 }
 
@@ -66,22 +70,26 @@ bool S2SPacketHandler::Handle_S2S_RES_ITEMS_LOAD(PacketSessionRef& session, Prot
 	{
 		ps->Post([](PlayerSessionRef self)
 			{
-				// 필요하면 실패 처리
+				// TODO: 실패 처리(클라에게 에러패킷/디스커넥트 등)
 			});
 		return true;
 	}
-	
-	const uint64 playerId = GameSessionManager::GSessionManager->GetPlayerIdBySessionId(pkt.gamesessionid());
+
+	const uint64 playerId = pkt.playerid();
 	if (playerId == 0) return true;
 
-	if (GLobbyRoom)
-	{
-		GLobbyRoom->Push([playerId, pkt]() mutable
-			{
-				GLobbyRoom->OnItemsLoaded(playerId, pkt);
-			});
-	}
-	printf("2번 잘되냐ㅕ\n");
+	const int32 ch = ps->GetPendingChannelId_AnyThread();
+	if (ch <= 0 || GRoomManager == nullptr)
+		return true;
+
+	auto lobby = GRoomManager->GetOrCreateLobby(ch);
+	if (!lobby) return true;
+
+	lobby->Push([playerId, pkt, lobby]() mutable
+		{
+			lobby->OnItemsLoaded(playerId, pkt);
+		});
+
 	return true;
 }
 

@@ -6,6 +6,7 @@
 #include "RedisManager.h"
 #include "DataManager.h"
 #include "LobbyRoom.h"
+#include "RoomManager.h"
 
 extern shared_ptr<PacketSession> G_DBSession;
 
@@ -63,14 +64,24 @@ bool ClientPacketHandler::Handle_C_ENTER_GAME(PacketSessionRef& session, Protoco
 		{
 			GameSessionManager::GSessionManager->BindPlayerId(ps, playerId);
 			ps->SetPlayerId_ActorOnly(playerId);
-			if (GLobbyRoom)
+
+			// ✅ [A 핵심] pending enter 컨텍스트 먼저 박아라 (DB 응답 라우팅 키)
+			ps->SetPendingEnter_ActorOnly(channelId, mapId, /*instanceId=*/0);
+
+			// ✅ [A 핵심] GLobbyRoom 제거 → 채널별 Lobby로 고정
+			if (GRoomManager)
 			{
-				GLobbyRoom->Push([ps, playerId, channelId, mapId, spawn]() mutable
-					{
-						GLobbyRoom->EnterGame(ps, playerId, channelId, mapId, spawn);
-					});
+				auto lobby = GRoomManager->GetOrCreateLobby(channelId);
+				if (lobby)
+				{
+					lobby->Push([ps, playerId, channelId, mapId, spawn, lobby]() mutable
+						{
+							lobby->EnterGame(ps, playerId, channelId, mapId, spawn);
+						});
+				}
 			}
 
+			// DB 요청 (pending 세팅 이후에 보내는 게 안전)
 			if (G_DBSession)
 			{
 				Protocol::S2S_REQ_LOAD_PLAYER_DATA reqStat;

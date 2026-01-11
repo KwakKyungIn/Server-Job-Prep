@@ -59,12 +59,56 @@ public:
         return _mapChangeState.load(std::memory_order_acquire) == MAP_CHANGE_SWITCHING;
     }
 
-    bool TryBeginMapChange(uint64 token, int32 targetMapId, int64 targetInstanceId, const Protocol::PositionInfo& spawn);
-    bool TryConsumeMapChangeAck(uint64 token, int32& outTargetMapId, int64& outTargetInstanceId, Protocol::PositionInfo& outSpawn);
+    bool TryBeginMapChange(uint64 token, int32 targetChannelId, int32 targetMapId, int64 targetInstanceId, const Protocol::PositionInfo& spawn);
+    bool TryConsumeMapChangeAck(uint64 token, int32& outTargetChannelId, int32& outTargetMapId, int64& outTargetInstanceId, Protocol::PositionInfo& outSpawn);
+
 
     void EndMapChange();
     void CancelMapChange();
     uint64 GetMapChangeToken() const;
+
+
+    // ============================================================
+    // [PENDING ENTER CONTEXT] (DB 응답 라우팅 키)
+    // - DB 응답은 gameSessionId로 세션 찾고
+    // - pendingChannelId로 "어느 Lobby로 Push할지" 결정한다.
+    // ============================================================
+public:
+    // Actor thread(Post 안)에서 세팅하는 걸 원칙으로 하자.
+    void SetPendingEnter_ActorOnly(int32 channelId, int32 mapId, int64 instanceId)
+    {
+        _pendingEnterChannelId.store(channelId, std::memory_order_release);
+        _pendingEnterMapId.store(mapId, std::memory_order_release);
+        _pendingEnterInstanceId.store(instanceId, std::memory_order_release);
+        _pendingEnterActive.store(true, std::memory_order_release);
+    }
+
+    bool HasPendingEnter_AnyThread() const
+    {
+        return _pendingEnterActive.load(std::memory_order_acquire);
+    }
+
+    int32 GetPendingChannelId_AnyThread() const
+    {
+        if (_pendingEnterActive.load(std::memory_order_acquire) == false)
+            return 0;
+        return _pendingEnterChannelId.load(std::memory_order_acquire);
+    }
+
+    void ClearPendingEnter_ActorOnly()
+    {
+        _pendingEnterActive.store(false, std::memory_order_release);
+        _pendingEnterChannelId.store(0, std::memory_order_release);
+        _pendingEnterMapId.store(0, std::memory_order_release);
+        _pendingEnterInstanceId.store(0, std::memory_order_release);
+    }
+
+private:
+    std::atomic<bool>  _pendingEnterActive{ false };
+    std::atomic<int32> _pendingEnterChannelId{ 0 };
+    std::atomic<int32> _pendingEnterMapId{ 0 };
+    std::atomic<int64> _pendingEnterInstanceId{ 0 };
+
 
 public:
     // ============================================================
@@ -132,5 +176,7 @@ private:
     int32 _pendingTargetMapId = 0;
     Protocol::PositionInfo _pendingSpawn;
     int64 _pendingTargetInstanceId = 0;
+    int32 _pendingTargetChannelId = 0; // 추가
+
 };
 using PlayerSessionRef = std::shared_ptr<PlayerSession>;

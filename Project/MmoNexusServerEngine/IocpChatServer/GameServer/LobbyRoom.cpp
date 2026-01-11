@@ -71,7 +71,6 @@ void LobbyRoom::EnterGame(PlayerSessionRef ps, uint64 playerId, int32 channelId,
 }
 void LobbyRoom::TryEnterWorldIfReady(uint64 playerId)
 {
-    // Lobby actor thread only
     if (!IsReady(playerId))
         return;
 
@@ -82,7 +81,6 @@ void LobbyRoom::TryEnterWorldIfReady(uint64 playerId)
     PlayerSessionRef ps = p->GetSession();
     if (!ps)
     {
-        // 세션이 없으면 유실 방지로 다시 보관
         Adopt(p);
         return;
     }
@@ -93,7 +91,6 @@ void LobbyRoom::TryEnterWorldIfReady(uint64 playerId)
         return;
     }
 
-    // 여기서는 "player 값"으로 월드 진입 위치 결정 (현재 설계 기준 OK)
     const int32 ch = p->GetChannelId();
     const int32 mapId = p->GetMapId();
     const int64 instId = 0;
@@ -105,7 +102,12 @@ void LobbyRoom::TryEnterWorldIfReady(uint64 playerId)
         return;
     }
 
-    // ✅ 여기서 네가 준 GameRoom::Enter()를 호출한다
+    // ✅ [A 마무리] 월드 진입 “확정” 시점에서 pending enter 제거 (Actor thread에서만!)
+    ps->Post([](PlayerSessionRef self)
+        {
+            self->ClearPendingEnter_ActorOnly();
+        });
+
     world->Push([world, ps, p]() mutable
         {
             world->Enter(ps, p);
