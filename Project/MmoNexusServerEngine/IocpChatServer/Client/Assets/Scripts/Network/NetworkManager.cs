@@ -59,7 +59,7 @@ public class NetworkManager : MonoBehaviour
         int port = 7775; // LoginServer Port
 
         InventoryManager.Instance.Init();
-
+        StatManager.Instance.Init();
         Debug.Log($"[ConnectionDebug] 1. Start() - Initial Connect to LoginServer ({ip}:{port})");
         Connect(ip, port);
     }

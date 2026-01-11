@@ -1,47 +1,56 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
-using Protocol;
 
 public class UI_HUD : MonoBehaviour
 {
     [Header("HP")]
-    public Slider hpBar;       // HPBar
-    public TMP_Text hpText;    // HPText
+    public Slider hpBar;
+    public TMP_Text hpText;
 
     [Header("EXP")]
-    public Slider expBar;      // (³ÊÀÇ EXPGroup/Slider)
-    public TMP_Text levelText; // LevelText
-    public TMP_Text expText;   // ExpText
+    public Slider expBar;
+    public TMP_Text levelText;
+    public TMP_Text expText;
 
     int _hp, _maxHp = 1, _level;
     long _totalExp;
 
     void OnEnable()
     {
-        PacketHandler.OnChangeStat += OnChangeStat;
-        PacketHandler.OnChangeHp += OnChangeHp;
+        StatManager.Instance.OnUpdated += RefreshFromCache;
+        RefreshFromCache(); // âœ… ì”¬ ì „í™˜ ì§í›„ì—ë„ ìºì‹œë¡œ ì¦‰ì‹œ ë³µêµ¬
     }
 
     void OnDisable()
     {
-        PacketHandler.OnChangeStat -= OnChangeStat;
-        PacketHandler.OnChangeHp -= OnChangeHp;
+        StatManager.Instance.OnUpdated -= RefreshFromCache;
     }
 
-    void OnChangeStat(StatInfo stat)
+    void RefreshFromCache()
     {
+        if (!StatManager.Instance.HasStat)
+        {
+            // ì•„ì§ ìŠ¤íƒ¯ì„ ëª» ë°›ì€ ìƒíƒœ (EnterGame ì „ ë“±)
+            _hp = 0;
+            _maxHp = 1;
+            _level = 0;
+            _totalExp = 0;
+            Refresh();
+            return;
+        }
+
+        var stat = StatManager.Instance.GetSnapshot();
+        if (stat == null)
+            return;
+
         _level = stat.Level;
-        _hp = stat.Hp;
         _maxHp = Mathf.Max(1, stat.MaxHp);
         _totalExp = stat.TotalExp;
-        Refresh();
-    }
 
-    void OnChangeHp(S_CHANGE_HP pkt)
-    {
-        if (pkt.ObjectId != ObjectManager.MyPlayerId) return;
-        _hp = pkt.CurrentHp;
+        int hp = StatManager.Instance.GetHp();
+        _hp = Mathf.Clamp(hp, 0, _maxHp);
+
         Refresh();
     }
 
@@ -53,8 +62,6 @@ public class UI_HUD : MonoBehaviour
         if (levelText) levelText.text = $"{_level}";
         if (expText) expText.text = $"EXP {_totalExp}";
 
-        // exp %´Â ¼­¹ö°¡ "´ÙÀ½ ·¹º§ ÇÊ¿ä exp"¸¦ ¾È º¸³»¸é Á¤È®È÷ ¸ø ¸¸µê.
-        // ÀÏ´Ü °¨°¢¿ë(ÀÓ½Ã): 0~1·Î ´ëÃæ ¸ÅÇÎ
         if (expBar) expBar.value = (float)(_totalExp % 1000) / 1000f;
     }
 }
