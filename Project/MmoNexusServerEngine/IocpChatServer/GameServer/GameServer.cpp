@@ -239,7 +239,6 @@ int main()
 	ASSERT_CRASH(gameService->Start());
 
 	GRoomManager = MakeShared<RoomManager>();
-	GLobbyRoom = MakeShared<LobbyRoom>();
 
 	Persistence::PersistenceService::I().Init(GRedisManager);
 

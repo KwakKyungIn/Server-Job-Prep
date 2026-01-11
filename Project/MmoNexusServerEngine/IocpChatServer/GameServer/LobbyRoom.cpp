@@ -5,7 +5,7 @@
 #include "S2SPacketHandler.h"
 #include "RoomManager.h"
 #include "PersistenceService.h"
-std::shared_ptr<LobbyRoom> GLobbyRoom;
+
 
 void LobbyRoom::EnterGame(PlayerSessionRef ps, uint64 playerId, int32 channelId, int32 mapId, const Protocol::PositionInfo& spawn)
 {
