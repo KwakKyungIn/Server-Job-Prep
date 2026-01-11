@@ -1,7 +1,6 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
-using Protocol;
 
 public class UI_EscMenu : MonoBehaviour
 {
@@ -9,11 +8,11 @@ public class UI_EscMenu : MonoBehaviour
     public GameObject root;
 
     [Header("Buttons")]
-    public Button btnResume;
     public Button btnExit;
-    public Button btnCh1;
-    public Button btnCh2;
-    public Button btnCh3;
+    public Button btnChannelChange;            // âœ… NEW: "ì±„ë„ ë³€ê²½" ë²„íŠ¼
+
+    [Header("Panels")]
+    public UI_ChannelChangePanel channelPanel; // âœ… NEW: ì±„ë„ 1/2/3 íŒ¨ë„ ìŠ¤í¬ë¦½íŠ¸
 
     [Header("Optional Text")]
     public TMP_Text statusText;
@@ -23,22 +22,35 @@ public class UI_EscMenu : MonoBehaviour
         if (root != null)
             root.SetActive(false);
 
-        // ¹öÆ° ¹ÙÀÎµù (ÀÎ½ºÆåÅÍ ¾È ²È¾Æµµ ÃÖ¼Ò µ¿ÀÛ)
-        if (btnResume != null) btnResume.onClick.AddListener(OnResume);
-        if (btnExit != null) btnExit.onClick.AddListener(OnExit);
+        // âœ… ì¤‘ë³µ ë¦¬ìŠ¤ë„ˆ ë°©ì§€
+        if (btnExit != null)
+        {
+            btnExit.onClick.RemoveAllListeners();
+            btnExit.onClick.AddListener(OnExit);
+        }
 
-        if (btnCh1 != null) btnCh1.onClick.AddListener(() => RequestChannelChange(1));
-        if (btnCh2 != null) btnCh2.onClick.AddListener(() => RequestChannelChange(2));
-        if (btnCh3 != null) btnCh3.onClick.AddListener(() => RequestChannelChange(3));
+        if (btnChannelChange != null)
+        {
+            btnChannelChange.onClick.RemoveAllListeners();
+            btnChannelChange.onClick.AddListener(OpenChannelPanel);
+        }
+
+        // ì‹œì‘ ì‹œ ì±„ë„ íŒ¨ë„ì€ ë‹«ì•„ë‘ê¸°
+        if (channelPanel != null)
+            channelPanel.Hide();
     }
 
     void Update()
     {
-        // ¸Ê Ã¼ÀÎÁö Áß¿£ ¸Ş´º ÀÚÃ¼¸¦ ´İ¾Æ¹ö¸² (²¿ÀÓ ¹æÁö)
+        // ë§µ ì²´ì¸ì§€ ì¤‘ì—” ë©”ë‰´/íŒ¨ë„ ì „ë¶€ ë‹«ê¸° (ê¼¬ì„ ë°©ì§€)
         if (NetworkManager.Instance != null && NetworkManager.Instance.IsMapChanging)
         {
             if (root != null && root.activeSelf)
                 root.SetActive(false);
+
+            if (channelPanel != null)
+                channelPanel.Hide();
+
             return;
         }
 
@@ -49,18 +61,31 @@ public class UI_EscMenu : MonoBehaviour
     void Toggle()
     {
         if (root == null) return;
-        root.SetActive(!root.activeSelf);
+
+        bool next = !root.activeSelf;
+        root.SetActive(next);
+
+        // ë©”ë‰´ ì—´ë¦´ ë•Œ ì±„ë„ íŒ¨ë„ì€ ê¸°ë³¸ ë‹«í˜
+        if (next && channelPanel != null)
+            channelPanel.Hide();
     }
 
-    void OnResume()
+    void OpenChannelPanel()
     {
-        if (root != null)
-            root.SetActive(false);
+        if (NetworkManager.Instance == null) return;
+        if (NetworkManager.Instance.IsMapChanging) return;
+
+        if (channelPanel == null)
+        {
+            Debug.LogWarning("[UI_EscMenu] channelPanel is null (assign in inspector).");
+            return;
+        }
+
+        channelPanel.Show(statusText); // statusTextë¥¼ ë„˜ê²¨ì„œ ê°™ì€ í…ìŠ¤íŠ¸ë¡œ í‘œì‹œí•˜ê³  ì‹¶ìœ¼ë©´ ì‚¬ìš©
     }
 
     void OnExit()
     {
-        // Å×½ºÆ® Á¤Ã¥: ¼ÒÄÏ ²÷°í ¾Û Á¾·á
         if (NetworkManager.Instance != null)
             NetworkManager.Instance.Disconnect();
 
@@ -69,23 +94,5 @@ public class UI_EscMenu : MonoBehaviour
 #else
         Application.Quit();
 #endif
-    }
-
-    void RequestChannelChange(int targetChannelId)
-    {
-        if (NetworkManager.Instance == null) return;
-        if (NetworkManager.Instance.IsMapChanging) return;
-
-        var req = new C_CHANNEL_CHANGE_REQ { TargetChannelId = targetChannelId };
-        NetworkManager.Instance.Send(req, (ushort)PacketManager.MsgId.C_CHANNEL_CHANGE_REQ);
-
-        statusText?.SetText($"Switching to Channel {targetChannelId}...");
-
-        // »ç¿ëÀÚ°¡ ¿¬Å¸ ¸ø ÇÏ°Ô ´İ¾Æ¹ö¸²
-        if (root != null) root.SetActive(false);
-
-        // (¼±ÅÃ) ¼­¹ö BEGIN ¿À±â Àü±îÁöµµ ¡°Áï½Ã¡± ·Îµù °¨°¢ ÁÖ°í ½ÍÀ¸¸é:
-        var overlay = FindObjectOfType<UI_LoadingOverlay>(true);
-        overlay?.Show($"Switching to Channel {targetChannelId}...");
     }
 }
