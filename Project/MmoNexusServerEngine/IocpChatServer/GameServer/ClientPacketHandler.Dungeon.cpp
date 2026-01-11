@@ -210,7 +210,8 @@ bool ClientPacketHandler::Handle_C_DUNGEON_ENTER_REQ(PacketSessionRef& session, 
 
 												if (!gr2)
 												{
-													MapChangeUtil::SendMapChangeBegin(self2, pid, dungeonMapId, instanceId, spawn);
+													const int32 targetChannelId = 1; 
+													MapChangeUtil::SendMapChangeBegin(self2, pid, targetChannelId, dungeonMapId, instanceId, spawn);
 													return;
 												}
 
@@ -219,9 +220,17 @@ bool ClientPacketHandler::Handle_C_DUNGEON_ENTER_REQ(PacketSessionRef& session, 
 													{
 														gr2->SaveReturnLocation_ActorOnly(pid);
 
-														self2->Post([pid, dungeonMapId, instanceId, spawn](PlayerSessionRef s) mutable
+														//  채널은 Room actor에서 Player 값으로만
+														int32 targetChannelId = 1;
+														if (auto p = gr2->FindPlayer_ActorOnly(pid))
+														{
+															targetChannelId = p->GetChannelId();
+															if (targetChannelId <= 0) targetChannelId = 1;
+														}
+
+														self2->Post([pid, targetChannelId, dungeonMapId, instanceId, spawn](PlayerSessionRef s) mutable
 															{
-																MapChangeUtil::SendMapChangeBegin(s, pid, dungeonMapId, instanceId, spawn);
+																MapChangeUtil::SendMapChangeBegin(s, pid, targetChannelId, dungeonMapId, instanceId, spawn);
 															});
 													});
 											});
@@ -455,7 +464,7 @@ bool ClientPacketHandler::Handle_C_DUNGEON_EXIT_REQ(PacketSessionRef& session, P
 												auto gr2 = (room && room->GetKind() == RoomKind::Game) ? std::dynamic_pointer_cast<GameRoom>(room) : nullptr;
 												if (!gr2) return;
 
-												gr2->PushJob([gr2, self2, pid]()
+												gr2->PushJob([gr2, self2, pid]() mutable
 													{
 														PlayerRef p = gr2->FindPlayer_ActorOnly(pid);
 														if (!p) return;
@@ -463,9 +472,12 @@ bool ClientPacketHandler::Handle_C_DUNGEON_EXIT_REQ(PacketSessionRef& session, P
 														int32 rm = 1; int64 ri = 0; Protocol::PositionInfo rp;
 														MapChangeUtil::MakeSafeReturn(p, rm, ri, rp);
 
-														self2->Post([pid, rm, ri, rp](PlayerSessionRef s) mutable
+														int32 targetChannelId = p->GetChannelId();
+														if (targetChannelId <= 0) targetChannelId = 1;
+
+														self2->Post([pid, targetChannelId, rm, ri, rp](PlayerSessionRef s) mutable
 															{
-																MapChangeUtil::SendMapChangeBegin(s, pid, rm, ri, rp);
+																MapChangeUtil::SendMapChangeBegin(s, pid, targetChannelId, rm, ri, rp);
 															});
 													});
 											});

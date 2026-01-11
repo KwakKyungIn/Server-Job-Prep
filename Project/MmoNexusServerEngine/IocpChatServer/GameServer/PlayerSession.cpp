@@ -99,7 +99,7 @@ void PlayerSession::Ping()
 }
 
 
-bool PlayerSession::TryBeginMapChange(uint64 token, int32 targetMapId, int64 targetInstanceId, const Protocol::PositionInfo& spawn)
+bool PlayerSession::TryBeginMapChange(uint64 token, int32 targetChannelId, int32 targetMapId, int64 targetInstanceId, const Protocol::PositionInfo& spawn)
 {
     std::lock_guard<std::mutex> lock(_mapChangeLock);
 
@@ -107,8 +107,9 @@ bool PlayerSession::TryBeginMapChange(uint64 token, int32 targetMapId, int64 tar
         return false;
 
     _mapChangeToken = token;
+    _pendingTargetChannelId = targetChannelId;      // 추가
     _pendingTargetMapId = targetMapId;
-    _pendingTargetInstanceId = targetInstanceId; // 추가
+    _pendingTargetInstanceId = targetInstanceId;
     _pendingSpawn.CopyFrom(spawn);
 
     _mapChangeState.store(MAP_CHANGE_WAITING_ACK, std::memory_order_release);
@@ -117,25 +118,25 @@ bool PlayerSession::TryBeginMapChange(uint64 token, int32 targetMapId, int64 tar
 
 void PlayerSession::ResetMapChangeState_Locked()
 {
-    // ⚠️ 이 함수는 _mapChangeLock을 이미 잡은 상태에서만 호출해야 한다.
     _mapChangeToken = 0;
+    _pendingTargetChannelId = 0;                  
     _pendingTargetMapId = 0;
-    _pendingTargetInstanceId = 0; // 추가
+    _pendingTargetInstanceId = 0;
     _pendingSpawn.Clear();
 
     _mapChangeState.store(MAP_CHANGE_NONE, std::memory_order_release);
 }
 
-bool PlayerSession::TryConsumeMapChangeAck(uint64 token, int32& outTargetMapId, int64& outTargetInstanceId, Protocol::PositionInfo& outSpawn)
+bool PlayerSession::TryConsumeMapChangeAck(uint64 token, int32& outTargetChannelId, int32& outTargetMapId, int64& outTargetInstanceId, Protocol::PositionInfo& outSpawn)
 {
     std::lock_guard<std::mutex> lock(_mapChangeLock);
 
     if (_mapChangeState.load(std::memory_order_relaxed) != MAP_CHANGE_WAITING_ACK)
         return false;
-
     if (_mapChangeToken != token)
         return false;
 
+    outTargetChannelId = _pendingTargetChannelId; 
     outTargetMapId = _pendingTargetMapId;
     outTargetInstanceId = _pendingTargetInstanceId;
     outSpawn.CopyFrom(_pendingSpawn);

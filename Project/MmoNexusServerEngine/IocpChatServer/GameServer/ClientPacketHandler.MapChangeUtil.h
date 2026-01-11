@@ -15,6 +15,7 @@ namespace MapChangeUtil
     // MapChange Begin Àü¼Û + Session FSM Begin
     void SendMapChangeBegin(PlayerSessionRef ms,
         uint64 playerId,
+        int32 targetChannelId,
         int32 targetMapId,
         int64 targetInstanceId,
         const Protocol::PositionInfo& spawn);

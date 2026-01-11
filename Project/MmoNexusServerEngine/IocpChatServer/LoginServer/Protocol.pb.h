@@ -49,6 +49,9 @@ struct TableStruct_Protocol_2eproto {
 };
 extern const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_Protocol_2eproto;
 namespace Protocol {
+class C_CHANNEL_CHANGE_REQ;
+struct C_CHANNEL_CHANGE_REQDefaultTypeInternal;
+extern C_CHANNEL_CHANGE_REQDefaultTypeInternal _C_CHANNEL_CHANGE_REQ_default_instance_;
 class C_CHAT_REQ;
 struct C_CHAT_REQDefaultTypeInternal;
 extern C_CHAT_REQDefaultTypeInternal _C_CHAT_REQ_default_instance_;
@@ -189,6 +192,7 @@ struct ServerInfoDefaultTypeInternal;
 extern ServerInfoDefaultTypeInternal _ServerInfo_default_instance_;
 }  // namespace Protocol
 PROTOBUF_NAMESPACE_OPEN
+template<> ::Protocol::C_CHANNEL_CHANGE_REQ* Arena::CreateMaybeMessage<::Protocol::C_CHANNEL_CHANGE_REQ>(Arena*);
 template<> ::Protocol::C_CHAT_REQ* Arena::CreateMaybeMessage<::Protocol::C_CHAT_REQ>(Arena*);
 template<> ::Protocol::C_DUNGEON_ENTER_REQ* Arena::CreateMaybeMessage<::Protocol::C_DUNGEON_ENTER_REQ>(Arena*);
 template<> ::Protocol::C_DUNGEON_EXIT_REQ* Arena::CreateMaybeMessage<::Protocol::C_DUNGEON_EXIT_REQ>(Arena*);
@@ -3766,8 +3770,9 @@ class S_MAP_CHANGE_BEGIN final :
   enum : int {
     kSpawnFieldNumber = 3,
     kTokenFieldNumber = 1,
-    kInstanceidFieldNumber = 4,
     kTargetMapIdFieldNumber = 2,
+    kTargetChannelIdFieldNumber = 5,
+    kInstanceidFieldNumber = 4,
   };
   // .Protocol.PositionInfo spawn = 3;
   bool has_spawn() const;
@@ -3796,15 +3801,6 @@ class S_MAP_CHANGE_BEGIN final :
   void _internal_set_token(uint64_t value);
   public:
 
-  // int64 instanceid = 4;
-  void clear_instanceid();
-  int64_t instanceid() const;
-  void set_instanceid(int64_t value);
-  private:
-  int64_t _internal_instanceid() const;
-  void _internal_set_instanceid(int64_t value);
-  public:
-
   // int32 targetMapId = 2;
   void clear_targetmapid();
   int32_t targetmapid() const;
@@ -3812,6 +3808,24 @@ class S_MAP_CHANGE_BEGIN final :
   private:
   int32_t _internal_targetmapid() const;
   void _internal_set_targetmapid(int32_t value);
+  public:
+
+  // int32 targetChannelId = 5;
+  void clear_targetchannelid();
+  int32_t targetchannelid() const;
+  void set_targetchannelid(int32_t value);
+  private:
+  int32_t _internal_targetchannelid() const;
+  void _internal_set_targetchannelid(int32_t value);
+  public:
+
+  // int64 instanceid = 4;
+  void clear_instanceid();
+  int64_t instanceid() const;
+  void set_instanceid(int64_t value);
+  private:
+  int64_t _internal_instanceid() const;
+  void _internal_set_instanceid(int64_t value);
   public:
 
   // @@protoc_insertion_point(class_scope:Protocol.S_MAP_CHANGE_BEGIN)
@@ -3824,8 +3838,9 @@ class S_MAP_CHANGE_BEGIN final :
   struct Impl_ {
     ::Protocol::PositionInfo* spawn_;
     uint64_t token_;
-    int64_t instanceid_;
     int32_t targetmapid_;
+    int32_t targetchannelid_;
+    int64_t instanceid_;
     mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   };
   union { Impl_ _impl_; };
@@ -4104,8 +4119,9 @@ class S_MAP_CHANGE_END final :
   enum : int {
     kPosFieldNumber = 3,
     kTokenFieldNumber = 1,
-    kInstanceidFieldNumber = 4,
     kMapIdFieldNumber = 2,
+    kTargetChannelIdFieldNumber = 5,
+    kInstanceidFieldNumber = 4,
   };
   // .Protocol.PositionInfo pos = 3;
   bool has_pos() const;
@@ -4134,15 +4150,6 @@ class S_MAP_CHANGE_END final :
   void _internal_set_token(uint64_t value);
   public:
 
-  // int64 instanceid = 4;
-  void clear_instanceid();
-  int64_t instanceid() const;
-  void set_instanceid(int64_t value);
-  private:
-  int64_t _internal_instanceid() const;
-  void _internal_set_instanceid(int64_t value);
-  public:
-
   // int32 mapId = 2;
   void clear_mapid();
   int32_t mapid() const;
@@ -4150,6 +4157,24 @@ class S_MAP_CHANGE_END final :
   private:
   int32_t _internal_mapid() const;
   void _internal_set_mapid(int32_t value);
+  public:
+
+  // int32 targetChannelId = 5;
+  void clear_targetchannelid();
+  int32_t targetchannelid() const;
+  void set_targetchannelid(int32_t value);
+  private:
+  int32_t _internal_targetchannelid() const;
+  void _internal_set_targetchannelid(int32_t value);
+  public:
+
+  // int64 instanceid = 4;
+  void clear_instanceid();
+  int64_t instanceid() const;
+  void set_instanceid(int64_t value);
+  private:
+  int64_t _internal_instanceid() const;
+  void _internal_set_instanceid(int64_t value);
   public:
 
   // @@protoc_insertion_point(class_scope:Protocol.S_MAP_CHANGE_END)
@@ -4162,8 +4187,157 @@ class S_MAP_CHANGE_END final :
   struct Impl_ {
     ::Protocol::PositionInfo* pos_;
     uint64_t token_;
-    int64_t instanceid_;
     int32_t mapid_;
+    int32_t targetchannelid_;
+    int64_t instanceid_;
+    mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  };
+  union { Impl_ _impl_; };
+  friend struct ::TableStruct_Protocol_2eproto;
+};
+// -------------------------------------------------------------------
+
+class C_CHANNEL_CHANGE_REQ final :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:Protocol.C_CHANNEL_CHANGE_REQ) */ {
+ public:
+  inline C_CHANNEL_CHANGE_REQ() : C_CHANNEL_CHANGE_REQ(nullptr) {}
+  ~C_CHANNEL_CHANGE_REQ() override;
+  explicit PROTOBUF_CONSTEXPR C_CHANNEL_CHANGE_REQ(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+
+  C_CHANNEL_CHANGE_REQ(const C_CHANNEL_CHANGE_REQ& from);
+  C_CHANNEL_CHANGE_REQ(C_CHANNEL_CHANGE_REQ&& from) noexcept
+    : C_CHANNEL_CHANGE_REQ() {
+    *this = ::std::move(from);
+  }
+
+  inline C_CHANNEL_CHANGE_REQ& operator=(const C_CHANNEL_CHANGE_REQ& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline C_CHANNEL_CHANGE_REQ& operator=(C_CHANNEL_CHANGE_REQ&& from) noexcept {
+    if (this == &from) return *this;
+    if (GetOwningArena() == from.GetOwningArena()
+  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+        && GetOwningArena() != nullptr
+  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+    ) {
+      InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return default_instance().GetMetadata().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return default_instance().GetMetadata().reflection;
+  }
+  static const C_CHANNEL_CHANGE_REQ& default_instance() {
+    return *internal_default_instance();
+  }
+  static inline const C_CHANNEL_CHANGE_REQ* internal_default_instance() {
+    return reinterpret_cast<const C_CHANNEL_CHANGE_REQ*>(
+               &_C_CHANNEL_CHANGE_REQ_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    23;
+
+  friend void swap(C_CHANNEL_CHANGE_REQ& a, C_CHANNEL_CHANGE_REQ& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(C_CHANNEL_CHANGE_REQ* other) {
+    if (other == this) return;
+  #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetOwningArena() != nullptr &&
+        GetOwningArena() == other->GetOwningArena()) {
+   #else  // PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetOwningArena() == other->GetOwningArena()) {
+  #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(C_CHANNEL_CHANGE_REQ* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetOwningArena() == other->GetOwningArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  C_CHANNEL_CHANGE_REQ* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
+    return CreateMaybeMessage<C_CHANNEL_CHANGE_REQ>(arena);
+  }
+  using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
+  void CopyFrom(const C_CHANNEL_CHANGE_REQ& from);
+  using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
+  void MergeFrom( const C_CHANNEL_CHANGE_REQ& from) {
+    C_CHANNEL_CHANGE_REQ::MergeImpl(*this, from);
+  }
+  private:
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg);
+  public:
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  uint8_t* _InternalSerialize(
+      uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
+
+  private:
+  void SharedCtor(::PROTOBUF_NAMESPACE_ID::Arena* arena, bool is_message_owned);
+  void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(C_CHANNEL_CHANGE_REQ* other);
+
+  private:
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "Protocol.C_CHANNEL_CHANGE_REQ";
+  }
+  protected:
+  explicit C_CHANNEL_CHANGE_REQ(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                       bool is_message_owned = false);
+  public:
+
+  static const ClassData _class_data_;
+  const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*GetClassData() const final;
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kTargetChannelIdFieldNumber = 1,
+  };
+  // int32 targetChannelId = 1;
+  void clear_targetchannelid();
+  int32_t targetchannelid() const;
+  void set_targetchannelid(int32_t value);
+  private:
+  int32_t _internal_targetchannelid() const;
+  void _internal_set_targetchannelid(int32_t value);
+  public:
+
+  // @@protoc_insertion_point(class_scope:Protocol.C_CHANNEL_CHANGE_REQ)
+ private:
+  class _Internal;
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  struct Impl_ {
+    int32_t targetchannelid_;
     mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   };
   union { Impl_ _impl_; };
@@ -4219,7 +4393,7 @@ class C_CHAT_REQ final :
                &_C_CHAT_REQ_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    23;
+    24;
 
   friend void swap(C_CHAT_REQ& a, C_CHAT_REQ& b) {
     a.Swap(&b);
@@ -4372,7 +4546,7 @@ class S_CHAT_RES final :
                &_S_CHAT_RES_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    24;
+    25;
 
   friend void swap(S_CHAT_RES& a, S_CHAT_RES& b) {
     a.Swap(&b);
@@ -4520,7 +4694,7 @@ class S_CHAT_NTF final :
                &_S_CHAT_NTF_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    25;
+    26;
 
   friend void swap(S_CHAT_NTF& a, S_CHAT_NTF& b) {
     a.Swap(&b);
@@ -4699,7 +4873,7 @@ class S_HEART_BEAT_RES final :
                &_S_HEART_BEAT_RES_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    26;
+    27;
 
   friend void swap(S_HEART_BEAT_RES& a, S_HEART_BEAT_RES& b) {
     a.Swap(&b);
@@ -4817,7 +4991,7 @@ class C_HEART_BEAT_REQ final :
                &_C_HEART_BEAT_REQ_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    27;
+    28;
 
   friend void swap(C_HEART_BEAT_REQ& a, C_HEART_BEAT_REQ& b) {
     a.Swap(&b);
@@ -4936,7 +5110,7 @@ class C_PARTY_CHAT_REQ final :
                &_C_PARTY_CHAT_REQ_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    28;
+    29;
 
   friend void swap(C_PARTY_CHAT_REQ& a, C_PARTY_CHAT_REQ& b) {
     a.Swap(&b);
@@ -5089,7 +5263,7 @@ class S_PARTY_CHAT_NTF final :
                &_S_PARTY_CHAT_NTF_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    29;
+    30;
 
   friend void swap(S_PARTY_CHAT_NTF& a, S_PARTY_CHAT_NTF& b) {
     a.Swap(&b);
@@ -5280,7 +5454,7 @@ class S_PARTY_INFO_NTF final :
                &_S_PARTY_INFO_NTF_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    30;
+    31;
 
   friend void swap(S_PARTY_INFO_NTF& a, S_PARTY_INFO_NTF& b) {
     a.Swap(&b);
@@ -5486,7 +5660,7 @@ class C_PARTY_CREATE_REQ final :
                &_C_PARTY_CREATE_REQ_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    31;
+    32;
 
   friend void swap(C_PARTY_CREATE_REQ& a, C_PARTY_CREATE_REQ& b) {
     a.Swap(&b);
@@ -5634,7 +5808,7 @@ class C_PARTY_INVITE_REQ final :
                &_C_PARTY_INVITE_REQ_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    32;
+    33;
 
   friend void swap(C_PARTY_INVITE_REQ& a, C_PARTY_INVITE_REQ& b) {
     a.Swap(&b);
@@ -5782,7 +5956,7 @@ class C_PARTY_INVITE_ACCEPT_REQ final :
                &_C_PARTY_INVITE_ACCEPT_REQ_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    33;
+    34;
 
   friend void swap(C_PARTY_INVITE_ACCEPT_REQ& a, C_PARTY_INVITE_ACCEPT_REQ& b) {
     a.Swap(&b);
@@ -5940,7 +6114,7 @@ class C_PARTY_LEAVE_REQ final :
                &_C_PARTY_LEAVE_REQ_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    34;
+    35;
 
   friend void swap(C_PARTY_LEAVE_REQ& a, C_PARTY_LEAVE_REQ& b) {
     a.Swap(&b);
@@ -6059,7 +6233,7 @@ class C_PARTY_KICK_REQ final :
                &_C_PARTY_KICK_REQ_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    35;
+    36;
 
   friend void swap(C_PARTY_KICK_REQ& a, C_PARTY_KICK_REQ& b) {
     a.Swap(&b);
@@ -6206,7 +6380,7 @@ class C_PARTY_DISBAND_REQ final :
                &_C_PARTY_DISBAND_REQ_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    36;
+    37;
 
   friend void swap(C_PARTY_DISBAND_REQ& a, C_PARTY_DISBAND_REQ& b) {
     a.Swap(&b);
@@ -6325,7 +6499,7 @@ class S_PARTY_RESULT final :
                &_S_PARTY_RESULT_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    37;
+    38;
 
   friend void swap(S_PARTY_RESULT& a, S_PARTY_RESULT& b) {
     a.Swap(&b);
@@ -6517,7 +6691,7 @@ class S_PARTY_INVITE_NTF final :
                &_S_PARTY_INVITE_NTF_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    38;
+    39;
 
   friend void swap(S_PARTY_INVITE_NTF& a, S_PARTY_INVITE_NTF& b) {
     a.Swap(&b);
@@ -6692,7 +6866,7 @@ class PartyMemberStatus final :
                &_PartyMemberStatus_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    39;
+    40;
 
   friend void swap(PartyMemberStatus& a, PartyMemberStatus& b) {
     a.Swap(&b);
@@ -6941,7 +7115,7 @@ class C_PARTY_STATUS_REQ final :
                &_C_PARTY_STATUS_REQ_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    40;
+    41;
 
   friend void swap(C_PARTY_STATUS_REQ& a, C_PARTY_STATUS_REQ& b) {
     a.Swap(&b);
@@ -7060,7 +7234,7 @@ class S_PARTY_STATUS_NTF final :
                &_S_PARTY_STATUS_NTF_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    41;
+    42;
 
   friend void swap(S_PARTY_STATUS_NTF& a, S_PARTY_STATUS_NTF& b) {
     a.Swap(&b);
@@ -7239,7 +7413,7 @@ class C_DUNGEON_ENTER_REQ final :
                &_C_DUNGEON_ENTER_REQ_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    42;
+    43;
 
   friend void swap(C_DUNGEON_ENTER_REQ& a, C_DUNGEON_ENTER_REQ& b) {
     a.Swap(&b);
@@ -7387,7 +7561,7 @@ class S_DUNGEON_ENTER_RES final :
                &_S_DUNGEON_ENTER_RES_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    43;
+    44;
 
   friend void swap(S_DUNGEON_ENTER_RES& a, S_DUNGEON_ENTER_RES& b) {
     a.Swap(&b);
@@ -7567,7 +7741,7 @@ class C_DUNGEON_EXIT_REQ final :
                &_C_DUNGEON_EXIT_REQ_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    44;
+    45;
 
   friend void swap(C_DUNGEON_EXIT_REQ& a, C_DUNGEON_EXIT_REQ& b) {
     a.Swap(&b);
@@ -7686,7 +7860,7 @@ class S_DUNGEON_EXIT_RES final :
                &_S_DUNGEON_EXIT_RES_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    45;
+    46;
 
   friend void swap(S_DUNGEON_EXIT_RES& a, S_DUNGEON_EXIT_RES& b) {
     a.Swap(&b);
@@ -9536,6 +9710,26 @@ inline void S_MAP_CHANGE_BEGIN::set_instanceid(int64_t value) {
   // @@protoc_insertion_point(field_set:Protocol.S_MAP_CHANGE_BEGIN.instanceid)
 }
 
+// int32 targetChannelId = 5;
+inline void S_MAP_CHANGE_BEGIN::clear_targetchannelid() {
+  _impl_.targetchannelid_ = 0;
+}
+inline int32_t S_MAP_CHANGE_BEGIN::_internal_targetchannelid() const {
+  return _impl_.targetchannelid_;
+}
+inline int32_t S_MAP_CHANGE_BEGIN::targetchannelid() const {
+  // @@protoc_insertion_point(field_get:Protocol.S_MAP_CHANGE_BEGIN.targetChannelId)
+  return _internal_targetchannelid();
+}
+inline void S_MAP_CHANGE_BEGIN::_internal_set_targetchannelid(int32_t value) {
+  
+  _impl_.targetchannelid_ = value;
+}
+inline void S_MAP_CHANGE_BEGIN::set_targetchannelid(int32_t value) {
+  _internal_set_targetchannelid(value);
+  // @@protoc_insertion_point(field_set:Protocol.S_MAP_CHANGE_BEGIN.targetChannelId)
+}
+
 // -------------------------------------------------------------------
 
 // C_MAP_CHANGE_ACK
@@ -9707,6 +9901,50 @@ inline void S_MAP_CHANGE_END::_internal_set_instanceid(int64_t value) {
 inline void S_MAP_CHANGE_END::set_instanceid(int64_t value) {
   _internal_set_instanceid(value);
   // @@protoc_insertion_point(field_set:Protocol.S_MAP_CHANGE_END.instanceid)
+}
+
+// int32 targetChannelId = 5;
+inline void S_MAP_CHANGE_END::clear_targetchannelid() {
+  _impl_.targetchannelid_ = 0;
+}
+inline int32_t S_MAP_CHANGE_END::_internal_targetchannelid() const {
+  return _impl_.targetchannelid_;
+}
+inline int32_t S_MAP_CHANGE_END::targetchannelid() const {
+  // @@protoc_insertion_point(field_get:Protocol.S_MAP_CHANGE_END.targetChannelId)
+  return _internal_targetchannelid();
+}
+inline void S_MAP_CHANGE_END::_internal_set_targetchannelid(int32_t value) {
+  
+  _impl_.targetchannelid_ = value;
+}
+inline void S_MAP_CHANGE_END::set_targetchannelid(int32_t value) {
+  _internal_set_targetchannelid(value);
+  // @@protoc_insertion_point(field_set:Protocol.S_MAP_CHANGE_END.targetChannelId)
+}
+
+// -------------------------------------------------------------------
+
+// C_CHANNEL_CHANGE_REQ
+
+// int32 targetChannelId = 1;
+inline void C_CHANNEL_CHANGE_REQ::clear_targetchannelid() {
+  _impl_.targetchannelid_ = 0;
+}
+inline int32_t C_CHANNEL_CHANGE_REQ::_internal_targetchannelid() const {
+  return _impl_.targetchannelid_;
+}
+inline int32_t C_CHANNEL_CHANGE_REQ::targetchannelid() const {
+  // @@protoc_insertion_point(field_get:Protocol.C_CHANNEL_CHANGE_REQ.targetChannelId)
+  return _internal_targetchannelid();
+}
+inline void C_CHANNEL_CHANGE_REQ::_internal_set_targetchannelid(int32_t value) {
+  
+  _impl_.targetchannelid_ = value;
+}
+inline void C_CHANNEL_CHANGE_REQ::set_targetchannelid(int32_t value) {
+  _internal_set_targetchannelid(value);
+  // @@protoc_insertion_point(field_set:Protocol.C_CHANNEL_CHANGE_REQ.targetChannelId)
 }
 
 // -------------------------------------------------------------------
@@ -11136,6 +11374,8 @@ inline void S_DUNGEON_EXIT_RES::set_reason(::Protocol::DungeonExitFailReason val
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------

@@ -141,14 +141,18 @@ message C_MAP_CHANGE_REQ {
     int32 targetMapId = 1; 
 }
 message S_MAP_CHANGE_BEGIN {
-    uint64 token = 1; int32 targetMapId = 2; PositionInfo spawn = 3; int64 instanceid = 4; 
+    uint64 token = 1; int32 targetMapId = 2; PositionInfo spawn = 3; int64 instanceid = 4;  int32 targetChannelId = 5;
 }
 
 message C_MAP_CHANGE_ACK {
     uint64 token = 1; 
 }
 message S_MAP_CHANGE_END {
-    uint64 token = 1; int32 mapId = 2; PositionInfo pos = 3; int64 instanceid = 4;
+    uint64 token = 1; int32 mapId = 2; PositionInfo pos = 3; int64 instanceid = 4; int32 targetChannelId = 5;
+}
+
+message C_CHANNEL_CHANGE_REQ {
+    int32 targetChannelId = 1;
 }
 
 

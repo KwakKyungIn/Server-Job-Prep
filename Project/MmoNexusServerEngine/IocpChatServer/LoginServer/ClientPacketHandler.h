@@ -31,28 +31,29 @@ public:
 		PKT_S_MAP_CHANGE_BEGIN = 1019,
 		PKT_C_MAP_CHANGE_ACK = 1020,
 		PKT_S_MAP_CHANGE_END = 1021,
-		PKT_C_CHAT_REQ = 1022,
-		PKT_S_CHAT_RES = 1023,
-		PKT_S_CHAT_NTF = 1024,
-		PKT_S_HEART_BEAT_RES = 1025,
-		PKT_C_HEART_BEAT_REQ = 1026,
-		PKT_C_PARTY_CHAT_REQ = 1027,
-		PKT_S_PARTY_CHAT_NTF = 1028,
-		PKT_S_PARTY_INFO_NTF = 1029,
-		PKT_C_PARTY_CREATE_REQ = 1030,
-		PKT_C_PARTY_INVITE_REQ = 1031,
-		PKT_C_PARTY_INVITE_ACCEPT_REQ = 1032,
-		PKT_C_PARTY_LEAVE_REQ = 1033,
-		PKT_C_PARTY_KICK_REQ = 1034,
-		PKT_C_PARTY_DISBAND_REQ = 1035,
-		PKT_S_PARTY_RESULT = 1036,
-		PKT_S_PARTY_INVITE_NTF = 1037,
-		PKT_C_PARTY_STATUS_REQ = 1038,
-		PKT_S_PARTY_STATUS_NTF = 1039,
-		PKT_C_DUNGEON_ENTER_REQ = 1040,
-		PKT_S_DUNGEON_ENTER_RES = 1041,
-		PKT_C_DUNGEON_EXIT_REQ = 1042,
-		PKT_S_DUNGEON_EXIT_RES = 1043,
+		PKT_C_CHANNEL_CHANGE_REQ = 1022,
+		PKT_C_CHAT_REQ = 1023,
+		PKT_S_CHAT_RES = 1024,
+		PKT_S_CHAT_NTF = 1025,
+		PKT_S_HEART_BEAT_RES = 1026,
+		PKT_C_HEART_BEAT_REQ = 1027,
+		PKT_C_PARTY_CHAT_REQ = 1028,
+		PKT_S_PARTY_CHAT_NTF = 1029,
+		PKT_S_PARTY_INFO_NTF = 1030,
+		PKT_C_PARTY_CREATE_REQ = 1031,
+		PKT_C_PARTY_INVITE_REQ = 1032,
+		PKT_C_PARTY_INVITE_ACCEPT_REQ = 1033,
+		PKT_C_PARTY_LEAVE_REQ = 1034,
+		PKT_C_PARTY_KICK_REQ = 1035,
+		PKT_C_PARTY_DISBAND_REQ = 1036,
+		PKT_S_PARTY_RESULT = 1037,
+		PKT_S_PARTY_INVITE_NTF = 1038,
+		PKT_C_PARTY_STATUS_REQ = 1039,
+		PKT_S_PARTY_STATUS_NTF = 1040,
+		PKT_C_DUNGEON_ENTER_REQ = 1041,
+		PKT_S_DUNGEON_ENTER_RES = 1042,
+		PKT_C_DUNGEON_EXIT_REQ = 1043,
+		PKT_S_DUNGEON_EXIT_RES = 1044,
 	};
 
 	static void Init()
@@ -67,6 +68,7 @@ public:
 		GPacketHandler[PKT_C_EQUIP_ITEM] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::C_EQUIP_ITEM>(Handle_C_EQUIP_ITEM, session, buffer, len); };
 		GPacketHandler[PKT_C_MAP_CHANGE_REQ] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::C_MAP_CHANGE_REQ>(Handle_C_MAP_CHANGE_REQ, session, buffer, len); };
 		GPacketHandler[PKT_C_MAP_CHANGE_ACK] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::C_MAP_CHANGE_ACK>(Handle_C_MAP_CHANGE_ACK, session, buffer, len); };
+		GPacketHandler[PKT_C_CHANNEL_CHANGE_REQ] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::C_CHANNEL_CHANGE_REQ>(Handle_C_CHANNEL_CHANGE_REQ, session, buffer, len); };
 		GPacketHandler[PKT_C_CHAT_REQ] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::C_CHAT_REQ>(Handle_C_CHAT_REQ, session, buffer, len); };
 		GPacketHandler[PKT_C_HEART_BEAT_REQ] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::C_HEART_BEAT_REQ>(Handle_C_HEART_BEAT_REQ, session, buffer, len); };
 		GPacketHandler[PKT_C_PARTY_CHAT_REQ] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::C_PARTY_CHAT_REQ>(Handle_C_PARTY_CHAT_REQ, session, buffer, len); };
@@ -122,6 +124,7 @@ public:
 	static bool Handle_C_EQUIP_ITEM(PacketSessionRef& session, Protocol::C_EQUIP_ITEM& pkt);
 	static bool Handle_C_MAP_CHANGE_REQ(PacketSessionRef& session, Protocol::C_MAP_CHANGE_REQ& pkt);
 	static bool Handle_C_MAP_CHANGE_ACK(PacketSessionRef& session, Protocol::C_MAP_CHANGE_ACK& pkt);
+	static bool Handle_C_CHANNEL_CHANGE_REQ(PacketSessionRef& session, Protocol::C_CHANNEL_CHANGE_REQ& pkt);
 	static bool Handle_C_CHAT_REQ(PacketSessionRef& session, Protocol::C_CHAT_REQ& pkt);
 	static bool Handle_C_HEART_BEAT_REQ(PacketSessionRef& session, Protocol::C_HEART_BEAT_REQ& pkt);
 	static bool Handle_C_PARTY_CHAT_REQ(PacketSessionRef& session, Protocol::C_PARTY_CHAT_REQ& pkt);

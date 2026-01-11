@@ -82,16 +82,22 @@ void GameRoom::Enter(PlayerSessionRef session, PlayerRef player)
 }
 
 // [맵 이동 입장]
+// [맵 이동 입장]
 void GameRoom::EnterMapChange(PlayerSessionRef session, PlayerRef player)
 {
 	printf("2번 여기가 문제임\n");
 	if (!session || !player)
 		return;
 
+	// ✅ EnterRegister 실패하면 MapChange 상태를 반드시 풀어줘야 한다.
 	if (EnterRegister(session, player) == false)
+	{
+		session->Post([](PlayerSessionRef ps)
+			{
+				ps->CancelMapChange();
+			});
 		return;
-
-	if (player == nullptr) return;
+	}
 
 	const uint64 playerId = player->GetPlayerId();
 
@@ -100,16 +106,18 @@ void GameRoom::EnterMapChange(PlayerSessionRef session, PlayerRef player)
 	endPkt.set_token(session->GetMapChangeToken());
 	endPkt.set_mapid(_mapId);
 	endPkt.mutable_pos()->CopyFrom(*player->GetPosInfo());
-	endPkt.set_instanceid(player->GetInstanceId());
+	endPkt.set_instanceid(_instanceId);     
+	endPkt.set_targetchannelid(_channelId);       
+
 	session->Send(ClientPacketHandler::MakeSendBuffer(endPkt));
 
-	// 2) 입력락 해제
-	session->EndMapChange();
+	// ❌ 여기서 EndMapChange 하면 안 됨 (중복/조기해제/레이스)
+	// session->EndMapChange();
 
-	// 3) 스폰은 그 다음
+	// 2) 스폰은 그 다음
 	UpdateAOI(session, player, true /*forceFullSnapshot*/);
 
-	// ✅ 4) 파티 정보 재전송 (맵 이동 시 클라이언트 동기화)
+	// 3) 파티 정보 재전송
 	PartyActor::Instance().Push([session, playerId]()
 		{
 			auto& core = PartyActor::Instance().Core();
@@ -136,8 +144,8 @@ void GameRoom::EnterMapChange(PlayerSessionRef session, PlayerRef player)
 			}
 		});
 
-	printf("✅ [MapChange-END] Player %llu -> Map %d (Token=%llu)\n",
-		playerId, _mapId, endPkt.token());
+	printf("✅ [MapChange-END] Player %llu -> Map %d (Inst=%lld) Token=%llu Channel=%d\n",
+		playerId, _mapId, (long long)_instanceId, endPkt.token(), endPkt.targetchannelid());
 }
 
 void GameRoom::Leave(PlayerSessionRef session, PlayerRef player)

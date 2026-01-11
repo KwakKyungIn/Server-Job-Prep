@@ -128,11 +128,15 @@ public:
     // ===== [MapChange] ACK 이후 실제 전이(OldRoom thread에서 수행) =====
     void TransferMapChangeById(PlayerSessionRef session,
         uint64 playerId,
+        int32 targetChannelId,
         int32 targetMapId,
         int64 targetInstanceId,
         const Protocol::PositionInfo& spawn);
 
     void SaveReturnLocation_ActorOnly(uint64 playerId);
+
+    int32 GetChannelId() const { return _channelId; }
+    int32 GetMapId() const { return _mapId; }
 
 private:
     GameMapRef              _map;
@@ -156,7 +160,6 @@ private:
 
 
     std::unique_ptr<BattleSystem> _battle; // 전투 로직 엔진
-
 private:
     // ===== AOI v2 Params (일단 고정값) =====
     int32 _aoiNeighborRadiusCells = 2; // 5x5

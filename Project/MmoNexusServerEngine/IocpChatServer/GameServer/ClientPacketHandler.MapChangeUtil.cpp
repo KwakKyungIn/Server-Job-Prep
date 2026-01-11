@@ -1,4 +1,4 @@
-#include "pch.h"
+Ôªø#include "pch.h"
 #include "ClientPacketHandler.MapChangeUtil.h"
 #include "ClientPacketHandler.h"
 #include "PlayerSession.h"
@@ -22,7 +22,7 @@ namespace MapChangeUtil
         uint64 now = (uint64)std::chrono::duration_cast<std::chrono::milliseconds>(
             std::chrono::steady_clock::now().time_since_epoch()).count();
 
-        // √Êµπ∏∏ æ» ≥™∏È µ 
+        // Ï∂©ÎèåÎßå Ïïà ÎÇòÎ©¥ Îê®
         return (playerId << 32) ^ (sessionId << 16) ^ seq ^ now;
     }
 
@@ -47,14 +47,14 @@ namespace MapChangeUtil
     }
 
     void SendMapChangeBegin(PlayerSessionRef ms, uint64 playerId,
-        int32 targetMapId, int64 targetInstanceId, const Protocol::PositionInfo& spawn)
+        int32 targetChannelId, int32 targetMapId, int64 targetInstanceId, const Protocol::PositionInfo& spawn)
     {
         if (!ms) return;
         if (ms->IsMapChanging()) return;
         if (playerId == 0) return;
 
         const uint64 token = MakeMapChangeToken(playerId, ms->GetSessionId());
-        if (!ms->TryBeginMapChange(token, targetMapId, targetInstanceId, spawn))
+        if (!ms->TryBeginMapChange(token, targetChannelId, targetMapId, targetInstanceId, spawn))
             return;
 
         Protocol::S_MAP_CHANGE_BEGIN beginPkt;
@@ -62,6 +62,7 @@ namespace MapChangeUtil
         beginPkt.set_targetmapid(targetMapId);
         beginPkt.mutable_spawn()->CopyFrom(spawn);
         beginPkt.set_instanceid(targetInstanceId);
+        beginPkt.set_targetchannelid(targetChannelId);
         ms->Send(ClientPacketHandler::MakeSendBuffer(beginPkt));
     }
 
@@ -88,11 +89,17 @@ namespace MapChangeUtil
                         int32 rm = 0; int64 ri = 0; Protocol::PositionInfo rp;
                         MakeSafeReturn(p, rm, ri, rp);
 
-                        self->Post([pid, rm, ri, rp](PlayerSessionRef s) mutable
+                        
+                        int32 targetChannelId = p->GetChannelId();
+                        if (targetChannelId <= 0)
+                            targetChannelId = gr->GetChannelId();
+
+                        self->Post([pid, targetChannelId, rm, ri, rp](PlayerSessionRef s) mutable
                             {
-                                SendMapChangeBegin(s, pid, rm, ri, rp);
+                                SendMapChangeBegin(s, pid, targetChannelId, rm, ri, rp); 
                             });
                     });
+
             });
     }
 }
