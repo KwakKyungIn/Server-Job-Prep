@@ -194,39 +194,24 @@ public class PacketHandler
 
     public static void S_MAP_CHANGE_BEGINHandler(ServerSession session, IMessage packet)
     {
-        S_MAP_CHANGE_BEGIN pkt = packet as S_MAP_CHANGE_BEGIN;
+        var pkt = packet as S_MAP_CHANGE_BEGIN;
 
-        NetworkManager.Instance.BeginMapChange(pkt.Token);
+        Debug.Log($"🗺️ [MapChange BEGIN] token={pkt.Token} targetMapId={pkt.TargetMapId} targetCh={pkt.TargetChannelId} " +
+                  $"spawn=({pkt.Spawn.X},{pkt.Spawn.Y},{pkt.Spawn.Z})");
 
-        Debug.Log($"🗺️ [MapChange BEGIN] token={pkt.Token} targetMapId={pkt.TargetMapId} spawn=({pkt.Spawn.X},{pkt.Spawn.Y},{pkt.Spawn.Z})");
-
-        // 1) (UI/입력락/월드클리어)는 이벤트로 위임 (ObjectManager나 NetworkManager가 처리하게)
+        // ✅ 상태 변경은 MapSceneRouter가 한다. 여기서는 이벤트만.
         OnMapChangeBegin?.Invoke(pkt);
-
-        // 2) 로딩 완료 ACK: 지금은 "즉시 ACK"로 처리 (나중에 실제 로딩 끝난 타이밍으로 옮기면 됨)
-
-        /*
-        C_MAP_CHANGE_ACK ack = new C_MAP_CHANGE_ACK();
-        ack.Token = pkt.Token;
-
-        // PacketManager 자동생성이라 MsgId enum 이름은 네 프로젝트 기준으로 맞춰야 함
-        NetworkManager.Instance.Send(ack, (ushort)PacketManager.MsgId.C_MAP_CHANGE_ACK);
-
-        Debug.Log($"✅ [MapChange ACK Sent] token={ack.Token}");
-
-        */
     }
 
     public static void S_MAP_CHANGE_ENDHandler(ServerSession session, IMessage packet)
     {
-        S_MAP_CHANGE_END pkt = packet as S_MAP_CHANGE_END;
+        var pkt = packet as S_MAP_CHANGE_END;
 
-        Debug.Log($"🗺️ [MapChange END] token={pkt.Token} mapId={pkt.MapId} pos=({pkt.Pos.X},{pkt.Pos.Y},{pkt.Pos.Z})");
+        Debug.Log($"🗺️ [MapChange END] token={pkt.Token} mapId={pkt.MapId} targetCh={pkt.TargetChannelId} " +
+                  $"pos=({pkt.Pos.X},{pkt.Pos.Y},{pkt.Pos.Z})");
 
-        // 1) 최종 처리(내 위치 이동, 입력락 해제, UI 내리기 등)는 이벤트로 위임
+        // ✅ 상태 변경은 MapSceneRouter가 한다. 여기서는 이벤트만.
         OnMapChangeEnd?.Invoke(pkt);
-
-        NetworkManager.Instance.EndMapChange(pkt.Token);
     }
 
     public static void S_SKILLHandler(ServerSession session, IMessage packet)

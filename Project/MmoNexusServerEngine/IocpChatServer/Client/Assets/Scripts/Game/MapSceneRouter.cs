@@ -35,7 +35,8 @@ public class MapSceneRouter : MonoBehaviour
 
         // 2) 로딩 UI ON
         EnsureOverlay();
-        _overlay?.Show($"Loading Map {pkt.TargetMapId}...");
+        _overlay?.Show($"Loading Map {pkt.TargetMapId} (Ch {pkt.TargetChannelId})...");
+
 
         // 3) 내 플레이어를 씬 전환에서 보호 (안 하면 씬 로드때 파괴됨)
         PreserveMyPlayer();
