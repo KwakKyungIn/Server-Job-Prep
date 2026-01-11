@@ -76,6 +76,15 @@ public class MyPlayerController : MonoBehaviour
 
         if (_isDead) return;
 
+        if (UI_ChatPanel.IsTyping)
+        {
+            // ✅ 채팅 중엔 게임 입력 전부 봉쇄 (이동/공격/테스트키 등)
+            _curMoveState = MoveState.MoveIdle;
+            _anim?.SetMoveState(_curMoveState);
+            return;
+        }
+
+
         // ============================================================
         // [ATTACK]
         // ============================================================

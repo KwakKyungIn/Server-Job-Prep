@@ -29,6 +29,8 @@ public class UI_ChatPanel : MonoBehaviour
 
     bool _active = false;
 
+    public static bool IsTyping { get; private set; } = false;
+
     void Awake()
     {
         if (sendButton)
@@ -56,6 +58,8 @@ public class UI_ChatPanel : MonoBehaviour
     {
         PacketHandler.OnChatMsg -= OnChatMsg;
         PacketHandler.OnChatRes -= OnChatRes;
+
+        IsTyping = false;
     }
 
     void Update()
@@ -97,6 +101,7 @@ public class UI_ChatPanel : MonoBehaviour
     void ActivateChat()
     {
         _active = true;
+        IsTyping = true;
 
         if (group != null)
         {
@@ -116,6 +121,7 @@ public class UI_ChatPanel : MonoBehaviour
     void DeactivateChat(bool clearInput)
     {
         _active = false;
+        IsTyping = false;
 
         if (clearInput && chatInput != null)
             chatInput.text = "";
@@ -128,7 +134,7 @@ public class UI_ChatPanel : MonoBehaviour
         {
             group.alpha = inactiveAlpha;
             group.interactable = true;      // ✅ 반투명 상태에서도 스크롤/선택 가능하게 하고 싶으면 true
-            group.blocksRaycasts = true;    // ✅ 클릭 막고 싶으면 false로 바꿔
+            group.blocksRaycasts = false;    // ✅ 클릭 막고 싶으면 false로 바꿔
         }
     }
 
