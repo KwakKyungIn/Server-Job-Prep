@@ -9,10 +9,13 @@ public class UI_EscMenu : MonoBehaviour
 
     [Header("Buttons")]
     public Button btnExit;
-    public Button btnChannelChange;            // ✅ NEW: "채널 변경" 버튼
+    public Button btnChannelChange;
 
     [Header("Panels")]
-    public UI_ChannelChangePanel channelPanel; // ✅ NEW: 채널 1/2/3 패널 스크립트
+    public UI_ChannelChangePanel channelPanel;
+
+    [Header("External UI")]
+    public UI_PanelToggle panelToggle; // ✅ NEW: 인벤/파티 토글 스크립트 연결
 
     [Header("Optional Text")]
     public TMP_Text statusText;
@@ -22,7 +25,6 @@ public class UI_EscMenu : MonoBehaviour
         if (root != null)
             root.SetActive(false);
 
-        // ✅ 중복 리스너 방지
         if (btnExit != null)
         {
             btnExit.onClick.RemoveAllListeners();
@@ -35,14 +37,13 @@ public class UI_EscMenu : MonoBehaviour
             btnChannelChange.onClick.AddListener(OpenChannelPanel);
         }
 
-        // 시작 시 채널 패널은 닫아두기
         if (channelPanel != null)
             channelPanel.Hide();
     }
 
     void Update()
     {
-        // 맵 체인지 중엔 메뉴/패널 전부 닫기 (꼬임 방지)
+        // 맵 체인지 중엔 메뉴/패널 전부 닫기
         if (NetworkManager.Instance != null && NetworkManager.Instance.IsMapChanging)
         {
             if (root != null && root.activeSelf)
@@ -55,7 +56,21 @@ public class UI_EscMenu : MonoBehaviour
         }
 
         if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            // ✅ 1) 채널 패널이 열려있으면 먼저 닫기 (한 단계 뒤로)
+            if (channelPanel != null && channelPanel.IsOpen)
+            {
+                channelPanel.Hide();
+                return;
+            }
+
+            // ✅ 2) 인벤/파티가 열려있으면 하나만 닫기
+            if (panelToggle != null && panelToggle.CloseOneByEsc())
+                return;
+
+            // ✅ 3) 그 외에는 ESC 메뉴 토글
             Toggle();
+        }
     }
 
     void Toggle()
@@ -65,7 +80,6 @@ public class UI_EscMenu : MonoBehaviour
         bool next = !root.activeSelf;
         root.SetActive(next);
 
-        // 메뉴 열릴 때 채널 패널은 기본 닫힘
         if (next && channelPanel != null)
             channelPanel.Hide();
     }
@@ -81,7 +95,7 @@ public class UI_EscMenu : MonoBehaviour
             return;
         }
 
-        channelPanel.Show(statusText); // statusText를 넘겨서 같은 텍스트로 표시하고 싶으면 사용
+        channelPanel.Show(statusText);
     }
 
     void OnExit()

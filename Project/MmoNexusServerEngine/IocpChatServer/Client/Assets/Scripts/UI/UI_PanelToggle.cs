@@ -1,4 +1,4 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using TMPro;
 
 public class UI_PanelToggle : MonoBehaviour
@@ -6,7 +6,7 @@ public class UI_PanelToggle : MonoBehaviour
     public GameObject inventoryPanel; // RightPanel/InventoryPanel
     public GameObject partyPanel;     // RightPanel/PartyPanel
 
-    // (¼±ÅÃ) Ã¤ÆÃ ÀÔ·Â Áß¿£ Åä±Û ¾È µÇ°Ô
+    // (ì„ íƒ) ì±„íŒ… ì…ë ¥ ì¤‘ì—” í† ê¸€ ì•ˆ ë˜ê²Œ
     public TMP_InputField chatInput;
 
     void Start()
@@ -25,6 +25,25 @@ public class UI_PanelToggle : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.K))
             ToggleParty();
+    }
+
+    // âœ… NEW: ESCì—ì„œ "í•˜ë‚˜ì”© ë‹«ê¸°" ìš©ë„ë¡œ ì‚¬ìš©
+    public bool CloseOneByEsc()
+    {
+        // ìš°ì„ ìˆœìœ„: Party -> Inventory (ì›í•˜ë©´ ë°˜ëŒ€ë¡œ ë°”ê¿”ë„ ë¨)
+        if (partyPanel != null && partyPanel.activeSelf)
+        {
+            partyPanel.SetActive(false);
+            return true;
+        }
+
+        if (inventoryPanel != null && inventoryPanel.activeSelf)
+        {
+            inventoryPanel.SetActive(false);
+            return true;
+        }
+
+        return false; // ë‹«ì„ ê²Œ ì—†ìŒ
     }
 
     void ToggleInventory()
@@ -48,12 +67,11 @@ public class UI_PanelToggle : MonoBehaviour
         if (next && inventoryPanel)
             inventoryPanel.SetActive(false);
 
-        // ÆÄÆ¼ ÆĞ³Î Ä×À¸¸é »óÅÂ ¿äÃ» + Áï½Ã °»½Å
         if (next)
         {
             var ui = partyPanel.GetComponent<UI_PartyPanel>();
             if (ui != null)
-                ui.OnOpen(); // ¾Æ·¡¿¡¼­ Ãß°¡ÇÒ ÇÔ¼ö
+                ui.OnOpen();
         }
     }
 }

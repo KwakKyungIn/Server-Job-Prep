@@ -1,4 +1,4 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using Protocol;
@@ -17,14 +17,16 @@ public class UI_ChannelChangePanel : MonoBehaviour
     [Header("Optional Text")]
     public TMP_Text statusText;
 
-    TMP_Text _externalStatusText; // EscMenuÀÇ statusText¸¦ ³Ñ°Ü¹ŞÀ¸¸é °°ÀÌ °»½Å¿ë
+    TMP_Text _externalStatusText; // EscMenuì˜ statusTextë¥¼ ë„˜ê²¨ë°›ìœ¼ë©´ ê°™ì´ ê°±ì‹ ìš©
+
+    public bool IsOpen => root != null && root.activeSelf;
 
     void Awake()
     {
         if (root != null)
             root.SetActive(false);
 
-        // ? Áßº¹ ¸®½º³Ê ¹æÁö
+        // âœ… ì¤‘ë³µ ë¦¬ìŠ¤ë„ˆ ë°©ì§€
         if (btnClose != null)
         {
             btnClose.onClick.RemoveAllListeners();
@@ -68,14 +70,14 @@ public class UI_ChannelChangePanel : MonoBehaviour
         var req = new C_CHANNEL_CHANGE_REQ { TargetChannelId = targetChannelId };
         NetworkManager.Instance.Send(req, (ushort)PacketManager.MsgId.C_CHANNEL_CHANGE_REQ);
 
-        // ÅØ½ºÆ® °»½Å(³» ÆĞ³Î ÅØ½ºÆ® + EscMenu ÅØ½ºÆ® µÑ ´Ù)
+        // í…ìŠ¤íŠ¸ ê°±ì‹ (ë‚´ íŒ¨ë„ í…ìŠ¤íŠ¸ + EscMenu í…ìŠ¤íŠ¸ ë‘˜ ë‹¤)
         statusText?.SetText($"Switching to Channel {targetChannelId}...");
         _externalStatusText?.SetText($"Switching to Channel {targetChannelId}...");
 
-        // ¿¬Å¸ ¹æÁö: ÆĞ³Î ´İ±â
+        // ì—°íƒ€ ë°©ì§€: íŒ¨ë„ ë‹«ê¸°
         Hide();
 
-        // Áï½Ã ·Îµù °¨°¢
+        // ì¦‰ì‹œ ë¡œë”© ê°ê°
         var overlay = FindObjectOfType<UI_LoadingOverlay>(true);
         overlay?.Show($"Switching to Channel {targetChannelId}...");
     }
