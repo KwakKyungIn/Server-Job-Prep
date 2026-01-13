@@ -95,7 +95,11 @@ void Creature::UseSkill(int32 skillId)
         auto self = shared_from_this();
         gr->Push([gr, self, skillId]()
             {
-                gr->HandleSkill(self, skillId);
+                float yaw = 0.f;
+                if (self->GetPosInfo())
+                    yaw = self->GetPosInfo()->yaw();
+
+                gr->HandleSkill(self, skillId, yaw, 0);
             });
     }
 

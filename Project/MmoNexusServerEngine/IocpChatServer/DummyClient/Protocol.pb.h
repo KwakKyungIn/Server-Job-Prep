@@ -1655,6 +1655,7 @@ class S_SPAWN final :
   enum : int {
     kPlayersFieldNumber = 1,
     kMonstersFieldNumber = 2,
+    kProjectilesFieldNumber = 3,
     kSnapshotIdFieldNumber = 10,
     kSnapshotBeginFieldNumber = 11,
     kSnapshotEndFieldNumber = 12,
@@ -1695,6 +1696,24 @@ class S_SPAWN final :
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::Protocol::MonsterInfo >&
       monsters() const;
 
+  // repeated .Protocol.ProjectileInfo projectiles = 3;
+  int projectiles_size() const;
+  private:
+  int _internal_projectiles_size() const;
+  public:
+  void clear_projectiles();
+  ::Protocol::ProjectileInfo* mutable_projectiles(int index);
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::Protocol::ProjectileInfo >*
+      mutable_projectiles();
+  private:
+  const ::Protocol::ProjectileInfo& _internal_projectiles(int index) const;
+  ::Protocol::ProjectileInfo* _internal_add_projectiles();
+  public:
+  const ::Protocol::ProjectileInfo& projectiles(int index) const;
+  ::Protocol::ProjectileInfo* add_projectiles();
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::Protocol::ProjectileInfo >&
+      projectiles() const;
+
   // uint32 snapshot_id = 10;
   void clear_snapshot_id();
   uint32_t snapshot_id() const;
@@ -1732,6 +1751,7 @@ class S_SPAWN final :
   struct Impl_ {
     ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::Protocol::PlayerInfo > players_;
     ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::Protocol::MonsterInfo > monsters_;
+    ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::Protocol::ProjectileInfo > projectiles_;
     uint32_t snapshot_id_;
     bool snapshot_begin_;
     bool snapshot_end_;
@@ -2026,6 +2046,8 @@ class C_SKILL final :
 
   enum : int {
     kSkillIdFieldNumber = 1,
+    kCastYawFieldNumber = 2,
+    kClientTimeMsFieldNumber = 3,
   };
   // int32 skillId = 1;
   void clear_skillid();
@@ -2034,6 +2056,24 @@ class C_SKILL final :
   private:
   int32_t _internal_skillid() const;
   void _internal_set_skillid(int32_t value);
+  public:
+
+  // float castYaw = 2;
+  void clear_castyaw();
+  float castyaw() const;
+  void set_castyaw(float value);
+  private:
+  float _internal_castyaw() const;
+  void _internal_set_castyaw(float value);
+  public:
+
+  // uint32 client_time_ms = 3;
+  void clear_client_time_ms();
+  uint32_t client_time_ms() const;
+  void set_client_time_ms(uint32_t value);
+  private:
+  uint32_t _internal_client_time_ms() const;
+  void _internal_set_client_time_ms(uint32_t value);
   public:
 
   // @@protoc_insertion_point(class_scope:Protocol.C_SKILL)
@@ -2045,6 +2085,8 @@ class C_SKILL final :
   typedef void DestructorSkippable_;
   struct Impl_ {
     int32_t skillid_;
+    float castyaw_;
+    uint32_t client_time_ms_;
     mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   };
   union { Impl_ _impl_; };
@@ -8939,6 +8981,43 @@ S_SPAWN::monsters() const {
   return _impl_.monsters_;
 }
 
+// repeated .Protocol.ProjectileInfo projectiles = 3;
+inline int S_SPAWN::_internal_projectiles_size() const {
+  return _impl_.projectiles_.size();
+}
+inline int S_SPAWN::projectiles_size() const {
+  return _internal_projectiles_size();
+}
+inline ::Protocol::ProjectileInfo* S_SPAWN::mutable_projectiles(int index) {
+  // @@protoc_insertion_point(field_mutable:Protocol.S_SPAWN.projectiles)
+  return _impl_.projectiles_.Mutable(index);
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::Protocol::ProjectileInfo >*
+S_SPAWN::mutable_projectiles() {
+  // @@protoc_insertion_point(field_mutable_list:Protocol.S_SPAWN.projectiles)
+  return &_impl_.projectiles_;
+}
+inline const ::Protocol::ProjectileInfo& S_SPAWN::_internal_projectiles(int index) const {
+  return _impl_.projectiles_.Get(index);
+}
+inline const ::Protocol::ProjectileInfo& S_SPAWN::projectiles(int index) const {
+  // @@protoc_insertion_point(field_get:Protocol.S_SPAWN.projectiles)
+  return _internal_projectiles(index);
+}
+inline ::Protocol::ProjectileInfo* S_SPAWN::_internal_add_projectiles() {
+  return _impl_.projectiles_.Add();
+}
+inline ::Protocol::ProjectileInfo* S_SPAWN::add_projectiles() {
+  ::Protocol::ProjectileInfo* _add = _internal_add_projectiles();
+  // @@protoc_insertion_point(field_add:Protocol.S_SPAWN.projectiles)
+  return _add;
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::Protocol::ProjectileInfo >&
+S_SPAWN::projectiles() const {
+  // @@protoc_insertion_point(field_list:Protocol.S_SPAWN.projectiles)
+  return _impl_.projectiles_;
+}
+
 // -------------------------------------------------------------------
 
 // S_DESPAWN
@@ -9012,6 +9091,46 @@ inline void C_SKILL::_internal_set_skillid(int32_t value) {
 inline void C_SKILL::set_skillid(int32_t value) {
   _internal_set_skillid(value);
   // @@protoc_insertion_point(field_set:Protocol.C_SKILL.skillId)
+}
+
+// float castYaw = 2;
+inline void C_SKILL::clear_castyaw() {
+  _impl_.castyaw_ = 0;
+}
+inline float C_SKILL::_internal_castyaw() const {
+  return _impl_.castyaw_;
+}
+inline float C_SKILL::castyaw() const {
+  // @@protoc_insertion_point(field_get:Protocol.C_SKILL.castYaw)
+  return _internal_castyaw();
+}
+inline void C_SKILL::_internal_set_castyaw(float value) {
+  
+  _impl_.castyaw_ = value;
+}
+inline void C_SKILL::set_castyaw(float value) {
+  _internal_set_castyaw(value);
+  // @@protoc_insertion_point(field_set:Protocol.C_SKILL.castYaw)
+}
+
+// uint32 client_time_ms = 3;
+inline void C_SKILL::clear_client_time_ms() {
+  _impl_.client_time_ms_ = 0u;
+}
+inline uint32_t C_SKILL::_internal_client_time_ms() const {
+  return _impl_.client_time_ms_;
+}
+inline uint32_t C_SKILL::client_time_ms() const {
+  // @@protoc_insertion_point(field_get:Protocol.C_SKILL.client_time_ms)
+  return _internal_client_time_ms();
+}
+inline void C_SKILL::_internal_set_client_time_ms(uint32_t value) {
+  
+  _impl_.client_time_ms_ = value;
+}
+inline void C_SKILL::set_client_time_ms(uint32_t value) {
+  _internal_set_client_time_ms(value);
+  // @@protoc_insertion_point(field_set:Protocol.C_SKILL.client_time_ms)
 }
 
 // -------------------------------------------------------------------

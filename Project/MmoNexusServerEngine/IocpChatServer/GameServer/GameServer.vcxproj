@@ -220,6 +220,7 @@
     <ClCompile Include="GameRoom.Monster.cpp" />
     <ClCompile Include="GameRoom.Move.cpp" />
     <ClCompile Include="GameRoom.Net.cpp" />
+    <ClCompile Include="GameRoom.Projectile.cpp" />
     <ClCompile Include="GameServer.cpp" />
     <ClCompile Include="GameSessionManager.cpp" />
     <ClCompile Include="InstanceManagerCore.cpp" />
@@ -236,6 +237,7 @@
     <ClCompile Include="PersistenceService.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="PlayerSession.cpp" />
+    <ClCompile Include="Projectile.cpp" />
     <ClCompile Include="Protocol.pb.cc">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
@@ -280,6 +282,7 @@
     <ClInclude Include="PersistenceService.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="PlayerSession.h" />
+    <ClInclude Include="Projectile.h" />
     <ClInclude Include="Protocol.pb.h" />
     <ClInclude Include="Protocol_S2S.pb.h" />
     <ClInclude Include="RedisCodec.h" />

@@ -179,7 +179,7 @@ void Monster::UpdateAttack()
 	printf("🥊 [Monster] Attack! -> Player %llu\n", target->GetObjectId());
 	if (auto room = GetGameRoom())
 	{
-		room->HandleSkill(static_pointer_cast<Creature>(shared_from_this()), 1); // 1번=평타
+		room->HandleSkill(static_pointer_cast<Creature>(shared_from_this()), 1, _posInfo->yaw(), 0);
 	}
 }
 

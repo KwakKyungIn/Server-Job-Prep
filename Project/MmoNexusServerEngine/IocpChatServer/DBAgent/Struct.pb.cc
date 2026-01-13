@@ -156,6 +156,11 @@ PROTOBUF_CONSTEXPR SkillTemplateInfo::SkillTemplateInfo(
   , /*decltype(_impl_.radius_)*/0
   , /*decltype(_impl_.angle_)*/0
   , /*decltype(_impl_.effectid_)*/0
+  , /*decltype(_impl_.projectilespeed_)*/0
+  , /*decltype(_impl_.projectilelifems_)*/0
+  , /*decltype(_impl_.hitradius_)*/0
+  , /*decltype(_impl_.stoponhit_)*/false
+  , /*decltype(_impl_.maxhits_)*/0
   , /*decltype(_impl_._cached_size_)*/{}} {}
 struct SkillTemplateInfoDefaultTypeInternal {
   PROTOBUF_CONSTEXPR SkillTemplateInfoDefaultTypeInternal()
@@ -195,8 +200,26 @@ struct ChatMessageDefaultTypeInternal {
   };
 };
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 ChatMessageDefaultTypeInternal _ChatMessage_default_instance_;
+PROTOBUF_CONSTEXPR ProjectileInfo::ProjectileInfo(
+    ::_pbi::ConstantInitialized): _impl_{
+    /*decltype(_impl_.posinfo_)*/nullptr
+  , /*decltype(_impl_.objectid_)*/uint64_t{0u}
+  , /*decltype(_impl_.ownerid_)*/uint64_t{0u}
+  , /*decltype(_impl_.skillid_)*/0
+  , /*decltype(_impl_.speed_)*/0
+  , /*decltype(_impl_.lifetimems_)*/0u
+  , /*decltype(_impl_._cached_size_)*/{}} {}
+struct ProjectileInfoDefaultTypeInternal {
+  PROTOBUF_CONSTEXPR ProjectileInfoDefaultTypeInternal()
+      : _instance(::_pbi::ConstantInitialized{}) {}
+  ~ProjectileInfoDefaultTypeInternal() {}
+  union {
+    ProjectileInfo _instance;
+  };
+};
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 ProjectileInfoDefaultTypeInternal _ProjectileInfo_default_instance_;
 }  // namespace Protocol
-static ::_pb::Metadata file_level_metadata_Struct_2eproto[10];
+static ::_pb::Metadata file_level_metadata_Struct_2eproto[11];
 static constexpr ::_pb::EnumDescriptor const** file_level_enum_descriptors_Struct_2eproto = nullptr;
 static constexpr ::_pb::ServiceDescriptor const** file_level_service_descriptors_Struct_2eproto = nullptr;
 
@@ -298,6 +321,11 @@ const uint32_t TableStruct_Struct_2eproto::offsets[] PROTOBUF_SECTION_VARIABLE(p
   PROTOBUF_FIELD_OFFSET(::Protocol::SkillTemplateInfo, _impl_.radius_),
   PROTOBUF_FIELD_OFFSET(::Protocol::SkillTemplateInfo, _impl_.angle_),
   PROTOBUF_FIELD_OFFSET(::Protocol::SkillTemplateInfo, _impl_.effectid_),
+  PROTOBUF_FIELD_OFFSET(::Protocol::SkillTemplateInfo, _impl_.projectilespeed_),
+  PROTOBUF_FIELD_OFFSET(::Protocol::SkillTemplateInfo, _impl_.projectilelifems_),
+  PROTOBUF_FIELD_OFFSET(::Protocol::SkillTemplateInfo, _impl_.hitradius_),
+  PROTOBUF_FIELD_OFFSET(::Protocol::SkillTemplateInfo, _impl_.stoponhit_),
+  PROTOBUF_FIELD_OFFSET(::Protocol::SkillTemplateInfo, _impl_.maxhits_),
   ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(::Protocol::RoomInfo, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -315,6 +343,18 @@ const uint32_t TableStruct_Struct_2eproto::offsets[] PROTOBUF_SECTION_VARIABLE(p
   PROTOBUF_FIELD_OFFSET(::Protocol::ChatMessage, _impl_.senderid_),
   PROTOBUF_FIELD_OFFSET(::Protocol::ChatMessage, _impl_.name_),
   PROTOBUF_FIELD_OFFSET(::Protocol::ChatMessage, _impl_.message_),
+  ~0u,  // no _has_bits_
+  PROTOBUF_FIELD_OFFSET(::Protocol::ProjectileInfo, _internal_metadata_),
+  ~0u,  // no _extensions_
+  ~0u,  // no _oneof_case_
+  ~0u,  // no _weak_field_map_
+  ~0u,  // no _inlined_string_donated_
+  PROTOBUF_FIELD_OFFSET(::Protocol::ProjectileInfo, _impl_.objectid_),
+  PROTOBUF_FIELD_OFFSET(::Protocol::ProjectileInfo, _impl_.ownerid_),
+  PROTOBUF_FIELD_OFFSET(::Protocol::ProjectileInfo, _impl_.skillid_),
+  PROTOBUF_FIELD_OFFSET(::Protocol::ProjectileInfo, _impl_.posinfo_),
+  PROTOBUF_FIELD_OFFSET(::Protocol::ProjectileInfo, _impl_.speed_),
+  PROTOBUF_FIELD_OFFSET(::Protocol::ProjectileInfo, _impl_.lifetimems_),
 };
 static const ::_pbi::MigrationSchema schemas[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
   { 0, -1, -1, sizeof(::Protocol::PositionInfo)},
@@ -325,8 +365,9 @@ static const ::_pbi::MigrationSchema schemas[] PROTOBUF_SECTION_VARIABLE(protode
   { 58, -1, -1, sizeof(::Protocol::StatTemplateInfo)},
   { 70, -1, -1, sizeof(::Protocol::ItemTemplateInfo)},
   { 82, -1, -1, sizeof(::Protocol::SkillTemplateInfo)},
-  { 97, -1, -1, sizeof(::Protocol::RoomInfo)},
-  { 105, -1, -1, sizeof(::Protocol::ChatMessage)},
+  { 102, -1, -1, sizeof(::Protocol::RoomInfo)},
+  { 110, -1, -1, sizeof(::Protocol::ChatMessage)},
+  { 119, -1, -1, sizeof(::Protocol::ProjectileInfo)},
 };
 
 static const ::_pb::Message* const file_default_instances[] = {
@@ -340,6 +381,7 @@ static const ::_pb::Message* const file_default_instances[] = {
   &::Protocol::_SkillTemplateInfo_default_instance_._instance,
   &::Protocol::_RoomInfo_default_instance_._instance,
   &::Protocol::_ChatMessage_default_instance_._instance,
+  &::Protocol::_ProjectileInfo_default_instance_._instance,
 };
 
 const char descriptor_table_protodef_Struct_2eproto[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) =
@@ -366,25 +408,31 @@ const char descriptor_table_protodef_Struct_2eproto[] PROTOBUF_SECTION_VARIABLE(
   " \001(\005\022\020\n\010totalExp\030\006 \001(\003\"\202\001\n\020ItemTemplateI"
   "nfo\022\022\n\ntemplateId\030\001 \001(\005\022\014\n\004name\030\002 \001(\t\022\020\n"
   "\010itemType\030\003 \001(\005\022\023\n\013attackBonus\030\004 \001(\005\022\024\n\014"
-  "defenseBonus\030\005 \001(\005\022\017\n\007hpBonus\030\006 \001(\005\"\274\001\n\021"
+  "defenseBonus\030\005 \001(\005\022\017\n\007hpBonus\030\006 \001(\005\"\246\002\n\021"
   "SkillTemplateInfo\022\017\n\007skillId\030\001 \001(\005\022\014\n\004na"
   "me\030\002 \001(\t\022\020\n\010cooldown\030\003 \001(\005\022\016\n\006damage\030\004 \001"
   "(\005\022&\n\tskillType\030\005 \001(\0162\023.Protocol.SkillTy"
   "pe\022\r\n\005range\030\006 \001(\002\022\016\n\006radius\030\007 \001(\002\022\r\n\005ang"
-  "le\030\010 \001(\002\022\020\n\010effectId\030\t \001(\005\"A\n\010RoomInfo\022\016"
-  "\n\006roomId\030\001 \001(\005\022%\n\007players\030\002 \003(\0132\024.Protoc"
-  "ol.PlayerInfo\">\n\013ChatMessage\022\020\n\010senderId"
-  "\030\001 \001(\004\022\014\n\004name\030\002 \001(\t\022\017\n\007message\030\003 \001(\tb\006p"
-  "roto3"
+  "le\030\010 \001(\002\022\020\n\010effectId\030\t \001(\005\022\027\n\017projectile"
+  "Speed\030\n \001(\002\022\030\n\020projectileLifeMs\030\013 \001(\005\022\021\n"
+  "\thitRadius\030\014 \001(\002\022\021\n\tstopOnHit\030\r \001(\010\022\017\n\007m"
+  "axHits\030\016 \001(\005\"A\n\010RoomInfo\022\016\n\006roomId\030\001 \001(\005"
+  "\022%\n\007players\030\002 \003(\0132\024.Protocol.PlayerInfo\""
+  ">\n\013ChatMessage\022\020\n\010senderId\030\001 \001(\004\022\014\n\004name"
+  "\030\002 \001(\t\022\017\n\007message\030\003 \001(\t\"\220\001\n\016ProjectileIn"
+  "fo\022\020\n\010objectId\030\001 \001(\004\022\017\n\007ownerId\030\002 \001(\004\022\017\n"
+  "\007skillId\030\003 \001(\005\022\'\n\007posInfo\030\004 \001(\0132\026.Protoc"
+  "ol.PositionInfo\022\r\n\005speed\030\005 \001(\002\022\022\n\nlifeTi"
+  "meMs\030\006 \001(\rb\006proto3"
   ;
 static const ::_pbi::DescriptorTable* const descriptor_table_Struct_2eproto_deps[1] = {
   &::descriptor_table_Enum_2eproto,
 };
 static ::_pbi::once_flag descriptor_table_Struct_2eproto_once;
 const ::_pbi::DescriptorTable descriptor_table_Struct_2eproto = {
-    false, false, 1285, descriptor_table_protodef_Struct_2eproto,
+    false, false, 1538, descriptor_table_protodef_Struct_2eproto,
     "Struct.proto",
-    &descriptor_table_Struct_2eproto_once, descriptor_table_Struct_2eproto_deps, 1, 10,
+    &descriptor_table_Struct_2eproto_once, descriptor_table_Struct_2eproto_deps, 1, 11,
     schemas, file_default_instances, TableStruct_Struct_2eproto::offsets,
     file_level_metadata_Struct_2eproto, file_level_enum_descriptors_Struct_2eproto,
     file_level_service_descriptors_Struct_2eproto,
@@ -2732,6 +2780,11 @@ SkillTemplateInfo::SkillTemplateInfo(const SkillTemplateInfo& from)
     , decltype(_impl_.radius_){}
     , decltype(_impl_.angle_){}
     , decltype(_impl_.effectid_){}
+    , decltype(_impl_.projectilespeed_){}
+    , decltype(_impl_.projectilelifems_){}
+    , decltype(_impl_.hitradius_){}
+    , decltype(_impl_.stoponhit_){}
+    , decltype(_impl_.maxhits_){}
     , /*decltype(_impl_._cached_size_)*/{}};
 
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
@@ -2744,8 +2797,8 @@ SkillTemplateInfo::SkillTemplateInfo(const SkillTemplateInfo& from)
       _this->GetArenaForAllocation());
   }
   ::memcpy(&_impl_.skillid_, &from._impl_.skillid_,
-    static_cast<size_t>(reinterpret_cast<char*>(&_impl_.effectid_) -
-    reinterpret_cast<char*>(&_impl_.skillid_)) + sizeof(_impl_.effectid_));
+    static_cast<size_t>(reinterpret_cast<char*>(&_impl_.maxhits_) -
+    reinterpret_cast<char*>(&_impl_.skillid_)) + sizeof(_impl_.maxhits_));
   // @@protoc_insertion_point(copy_constructor:Protocol.SkillTemplateInfo)
 }
 
@@ -2763,6 +2816,11 @@ inline void SkillTemplateInfo::SharedCtor(
     , decltype(_impl_.radius_){0}
     , decltype(_impl_.angle_){0}
     , decltype(_impl_.effectid_){0}
+    , decltype(_impl_.projectilespeed_){0}
+    , decltype(_impl_.projectilelifems_){0}
+    , decltype(_impl_.hitradius_){0}
+    , decltype(_impl_.stoponhit_){false}
+    , decltype(_impl_.maxhits_){0}
     , /*decltype(_impl_._cached_size_)*/{}
   };
   _impl_.name_.InitDefault();
@@ -2797,8 +2855,8 @@ void SkillTemplateInfo::Clear() {
 
   _impl_.name_.ClearToEmpty();
   ::memset(&_impl_.skillid_, 0, static_cast<size_t>(
-      reinterpret_cast<char*>(&_impl_.effectid_) -
-      reinterpret_cast<char*>(&_impl_.skillid_)) + sizeof(_impl_.effectid_));
+      reinterpret_cast<char*>(&_impl_.maxhits_) -
+      reinterpret_cast<char*>(&_impl_.skillid_)) + sizeof(_impl_.maxhits_));
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
@@ -2879,6 +2937,46 @@ const char* SkillTemplateInfo::_InternalParse(const char* ptr, ::_pbi::ParseCont
       case 9:
         if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 72)) {
           _impl_.effectid_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
+          CHK_(ptr);
+        } else
+          goto handle_unusual;
+        continue;
+      // float projectileSpeed = 10;
+      case 10:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 85)) {
+          _impl_.projectilespeed_ = ::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<float>(ptr);
+          ptr += sizeof(float);
+        } else
+          goto handle_unusual;
+        continue;
+      // int32 projectileLifeMs = 11;
+      case 11:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 88)) {
+          _impl_.projectilelifems_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
+          CHK_(ptr);
+        } else
+          goto handle_unusual;
+        continue;
+      // float hitRadius = 12;
+      case 12:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 101)) {
+          _impl_.hitradius_ = ::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<float>(ptr);
+          ptr += sizeof(float);
+        } else
+          goto handle_unusual;
+        continue;
+      // bool stopOnHit = 13;
+      case 13:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 104)) {
+          _impl_.stoponhit_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          CHK_(ptr);
+        } else
+          goto handle_unusual;
+        continue;
+      // int32 maxHits = 14;
+      case 14:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 112)) {
+          _impl_.maxhits_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
           CHK_(ptr);
         } else
           goto handle_unusual;
@@ -2983,6 +3081,44 @@ uint8_t* SkillTemplateInfo::_InternalSerialize(
     target = ::_pbi::WireFormatLite::WriteInt32ToArray(9, this->_internal_effectid(), target);
   }
 
+  // float projectileSpeed = 10;
+  static_assert(sizeof(uint32_t) == sizeof(float), "Code assumes uint32_t and float are the same size.");
+  float tmp_projectilespeed = this->_internal_projectilespeed();
+  uint32_t raw_projectilespeed;
+  memcpy(&raw_projectilespeed, &tmp_projectilespeed, sizeof(tmp_projectilespeed));
+  if (raw_projectilespeed != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteFloatToArray(10, this->_internal_projectilespeed(), target);
+  }
+
+  // int32 projectileLifeMs = 11;
+  if (this->_internal_projectilelifems() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteInt32ToArray(11, this->_internal_projectilelifems(), target);
+  }
+
+  // float hitRadius = 12;
+  static_assert(sizeof(uint32_t) == sizeof(float), "Code assumes uint32_t and float are the same size.");
+  float tmp_hitradius = this->_internal_hitradius();
+  uint32_t raw_hitradius;
+  memcpy(&raw_hitradius, &tmp_hitradius, sizeof(tmp_hitradius));
+  if (raw_hitradius != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteFloatToArray(12, this->_internal_hitradius(), target);
+  }
+
+  // bool stopOnHit = 13;
+  if (this->_internal_stoponhit() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteBoolToArray(13, this->_internal_stoponhit(), target);
+  }
+
+  // int32 maxHits = 14;
+  if (this->_internal_maxhits() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteInt32ToArray(14, this->_internal_maxhits(), target);
+  }
+
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
     target = ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance), target, stream);
@@ -3059,6 +3195,39 @@ size_t SkillTemplateInfo::ByteSizeLong() const {
     total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(this->_internal_effectid());
   }
 
+  // float projectileSpeed = 10;
+  static_assert(sizeof(uint32_t) == sizeof(float), "Code assumes uint32_t and float are the same size.");
+  float tmp_projectilespeed = this->_internal_projectilespeed();
+  uint32_t raw_projectilespeed;
+  memcpy(&raw_projectilespeed, &tmp_projectilespeed, sizeof(tmp_projectilespeed));
+  if (raw_projectilespeed != 0) {
+    total_size += 1 + 4;
+  }
+
+  // int32 projectileLifeMs = 11;
+  if (this->_internal_projectilelifems() != 0) {
+    total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(this->_internal_projectilelifems());
+  }
+
+  // float hitRadius = 12;
+  static_assert(sizeof(uint32_t) == sizeof(float), "Code assumes uint32_t and float are the same size.");
+  float tmp_hitradius = this->_internal_hitradius();
+  uint32_t raw_hitradius;
+  memcpy(&raw_hitradius, &tmp_hitradius, sizeof(tmp_hitradius));
+  if (raw_hitradius != 0) {
+    total_size += 1 + 4;
+  }
+
+  // bool stopOnHit = 13;
+  if (this->_internal_stoponhit() != 0) {
+    total_size += 1 + 1;
+  }
+
+  // int32 maxHits = 14;
+  if (this->_internal_maxhits() != 0) {
+    total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(this->_internal_maxhits());
+  }
+
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
@@ -3116,6 +3285,29 @@ void SkillTemplateInfo::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, cons
   if (from._internal_effectid() != 0) {
     _this->_internal_set_effectid(from._internal_effectid());
   }
+  static_assert(sizeof(uint32_t) == sizeof(float), "Code assumes uint32_t and float are the same size.");
+  float tmp_projectilespeed = from._internal_projectilespeed();
+  uint32_t raw_projectilespeed;
+  memcpy(&raw_projectilespeed, &tmp_projectilespeed, sizeof(tmp_projectilespeed));
+  if (raw_projectilespeed != 0) {
+    _this->_internal_set_projectilespeed(from._internal_projectilespeed());
+  }
+  if (from._internal_projectilelifems() != 0) {
+    _this->_internal_set_projectilelifems(from._internal_projectilelifems());
+  }
+  static_assert(sizeof(uint32_t) == sizeof(float), "Code assumes uint32_t and float are the same size.");
+  float tmp_hitradius = from._internal_hitradius();
+  uint32_t raw_hitradius;
+  memcpy(&raw_hitradius, &tmp_hitradius, sizeof(tmp_hitradius));
+  if (raw_hitradius != 0) {
+    _this->_internal_set_hitradius(from._internal_hitradius());
+  }
+  if (from._internal_stoponhit() != 0) {
+    _this->_internal_set_stoponhit(from._internal_stoponhit());
+  }
+  if (from._internal_maxhits() != 0) {
+    _this->_internal_set_maxhits(from._internal_maxhits());
+  }
   _this->_internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -3140,8 +3332,8 @@ void SkillTemplateInfo::InternalSwap(SkillTemplateInfo* other) {
       &other->_impl_.name_, rhs_arena
   );
   ::PROTOBUF_NAMESPACE_ID::internal::memswap<
-      PROTOBUF_FIELD_OFFSET(SkillTemplateInfo, _impl_.effectid_)
-      + sizeof(SkillTemplateInfo::_impl_.effectid_)
+      PROTOBUF_FIELD_OFFSET(SkillTemplateInfo, _impl_.maxhits_)
+      + sizeof(SkillTemplateInfo::_impl_.maxhits_)
       - PROTOBUF_FIELD_OFFSET(SkillTemplateInfo, _impl_.skillid_)>(
           reinterpret_cast<char*>(&_impl_.skillid_),
           reinterpret_cast<char*>(&other->_impl_.skillid_));
@@ -3645,6 +3837,342 @@ void ChatMessage::InternalSwap(ChatMessage* other) {
       file_level_metadata_Struct_2eproto[9]);
 }
 
+// ===================================================================
+
+class ProjectileInfo::_Internal {
+ public:
+  static const ::Protocol::PositionInfo& posinfo(const ProjectileInfo* msg);
+};
+
+const ::Protocol::PositionInfo&
+ProjectileInfo::_Internal::posinfo(const ProjectileInfo* msg) {
+  return *msg->_impl_.posinfo_;
+}
+ProjectileInfo::ProjectileInfo(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                         bool is_message_owned)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
+  SharedCtor(arena, is_message_owned);
+  // @@protoc_insertion_point(arena_constructor:Protocol.ProjectileInfo)
+}
+ProjectileInfo::ProjectileInfo(const ProjectileInfo& from)
+  : ::PROTOBUF_NAMESPACE_ID::Message() {
+  ProjectileInfo* const _this = this; (void)_this;
+  new (&_impl_) Impl_{
+      decltype(_impl_.posinfo_){nullptr}
+    , decltype(_impl_.objectid_){}
+    , decltype(_impl_.ownerid_){}
+    , decltype(_impl_.skillid_){}
+    , decltype(_impl_.speed_){}
+    , decltype(_impl_.lifetimems_){}
+    , /*decltype(_impl_._cached_size_)*/{}};
+
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  if (from._internal_has_posinfo()) {
+    _this->_impl_.posinfo_ = new ::Protocol::PositionInfo(*from._impl_.posinfo_);
+  }
+  ::memcpy(&_impl_.objectid_, &from._impl_.objectid_,
+    static_cast<size_t>(reinterpret_cast<char*>(&_impl_.lifetimems_) -
+    reinterpret_cast<char*>(&_impl_.objectid_)) + sizeof(_impl_.lifetimems_));
+  // @@protoc_insertion_point(copy_constructor:Protocol.ProjectileInfo)
+}
+
+inline void ProjectileInfo::SharedCtor(
+    ::_pb::Arena* arena, bool is_message_owned) {
+  (void)arena;
+  (void)is_message_owned;
+  new (&_impl_) Impl_{
+      decltype(_impl_.posinfo_){nullptr}
+    , decltype(_impl_.objectid_){uint64_t{0u}}
+    , decltype(_impl_.ownerid_){uint64_t{0u}}
+    , decltype(_impl_.skillid_){0}
+    , decltype(_impl_.speed_){0}
+    , decltype(_impl_.lifetimems_){0u}
+    , /*decltype(_impl_._cached_size_)*/{}
+  };
+}
+
+ProjectileInfo::~ProjectileInfo() {
+  // @@protoc_insertion_point(destructor:Protocol.ProjectileInfo)
+  if (auto *arena = _internal_metadata_.DeleteReturnArena<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>()) {
+  (void)arena;
+    return;
+  }
+  SharedDtor();
+}
+
+inline void ProjectileInfo::SharedDtor() {
+  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
+  if (this != internal_default_instance()) delete _impl_.posinfo_;
+}
+
+void ProjectileInfo::SetCachedSize(int size) const {
+  _impl_._cached_size_.Set(size);
+}
+
+void ProjectileInfo::Clear() {
+// @@protoc_insertion_point(message_clear_start:Protocol.ProjectileInfo)
+  uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  if (GetArenaForAllocation() == nullptr && _impl_.posinfo_ != nullptr) {
+    delete _impl_.posinfo_;
+  }
+  _impl_.posinfo_ = nullptr;
+  ::memset(&_impl_.objectid_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&_impl_.lifetimems_) -
+      reinterpret_cast<char*>(&_impl_.objectid_)) + sizeof(_impl_.lifetimems_));
+  _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+}
+
+const char* ProjectileInfo::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
+#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
+  while (!ctx->Done(&ptr)) {
+    uint32_t tag;
+    ptr = ::_pbi::ReadTag(ptr, &tag);
+    switch (tag >> 3) {
+      // uint64 objectId = 1;
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 8)) {
+          _impl_.objectid_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          CHK_(ptr);
+        } else
+          goto handle_unusual;
+        continue;
+      // uint64 ownerId = 2;
+      case 2:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 16)) {
+          _impl_.ownerid_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          CHK_(ptr);
+        } else
+          goto handle_unusual;
+        continue;
+      // int32 skillId = 3;
+      case 3:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 24)) {
+          _impl_.skillid_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
+          CHK_(ptr);
+        } else
+          goto handle_unusual;
+        continue;
+      // .Protocol.PositionInfo posInfo = 4;
+      case 4:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 34)) {
+          ptr = ctx->ParseMessage(_internal_mutable_posinfo(), ptr);
+          CHK_(ptr);
+        } else
+          goto handle_unusual;
+        continue;
+      // float speed = 5;
+      case 5:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 45)) {
+          _impl_.speed_ = ::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<float>(ptr);
+          ptr += sizeof(float);
+        } else
+          goto handle_unusual;
+        continue;
+      // uint32 lifeTimeMs = 6;
+      case 6:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 48)) {
+          _impl_.lifetimems_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
+          CHK_(ptr);
+        } else
+          goto handle_unusual;
+        continue;
+      default:
+        goto handle_unusual;
+    }  // switch
+  handle_unusual:
+    if ((tag == 0) || ((tag & 7) == 4)) {
+      CHK_(ptr);
+      ctx->SetLastTag(tag);
+      goto message_done;
+    }
+    ptr = UnknownFieldParse(
+        tag,
+        _internal_metadata_.mutable_unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(),
+        ptr, ctx);
+    CHK_(ptr != nullptr);
+  }  // while
+message_done:
+  return ptr;
+failure:
+  ptr = nullptr;
+  goto message_done;
+#undef CHK_
+}
+
+uint8_t* ProjectileInfo::_InternalSerialize(
+    uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+  // @@protoc_insertion_point(serialize_to_array_start:Protocol.ProjectileInfo)
+  uint32_t cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  // uint64 objectId = 1;
+  if (this->_internal_objectid() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteUInt64ToArray(1, this->_internal_objectid(), target);
+  }
+
+  // uint64 ownerId = 2;
+  if (this->_internal_ownerid() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteUInt64ToArray(2, this->_internal_ownerid(), target);
+  }
+
+  // int32 skillId = 3;
+  if (this->_internal_skillid() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteInt32ToArray(3, this->_internal_skillid(), target);
+  }
+
+  // .Protocol.PositionInfo posInfo = 4;
+  if (this->_internal_has_posinfo()) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
+      InternalWriteMessage(4, _Internal::posinfo(this),
+        _Internal::posinfo(this).GetCachedSize(), target, stream);
+  }
+
+  // float speed = 5;
+  static_assert(sizeof(uint32_t) == sizeof(float), "Code assumes uint32_t and float are the same size.");
+  float tmp_speed = this->_internal_speed();
+  uint32_t raw_speed;
+  memcpy(&raw_speed, &tmp_speed, sizeof(tmp_speed));
+  if (raw_speed != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteFloatToArray(5, this->_internal_speed(), target);
+  }
+
+  // uint32 lifeTimeMs = 6;
+  if (this->_internal_lifetimems() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteUInt32ToArray(6, this->_internal_lifetimems(), target);
+  }
+
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    target = ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance), target, stream);
+  }
+  // @@protoc_insertion_point(serialize_to_array_end:Protocol.ProjectileInfo)
+  return target;
+}
+
+size_t ProjectileInfo::ByteSizeLong() const {
+// @@protoc_insertion_point(message_byte_size_start:Protocol.ProjectileInfo)
+  size_t total_size = 0;
+
+  uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  // .Protocol.PositionInfo posInfo = 4;
+  if (this->_internal_has_posinfo()) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(
+        *_impl_.posinfo_);
+  }
+
+  // uint64 objectId = 1;
+  if (this->_internal_objectid() != 0) {
+    total_size += ::_pbi::WireFormatLite::UInt64SizePlusOne(this->_internal_objectid());
+  }
+
+  // uint64 ownerId = 2;
+  if (this->_internal_ownerid() != 0) {
+    total_size += ::_pbi::WireFormatLite::UInt64SizePlusOne(this->_internal_ownerid());
+  }
+
+  // int32 skillId = 3;
+  if (this->_internal_skillid() != 0) {
+    total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(this->_internal_skillid());
+  }
+
+  // float speed = 5;
+  static_assert(sizeof(uint32_t) == sizeof(float), "Code assumes uint32_t and float are the same size.");
+  float tmp_speed = this->_internal_speed();
+  uint32_t raw_speed;
+  memcpy(&raw_speed, &tmp_speed, sizeof(tmp_speed));
+  if (raw_speed != 0) {
+    total_size += 1 + 4;
+  }
+
+  // uint32 lifeTimeMs = 6;
+  if (this->_internal_lifetimems() != 0) {
+    total_size += ::_pbi::WireFormatLite::UInt32SizePlusOne(this->_internal_lifetimems());
+  }
+
+  return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
+}
+
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData ProjectileInfo::_class_data_ = {
+    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSourceCheck,
+    ProjectileInfo::MergeImpl
+};
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*ProjectileInfo::GetClassData() const { return &_class_data_; }
+
+
+void ProjectileInfo::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
+  auto* const _this = static_cast<ProjectileInfo*>(&to_msg);
+  auto& from = static_cast<const ProjectileInfo&>(from_msg);
+  // @@protoc_insertion_point(class_specific_merge_from_start:Protocol.ProjectileInfo)
+  GOOGLE_DCHECK_NE(&from, _this);
+  uint32_t cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  if (from._internal_has_posinfo()) {
+    _this->_internal_mutable_posinfo()->::Protocol::PositionInfo::MergeFrom(
+        from._internal_posinfo());
+  }
+  if (from._internal_objectid() != 0) {
+    _this->_internal_set_objectid(from._internal_objectid());
+  }
+  if (from._internal_ownerid() != 0) {
+    _this->_internal_set_ownerid(from._internal_ownerid());
+  }
+  if (from._internal_skillid() != 0) {
+    _this->_internal_set_skillid(from._internal_skillid());
+  }
+  static_assert(sizeof(uint32_t) == sizeof(float), "Code assumes uint32_t and float are the same size.");
+  float tmp_speed = from._internal_speed();
+  uint32_t raw_speed;
+  memcpy(&raw_speed, &tmp_speed, sizeof(tmp_speed));
+  if (raw_speed != 0) {
+    _this->_internal_set_speed(from._internal_speed());
+  }
+  if (from._internal_lifetimems() != 0) {
+    _this->_internal_set_lifetimems(from._internal_lifetimems());
+  }
+  _this->_internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+}
+
+void ProjectileInfo::CopyFrom(const ProjectileInfo& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:Protocol.ProjectileInfo)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool ProjectileInfo::IsInitialized() const {
+  return true;
+}
+
+void ProjectileInfo::InternalSwap(ProjectileInfo* other) {
+  using std::swap;
+  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
+  ::PROTOBUF_NAMESPACE_ID::internal::memswap<
+      PROTOBUF_FIELD_OFFSET(ProjectileInfo, _impl_.lifetimems_)
+      + sizeof(ProjectileInfo::_impl_.lifetimems_)
+      - PROTOBUF_FIELD_OFFSET(ProjectileInfo, _impl_.posinfo_)>(
+          reinterpret_cast<char*>(&_impl_.posinfo_),
+          reinterpret_cast<char*>(&other->_impl_.posinfo_));
+}
+
+::PROTOBUF_NAMESPACE_ID::Metadata ProjectileInfo::GetMetadata() const {
+  return ::_pbi::AssignDescriptors(
+      &descriptor_table_Struct_2eproto_getter, &descriptor_table_Struct_2eproto_once,
+      file_level_metadata_Struct_2eproto[10]);
+}
+
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace Protocol
 PROTOBUF_NAMESPACE_OPEN
@@ -3687,6 +4215,10 @@ Arena::CreateMaybeMessage< ::Protocol::RoomInfo >(Arena* arena) {
 template<> PROTOBUF_NOINLINE ::Protocol::ChatMessage*
 Arena::CreateMaybeMessage< ::Protocol::ChatMessage >(Arena* arena) {
   return Arena::CreateMessageInternal< ::Protocol::ChatMessage >(arena);
+}
+template<> PROTOBUF_NOINLINE ::Protocol::ProjectileInfo*
+Arena::CreateMaybeMessage< ::Protocol::ProjectileInfo >(Arena* arena) {
+  return Arena::CreateMessageInternal< ::Protocol::ProjectileInfo >(arena);
 }
 PROTOBUF_NAMESPACE_CLOSE
 

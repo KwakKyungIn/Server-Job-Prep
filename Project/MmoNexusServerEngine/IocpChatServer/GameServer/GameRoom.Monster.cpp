@@ -7,12 +7,21 @@
 
 void GameRoom::Update()
 {
-	// 몬스터 AI 구동
+	// ✅ deltaMs 계산(투사체만 사용해도 됨)
+	const uint64 now = ::GetTickCount64();
+	if (_lastUpdateMs == 0)
+		_lastUpdateMs = now;
+
+	uint64 deltaMs = now - _lastUpdateMs;
+	if (deltaMs > 100) deltaMs = 100;
+	_lastUpdateMs = now;
+
+	// 몬스터 AI
 	for (auto& item : _monsters)
-	{
-		MonsterRef monster = item.second;
-		monster->Update();
-	}
+		item.second->Update();
+
+	// ✅ Projectile tick
+	UpdateProjectiles(deltaMs);
 }
 
 void GameRoom::EnterMonster(MonsterRef monster)

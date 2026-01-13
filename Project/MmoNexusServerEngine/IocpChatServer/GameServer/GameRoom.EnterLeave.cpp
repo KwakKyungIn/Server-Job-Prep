@@ -6,6 +6,9 @@
 #include "GameRoom.Net.h"
 #include "Monster.h"
 #include "PartyActor.h"
+#include "Projectile.h"
+
+
 bool GameRoom::EnterRegister(PlayerSessionRef session, PlayerRef player)
 {
 	printf("1번 여기가 문제임\n");
@@ -181,6 +184,15 @@ void GameRoom::Leave(PlayerSessionRef session, PlayerRef player)
 				it->second->Viewers_ActorOnly().erase(meId);
 		}
 		visM.clear();
+
+		auto& visPr = player->VisibleProjectiles_ActorOnly();
+		for (uint64 prid : visPr)
+		{
+			auto it = _projectiles.find(prid);
+			if (it != _projectiles.end() && it->second)
+				it->second->Viewers_ActorOnly().erase(meId);
+		}
+		visPr.clear();
 	}
 
 	// 2) grid에서 제거

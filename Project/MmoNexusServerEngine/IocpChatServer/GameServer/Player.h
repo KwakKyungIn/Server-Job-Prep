@@ -1,28 +1,28 @@
-#pragma once
-#include "Creature.h" // [Inheritance] ºÎ¸ğ Å¬·¡½º Æ÷ÇÔ
+ï»¿#pragma once
+#include "Creature.h" // [Inheritance] ë¶€ëª¨ í´ë˜ìŠ¤ í¬í•¨
 #include "Protocol.pb.h"
 
 class PlayerSession;
 
-// [Inheritance] Creature »ó¼Ó (ÀÌÁ¦ shared_from_this ±â´Éµµ Creature°¡ ¹°·ÁÁÜ)
+// [Inheritance] Creature ìƒì† (ì´ì œ shared_from_this ê¸°ëŠ¥ë„ Creatureê°€ ë¬¼ë ¤ì¤Œ)
 class Player : public Creature
 {
 public:
 	Player();
 	virtual ~Player();
 
-	// [Override] ÀüÅõ ½Ã½ºÅÛ ÇÊ¼ö ÇÔ¼ö ÀçÁ¤ÀÇ
+	// [Override] ì „íˆ¬ ì‹œìŠ¤í…œ í•„ìˆ˜ í•¨ìˆ˜ ì¬ì •ì˜
 	virtual void			OnDamaged(std::shared_ptr<Creature> attacker, int32 damage) override;
 	virtual void			OnDead(std::shared_ptr<Creature> attacker) override;
 
-	// [Init] ·Î±×ÀÎ Á÷ÈÄ ±âº» Á¤º¸ ¼¼ÆÃ
+	// [Init] ë¡œê·¸ì¸ ì§í›„ ê¸°ë³¸ ì •ë³´ ì„¸íŒ…
 	void					Init(const Protocol::PlayerInfo& info);
 
-	// [Update] ÁÖ±âÀû ½ÇÇà
+	// [Update] ì£¼ê¸°ì  ì‹¤í–‰
 	void					Update();
 	void					RefreshStats();
 
-	// [NEW] Ã¤³Î/¸Ê ¸ŞÅ¸ Á¤º¸
+	// [NEW] ì±„ë„/ë§µ ë©”íƒ€ ì •ë³´
 	void SetChannelId(int32 channelId) { _channelId = channelId; }
 	int32 GetChannelId() const { return _channelId; }
 
@@ -46,13 +46,13 @@ public:
 	const Protocol::PositionInfo& GetReturnPos() const { return _returnPos; }
 
 public:
-	// [Network Link] Player¸¸ÀÇ °íÀ¯ ±â´É (¼¼¼Ç ¿¬°á)
+	// [Network Link] Playerë§Œì˜ ê³ ìœ  ê¸°ëŠ¥ (ì„¸ì…˜ ì—°ê²°)
 	void					SetSession(std::shared_ptr<PlayerSession> session) { _session = session; }
 	std::shared_ptr<PlayerSession> GetSession() { return _session.lock(); }
 
 	// [Topology] & [Spatial]
-	// SetRoom, GetRoom, SetZoneIndex, GetZoneIndex´Â 
-	// ºÎ¸ğ Å¬·¡½º(Creature)¿¡ ÀÌ¹Ì ±¸ÇöµÇ¾î ÀÖÀ¸¹Ç·Î »èÁ¦ÇÔ. (ÀÚµ¿ »ó¼Ó)
+	// SetRoom, GetRoom, SetZoneIndex, GetZoneIndexëŠ” 
+	// ë¶€ëª¨ í´ë˜ìŠ¤(Creature)ì— ì´ë¯¸ êµ¬í˜„ë˜ì–´ ìˆìœ¼ë¯€ë¡œ ì‚­ì œí•¨. (ìë™ ìƒì†)
 
 public:
 	// [Data Access]
@@ -61,9 +61,9 @@ public:
 
 	Protocol::PlayerInfo* GetPlayerInfo() { return &_playerInfo; }
 
-	// GetPosInfo(), GetStatInfo()´Â ºÎ¸ğ(Creature) °ÍÀ» ±×´ë·Î »ç¿ë.
+	// GetPosInfo(), GetStatInfo()ëŠ” ë¶€ëª¨(Creature) ê²ƒì„ ê·¸ëŒ€ë¡œ ì‚¬ìš©.
 
-	// ÆíÀÇ»ó ³²°ÜµÒ (³»ºÎ Æ÷ÀÎÅÍ »ç¿ë)
+	// í¸ì˜ìƒ ë‚¨ê²¨ë‘  (ë‚´ë¶€ í¬ì¸í„° ì‚¬ìš©)
 	void					SetPosInfo(const Protocol::PositionInfo& posInfo)
 	{
 		if (_posInfo)
@@ -74,6 +74,10 @@ public:
 	// ===== AOI v2 (Room thread ONLY) =====
 	std::unordered_set<uint64>& VisiblePlayers_ActorOnly() { return _visiblePlayers; }
 	std::unordered_set<uint64>& VisibleMonsters_ActorOnly() { return _visibleMonsters; }
+
+	// âœ… [NEW] Projectile visible set
+	std::unordered_set<uint64>& VisibleProjectiles_ActorOnly() { return _visibleProjectiles; }
+	const std::unordered_set<uint64>& VisibleProjectiles_ActorOnly() const { return _visibleProjectiles; }
 
 	const Protocol::PositionInfo& LastAoiPos_ActorOnly() const { return _lastAoiPos; }
 	void SetLastAoiPos_ActorOnly(const Protocol::PositionInfo& p) { _lastAoiPos = p; }
@@ -127,8 +131,10 @@ public:
 	}
 
 
+		
+
 protected:
-	// [Core Data] Player °íÀ¯ µ¥ÀÌÅÍ
+	// [Core Data] Player ê³ ìœ  ë°ì´í„°
 	Protocol::PlayerInfo	_playerInfo;
 	std::vector<Protocol::ItemInfo> _items;
 
@@ -138,9 +144,9 @@ protected:
 	int32 _channelId = 1;
 	int32 _mapId = 1;
 	int64 _instanceId = 0; // 0 = world
-	int32 _returnMapId = 1;              // ±âº» º¹±Í ¸Ê
-	int64 _returnInstanceId = 0;         // º¸Åë 0
-	Protocol::PositionInfo _returnPos;   // º¹±Í ÁÂÇ¥
+	int32 _returnMapId = 1;              // ê¸°ë³¸ ë³µê·€ ë§µ
+	int64 _returnInstanceId = 0;         // ë³´í†µ 0
+	Protocol::PositionInfo _returnPos;   // ë³µê·€ ì¢Œí‘œ
 
 	// ===== Move Validation (Room thread ONLY) =====
 	bool _hasMoveStamp = false;
@@ -150,13 +156,13 @@ protected:
 	Protocol::PositionInfo _lastAcceptedPos; // debug/anchor
 
 
-	// _room, _zoneIndex´Â Creature·Î ÀÌ»ç °¬À¸´Ï »èÁ¦.
+	// _room, _zoneIndexëŠ” Creatureë¡œ ì´ì‚¬ ê°”ìœ¼ë‹ˆ ì‚­ì œ.
 
 	private:
 		// visible set (ids)
 		std::unordered_set<uint64> _visiblePlayers;
 		std::unordered_set<uint64> _visibleMonsters; // monster objectId
-
+		std::unordered_set<uint64> _visibleProjectiles;
 		// lazy update state
 		Protocol::PositionInfo _lastAoiPos;
 		uint64 _lastAoiTickMs = 0;

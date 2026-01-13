@@ -10,6 +10,10 @@ class Player;
 class Monster;
 class Creature;
 
+class Projectile;
+
+
+
 class PlayerSession;
 using PlayerSessionRef = std::shared_ptr<PlayerSession>;
 
@@ -17,6 +21,7 @@ using PlayerSessionRef = std::shared_ptr<PlayerSession>;
 using GameMapRef = std::shared_ptr<GameMap>;
 using PlayerRef = std::shared_ptr<Player>;
 using MonsterRef = std::shared_ptr<Monster>;
+using ProjectileRef = std::shared_ptr<Projectile>;
 
 class GameRoom : public RoomActor, public std::enable_shared_from_this<GameRoom>
 {
@@ -133,7 +138,16 @@ public:
         int64 targetInstanceId,
         const Protocol::PositionInfo& spawn);
 
+    public:
+        void EnterProjectile(ProjectileRef p);
+        void LeaveProjectile(uint64 projectileId);
+        void OnProjectileMoved(ProjectileRef p);
+        void UpdateProjectiles(uint64 deltaMs);
+
     void SaveReturnLocation_ActorOnly(uint64 playerId);
+
+    void HandleSkill(std::shared_ptr<Creature> attacker, int32 skillId, float castYaw, uint32 clientTimeMs);
+    void HandleSkillById(PlayerSessionRef session, uint64 playerId, int32 skillId, float castYaw, uint32 clientTimeMs);
 
     int32 GetChannelId() const { return _channelId; }
     int32 GetMapId() const { return _mapId; }
@@ -192,5 +206,8 @@ private:
     void SendDespawnBatchedToMe(PlayerSessionRef session, const Vector<uint64>& objectIds);
 
     int32 EffectiveAoiRadiusCells() const;
+
+    Map<uint64, ProjectileRef> _projectiles; 
+    uint64 _lastUpdateMs = 0;
 
 };

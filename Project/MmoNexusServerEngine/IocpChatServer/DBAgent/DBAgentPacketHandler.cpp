@@ -262,17 +262,28 @@ bool DBAgentPacketHandler::Handle_S2S_REQ_LOAD_GAME_DATA(PacketSessionRef& sessi
 			// ==========================================================
 			// 3. SKILL_TEMPLATE 로딩 [NEW]
 			// ==========================================================
+			// ==========================================================
 			{
 				conn->Unbind(); // 필수!
 
 				// [Output Variables]
 				int32 skillId = 0, cooldown = 0, damage = 0, skillType = 0, effectId = 0;
 				float range = 0.0f, radius = 0.0f, angle = 0.0f;
+
+				// [NEW]
+				float projectileSpeed = 0.0f;
+				int32 projectileLifeMs = 0;
+				float hitRadius = 0.0f;
+				uint8 stopOnHit = 1;  // BIT 받는 용도 (0/1)
+				int32 maxHits = 1;
+
 				WCHAR nameBuffer[100] = { 0 };
 				SQLLEN len = 0;
 
-				// [Query]
-				if (conn->Prepare(L"SELECT skill_id, name, cooldown, damage, skill_type, attack_range, radius, angle, effect_id FROM SKILL_TEMPLATE"))
+				if (conn->Prepare(
+					L"SELECT skill_id, name, cooldown, damage, skill_type, attack_range, radius, angle, effect_id, "
+					L"projectile_speed, projectile_life_ms, hit_radius, stop_on_hit, max_hits "
+					L"FROM SKILL_TEMPLATE"))
 				{
 					conn->BindCol(1, SQL_C_SLONG, sizeof(int32), &skillId, &len);
 					conn->BindCol(2, SQL_C_WCHAR, sizeof(nameBuffer), nameBuffer, &len);
@@ -280,11 +291,17 @@ bool DBAgentPacketHandler::Handle_S2S_REQ_LOAD_GAME_DATA(PacketSessionRef& sessi
 					conn->BindCol(4, SQL_C_SLONG, sizeof(int32), &damage, &len);
 					conn->BindCol(5, SQL_C_SLONG, sizeof(int32), &skillType, &len);
 
-					// [Note] float -> SQL_C_FLOAT
 					conn->BindCol(6, SQL_C_FLOAT, sizeof(float), &range, &len);
 					conn->BindCol(7, SQL_C_FLOAT, sizeof(float), &radius, &len);
 					conn->BindCol(8, SQL_C_FLOAT, sizeof(float), &angle, &len);
 					conn->BindCol(9, SQL_C_SLONG, sizeof(int32), &effectId, &len);
+
+					// [NEW] Projectile Params
+					conn->BindCol(10, SQL_C_FLOAT, sizeof(float), &projectileSpeed, &len);
+					conn->BindCol(11, SQL_C_SLONG, sizeof(int32), &projectileLifeMs, &len);
+					conn->BindCol(12, SQL_C_FLOAT, sizeof(float), &hitRadius, &len);
+					conn->BindCol(13, SQL_C_BIT, sizeof(uint8), &stopOnHit, &len);
+					conn->BindCol(14, SQL_C_SLONG, sizeof(int32), &maxHits, &len);
 
 					if (conn->Execute())
 					{
@@ -299,15 +316,21 @@ bool DBAgentPacketHandler::Handle_S2S_REQ_LOAD_GAME_DATA(PacketSessionRef& sessi
 
 							skillData->set_cooldown(cooldown);
 							skillData->set_damage(damage);
-
-							// Enum casting (int -> Enum)
 							skillData->set_skilltype(static_cast<Protocol::SkillType>(skillType));
 
 							skillData->set_range(range);
 							skillData->set_radius(radius);
 							skillData->set_angle(angle);
 							skillData->set_effectid(effectId);
+
+							// [NEW] Set projectile params
+							skillData->set_projectilespeed(projectileSpeed);
+							skillData->set_projectilelifems(projectileLifeMs);
+							skillData->set_hitradius(hitRadius);
+							skillData->set_stoponhit(stopOnHit != 0);
+							skillData->set_maxhits(maxHits);
 						}
+
 						std::cout << "🔥 [DB] Loaded Skill Templates: " << resPkt.skills_size() << std::endl;
 					}
 				}

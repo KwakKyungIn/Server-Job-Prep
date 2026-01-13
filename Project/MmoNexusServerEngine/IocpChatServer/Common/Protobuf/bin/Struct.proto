@@ -88,6 +88,12 @@ message SkillTemplateInfo {
     
     // 필요하면 이펙트 ID, 애니메이션 이름 등도 추가 가능
     int32 effectId = 9;
+
+    float projectileSpeed = 10;   // units/sec
+    int32 projectileLifeMs = 11;  // ms
+    float hitRadius = 12;         // 0이면 radius 재활용 가능
+    bool stopOnHit = 13;          // DB에서 항상 채워라(기본 true 권장)
+    int32 maxHits = 14;           // 기본 1
 }
 
 // ===== 방/맵 정보 =====
@@ -102,4 +108,15 @@ message ChatMessage {
     uint64 senderId = 1;
     string name = 2;
     string message = 3;
+}
+
+// Struct.proto (예: MonsterInfo 아래에 추가)
+
+message ProjectileInfo {
+  uint64 objectId = 1;      // 서버 발급 objectId (OBJECT_TYPE_PROJECTILE 비트 포함)
+  uint64 ownerId  = 2;      // 플레이어면 playerId, 몬스터면 objectId
+  int32  skillId  = 3;      // 어떤 스킬에서 나온 투사체인지
+  PositionInfo posInfo = 4; // 현재 위치/방향
+  float  speed = 5;         // (선택) 클라 보간용/디버그
+  uint32 lifeTimeMs = 6;    // (선택) 디버그용
 }

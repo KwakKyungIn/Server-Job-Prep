@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "ClientPacketHandler.h"
 #include "PlayerSession.h"
 #include "GameRoom.h" 
@@ -96,20 +96,24 @@ bool ClientPacketHandler::Handle_C_SKILL(PacketSessionRef& session, Protocol::C_
 		return true;
 
 	const int32 skillId = pkt.skillid();
+	const float castYaw = pkt.castyaw();
+	const uint32 clientTimeMs = pkt.client_time_ms();
+
 	const uint64 playerId = ps->GetPlayerId_AnyThread();
 	if (playerId == 0)
 		return true;
 
-	ps->PostRoom([playerId, skillId](PlayerSessionRef self, RoomActorRef room) mutable
+	ps->PostRoom([playerId, skillId, castYaw, clientTimeMs](PlayerSessionRef self, RoomActorRef room) mutable
 		{
 			if (!room) return;
 			if (self->IsMapChanging()) return;
 			if (room->GetKind() != RoomKind::Game) return;
 
 			auto gr = std::static_pointer_cast<GameRoom>(room);
-			gr->Push([gr, self, playerId, skillId]()
+			gr->Push([gr, self, playerId, skillId, castYaw, clientTimeMs]()
 				{
-					gr->HandleSkillById(self, playerId, skillId);
+					// ✅ NEW: HandleSkillById 시그니처 확장 필요
+					gr->HandleSkillById(self, playerId, skillId, castYaw, clientTimeMs);
 				});
 		});
 

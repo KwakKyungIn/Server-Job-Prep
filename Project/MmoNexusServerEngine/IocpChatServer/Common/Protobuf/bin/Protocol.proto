@@ -75,6 +75,7 @@ message S_SPAWN {
 
   repeated PlayerInfo players = 1;
   repeated MonsterInfo monsters = 2;
+  repeated ProjectileInfo projectiles = 3;
 }
 message S_DESPAWN {
     repeated uint64 objectIds = 1; 
@@ -85,6 +86,8 @@ message S_DESPAWN {
 // ============================================================
 message C_SKILL {
     int32 skillId = 1; 
+    float castYaw = 2;          
+    uint32 client_time_ms = 3;
 }
 
 message S_SKILL {

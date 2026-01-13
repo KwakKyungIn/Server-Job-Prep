@@ -196,6 +196,12 @@
       <Filter>Persistence</Filter>
     </ClCompile>
     <ClCompile Include="GameItemUidGen.cpp" />
+    <ClCompile Include="Projectile.cpp">
+      <Filter>GameContents\Actor</Filter>
+    </ClCompile>
+    <ClCompile Include="GameRoom.Projectile.cpp">
+      <Filter>GameContents\Room</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -311,6 +317,9 @@
       <Filter>Persistence</Filter>
     </ClInclude>
     <ClInclude Include="GameItemUidGen.h" />
+    <ClInclude Include="Projectile.h">
+      <Filter>GameContents\Actor</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="ServerConfig.json" />

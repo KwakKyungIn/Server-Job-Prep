@@ -128,6 +128,7 @@ PROTOBUF_CONSTEXPR S_SPAWN::S_SPAWN(
     ::_pbi::ConstantInitialized): _impl_{
     /*decltype(_impl_.players_)*/{}
   , /*decltype(_impl_.monsters_)*/{}
+  , /*decltype(_impl_.projectiles_)*/{}
   , /*decltype(_impl_.snapshot_id_)*/0u
   , /*decltype(_impl_.snapshot_begin_)*/false
   , /*decltype(_impl_.snapshot_end_)*/false
@@ -158,6 +159,8 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORIT
 PROTOBUF_CONSTEXPR C_SKILL::C_SKILL(
     ::_pbi::ConstantInitialized): _impl_{
     /*decltype(_impl_.skillid_)*/0
+  , /*decltype(_impl_.castyaw_)*/0
+  , /*decltype(_impl_.client_time_ms_)*/0u
   , /*decltype(_impl_._cached_size_)*/{}} {}
 struct C_SKILLDefaultTypeInternal {
   PROTOBUF_CONSTEXPR C_SKILLDefaultTypeInternal()
@@ -764,6 +767,7 @@ const uint32_t TableStruct_Protocol_2eproto::offsets[] PROTOBUF_SECTION_VARIABLE
   PROTOBUF_FIELD_OFFSET(::Protocol::S_SPAWN, _impl_.snapshot_end_),
   PROTOBUF_FIELD_OFFSET(::Protocol::S_SPAWN, _impl_.players_),
   PROTOBUF_FIELD_OFFSET(::Protocol::S_SPAWN, _impl_.monsters_),
+  PROTOBUF_FIELD_OFFSET(::Protocol::S_SPAWN, _impl_.projectiles_),
   ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(::Protocol::S_DESPAWN, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -778,6 +782,8 @@ const uint32_t TableStruct_Protocol_2eproto::offsets[] PROTOBUF_SECTION_VARIABLE
   ~0u,  // no _weak_field_map_
   ~0u,  // no _inlined_string_donated_
   PROTOBUF_FIELD_OFFSET(::Protocol::C_SKILL, _impl_.skillid_),
+  PROTOBUF_FIELD_OFFSET(::Protocol::C_SKILL, _impl_.castyaw_),
+  PROTOBUF_FIELD_OFFSET(::Protocol::C_SKILL, _impl_.client_time_ms_),
   ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(::Protocol::S_SKILL, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -1089,45 +1095,45 @@ static const ::_pbi::MigrationSchema schemas[] PROTOBUF_SECTION_VARIABLE(protode
   { 44, -1, -1, sizeof(::Protocol::C_MOVE)},
   { 53, -1, -1, sizeof(::Protocol::S_MOVE)},
   { 61, -1, -1, sizeof(::Protocol::S_SPAWN)},
-  { 72, -1, -1, sizeof(::Protocol::S_DESPAWN)},
-  { 79, -1, -1, sizeof(::Protocol::C_SKILL)},
-  { 86, -1, -1, sizeof(::Protocol::S_SKILL)},
-  { 94, -1, -1, sizeof(::Protocol::S_CHANGE_HP)},
-  { 104, -1, -1, sizeof(::Protocol::S_ITEM_LIST)},
-  { 111, -1, -1, sizeof(::Protocol::C_USE_ITEM)},
-  { 118, -1, -1, sizeof(::Protocol::S_CHANGE_ITEM)},
-  { 125, -1, -1, sizeof(::Protocol::S_REMOVE_ITEM)},
-  { 132, -1, -1, sizeof(::Protocol::C_EQUIP_ITEM)},
-  { 141, -1, -1, sizeof(::Protocol::S_EQUIP_ITEM)},
-  { 150, -1, -1, sizeof(::Protocol::S_CHANGE_STAT)},
-  { 157, -1, -1, sizeof(::Protocol::C_MAP_CHANGE_REQ)},
-  { 164, -1, -1, sizeof(::Protocol::S_MAP_CHANGE_BEGIN)},
-  { 175, -1, -1, sizeof(::Protocol::C_MAP_CHANGE_ACK)},
-  { 182, -1, -1, sizeof(::Protocol::S_MAP_CHANGE_END)},
-  { 193, -1, -1, sizeof(::Protocol::C_CHANNEL_CHANGE_REQ)},
-  { 200, -1, -1, sizeof(::Protocol::C_CHAT_REQ)},
-  { 207, -1, -1, sizeof(::Protocol::S_CHAT_RES)},
-  { 214, -1, -1, sizeof(::Protocol::S_CHAT_NTF)},
-  { 223, -1, -1, sizeof(::Protocol::S_HEART_BEAT_RES)},
-  { 229, -1, -1, sizeof(::Protocol::C_HEART_BEAT_REQ)},
-  { 235, -1, -1, sizeof(::Protocol::C_PARTY_CHAT_REQ)},
-  { 242, -1, -1, sizeof(::Protocol::S_PARTY_CHAT_NTF)},
-  { 252, -1, -1, sizeof(::Protocol::S_PARTY_INFO_NTF)},
-  { 263, -1, -1, sizeof(::Protocol::C_PARTY_CREATE_REQ)},
-  { 270, -1, -1, sizeof(::Protocol::C_PARTY_INVITE_REQ)},
-  { 277, -1, -1, sizeof(::Protocol::C_PARTY_INVITE_ACCEPT_REQ)},
-  { 285, -1, -1, sizeof(::Protocol::C_PARTY_LEAVE_REQ)},
-  { 291, -1, -1, sizeof(::Protocol::C_PARTY_KICK_REQ)},
-  { 298, -1, -1, sizeof(::Protocol::C_PARTY_DISBAND_REQ)},
-  { 304, -1, -1, sizeof(::Protocol::S_PARTY_RESULT)},
-  { 315, -1, -1, sizeof(::Protocol::S_PARTY_INVITE_NTF)},
-  { 324, -1, -1, sizeof(::Protocol::PartyMemberStatus)},
-  { 339, -1, -1, sizeof(::Protocol::C_PARTY_STATUS_REQ)},
-  { 345, -1, -1, sizeof(::Protocol::S_PARTY_STATUS_NTF)},
-  { 354, -1, -1, sizeof(::Protocol::C_DUNGEON_ENTER_REQ)},
-  { 361, -1, -1, sizeof(::Protocol::S_DUNGEON_ENTER_RES)},
-  { 371, -1, -1, sizeof(::Protocol::C_DUNGEON_EXIT_REQ)},
-  { 377, -1, -1, sizeof(::Protocol::S_DUNGEON_EXIT_RES)},
+  { 73, -1, -1, sizeof(::Protocol::S_DESPAWN)},
+  { 80, -1, -1, sizeof(::Protocol::C_SKILL)},
+  { 89, -1, -1, sizeof(::Protocol::S_SKILL)},
+  { 97, -1, -1, sizeof(::Protocol::S_CHANGE_HP)},
+  { 107, -1, -1, sizeof(::Protocol::S_ITEM_LIST)},
+  { 114, -1, -1, sizeof(::Protocol::C_USE_ITEM)},
+  { 121, -1, -1, sizeof(::Protocol::S_CHANGE_ITEM)},
+  { 128, -1, -1, sizeof(::Protocol::S_REMOVE_ITEM)},
+  { 135, -1, -1, sizeof(::Protocol::C_EQUIP_ITEM)},
+  { 144, -1, -1, sizeof(::Protocol::S_EQUIP_ITEM)},
+  { 153, -1, -1, sizeof(::Protocol::S_CHANGE_STAT)},
+  { 160, -1, -1, sizeof(::Protocol::C_MAP_CHANGE_REQ)},
+  { 167, -1, -1, sizeof(::Protocol::S_MAP_CHANGE_BEGIN)},
+  { 178, -1, -1, sizeof(::Protocol::C_MAP_CHANGE_ACK)},
+  { 185, -1, -1, sizeof(::Protocol::S_MAP_CHANGE_END)},
+  { 196, -1, -1, sizeof(::Protocol::C_CHANNEL_CHANGE_REQ)},
+  { 203, -1, -1, sizeof(::Protocol::C_CHAT_REQ)},
+  { 210, -1, -1, sizeof(::Protocol::S_CHAT_RES)},
+  { 217, -1, -1, sizeof(::Protocol::S_CHAT_NTF)},
+  { 226, -1, -1, sizeof(::Protocol::S_HEART_BEAT_RES)},
+  { 232, -1, -1, sizeof(::Protocol::C_HEART_BEAT_REQ)},
+  { 238, -1, -1, sizeof(::Protocol::C_PARTY_CHAT_REQ)},
+  { 245, -1, -1, sizeof(::Protocol::S_PARTY_CHAT_NTF)},
+  { 255, -1, -1, sizeof(::Protocol::S_PARTY_INFO_NTF)},
+  { 266, -1, -1, sizeof(::Protocol::C_PARTY_CREATE_REQ)},
+  { 273, -1, -1, sizeof(::Protocol::C_PARTY_INVITE_REQ)},
+  { 280, -1, -1, sizeof(::Protocol::C_PARTY_INVITE_ACCEPT_REQ)},
+  { 288, -1, -1, sizeof(::Protocol::C_PARTY_LEAVE_REQ)},
+  { 294, -1, -1, sizeof(::Protocol::C_PARTY_KICK_REQ)},
+  { 301, -1, -1, sizeof(::Protocol::C_PARTY_DISBAND_REQ)},
+  { 307, -1, -1, sizeof(::Protocol::S_PARTY_RESULT)},
+  { 318, -1, -1, sizeof(::Protocol::S_PARTY_INVITE_NTF)},
+  { 327, -1, -1, sizeof(::Protocol::PartyMemberStatus)},
+  { 342, -1, -1, sizeof(::Protocol::C_PARTY_STATUS_REQ)},
+  { 348, -1, -1, sizeof(::Protocol::S_PARTY_STATUS_NTF)},
+  { 357, -1, -1, sizeof(::Protocol::C_DUNGEON_ENTER_REQ)},
+  { 364, -1, -1, sizeof(::Protocol::S_DUNGEON_ENTER_RES)},
+  { 374, -1, -1, sizeof(::Protocol::C_DUNGEON_EXIT_REQ)},
+  { 380, -1, -1, sizeof(::Protocol::S_DUNGEON_EXIT_RES)},
 };
 
 static const ::_pb::Message* const file_default_instances[] = {
@@ -1194,80 +1200,82 @@ const char descriptor_table_protodef_Protocol_2eproto[] PROTOBUF_SECTION_VARIABL
   "MOVE\022\'\n\007posInfo\030\001 \001(\0132\026.Protocol.Positio"
   "nInfo\022\020\n\010move_seq\030\002 \001(\r\022\026\n\016client_time_m"
   "s\030\003 \001(\r\"C\n\006S_MOVE\022\020\n\010objectId\030\001 \001(\004\022\'\n\007p"
-  "osInfo\030\002 \001(\0132\026.Protocol.PositionInfo\"\234\001\n"
+  "osInfo\030\002 \001(\0132\026.Protocol.PositionInfo\"\313\001\n"
   "\007S_SPAWN\022\023\n\013snapshot_id\030\n \001(\r\022\026\n\016snapsho"
   "t_begin\030\013 \001(\010\022\024\n\014snapshot_end\030\014 \001(\010\022%\n\007p"
   "layers\030\001 \003(\0132\024.Protocol.PlayerInfo\022\'\n\010mo"
-  "nsters\030\002 \003(\0132\025.Protocol.MonsterInfo\"\036\n\tS"
-  "_DESPAWN\022\021\n\tobjectIds\030\001 \003(\004\"\032\n\007C_SKILL\022\017"
-  "\n\007skillId\030\001 \001(\005\",\n\007S_SKILL\022\020\n\010objectId\030\001"
-  " \001(\004\022\017\n\007skillId\030\002 \001(\005\"V\n\013S_CHANGE_HP\022\020\n\010"
-  "objectId\030\001 \001(\004\022\022\n\nattackerId\030\002 \001(\004\022\021\n\tcu"
-  "rrentHp\030\003 \001(\005\022\016\n\006damage\030\004 \001(\005\"0\n\013S_ITEM_"
-  "LIST\022!\n\005items\030\001 \003(\0132\022.Protocol.ItemInfo\""
-  "\035\n\nC_USE_ITEM\022\017\n\007itemUid\030\001 \001(\004\"1\n\rS_CHAN"
-  "GE_ITEM\022 \n\004item\030\001 \001(\0132\022.Protocol.ItemInf"
-  "o\" \n\rS_REMOVE_ITEM\022\017\n\007itemUid\030\001 \001(\004\"A\n\014C"
-  "_EQUIP_ITEM\022\017\n\007itemUid\030\001 \001(\004\022\021\n\tslotInde"
-  "x\030\002 \001(\005\022\r\n\005equip\030\003 \001(\010\"D\n\014S_EQUIP_ITEM\022\017"
-  "\n\007itemUid\030\001 \001(\004\022\020\n\010equipped\030\002 \001(\010\022\021\n\tslo"
-  "tIndex\030\003 \001(\005\"5\n\rS_CHANGE_STAT\022$\n\010statInf"
-  "o\030\001 \001(\0132\022.Protocol.StatInfo\"\'\n\020C_MAP_CHA"
-  "NGE_REQ\022\023\n\013targetMapId\030\001 \001(\005\"\214\001\n\022S_MAP_C"
-  "HANGE_BEGIN\022\r\n\005token\030\001 \001(\004\022\023\n\013targetMapI"
-  "d\030\002 \001(\005\022%\n\005spawn\030\003 \001(\0132\026.Protocol.Positi"
-  "onInfo\022\022\n\ninstanceid\030\004 \001(\003\022\027\n\017targetChan"
-  "nelId\030\005 \001(\005\"!\n\020C_MAP_CHANGE_ACK\022\r\n\005token"
-  "\030\001 \001(\004\"\202\001\n\020S_MAP_CHANGE_END\022\r\n\005token\030\001 \001"
-  "(\004\022\r\n\005mapId\030\002 \001(\005\022#\n\003pos\030\003 \001(\0132\026.Protoco"
+  "nsters\030\002 \003(\0132\025.Protocol.MonsterInfo\022-\n\013p"
+  "rojectiles\030\003 \003(\0132\030.Protocol.ProjectileIn"
+  "fo\"\036\n\tS_DESPAWN\022\021\n\tobjectIds\030\001 \003(\004\"C\n\007C_"
+  "SKILL\022\017\n\007skillId\030\001 \001(\005\022\017\n\007castYaw\030\002 \001(\002\022"
+  "\026\n\016client_time_ms\030\003 \001(\r\",\n\007S_SKILL\022\020\n\010ob"
+  "jectId\030\001 \001(\004\022\017\n\007skillId\030\002 \001(\005\"V\n\013S_CHANG"
+  "E_HP\022\020\n\010objectId\030\001 \001(\004\022\022\n\nattackerId\030\002 \001"
+  "(\004\022\021\n\tcurrentHp\030\003 \001(\005\022\016\n\006damage\030\004 \001(\005\"0\n"
+  "\013S_ITEM_LIST\022!\n\005items\030\001 \003(\0132\022.Protocol.I"
+  "temInfo\"\035\n\nC_USE_ITEM\022\017\n\007itemUid\030\001 \001(\004\"1"
+  "\n\rS_CHANGE_ITEM\022 \n\004item\030\001 \001(\0132\022.Protocol"
+  ".ItemInfo\" \n\rS_REMOVE_ITEM\022\017\n\007itemUid\030\001 "
+  "\001(\004\"A\n\014C_EQUIP_ITEM\022\017\n\007itemUid\030\001 \001(\004\022\021\n\t"
+  "slotIndex\030\002 \001(\005\022\r\n\005equip\030\003 \001(\010\"D\n\014S_EQUI"
+  "P_ITEM\022\017\n\007itemUid\030\001 \001(\004\022\020\n\010equipped\030\002 \001("
+  "\010\022\021\n\tslotIndex\030\003 \001(\005\"5\n\rS_CHANGE_STAT\022$\n"
+  "\010statInfo\030\001 \001(\0132\022.Protocol.StatInfo\"\'\n\020C"
+  "_MAP_CHANGE_REQ\022\023\n\013targetMapId\030\001 \001(\005\"\214\001\n"
+  "\022S_MAP_CHANGE_BEGIN\022\r\n\005token\030\001 \001(\004\022\023\n\013ta"
+  "rgetMapId\030\002 \001(\005\022%\n\005spawn\030\003 \001(\0132\026.Protoco"
   "l.PositionInfo\022\022\n\ninstanceid\030\004 \001(\003\022\027\n\017ta"
-  "rgetChannelId\030\005 \001(\005\"/\n\024C_CHANNEL_CHANGE_"
-  "REQ\022\027\n\017targetChannelId\030\001 \001(\005\"\035\n\nC_CHAT_R"
-  "EQ\022\017\n\007message\030\001 \001(\t\"\035\n\nS_CHAT_RES\022\017\n\007suc"
-  "cess\030\001 \001(\010\"=\n\nS_CHAT_NTF\022\020\n\010playerId\030\001 \001"
-  "(\004\022\014\n\004name\030\002 \001(\t\022\017\n\007message\030\003 \001(\t\"\022\n\020S_H"
-  "EART_BEAT_RES\"\022\n\020C_HEART_BEAT_REQ\"#\n\020C_P"
-  "ARTY_CHAT_REQ\022\017\n\007message\030\001 \001(\t\"Z\n\020S_PART"
-  "Y_CHAT_NTF\022\017\n\007partyId\030\001 \001(\004\022\020\n\010senderId\030"
-  "\002 \001(\004\022\022\n\nsenderName\030\003 \001(\t\022\017\n\007message\030\004 \001"
-  "(\t\"k\n\020S_PARTY_INFO_NTF\022\020\n\010hasParty\030\001 \001(\010"
-  "\022\017\n\007partyId\030\002 \001(\004\022\020\n\010leaderId\030\003 \001(\004\022\021\n\tm"
-  "emberIds\030\004 \003(\004\022\017\n\007version\030\005 \001(\r\",\n\022C_PAR"
-  "TY_CREATE_REQ\022\026\n\016targetPlayerId\030\001 \001(\004\",\n"
-  "\022C_PARTY_INVITE_REQ\022\026\n\016targetPlayerId\030\001 "
-  "\001(\004\"<\n\031C_PARTY_INVITE_ACCEPT_REQ\022\017\n\007part"
-  "yId\030\001 \001(\004\022\016\n\006accept\030\002 \001(\010\"\023\n\021C_PARTY_LEA"
-  "VE_REQ\"*\n\020C_PARTY_KICK_REQ\022\026\n\016targetPlay"
-  "erId\030\001 \001(\004\"\025\n\023C_PARTY_DISBAND_REQ\"_\n\016S_P"
-  "ARTY_RESULT\022\n\n\002op\030\001 \001(\005\022\017\n\007success\030\002 \001(\010"
-  "\022\016\n\006reason\030\003 \001(\005\022\017\n\007partyId\030\004 \001(\004\022\017\n\007ver"
-  "sion\030\005 \001(\r\"M\n\022S_PARTY_INVITE_NTF\022\017\n\007part"
-  "yId\030\001 \001(\004\022\021\n\tinviterId\030\002 \001(\004\022\023\n\013inviterN"
-  "ame\030\003 \001(\t\"\272\001\n\021PartyMemberStatus\022\020\n\010playe"
-  "rId\030\001 \001(\004\022\020\n\010objectId\030\002 \001(\004\022\014\n\004name\030\003 \001("
-  "\t\022\r\n\005level\030\004 \001(\005\022\n\n\002hp\030\005 \001(\005\022\r\n\005maxHp\030\006 "
-  "\001(\005\022\r\n\005mapId\030\007 \001(\005\022\021\n\tchannelId\030\010 \001(\005\022\'\n"
-  "\007posInfo\030\t \001(\0132\026.Protocol.PositionInfo\"\024"
-  "\n\022C_PARTY_STATUS_REQ\"d\n\022S_PARTY_STATUS_N"
-  "TF\022\017\n\007partyId\030\001 \001(\004\022\017\n\007version\030\002 \001(\r\022,\n\007"
-  "members\030\003 \003(\0132\033.Protocol.PartyMemberStat"
-  "us\"+\n\023C_DUNGEON_ENTER_REQ\022\024\n\014dungeonMapI"
-  "d\030\001 \001(\005\"\202\001\n\023S_DUNGEON_ENTER_RES\022\017\n\007succe"
-  "ss\030\001 \001(\010\022\024\n\014dungeonMapId\030\002 \001(\005\022\022\n\ninstan"
-  "ceid\030\003 \001(\003\0220\n\006reason\030\004 \001(\0162 .Protocol.Du"
-  "ngeonEnterFailReason\"\024\n\022C_DUNGEON_EXIT_R"
-  "EQ\"\205\001\n\022S_DUNGEON_EXIT_RES\022\017\n\007success\030\001 \001"
-  "(\010\022\023\n\013returnMapId\030\002 \001(\005\022\030\n\020returnInstanc"
-  "eid\030\003 \001(\003\022/\n\006reason\030\004 \001(\0162\037.Protocol.Dun"
-  "geonExitFailReason*\230\001\n\026DungeonEnterFailR"
-  "eason\022\024\n\020DUNGEON_ENTER_OK\020\000\022#\n\037DUNGEON_E"
-  "NTER_FAIL_NOT_IN_PARTY\020\001\022\"\n\036DUNGEON_ENTE"
-  "R_FAIL_INVALID_MAP\020\002\022\037\n\033DUNGEON_ENTER_FA"
-  "IL_INTERNAL\020\003*\226\001\n\025DungeonExitFailReason\022"
-  "\023\n\017DUNGEON_EXIT_OK\020\000\022$\n DUNGEON_EXIT_FAI"
-  "L_NOT_IN_DUNGEON\020\001\022\"\n\036DUNGEON_EXIT_FAIL_"
-  "NOT_IN_PARTY\020\002\022\036\n\032DUNGEON_EXIT_FAIL_INTE"
-  "RNAL\020\003b\006proto3"
+  "rgetChannelId\030\005 \001(\005\"!\n\020C_MAP_CHANGE_ACK\022"
+  "\r\n\005token\030\001 \001(\004\"\202\001\n\020S_MAP_CHANGE_END\022\r\n\005t"
+  "oken\030\001 \001(\004\022\r\n\005mapId\030\002 \001(\005\022#\n\003pos\030\003 \001(\0132\026"
+  ".Protocol.PositionInfo\022\022\n\ninstanceid\030\004 \001"
+  "(\003\022\027\n\017targetChannelId\030\005 \001(\005\"/\n\024C_CHANNEL"
+  "_CHANGE_REQ\022\027\n\017targetChannelId\030\001 \001(\005\"\035\n\n"
+  "C_CHAT_REQ\022\017\n\007message\030\001 \001(\t\"\035\n\nS_CHAT_RE"
+  "S\022\017\n\007success\030\001 \001(\010\"=\n\nS_CHAT_NTF\022\020\n\010play"
+  "erId\030\001 \001(\004\022\014\n\004name\030\002 \001(\t\022\017\n\007message\030\003 \001("
+  "\t\"\022\n\020S_HEART_BEAT_RES\"\022\n\020C_HEART_BEAT_RE"
+  "Q\"#\n\020C_PARTY_CHAT_REQ\022\017\n\007message\030\001 \001(\t\"Z"
+  "\n\020S_PARTY_CHAT_NTF\022\017\n\007partyId\030\001 \001(\004\022\020\n\010s"
+  "enderId\030\002 \001(\004\022\022\n\nsenderName\030\003 \001(\t\022\017\n\007mes"
+  "sage\030\004 \001(\t\"k\n\020S_PARTY_INFO_NTF\022\020\n\010hasPar"
+  "ty\030\001 \001(\010\022\017\n\007partyId\030\002 \001(\004\022\020\n\010leaderId\030\003 "
+  "\001(\004\022\021\n\tmemberIds\030\004 \003(\004\022\017\n\007version\030\005 \001(\r\""
+  ",\n\022C_PARTY_CREATE_REQ\022\026\n\016targetPlayerId\030"
+  "\001 \001(\004\",\n\022C_PARTY_INVITE_REQ\022\026\n\016targetPla"
+  "yerId\030\001 \001(\004\"<\n\031C_PARTY_INVITE_ACCEPT_REQ"
+  "\022\017\n\007partyId\030\001 \001(\004\022\016\n\006accept\030\002 \001(\010\"\023\n\021C_P"
+  "ARTY_LEAVE_REQ\"*\n\020C_PARTY_KICK_REQ\022\026\n\016ta"
+  "rgetPlayerId\030\001 \001(\004\"\025\n\023C_PARTY_DISBAND_RE"
+  "Q\"_\n\016S_PARTY_RESULT\022\n\n\002op\030\001 \001(\005\022\017\n\007succe"
+  "ss\030\002 \001(\010\022\016\n\006reason\030\003 \001(\005\022\017\n\007partyId\030\004 \001("
+  "\004\022\017\n\007version\030\005 \001(\r\"M\n\022S_PARTY_INVITE_NTF"
+  "\022\017\n\007partyId\030\001 \001(\004\022\021\n\tinviterId\030\002 \001(\004\022\023\n\013"
+  "inviterName\030\003 \001(\t\"\272\001\n\021PartyMemberStatus\022"
+  "\020\n\010playerId\030\001 \001(\004\022\020\n\010objectId\030\002 \001(\004\022\014\n\004n"
+  "ame\030\003 \001(\t\022\r\n\005level\030\004 \001(\005\022\n\n\002hp\030\005 \001(\005\022\r\n\005"
+  "maxHp\030\006 \001(\005\022\r\n\005mapId\030\007 \001(\005\022\021\n\tchannelId\030"
+  "\010 \001(\005\022\'\n\007posInfo\030\t \001(\0132\026.Protocol.Positi"
+  "onInfo\"\024\n\022C_PARTY_STATUS_REQ\"d\n\022S_PARTY_"
+  "STATUS_NTF\022\017\n\007partyId\030\001 \001(\004\022\017\n\007version\030\002"
+  " \001(\r\022,\n\007members\030\003 \003(\0132\033.Protocol.PartyMe"
+  "mberStatus\"+\n\023C_DUNGEON_ENTER_REQ\022\024\n\014dun"
+  "geonMapId\030\001 \001(\005\"\202\001\n\023S_DUNGEON_ENTER_RES\022"
+  "\017\n\007success\030\001 \001(\010\022\024\n\014dungeonMapId\030\002 \001(\005\022\022"
+  "\n\ninstanceid\030\003 \001(\003\0220\n\006reason\030\004 \001(\0162 .Pro"
+  "tocol.DungeonEnterFailReason\"\024\n\022C_DUNGEO"
+  "N_EXIT_REQ\"\205\001\n\022S_DUNGEON_EXIT_RES\022\017\n\007suc"
+  "cess\030\001 \001(\010\022\023\n\013returnMapId\030\002 \001(\005\022\030\n\020retur"
+  "nInstanceid\030\003 \001(\003\022/\n\006reason\030\004 \001(\0162\037.Prot"
+  "ocol.DungeonExitFailReason*\230\001\n\026DungeonEn"
+  "terFailReason\022\024\n\020DUNGEON_ENTER_OK\020\000\022#\n\037D"
+  "UNGEON_ENTER_FAIL_NOT_IN_PARTY\020\001\022\"\n\036DUNG"
+  "EON_ENTER_FAIL_INVALID_MAP\020\002\022\037\n\033DUNGEON_"
+  "ENTER_FAIL_INTERNAL\020\003*\226\001\n\025DungeonExitFai"
+  "lReason\022\023\n\017DUNGEON_EXIT_OK\020\000\022$\n DUNGEON_"
+  "EXIT_FAIL_NOT_IN_DUNGEON\020\001\022\"\n\036DUNGEON_EX"
+  "IT_FAIL_NOT_IN_PARTY\020\002\022\036\n\032DUNGEON_EXIT_F"
+  "AIL_INTERNAL\020\003b\006proto3"
   ;
 static const ::_pbi::DescriptorTable* const descriptor_table_Protocol_2eproto_deps[2] = {
   &::descriptor_table_Enum_2eproto,
@@ -1275,7 +1283,7 @@ static const ::_pbi::DescriptorTable* const descriptor_table_Protocol_2eproto_de
 };
 static ::_pbi::once_flag descriptor_table_Protocol_2eproto_once;
 const ::_pbi::DescriptorTable descriptor_table_Protocol_2eproto = {
-    false, false, 3454, descriptor_table_protodef_Protocol_2eproto,
+    false, false, 3542, descriptor_table_protodef_Protocol_2eproto,
     "Protocol.proto",
     &descriptor_table_Protocol_2eproto_once, descriptor_table_Protocol_2eproto_deps, 2, 47,
     schemas, file_default_instances, TableStruct_Protocol_2eproto::offsets,
@@ -3145,6 +3153,9 @@ void S_SPAWN::clear_players() {
 void S_SPAWN::clear_monsters() {
   _impl_.monsters_.Clear();
 }
+void S_SPAWN::clear_projectiles() {
+  _impl_.projectiles_.Clear();
+}
 S_SPAWN::S_SPAWN(::PROTOBUF_NAMESPACE_ID::Arena* arena,
                          bool is_message_owned)
   : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
@@ -3157,6 +3168,7 @@ S_SPAWN::S_SPAWN(const S_SPAWN& from)
   new (&_impl_) Impl_{
       decltype(_impl_.players_){from._impl_.players_}
     , decltype(_impl_.monsters_){from._impl_.monsters_}
+    , decltype(_impl_.projectiles_){from._impl_.projectiles_}
     , decltype(_impl_.snapshot_id_){}
     , decltype(_impl_.snapshot_begin_){}
     , decltype(_impl_.snapshot_end_){}
@@ -3176,6 +3188,7 @@ inline void S_SPAWN::SharedCtor(
   new (&_impl_) Impl_{
       decltype(_impl_.players_){arena}
     , decltype(_impl_.monsters_){arena}
+    , decltype(_impl_.projectiles_){arena}
     , decltype(_impl_.snapshot_id_){0u}
     , decltype(_impl_.snapshot_begin_){false}
     , decltype(_impl_.snapshot_end_){false}
@@ -3196,6 +3209,7 @@ inline void S_SPAWN::SharedDtor() {
   GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.players_.~RepeatedPtrField();
   _impl_.monsters_.~RepeatedPtrField();
+  _impl_.projectiles_.~RepeatedPtrField();
 }
 
 void S_SPAWN::SetCachedSize(int size) const {
@@ -3210,6 +3224,7 @@ void S_SPAWN::Clear() {
 
   _impl_.players_.Clear();
   _impl_.monsters_.Clear();
+  _impl_.projectiles_.Clear();
   ::memset(&_impl_.snapshot_id_, 0, static_cast<size_t>(
       reinterpret_cast<char*>(&_impl_.snapshot_end_) -
       reinterpret_cast<char*>(&_impl_.snapshot_id_)) + sizeof(_impl_.snapshot_end_));
@@ -3245,6 +3260,19 @@ const char* S_SPAWN::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) 
             CHK_(ptr);
             if (!ctx->DataAvailable(ptr)) break;
           } while (::PROTOBUF_NAMESPACE_ID::internal::ExpectTag<18>(ptr));
+        } else
+          goto handle_unusual;
+        continue;
+      // repeated .Protocol.ProjectileInfo projectiles = 3;
+      case 3:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 26)) {
+          ptr -= 1;
+          do {
+            ptr += 1;
+            ptr = ctx->ParseMessage(_internal_add_projectiles(), ptr);
+            CHK_(ptr);
+            if (!ctx->DataAvailable(ptr)) break;
+          } while (::PROTOBUF_NAMESPACE_ID::internal::ExpectTag<26>(ptr));
         } else
           goto handle_unusual;
         continue;
@@ -3317,6 +3345,14 @@ uint8_t* S_SPAWN::_InternalSerialize(
         InternalWriteMessage(2, repfield, repfield.GetCachedSize(), target, stream);
   }
 
+  // repeated .Protocol.ProjectileInfo projectiles = 3;
+  for (unsigned i = 0,
+      n = static_cast<unsigned>(this->_internal_projectiles_size()); i < n; i++) {
+    const auto& repfield = this->_internal_projectiles(i);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
+        InternalWriteMessage(3, repfield, repfield.GetCachedSize(), target, stream);
+  }
+
   // uint32 snapshot_id = 10;
   if (this->_internal_snapshot_id() != 0) {
     target = stream->EnsureSpace(target);
@@ -3365,6 +3401,13 @@ size_t S_SPAWN::ByteSizeLong() const {
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
   }
 
+  // repeated .Protocol.ProjectileInfo projectiles = 3;
+  total_size += 1UL * this->_internal_projectiles_size();
+  for (const auto& msg : this->_impl_.projectiles_) {
+    total_size +=
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
+  }
+
   // uint32 snapshot_id = 10;
   if (this->_internal_snapshot_id() != 0) {
     total_size += ::_pbi::WireFormatLite::UInt32SizePlusOne(this->_internal_snapshot_id());
@@ -3400,6 +3443,7 @@ void S_SPAWN::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOB
 
   _this->_impl_.players_.MergeFrom(from._impl_.players_);
   _this->_impl_.monsters_.MergeFrom(from._impl_.monsters_);
+  _this->_impl_.projectiles_.MergeFrom(from._impl_.projectiles_);
   if (from._internal_snapshot_id() != 0) {
     _this->_internal_set_snapshot_id(from._internal_snapshot_id());
   }
@@ -3428,6 +3472,7 @@ void S_SPAWN::InternalSwap(S_SPAWN* other) {
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   _impl_.players_.InternalSwap(&other->_impl_.players_);
   _impl_.monsters_.InternalSwap(&other->_impl_.monsters_);
+  _impl_.projectiles_.InternalSwap(&other->_impl_.projectiles_);
   ::PROTOBUF_NAMESPACE_ID::internal::memswap<
       PROTOBUF_FIELD_OFFSET(S_SPAWN, _impl_.snapshot_end_)
       + sizeof(S_SPAWN::_impl_.snapshot_end_)
@@ -3652,10 +3697,14 @@ C_SKILL::C_SKILL(const C_SKILL& from)
   C_SKILL* const _this = this; (void)_this;
   new (&_impl_) Impl_{
       decltype(_impl_.skillid_){}
+    , decltype(_impl_.castyaw_){}
+    , decltype(_impl_.client_time_ms_){}
     , /*decltype(_impl_._cached_size_)*/{}};
 
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
-  _this->_impl_.skillid_ = from._impl_.skillid_;
+  ::memcpy(&_impl_.skillid_, &from._impl_.skillid_,
+    static_cast<size_t>(reinterpret_cast<char*>(&_impl_.client_time_ms_) -
+    reinterpret_cast<char*>(&_impl_.skillid_)) + sizeof(_impl_.client_time_ms_));
   // @@protoc_insertion_point(copy_constructor:Protocol.C_SKILL)
 }
 
@@ -3665,6 +3714,8 @@ inline void C_SKILL::SharedCtor(
   (void)is_message_owned;
   new (&_impl_) Impl_{
       decltype(_impl_.skillid_){0}
+    , decltype(_impl_.castyaw_){0}
+    , decltype(_impl_.client_time_ms_){0u}
     , /*decltype(_impl_._cached_size_)*/{}
   };
 }
@@ -3692,7 +3743,9 @@ void C_SKILL::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  _impl_.skillid_ = 0;
+  ::memset(&_impl_.skillid_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&_impl_.client_time_ms_) -
+      reinterpret_cast<char*>(&_impl_.skillid_)) + sizeof(_impl_.client_time_ms_));
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
@@ -3706,6 +3759,22 @@ const char* C_SKILL::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) 
       case 1:
         if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 8)) {
           _impl_.skillid_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
+          CHK_(ptr);
+        } else
+          goto handle_unusual;
+        continue;
+      // float castYaw = 2;
+      case 2:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 21)) {
+          _impl_.castyaw_ = ::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<float>(ptr);
+          ptr += sizeof(float);
+        } else
+          goto handle_unusual;
+        continue;
+      // uint32 client_time_ms = 3;
+      case 3:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 24)) {
+          _impl_.client_time_ms_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
           CHK_(ptr);
         } else
           goto handle_unusual;
@@ -3745,6 +3814,22 @@ uint8_t* C_SKILL::_InternalSerialize(
     target = ::_pbi::WireFormatLite::WriteInt32ToArray(1, this->_internal_skillid(), target);
   }
 
+  // float castYaw = 2;
+  static_assert(sizeof(uint32_t) == sizeof(float), "Code assumes uint32_t and float are the same size.");
+  float tmp_castyaw = this->_internal_castyaw();
+  uint32_t raw_castyaw;
+  memcpy(&raw_castyaw, &tmp_castyaw, sizeof(tmp_castyaw));
+  if (raw_castyaw != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteFloatToArray(2, this->_internal_castyaw(), target);
+  }
+
+  // uint32 client_time_ms = 3;
+  if (this->_internal_client_time_ms() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteUInt32ToArray(3, this->_internal_client_time_ms(), target);
+  }
+
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
     target = ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance), target, stream);
@@ -3764,6 +3849,20 @@ size_t C_SKILL::ByteSizeLong() const {
   // int32 skillId = 1;
   if (this->_internal_skillid() != 0) {
     total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(this->_internal_skillid());
+  }
+
+  // float castYaw = 2;
+  static_assert(sizeof(uint32_t) == sizeof(float), "Code assumes uint32_t and float are the same size.");
+  float tmp_castyaw = this->_internal_castyaw();
+  uint32_t raw_castyaw;
+  memcpy(&raw_castyaw, &tmp_castyaw, sizeof(tmp_castyaw));
+  if (raw_castyaw != 0) {
+    total_size += 1 + 4;
+  }
+
+  // uint32 client_time_ms = 3;
+  if (this->_internal_client_time_ms() != 0) {
+    total_size += ::_pbi::WireFormatLite::UInt32SizePlusOne(this->_internal_client_time_ms());
   }
 
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
@@ -3787,6 +3886,16 @@ void C_SKILL::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOB
   if (from._internal_skillid() != 0) {
     _this->_internal_set_skillid(from._internal_skillid());
   }
+  static_assert(sizeof(uint32_t) == sizeof(float), "Code assumes uint32_t and float are the same size.");
+  float tmp_castyaw = from._internal_castyaw();
+  uint32_t raw_castyaw;
+  memcpy(&raw_castyaw, &tmp_castyaw, sizeof(tmp_castyaw));
+  if (raw_castyaw != 0) {
+    _this->_internal_set_castyaw(from._internal_castyaw());
+  }
+  if (from._internal_client_time_ms() != 0) {
+    _this->_internal_set_client_time_ms(from._internal_client_time_ms());
+  }
   _this->_internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -3804,7 +3913,12 @@ bool C_SKILL::IsInitialized() const {
 void C_SKILL::InternalSwap(C_SKILL* other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  swap(_impl_.skillid_, other->_impl_.skillid_);
+  ::PROTOBUF_NAMESPACE_ID::internal::memswap<
+      PROTOBUF_FIELD_OFFSET(C_SKILL, _impl_.client_time_ms_)
+      + sizeof(C_SKILL::_impl_.client_time_ms_)
+      - PROTOBUF_FIELD_OFFSET(C_SKILL, _impl_.skillid_)>(
+          reinterpret_cast<char*>(&_impl_.skillid_),
+          reinterpret_cast<char*>(&other->_impl_.skillid_));
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata C_SKILL::GetMetadata() const {
