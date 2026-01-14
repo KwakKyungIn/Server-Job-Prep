@@ -55,3 +55,23 @@ uint32 GameMap::GetConnectivityId(float x, float y, float z)
 {
     return _navSystem->GetConnectivityId(x, y, z);
 }
+
+bool GameMap::FindPathWaypoints(const Protocol::PositionInfo& start,
+    const Protocol::PositionInfo& end,
+    std::vector<Vector3>& outWaypoints)
+{
+    if (!_navSystem) return false;
+    return _navSystem->FindPathWaypoints(start, end, outWaypoints);
+}
+
+bool GameMap::HasLineOfSight(const Protocol::PositionInfo& start,
+    const Protocol::PositionInfo& end)
+{
+    if (!_navSystem) return false;
+
+    float t = 0.0f;
+    if (_navSystem->RaycastNav(start, end, t) == false)
+        return false;
+
+    return (t >= 1.0f);
+}

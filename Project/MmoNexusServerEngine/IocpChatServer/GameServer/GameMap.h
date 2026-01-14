@@ -1,6 +1,7 @@
 #pragma once
 #include "Protocol.pb.h"
 #include "DataManager.h" // MapConfig
+#include "ObjectUtils.h"
 
 class NavSystem; // Forward Declaration (헤더 의존성 최소화)
 
@@ -28,12 +29,20 @@ public:
     int32 GetSizeX() const { return _sizeX; }
     int32 GetSizeY() const { return _sizeY; }
 
+    // ===============================
+    // [B] Pathfinding Wrappers
+    // ===============================
+    bool FindPathWaypoints(const Protocol::PositionInfo& start,
+        const Protocol::PositionInfo& end,
+        std::vector<Vector3>& outWaypoints);
+
+    bool HasLineOfSight(const Protocol::PositionInfo& start,
+        const Protocol::PositionInfo& end);
+
 private:
     int32 _mapId = 0;
     int32 _sizeX = 0;
     int32 _sizeY = 0;
 
-    // 더 이상 2D 배열 _collision은 없다.
-    // NavSystem이 권위자다.
     std::shared_ptr<NavSystem> _navSystem;
 };

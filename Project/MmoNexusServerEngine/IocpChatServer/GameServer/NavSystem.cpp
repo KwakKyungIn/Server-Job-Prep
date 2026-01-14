@@ -346,3 +346,173 @@ uint32 NavSystem::GetConnectivityId(float x, float y, float z)
 
 	return newGroupId;
 }
+
+bool NavSystem::RaycastNav(const Protocol::PositionInfo& start,
+	const Protocol::PositionInfo& end,
+	float& outT)
+{
+	outT = 0.0f;
+	if (_navQuery == nullptr)
+		return false;
+
+	float startPos[3] = { start.x(), start.y(), start.z() };
+	float endPos[3] = { end.x(),   end.y(),   end.z() };
+
+	float startNearest[3];
+	dtPolyRef startRef = FindNearestPoly(startPos, _polyPickExt, startNearest);
+	if (!startRef)
+		return false;
+
+	float hitNormal[3];
+	dtPolyRef path[32];
+	int pathCount = 0;
+
+	dtStatus status = _navQuery->raycast(
+		startRef,
+		startNearest,   // ✅ 시작점 nearest로 오차 흡수
+		endPos,
+		&_filter,
+		&outT,
+		hitNormal,
+		path,
+		&pathCount,
+		32
+	);
+
+	return dtStatusSucceed(status);
+}
+
+static void CompressWaypoints(std::vector<Vector3>& pts, float minDist)
+{
+	if (pts.size() <= 1) return;
+
+	const float minDistSqr = minDist * minDist;
+	std::vector<Vector3> out;
+	out.reserve(pts.size());
+
+	out.push_back(pts[0]);
+	for (size_t i = 1; i < pts.size(); ++i)
+	{
+		const Vector3& a = out.back();
+		const Vector3& b = pts[i];
+		const float dx = b.x - a.x;
+		const float dy = b.y - a.y;
+		const float dz = b.z - a.z;
+		const float d2 = dx * dx + dy * dy + dz * dz;
+
+		if (d2 >= minDistSqr)
+			out.push_back(b);
+	}
+
+	// ✅ 마지막은 end 유지
+	if (!out.empty())
+		out.back() = pts.back();
+
+	pts.swap(out);
+}
+
+bool NavSystem::FindPathWaypoints(const Protocol::PositionInfo& start,
+	const Protocol::PositionInfo& end,
+	std::vector<Vector3>& outWaypoints)
+{
+	outWaypoints.clear();
+	if (_navQuery == nullptr)
+		return false;
+
+	{
+		const float dx = end.x() - start.x();
+		const float dy = end.y() - start.y();
+		const float dz = end.z() - start.z();
+		if ((dx * dx + dy * dy + dz * dz) < 1e-6f)
+		{
+			outWaypoints.emplace_back(end.x(), end.y(), end.z());
+			return true;
+		}
+	}
+
+	float startPos[3] = { start.x(), start.y(), start.z() };
+	float endPos[3] = { end.x(),   end.y(),   end.z() };
+
+	float startNearest[3];
+	float endNearest[3];
+
+	dtPolyRef startRef = FindNearestPoly(startPos, _polyPickExt, startNearest);
+	dtPolyRef endRef = FindNearestPoly(endPos, _polyPickExt, endNearest);
+
+	if (!startRef || !endRef)
+		return false;
+
+	// ===== 1) findPath (poly corridor) =====
+	static constexpr int MAX_POLYS = 256;
+	dtPolyRef polys[MAX_POLYS];
+	int polyCount = 0;
+
+	dtStatus status = _navQuery->findPath(
+		startRef, endRef,
+		startNearest, endNearest,
+		&_filter,
+		polys, &polyCount,
+		MAX_POLYS
+	);
+
+	if (dtStatusFailed(status) || polyCount <= 0)
+		return false;
+
+	// ===== 2) findStraightPath (waypoints) =====
+	static constexpr int MAX_STRAIGHT = 64;
+	float straightPath[3 * MAX_STRAIGHT];
+	unsigned char straightFlags[MAX_STRAIGHT];
+	dtPolyRef straightPolys[MAX_STRAIGHT];
+	int straightCount = 0;
+
+	status = _navQuery->findStraightPath(
+		startNearest,
+		endNearest,
+		polys,
+		polyCount,
+		straightPath,
+		straightFlags,
+		straightPolys,
+		&straightCount,
+		MAX_STRAIGHT,
+		0
+	);
+
+	if (dtStatusFailed(status) || straightCount <= 0)
+		return false;
+
+	outWaypoints.reserve(straightCount);
+
+	for (int i = 0; i < straightCount; ++i)
+	{
+		const float* p = &straightPath[i * 3];
+		float y = p[1];
+
+		// ✅ 높이 안정화 (polyHeight 우선)
+		if (straightPolys[i] != 0)
+		{
+			float h = 0.0f;
+			if (dtStatusSucceed(_navQuery->getPolyHeight(straightPolys[i], p, &h)))
+				y = h;
+			else
+			{
+				float snapY = y;
+				if (ResolvePoint(p[0], p[1], p[2], snapY))
+					y = snapY;
+			}
+		}
+		else
+		{
+			float snapY = y;
+			if (ResolvePoint(p[0], p[1], p[2], snapY))
+				y = snapY;
+		}
+
+		outWaypoints.emplace_back(p[0], y, p[2]);
+	}
+
+	// ✅ 떨림/불필요한 점 방지 (5cm)
+	CompressWaypoints(outWaypoints, 0.05f);
+
+	return true;
+}

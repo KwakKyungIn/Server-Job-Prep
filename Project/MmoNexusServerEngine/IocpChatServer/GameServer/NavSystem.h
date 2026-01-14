@@ -1,7 +1,8 @@
 #pragma once
 #include "DetourNavMesh.h"
 #include "DetourNavMeshQuery.h"
-#include "Protocol.pb.h" // For PositionInfo
+#include "Protocol.pb.h"
+#include "ObjectUtils.h"
 
 class NavSystem
 {
@@ -13,6 +14,18 @@ public:
     bool ValidateMove(const Protocol::PositionInfo& current, const Protocol::PositionInfo& target, Protocol::PositionInfo& outAdjusted);
     bool ResolvePoint(float x, float y, float z, float& outY);
     uint32 GetConnectivityId(float x, float y, float z);
+
+    // ===============================
+    // [B] Pathfinding / LOS
+    // ===============================
+    bool FindPathWaypoints(const Protocol::PositionInfo& start,
+        const Protocol::PositionInfo& end,
+        std::vector<Vector3>& outWaypoints);
+
+    // outT: 1.0이면 직선 통과, 0~1이면 중간에 막힘
+    bool RaycastNav(const Protocol::PositionInfo& start,
+        const Protocol::PositionInfo& end,
+        float& outT);
 
 private:
     // [Delete] void ComputeConnectivity(); -> 삭제함
