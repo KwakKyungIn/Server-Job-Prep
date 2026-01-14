@@ -112,4 +112,15 @@ public:
 		float rad = yaw * (PI / 180.0f);
 		return Vector3(sinf(rad), 0, cosf(rad)); // Y축 회전 기준 (X, Z 평면)
 	}
+
+	// ObjectUtils.h
+	static Vector3 GetDirectionXZ(const Protocol::PositionInfo& from, const Protocol::PositionInfo& to)
+	{
+		float dx = to.x() - from.x();
+		float dz = to.z() - from.z();
+		float len = sqrtf(dx * dx + dz * dz);
+		if (len < 1e-6f) return Vector3(0, 0, 0);
+		return Vector3(dx / len, 0.0f, dz / len);
+	}
+
 };

@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include "Creature.h"
 
 class Monster : public Creature
@@ -12,33 +12,48 @@ public:
 	virtual void	OnDead(std::shared_ptr<Creature> attacker) override;
 
 	// [Logic]
-	void			Init(int32 templateId); // »ı¼º ÈÄ µ¥ÀÌÅÍ ¼¼ÆÃ
-	void			Update(); // AI ¸ŞÀÎ ·çÇÁ (GameRoom¿¡¼­ ÁÖ±âÀûÀ¸·Î È£Ãâ)
+	void			Init(int32 templateId); // ìƒì„± í›„ ë°ì´í„° ì„¸íŒ…
+	void			Update(uint64 nowMs, uint64 deltaMs); // AI ë©”ì¸ ë£¨í”„ (GameRoomì—ì„œ ì£¼ê¸°ì ìœ¼ë¡œ í˜¸ì¶œ)
 
 	// [Data Access] (New)
-	// GameRoom¿¡¼­ S_SPAWN ÆĞÅ¶ ¸¸µé ¶§ °¡Á®°¡¾ß ÇÔ
+	// GameRoomì—ì„œ S_SPAWN íŒ¨í‚· ë§Œë“¤ ë•Œ ê°€ì ¸ê°€ì•¼ í•¨
 	Protocol::MonsterInfo* GetMonsterInfo() { return &_monsterInfo; }
 
 	std::unordered_set<uint64>& Viewers_ActorOnly() { return _viewers; }
 	const std::unordered_set<uint64>& Viewers_ActorOnly() const { return _viewers; }
 
+	uint64 GetLastAoiExpensiveMs() const { return _lastAoiExpensiveMs; }
+	void   SetLastAoiExpensiveMs(uint64 v) { _lastAoiExpensiveMs = v; }
+	void   SetLastAoiExpensivePos(float x, float z) { _lastAoiExpensiveX = x; _lastAoiExpensiveZ = z; }
+	void   GetLastAoiExpensivePos(float& x, float& z) const { x = _lastAoiExpensiveX; z = _lastAoiExpensiveZ; }
+
 private:
 	// [AI State Machine]
 	void			UpdateIdle();
-	void			UpdateMove();
-	void			UpdateAttack();
+	void			UpdateMove(uint64 nowMs, uint64 deltaMs);
+	void			UpdateAttack(uint64 nowMs, uint64 deltaMs);
 
 	// [Helper]
-	std::shared_ptr<Creature> GetTarget(); // ÇöÀç Å¸°Ù À¯È¿¼º °ËÁõ
+	std::shared_ptr<Creature> GetTarget(); // í˜„ì¬ íƒ€ê²Ÿ ìœ íš¨ì„± ê²€ì¦
+
+
+
 
 private:
 	// [Data Container]
 	Protocol::MonsterInfo _monsterInfo;
 
 	// [AI Context]
-	std::weak_ptr<Creature> _target; // ÇöÀç ÂÑ°í ÀÖ´Â ´ë»ó
-	float		_searchRange = 10.0f; // ÀÎ½Ä ¹üÀ§
-	float		_attackRange = 1.5f;  // °ø°İ »ç°Å¸®
+	std::weak_ptr<Creature> _target; // í˜„ì¬ ì«“ê³  ìˆëŠ” ëŒ€ìƒ
+	float		_searchRange = 10.0f; // ì¸ì‹ ë²”ìœ„
+	float		_attackRange = 1.5f;  // ê³µê²© ì‚¬ê±°ë¦¬
 
 	std::unordered_set<uint64> _viewers;
+
+	uint64 _lastAttackMs = 0;
+
+	// âœ… Expensive AOI íŠ¸ë¦¬ê±°ìš©
+	uint64 _lastAoiExpensiveMs = 0;
+	float  _lastAoiExpensiveX = 0.f;
+	float  _lastAoiExpensiveZ = 0.f;
 };

@@ -18,7 +18,7 @@ void GameRoom::Update()
 
 	// 몬스터 AI
 	for (auto& item : _monsters)
-		item.second->Update();
+		item.second->Update(now, deltaMs);
 
 	// ✅ Projectile tick
 	UpdateProjectiles(deltaMs);
@@ -124,13 +124,15 @@ void GameRoom::OnMonsterMoved(MonsterRef monster)
 {
 	if (!monster) return;
 
+	const uint64 now = ::GetTickCount64();
 	const uint64 mid = monster->GetObjectId();
 
 	int32 oldZoneIndex = monster->GetZoneIndex();
 	int32 newZoneIndex = _grid.GetZoneIndex(*monster->GetPosInfo());
+	const bool zoneChanged = (newZoneIndex != oldZoneIndex);
 
-	// zone membership 이동
-	if (newZoneIndex != oldZoneIndex)
+	// 0) zone membership은 항상 최신
+	if (zoneChanged)
 	{
 		int32 totalZones = _grid.GetGridSizeX() * _grid.GetGridSizeY();
 		if (oldZoneIndex >= 0 && oldZoneIndex < totalZones)
@@ -140,6 +142,38 @@ void GameRoom::OnMonsterMoved(MonsterRef monster)
 		monster->SetZoneIndex(newZoneIndex);
 	}
 
+	// 1) ✅ Cheap: 기존 viewers에게 MOVE만
+	{
+		Protocol::S_MOVE movePkt;
+		movePkt.set_objectid(mid);
+		*movePkt.mutable_posinfo() = *monster->GetPosInfo();
+		SendBufferRef sb = ClientPacketHandler::MakeSendBuffer(movePkt);
+
+		auto& viewers = monster->Viewers_ActorOnly();
+		for (uint64 pid : viewers)
+			SendToPlayer(pid, sb);
+	}
+
+	// 2) ✅ Expensive 트리거 판단
+	float lastX, lastZ;
+	monster->GetLastAoiExpensivePos(lastX, lastZ);
+
+	const float dx = monster->GetPosInfo()->x() - lastX;
+	const float dz = monster->GetPosInfo()->z() - lastZ;
+	const float moved = std::sqrt(dx * dx + dz * dz);
+
+	const uint64 lastMs = monster->GetLastAoiExpensiveMs();
+
+	const bool needExpensive =
+		zoneChanged ||
+		(lastMs == 0) ||
+		(now - lastMs >= _lazyUpdateTickMs) ||
+		(moved >= _lazyUpdateDist);
+
+	if (!needExpensive)
+		return;
+
+	// 3) Expensive: (너 기존 코드 그대로) newViewers 계산 + spawn/despawn diff
 	// ---- 새 viewers 계산 ----
 	std::unordered_set<uint64> newViewers;
 
@@ -182,7 +216,6 @@ void GameRoom::OnMonsterMoved(MonsterRef monster)
 
 			PlayerRef p = FindPlayer_ActorOnly(pid);
 			if (p) p->VisibleMonsters_ActorOnly().erase(mid);
-
 			SendToPlayer(pid, sb);
 		}
 	}
@@ -201,44 +234,52 @@ void GameRoom::OnMonsterMoved(MonsterRef monster)
 
 			PlayerRef p = FindPlayer_ActorOnly(pid);
 			if (p) p->VisibleMonsters_ActorOnly().insert(mid);
-
 			SendToPlayer(pid, sb);
 		}
 	}
 
-	// ---- move: intersection (newViewers) ----
-	{
-		Protocol::S_MOVE movePkt;
-		movePkt.set_objectid(mid);
-		*movePkt.mutable_posinfo() = *monster->GetPosInfo();
-		SendBufferRef sb = ClientPacketHandler::MakeSendBuffer(movePkt);
-
-		for (uint64 pid : newViewers)
-			SendToPlayer(pid, sb);
-	}
-
-	// 최종 viewers 갱신
 	oldViewers = std::move(newViewers);
+
+	monster->SetLastAoiExpensiveMs(now);
+	monster->SetLastAoiExpensivePos(monster->GetPosInfo()->x(), monster->GetPosInfo()->z());
 }
 
 PlayerRef GameRoom::FindNearestPlayer(Protocol::PositionInfo* pos, float range)
 {
+	if (!pos) return nullptr;
+
 	// [CHANGED] AOI: 그리드에 직접 문의
-	int32 zoneIndex = _grid.GetZoneIndex(*pos);
+	const int32 zoneIndex = _grid.GetZoneIndex(*pos);
 
 	Vector<Zone*> zones;
 	_grid.GetNearbyZones(zoneIndex, EffectiveAoiRadiusCells(), zones);
 
+	// ✅ Connectivity 필터 (벽 너머 타겟 금지)
+	const uint32 myConn = GetConnectivityId_ActorOnly(*pos);
+
 	PlayerRef target = nullptr;
-	float minDistSqr = range * range;
+	const float rangeSqr = range * range;
+	float minDistSqr = rangeSqr;
 
 	for (Zone* zone : zones)
 	{
 		for (const PlayerRef& player : zone->players)
 		{
-			float dx = player->GetPosInfo()->x() - pos->x();
-			float dy = player->GetPosInfo()->z() - pos->z();
-			float distSqr = dx * dx + dy * dy;
+			if (!player) continue;
+			if (player->GetStatInfo() && player->GetStatInfo()->hp() <= 0) continue;
+
+			const auto& pp = *player->GetPosInfo();
+
+			// ✅ Range 컷 (성능 + 정확도)
+			const float dx = pp.x() - pos->x();
+			const float dz = pp.z() - pos->z();
+			const float distSqr = dx * dx + dz * dz;
+			if (distSqr > rangeSqr)
+				continue;
+
+			// ✅ Connectivity 컷
+			if (GetConnectivityId_ActorOnly(pp) != myConn)
+				continue;
 
 			if (distSqr < minDistSqr)
 			{

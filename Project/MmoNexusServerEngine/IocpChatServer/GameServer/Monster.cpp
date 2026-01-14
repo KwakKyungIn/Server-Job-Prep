@@ -1,13 +1,11 @@
 ﻿#include "pch.h"
 #include "Monster.h"
 #include "GameRoom.h"
+#include "GameMap.h"
 #include "DataManager.h"
 #include "Player.h"
 #include "ClientPacketHandler.h"
 #include "ObjectUtils.h" // [New] 유틸 포함
-
-// 쿨타임 관리 (임시)
-static uint64 s_lastAttackTime = 0;
 
 Monster::Monster() : Creature(Protocol::OBJECT_TYPE_MONSTER)
 {
@@ -39,8 +37,9 @@ void Monster::Init(int32 templateId)
 	_monsterInfo.set_name("Slime_King");
 }
 
-void Monster::Update()
+void Monster::Update(uint64 nowMs, uint64 deltaMs)
 {
+	// ✅ 죽음 처리
 	if (_statInfo->hp() <= 0)
 	{
 		if (_posInfo->actionstate() != Protocol::ACTION_DEAD)
@@ -48,6 +47,7 @@ void Monster::Update()
 		return;
 	}
 
+	// ✅ 타겟 유효성
 	std::shared_ptr<Creature> target = GetTarget();
 	if (target == nullptr)
 	{
@@ -56,13 +56,14 @@ void Monster::Update()
 		_posInfo->set_actionstate(Protocol::ACTION_IDLE);
 	}
 
+	// ✅ 상태 머신
 	if (_posInfo->actionstate() == Protocol::ACTION_ATTACK)
 	{
-		UpdateAttack();
+		UpdateAttack(nowMs, deltaMs);
 	}
 	else if (_target.lock() != nullptr)
 	{
-		UpdateMove();
+		UpdateMove(nowMs, deltaMs);
 	}
 	else
 	{
@@ -83,104 +84,131 @@ void Monster::UpdateIdle()
 	}
 }
 
-void Monster::UpdateMove()
+void Monster::UpdateMove(uint64 nowMs, uint64 deltaMs)
 {
-	std::shared_ptr<Creature> target = GetTarget();
-	if (target == nullptr) return;
+	auto room = GetGameRoom();
+	if (!room) return;
 
-	// 0) 타겟을 바라보는 yaw 계산 (이게 없어서 방향이 안 갔던 거)
-	Vector3 dir = ObjectUtils::GetDirection(*_posInfo, *target->GetPosInfo());
+	auto target = GetTarget();
+	if (!target) return;
 
-	// dir이 0이면(겹침) yaw 갱신 생략
-	if (dir.x != 0.0f || dir.z != 0.0f)
-	{
-		float yawDeg = std::atan2(dir.x, dir.z) * 180.0f / 3.141592f; // Unity yaw 기준
-		_posInfo->set_yaw(yawDeg);
-	}
+	// ✅ XZ 전용 방향 (경사/높낮이 속도왜곡 제거)
+	Vector3 dir = ObjectUtils::GetDirectionXZ(*_posInfo, *target->GetPosInfo());
 
-	float distSqr = ObjectUtils::DistSqr(*_posInfo, *target->GetPosInfo());
-	float attackRangeSqr = _attackRange * _attackRange;
-
-	// 1) 사거리 체크
-	if (distSqr <= attackRangeSqr)
-	{
-		_posInfo->set_state(Protocol::MOVE_IDLE);
-		_posInfo->set_actionstate(Protocol::ACTION_ATTACK);
-		// 아래에서 OnMonsterMoved로 상태/방향 브로드캐스트
-	}
-	else
-	{
-		// 2) 이동
-		_posInfo->set_state(Protocol::MOVE_RUN);
-		_posInfo->set_actionstate(Protocol::ACTION_IDLE);
-
-		float   deltaTime = 0.1f;
-		Vector3 deltaMove = dir * _statInfo->speed() * deltaTime;
-
-		_posInfo->set_x(_posInfo->x() + deltaMove.x);
-		_posInfo->set_z(_posInfo->z() + deltaMove.z);
-	}
-
-	// 3) Zone 갱신 + 위치/방향 브로드캐스트
-	if (auto room = GetGameRoom())
-	{
-		MonsterRef self = std::static_pointer_cast<Monster>(shared_from_this());
-		room->OnMonsterMoved(self);
-	}
-}
-
-
-void Monster::UpdateAttack()
-{
-	std::shared_ptr<Creature> target = GetTarget();
-	if (target == nullptr)
-	{
-		_posInfo->set_actionstate(Protocol::ACTION_IDLE);
-		_posInfo->set_state(Protocol::MOVE_IDLE);
-		return;
-	}
-
-	// 0) 공격 중에도 타겟 바라보게 yaw 갱신 + 브로드캐스트 필요
-	Vector3 dir = ObjectUtils::GetDirection(*_posInfo, *target->GetPosInfo());
+	// ✅ yaw 갱신
 	if (dir.x != 0.0f || dir.z != 0.0f)
 	{
 		float yawDeg = std::atan2(dir.x, dir.z) * 180.0f / 3.141592f;
 		_posInfo->set_yaw(yawDeg);
 	}
 
-	// 1) 거리 체크
-	float distSqr = ObjectUtils::DistSqr(*_posInfo, *target->GetPosInfo());
-	float attackRangeSqr = _attackRange * _attackRange;
+	const float distSqr = ObjectUtils::DistSqr(*_posInfo, *target->GetPosInfo());
+	const float attackRangeSqr = _attackRange * _attackRange;
 
+	// 1) 사거리면 Attack 진입 (상태만 바꾸고 한번만 흘림)
+	if (distSqr <= attackRangeSqr)
+	{
+		_posInfo->set_state(Protocol::MOVE_IDLE);
+		_posInfo->set_actionstate(Protocol::ACTION_ATTACK);
+
+		room->OnMonsterMoved(std::static_pointer_cast<Monster>(shared_from_this()));
+		return;
+	}
+
+	// 2) 이동
+	_posInfo->set_state(Protocol::MOVE_RUN);
+	_posInfo->set_actionstate(Protocol::ACTION_IDLE);
+
+	const float dtSec = static_cast<float>(deltaMs) * 0.001f;
+	Vector3 deltaMove = dir * _statInfo->speed() * dtSec;
+
+	Protocol::PositionInfo cur = *_posInfo;
+	Protocol::PositionInfo next = cur;
+	next.set_x(cur.x() + deltaMove.x);
+	next.set_z(cur.z() + deltaMove.z);
+
+	Protocol::PositionInfo fixed;
+	if (room->GetMap() && room->GetMap()->ValidateMove(cur, next, fixed))
+	{
+		_posInfo->set_x(fixed.x());
+		_posInfo->set_y(fixed.y());
+		_posInfo->set_z(fixed.z());
+
+		// ✅ ValidateMove가 yaw를 target yaw로 복사하니 일관성 유지
+		_posInfo->set_yaw(fixed.yaw());
+	}
+	else
+	{
+		// ✅ Nav 밖이면 stop (Phase1 안전)
+		_posInfo->set_state(Protocol::MOVE_IDLE);
+	}
+
+	// 3) 이동/방향 갱신 전파
+	room->OnMonsterMoved(std::static_pointer_cast<Monster>(shared_from_this()));
+}
+
+
+void Monster::UpdateAttack(uint64 nowMs, uint64 deltaMs)
+{
+	auto room = GetGameRoom();
+	if (!room) return;
+
+	auto target = GetTarget();
+	if (!target)
+	{
+		_posInfo->set_actionstate(Protocol::ACTION_IDLE);
+		_posInfo->set_state(Protocol::MOVE_IDLE);
+
+		// ✅ 상태변화는 한번 흘려주면 안전
+		room->OnMonsterMoved(std::static_pointer_cast<Monster>(shared_from_this()));
+		return;
+	}
+
+	// ✅ yaw는 XZ 전용으로 통일 (경사면에서도 안정)
+	Vector3 dir = ObjectUtils::GetDirectionXZ(*_posInfo, *target->GetPosInfo());
+
+	// yaw 변경 감지 (불필요한 네트워크/CPU 줄이기)
+	const float prevYaw = _posInfo->yaw();
+
+	if (dir.x != 0.0f || dir.z != 0.0f)
+	{
+		float yawDeg = std::atan2(dir.x, dir.z) * 180.0f / 3.141592f;
+		_posInfo->set_yaw(yawDeg);
+	}
+
+	// 거리 체크
+	const float distSqr = ObjectUtils::DistSqr(*_posInfo, *target->GetPosInfo());
+	const float attackRangeSqr = _attackRange * _attackRange;
+
+	// ✅ 너무 멀어지면 공격 해제
 	if (distSqr > attackRangeSqr * 1.5f)
 	{
 		_posInfo->set_actionstate(Protocol::ACTION_IDLE);
 		_posInfo->set_state(Protocol::MOVE_IDLE);
+
+		room->OnMonsterMoved(std::static_pointer_cast<Monster>(shared_from_this()));
 		return;
 	}
 
-	// ✅ 공격 상태 유지(이동은 없음)
+	// ✅ 공격 상태 유지
 	_posInfo->set_state(Protocol::MOVE_IDLE);
 	_posInfo->set_actionstate(Protocol::ACTION_ATTACK);
 
-	// 2) 공격 중에도 방향이 바뀌면 클라가 따라가게 브로드캐스트
-	if (auto room = GetGameRoom())
+	// ✅ Attack 중에는 "yaw가 바뀌었을 때만" 전파 (매틱 전파 금지)
+	if (std::fabs(_posInfo->yaw() - prevYaw) > 0.5f) // 0.5도 이상 변화 시만
 	{
-		MonsterRef self = std::static_pointer_cast<Monster>(shared_from_this());
-		room->OnMonsterMoved(self); // yaw/state를 S_MOVE로 흘려보냄
+		room->OnMonsterMoved(std::static_pointer_cast<Monster>(shared_from_this()));
 	}
 
-	// 3) 쿨타임 체크 (지금 static이라 "전체 몬스터 공용"임. 일단은 유지)
-	uint64 now = ::GetTickCount64();
-	if (now - s_lastAttackTime < 1000) return;
-	s_lastAttackTime = now;
+	// ✅ 개별 쿨타임 (nowMs 재사용)
+	if (nowMs - _lastAttackMs < 1000)
+		return;
 
-	// 4) 스킬 실행 → S_SKILL 브로드캐스트는 GameRoom::HandleSkill에서 함
+	_lastAttackMs = nowMs;
+
+	// 스킬 실행
 	printf("🥊 [Monster] Attack! -> Player %llu\n", target->GetObjectId());
-	if (auto room = GetGameRoom())
-	{
-		room->HandleSkill(static_pointer_cast<Creature>(shared_from_this()), 1, _posInfo->yaw(), 0);
-	}
+	room->HandleSkill(static_pointer_cast<Creature>(shared_from_this()), 1, _posInfo->yaw(), 0);
 }
 
 void Monster::OnDamaged(std::shared_ptr<Creature> attacker, int32 damage)
