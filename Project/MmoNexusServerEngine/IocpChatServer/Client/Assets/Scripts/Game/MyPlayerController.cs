@@ -99,6 +99,26 @@ public class MyPlayerController : MonoBehaviour
         }
 
         // ============================================================
+        // [PROJECTILE TEST] Q -> SkillId=2
+        // ============================================================
+        if (Input.GetKeyDown(KeyCode.Q))
+        {
+            Debug.Log("🏹 [Input] Q -> Projectile Skill (skillId=2)");
+
+            // (선택) 내 애니도 바로
+            _anim?.PlayAttack();
+
+            C_SKILL skillPkt = new C_SKILL();
+            skillPkt.SkillId = 2;
+
+            // ✅ 서버 proto에 추가된 필드들 (C# 재생성하면 아래가 그대로 컴파일됨)
+            skillPkt.CastYaw = transform.eulerAngles.y;
+            skillPkt.ClientTimeMs = (uint)(Time.realtimeSinceStartupAsDouble * 1000.0);
+
+            NetworkManager.Instance.Send(skillPkt, (ushort)PacketManager.MsgId.C_SKILL);
+        }
+
+        // ============================================================
         // [Item Test] E
         // ============================================================
         if (Input.GetKeyDown(KeyCode.E))

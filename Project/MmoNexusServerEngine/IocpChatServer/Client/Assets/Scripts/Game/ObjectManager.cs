@@ -13,6 +13,7 @@ public class ObjectManager : MonoBehaviour
     public GameObject MyPlayerPrefab;
     public GameObject OtherPlayerPrefab;
     public GameObject MonsterPrefab;
+    public GameObject ProjectilePrefab;
 
     List<MonsterInfo> _pendingMonsters = new List<MonsterInfo>();
 
@@ -132,7 +133,49 @@ public class ObjectManager : MonoBehaviour
         }
 
         Debug.Log($"📥📥📥 [OnSpawn] ===== COMPLETE ===== ");
+
+        // ============================================================
+        // [PROJECTILE SPAWN]
+        // ============================================================
+        if (pkt.Projectiles != null)
+        {
+            Debug.Log($"    Projectiles={pkt.Projectiles.Count}");
+            foreach (var proj in pkt.Projectiles)
+            {
+                SpawnProjectile(proj);
+            }
+        }
     }
+
+    void SpawnProjectile(ProjectileInfo info)
+    {
+        ulong id = info.ObjectId;
+
+        if (_objects.ContainsKey(id))
+            return;
+
+        if (ProjectilePrefab == null)
+        {
+            Debug.LogError("❌ [SpawnProjectile] ProjectilePrefab is NULL! Assign it in Inspector.");
+            return;
+        }
+
+        Vector3 pos = new Vector3(info.PosInfo.X, info.PosInfo.Y, info.PosInfo.Z);
+        float yaw = info.PosInfo.Yaw;
+
+        GameObject go = Instantiate(ProjectilePrefab, pos, Quaternion.Euler(0f, yaw, 0f));
+        go.name = $"Projectile_{info.SkillId}_{id}";
+
+        // 컨트롤러 없으면 붙임 (프리팹에 이미 있으면 중복 방지)
+        if (go.GetComponent<ProjectileController>() == null)
+            go.AddComponent<ProjectileController>();
+
+        _objects.Add(id, go);
+
+        Debug.Log($"[PROJ SPAWN] id={id} skill={info.SkillId} pos=({pos.x},{pos.y},{pos.z}) yaw={yaw}");
+
+    }
+
 
     void ProcessPendingSpawns()
     {
@@ -156,6 +199,7 @@ public class ObjectManager : MonoBehaviour
             if (_objects.ContainsKey(id))
             {
                 Debug.Log($"    🗑️ Destroying object {id}");
+                Debug.Log($"[DESPAWN] id={id} (exists={_objects.ContainsKey(id)})");
                 Destroy(_objects[id]);
                 _objects.Remove(id);
             }
@@ -223,7 +267,18 @@ public class ObjectManager : MonoBehaviour
         Vector3 serverPos = new Vector3(pkt.PosInfo.X, pkt.PosInfo.Y, pkt.PosInfo.Z);
         float serverYaw = pkt.PosInfo.Yaw;
 
-        // ✅ 내 캐릭터도 서버 권위 반영
+        // ============================================================
+        // ✅ [PROJECTILE MOVE] 투사체면 ProjectileController가 처리
+        // ============================================================
+        if (go.TryGetComponent<ProjectileController>(out var projCtrl))
+        {
+            projCtrl.SetTarget(serverPos, serverYaw);
+            return;
+        }
+
+        // ============================================================
+        // ✅ [MY PLAYER] 내 캐릭터는 서버 권위 보정
+        // ============================================================
         if (pkt.ObjectId == MyPlayerId)
         {
             var my = go.GetComponent<MyPlayerController>();
@@ -231,24 +286,27 @@ public class ObjectManager : MonoBehaviour
                 my.ApplyServerMove(serverPos, serverYaw, pkt.PosInfo.State);
             else
                 go.transform.SetPositionAndRotation(serverPos, Quaternion.Euler(0f, serverYaw, 0f));
-
             return;
         }
 
-        // ===== 다른 플레이어는 기존대로 보간 =====
-        PlayerController pc = go.GetComponent<PlayerController>();
+        // ============================================================
+        // ✅ [OTHER PLAYER / MONSTER] 기존 보간 + 애니
+        // ============================================================
+        var pc = go.GetComponent<PlayerController>();
         if (pc != null)
         {
             pc.SetTargetPosition(serverPos);
             pc.SetTargetYaw(serverYaw);
         }
 
-        CreatureAnimator ca = go.GetComponent<CreatureAnimator>();
+        var ca = go.GetComponent<CreatureAnimator>();
         if (ca != null)
+        {
             ca.SetMoveState(pkt.PosInfo.State);
 
-        if (pkt.PosInfo.ActionState == ActionState.ActionDead && ca != null)
-            ca.SetDead();
+            if (pkt.PosInfo.ActionState == ActionState.ActionDead)
+                ca.SetDead();
+        }
     }
 
     void OnSkill(S_SKILL pkt)
