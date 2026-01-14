@@ -10,6 +10,16 @@
 #include "DetourNavMeshQuery.h"
 #include "DetourCommon.h" 
 
+#ifndef NAV_DEBUG
+#define NAV_DEBUG 0
+#endif
+
+#if NAV_DEBUG
+#define NAV_LOG(x) do { std::cout << x << std::endl; } while(0)
+#else
+#define NAV_LOG(x) do {} while(0)
+#endif
+
 NavSystem::NavSystem()
 {
 	_navMesh = dtAllocNavMesh();
@@ -174,15 +184,13 @@ bool NavSystem::ValidateMove(const Protocol::PositionInfo& current,
 	float startPos[3] = { current.x(), current.y(), current.z() };
 	float endPos[3] = { target.x(),  target.y(),  target.z() };
 
-	// 1) [Start Check] 시작점 유효성 검사
 	dtPolyRef startRef = FindNearestPoly(startPos, _polyPickExt);
 	if (!startRef)
 	{
-		std::cout << "❌ [Nav] OUTSIDE_NAV_DROP" << std::endl;
+		NAV_LOG("❌ [Nav] OUTSIDE_NAV_DROP");
 		return false;
 	}
 
-	// 2) [Raycast] 1차 검증 (직선 구간 확인)
 	float t = 0.0f;
 	float hitNormal[3];
 	dtPolyRef path[32];
@@ -190,10 +198,8 @@ bool NavSystem::ValidateMove(const Protocol::PositionInfo& current,
 
 	_navQuery->raycast(startRef, startPos, endPos, &_filter, &t, hitNormal, path, &pathCount, 32);
 
-	// 3) [Result Handling]
 	if (t >= 1.0f)
 	{
-		// [Case A] 충돌 없음 (직진 성공) -> Height Snap
 		float finalY = endPos[1];
 		if (ResolvePoint(endPos[0], endPos[1], endPos[2], finalY))
 		{
@@ -202,24 +208,19 @@ bool NavSystem::ValidateMove(const Protocol::PositionInfo& current,
 			outAdjusted.set_z(endPos[2]);
 			outAdjusted.set_yaw(target.yaw());
 
-			std::cout << "✅ [Nav] VALIDATE_OK" << std::endl;
+			NAV_LOG("✅ [Nav] VALIDATE_OK");
 			return true;
 		}
 		else
 		{
-			// 직선은 뚫렸는데 도착지가 NavMesh 밖(경계 오차 등)
 			return false;
 		}
 	}
 	else
 	{
-		// [Case B] 벽 충돌 (t < 1.0)
-
-		// 1) 충돌 지점(HitPos) 계산 (Fallback용)
 		float hitPos[3];
 		dtVlerp(hitPos, startPos, endPos, t);
 
-		// 2) moveAlongSurface 시도 (슬라이딩)
 		float slidePos[3];
 		dtPolyRef visited[16];
 		int nVisited = 0;
@@ -228,7 +229,6 @@ bool NavSystem::ValidateMove(const Protocol::PositionInfo& current,
 			startRef, startPos, endPos, &_filter,
 			slidePos, visited, &nVisited, 16);
 
-		// 2-A) 슬라이딩 성공 조건: status 성공 + 방문 폴리 존재 + height snap 성공
 		float slideY = slidePos[1];
 		if (dtStatusSucceed(status) && nVisited > 0 &&
 			ResolvePoint(slidePos[0], slidePos[1], slidePos[2], slideY))
@@ -238,11 +238,10 @@ bool NavSystem::ValidateMove(const Protocol::PositionInfo& current,
 			outAdjusted.set_z(slidePos[2]);
 			outAdjusted.set_yaw(target.yaw());
 
-			std::cout << "🚧 [Nav] COLLIDE_SLIDE_OK" << std::endl;
+			NAV_LOG("🚧 [Nav] COLLIDE_SLIDE_OK");
 			return true;
 		}
 
-		// 3) [Fallback 1] 충돌 지점(HitPos) 스냅 시도
 		float hitY = hitPos[1];
 		if (ResolvePoint(hitPos[0], hitPos[1], hitPos[2], hitY))
 		{
@@ -251,17 +250,16 @@ bool NavSystem::ValidateMove(const Protocol::PositionInfo& current,
 			outAdjusted.set_z(hitPos[2]);
 			outAdjusted.set_yaw(target.yaw());
 
-			std::cout << "⚠️ [Nav] COLLIDE_SLIDE_FAIL_HITSNAP" << std::endl;
+			NAV_LOG("⚠️ [Nav] COLLIDE_SLIDE_FAIL_HITSNAP");
 			return true;
 		}
 
-		// 4) [Fallback 2] 다 안되면 Current 롤백 (강제 동기화)
 		outAdjusted.set_x(startPos[0]);
 		outAdjusted.set_y(startPos[1]);
 		outAdjusted.set_z(startPos[2]);
 		outAdjusted.set_yaw(target.yaw());
 
-		std::cout << "❌ [Nav] COLLIDE_FAIL_ROLLBACK" << std::endl;
+		NAV_LOG("❌ [Nav] COLLIDE_FAIL_ROLLBACK");
 		return true;
 	}
 }
