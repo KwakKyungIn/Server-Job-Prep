@@ -130,16 +130,75 @@ void LobbyRoom::OnItemsLoaded(uint64 playerId, const Protocol::S2S_RES_ITEMS_LOA
     // 1) 인벤 반영
     p->SetItems(pkt.items());
 
-    // 2) 장착 보너스 포함 스탯 재계산(Stat 먼저 와도, Item 먼저 와도 재계산 계속 해도 됨)
+    // 1.1) ✅ 장비 3슬롯 정책 정규화(로그인 시 중복 장착 방지)
+    // - 1000~1999 : Weapon
+    // - 2000~2999 : Body
+    // - 4000~4999 : Head
+    auto getEquipSlot = [](int32 templateId) -> int32
+        {
+            if (templateId >= 1000 && templateId < 2000) return 1; // Weapon
+            if (templateId >= 2000 && templateId < 3000) return 2; // Body
+            if (templateId >= 4000 && templateId < 5000) return 3; // Head
+            return 0; // None
+        };
+
+    bool usedWeapon = false;
+    bool usedBody = false;
+    bool usedHead = false;
+
+    auto& itemsVec = p->GetItems();
+    for (auto& item : itemsVec)
+    {
+        if (!item.isequipped())
+            continue;
+
+        const int32 slot = getEquipSlot(item.templateid());
+        if (slot == 0)
+            continue;
+
+        bool* used = nullptr;
+        if (slot == 1) used = &usedWeapon;
+        else if (slot == 2) used = &usedBody;
+        else if (slot == 3) used = &usedHead;
+
+        if (used && *used)
+        {
+            // 중복 장착 -> 자동 해제
+            item.set_isequipped(false);
+
+            Persistence::PersistenceService::I().UpdateInventoryItem(
+                playerId,
+                item.itemuid(),
+                item.templateid(),
+                item.slot(),
+                item.count(),
+                item.isequipped(),
+                true
+            );
+        }
+        else if (used)
+        {
+            *used = true;
+        }
+    }
+
+    // 2) 장착 보너스 포함 스탯 재계산
     p->RefreshStats();
 
-    Persistence::PersistenceService::I().PrimeFromDb_Inventory(playerId, pkt.items());
+    // 3) Prime(DB -> Redis) : 정규화된 아이템으로 넣는다.
+    google::protobuf::RepeatedPtrField<Protocol::ItemInfo> primeItems;
+    for (const auto& item : itemsVec)
+        primeItems.Add()->CopyFrom(item);
 
-    // 3) 클라 동기화(인벤)
+    Persistence::PersistenceService::I().PrimeFromDb_Inventory(playerId, primeItems);
+
+    // 4) 클라 동기화(인벤)
     if (auto ps = p->GetSession())
     {
         Protocol::S_ITEM_LIST clientPkt;
-        clientPkt.mutable_items()->CopyFrom(pkt.items());
+        for (const auto& item : itemsVec)
+            clientPkt.add_items()->CopyFrom(item);
+
         ps->Send(ClientPacketHandler::MakeSendBuffer(clientPkt));
     }
 

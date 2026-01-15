@@ -1,4 +1,4 @@
-#include "pch.h"
+ï»¿#include "pch.h"
 #include "GameRoom.h"
 #include "Player.h"
 #include "PlayerSession.h"
@@ -30,7 +30,7 @@ static void AddExpAndLevelUp(PlayerRef player, int64 addExp)
 
 	stat->set_totalexp(stat->totalexp() + addExp);
 
-	// ·¹º§¾÷: "´ÙÀ½ ·¹º§ ÅÛÇÃ¸´ÀÇ totalExp"¸¦ ´Ş¼º Á¶°ÇÀ¸·Î »ç¿ë
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½: "ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ã¸ï¿½ï¿½ï¿½ totalExp"ï¿½ï¿½ ï¿½Ş¼ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
 	while (true)
 	{
 		int32 curLv = stat->level();
@@ -43,12 +43,34 @@ static void AddExpAndLevelUp(PlayerRef player, int64 addExp)
 
 		stat->set_level(curLv + 1);
 
-		// ·¹º§ ¹Ù²î¾úÀ¸´Ï ½ºÅÈ ¸®ÇÁ·¹½Ã
+		// ï¿½ï¿½ï¿½ï¿½ ï¿½Ù²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		player->RefreshStats();
 
-		// ·¹º§¾÷ÇÏ¸é Ç®ÇÇ·Î (¿øÇÏ¸é ºñÀ² À¯Áö·Î ¹Ù²ãµµ µÊ)
+		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¸ï¿½ Ç®ï¿½Ç·ï¿½ (ï¿½ï¿½ï¿½Ï¸ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ù²ãµµ ï¿½ï¿½)
 		stat->set_hp(stat->maxhp());
 	}
+}
+
+// ============================================================
+// Equipment Slot Policy (templateId range based)
+//  - 1000~1999 : Weapon
+//  - 2000~2999 : Body
+//  - 4000~4999 : Head
+// ============================================================
+enum class EquipSlot : int32
+{
+	None = 0,
+	Weapon = 1,
+	Body = 2,
+	Head = 3,
+};
+
+static EquipSlot GetEquipSlotFromTemplate(int32 templateId)
+{
+	if (templateId >= 1000 && templateId < 2000) return EquipSlot::Weapon;
+	if (templateId >= 2000 && templateId < 3000) return EquipSlot::Body;
+	if (templateId >= 4000 && templateId < 5000) return EquipSlot::Head;
+	return EquipSlot::None;
 }
 
 void GameRoom::HandleUseItem(PlayerSessionRef session, PlayerRef player, Protocol::C_USE_ITEM pkt)
@@ -59,7 +81,7 @@ void GameRoom::HandleUseItem(PlayerSessionRef session, PlayerRef player, Protoco
 	const uint64 playerId = player->GetPlayerId();
 	if (_players.find(playerId) == _players.end()) return;
 
-	// ÀÎº¥¿¡¼­ ¾ÆÀÌÅÛ Ã£±â
+	// ï¿½Îºï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Ã£ï¿½ï¿½
 	auto& items = player->GetItems();
 	auto it = std::find_if(items.begin(), items.end(),
 		[&](const Protocol::ItemInfo& item) { return item.itemuid() == pkt.itemuid(); });
@@ -67,7 +89,7 @@ void GameRoom::HandleUseItem(PlayerSessionRef session, PlayerRef player, Protoco
 	if (it == items.end())
 		return;
 
-	// ÅÛÇÃ¸´ °ËÁõ
+	// ï¿½ï¿½ï¿½Ã¸ï¿½ ï¿½ï¿½ï¿½ï¿½
 	const Protocol::ItemTemplateInfo* tpl = DataManager::Instance()->GetItemTemplate(it->templateid());
 	if (tpl == nullptr) return;
 
@@ -78,7 +100,7 @@ void GameRoom::HandleUseItem(PlayerSessionRef session, PlayerRef player, Protoco
 	if (it->count() <= 0)
 		return;
 
-	// Èú·®(Áö±İÀº hp_bonus·Î Ã³¸®)
+	// ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ hp_bonusï¿½ï¿½ Ã³ï¿½ï¿½)
 	const int32 heal = tpl->hpbonus();
 	if (heal <= 0)
 		return;
@@ -86,11 +108,11 @@ void GameRoom::HandleUseItem(PlayerSessionRef session, PlayerRef player, Protoco
 	Protocol::StatInfo* stat = player->GetStatInfo();
 	if (stat == nullptr) return;
 
-	// Ç®ÇÇ¸é ¼Òºñ ¾È ÇÏ°Ô(ÃßÃµ)
+	// Ç®ï¿½Ç¸ï¿½ ï¿½Òºï¿½ ï¿½ï¿½ ï¿½Ï°ï¿½(ï¿½ï¿½Ãµ)
 	if (stat->hp() >= stat->maxhp())
 		return;
 
-	// 1) HP Àû¿ë
+	// 1) HP ï¿½ï¿½ï¿½ï¿½
 	const int32 newHp = min(stat->hp() + heal, stat->maxhp());
 	stat->set_hp(newHp);
 
@@ -103,10 +125,10 @@ void GameRoom::HandleUseItem(PlayerSessionRef session, PlayerRef player, Protoco
 		true
 	);
 
-	// 2) ¾ÆÀÌÅÛ Ä«¿îÆ® °¨¼Ò
+	// 2) ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Ä«ï¿½ï¿½Æ® ï¿½ï¿½ï¿½ï¿½
 	it->set_count(it->count() - 1);
 
-	// 3) ¾ÆÀÌÅÛ ÆĞÅ¶(º¯°æ/»èÁ¦)
+	// 3) ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Å¶(ï¿½ï¿½ï¿½ï¿½/ï¿½ï¿½ï¿½ï¿½)
 	if (it->count() <= 0)
 	{
 		const uint64 removedUid = it->itemuid();
@@ -137,14 +159,14 @@ void GameRoom::HandleUseItem(PlayerSessionRef session, PlayerRef player, Protoco
 		session->Send(ClientPacketHandler::MakeSendBuffer(ch));
 	}
 
-	// 4) ½ºÅÈ ÆĞÅ¶
+	// 4) ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Å¶
 	{
 		Protocol::S_CHANGE_STAT st;
 		st.mutable_statinfo()->CopyFrom(*stat);
 		session->Send(ClientPacketHandler::MakeSendBuffer(st));
 	}
 
-	// TODO: DB ¹İ¿µ(S2S ¾ÆÀÌÅÛ count ¾÷µ¥ÀÌÆ®, hp ÀúÀå Á¤Ã¥)
+	// TODO: DB ï¿½İ¿ï¿½(S2S ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ count ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®, hp ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ã¥)
 }
 
 void GameRoom::HandleUseItemById(PlayerSessionRef session, uint64 playerId, Protocol::C_USE_ITEM pkt)
@@ -153,18 +175,19 @@ void GameRoom::HandleUseItemById(PlayerSessionRef session, uint64 playerId, Prot
 	if (it == _players.end())
 		return;
 
-	HandleUseItem(session, it->second, pkt); // ±âÁ¸ ·ÎÁ÷ Àç»ç¿ë
+	HandleUseItem(session, it->second, pkt); // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 }
 
 void GameRoom::HandleEquipItemById(PlayerSessionRef session, uint64 playerId, Protocol::C_EQUIP_ITEM pkt)
 {
-	auto it = _players.find(playerId);
-	if (it == _players.end())
+	auto itPlayer = _players.find(playerId);
+	if (itPlayer == _players.end())
 		return;
 
-	PlayerRef player = it->second;
+	PlayerRef player = itPlayer->second;
 	if (!player) return;
 
+	// 1) ëŒ€ìƒ ì•„ì´í…œ ì°¾ê¸° (UID ìš°ì„ )
 	Protocol::ItemInfo* targetItem = nullptr;
 	auto& items = player->GetItems();
 
@@ -180,8 +203,68 @@ void GameRoom::HandleEquipItemById(PlayerSessionRef session, uint64 playerId, Pr
 	if (!targetItem)
 		return;
 
-	targetItem->set_isequipped(pkt.equip());
+	const EquipSlot targetSlot = GetEquipSlotFromTemplate(targetItem->templateid());
 
+	// 2) Equip ìš”ì²­ì¼ ë•Œë§Œ "3ìŠ¬ë¡¯ ì •ì±…" ì ìš©
+	if (pkt.equip())
+	{
+		// ì§€ì •ëœ ì¥ë¹„ ìŠ¬ë¡¯(1000/2000/4000ëŒ€)ì´ ì•„ë‹ˆë©´ ì¥ì°© ë¶ˆê°€
+		if (targetSlot == EquipSlot::None)
+			return;
+
+		// ì´ë¯¸ ì¥ì°© ì¤‘ì´ë©´ ê·¸ëƒ¥ ë°˜í™˜(ì¤‘ë³µ ìš”ì²­)
+		if (targetItem->isequipped())
+			return;
+
+		// ê°™ì€ ìŠ¬ë¡¯(Weapon/Body/Head)ì— ë‹¤ë¥¸ ì•„ì´í…œì´ ì¥ì°©ë˜ì–´ ìˆìœ¼ë©´ ìë™ í•´ì œ
+		for (auto& item : items)
+		{
+			if (!item.isequipped())
+				continue;
+
+			if (item.itemuid() == targetItem->itemuid())
+				continue;
+
+			if (GetEquipSlotFromTemplate(item.templateid()) != targetSlot)
+				continue;
+
+			// âœ… auto-unequip
+			item.set_isequipped(false);
+
+			Persistence::PersistenceService::I().UpdateInventoryItem(
+				playerId,
+				item.itemuid(),
+				item.templateid(),
+				item.slot(),
+				item.count(),
+				item.isequipped(),
+				true
+			);
+
+			// í´ë¼ ë™ê¸°í™”(unequip)
+			if (session)
+			{
+				Protocol::S_EQUIP_ITEM resOther;
+				resOther.set_itemuid(item.itemuid());
+				resOther.set_equipped(false);
+				resOther.set_slotindex(item.slot()); // inventory slot
+				session->Send(ClientPacketHandler::MakeSendBuffer(resOther));
+			}
+		}
+
+		// âœ… target equip
+		targetItem->set_isequipped(true);
+	}
+	else
+	{
+		// Unequip: ì¥ì°© ì¤‘ì´ ì•„ë‹ˆë©´ ë¬´ì‹œ
+		if (!targetItem->isequipped())
+			return;
+
+		targetItem->set_isequipped(false);
+	}
+
+	// 3) Persistence
 	Persistence::PersistenceService::I().UpdateInventoryItem(
 		playerId,
 		targetItem->itemuid(),
@@ -191,25 +274,29 @@ void GameRoom::HandleEquipItemById(PlayerSessionRef session, uint64 playerId, Pr
 		targetItem->isequipped(),
 		true
 	);
+
+	// 4) Stat refresh
 	player->RefreshStats();
 
-	// ÀåÂø °á°ú
+	// 5) ì¥ì°© ê²°ê³¼
+	if (session)
 	{
 		Protocol::S_EQUIP_ITEM res;
-		res.set_itemuid(pkt.itemuid());
-		res.set_equipped(pkt.equip());
-		res.set_slotindex(pkt.slotindex());
+		res.set_itemuid(targetItem->itemuid());
+		res.set_equipped(targetItem->isequipped());
+		res.set_slotindex(targetItem->slot()); // inventory slot (í´ë¼ ìºì‹œ ë°˜ì˜ìš©)
 		session->Send(ClientPacketHandler::MakeSendBuffer(res));
 	}
 
-	// ½ºÅÈ °»½Å
+	// 6) ìŠ¤íƒ¯ ê°±ì‹ 
+	if (session)
 	{
 		Protocol::S_CHANGE_STAT st;
 		st.mutable_statinfo()->CopyFrom(*player->GetStatInfo());
 		session->Send(ClientPacketHandler::MakeSendBuffer(st));
 	}
 
-	// TODO: DB ÀúÀåÀº Step µÚ¿¡¼­ ºÙÀÌ¸é µÊ
+	// TODO: ì¥ë¹„ ì¢…ë¥˜ë³„(ë¬´ê¸°/ë°©ì–´êµ¬/ë¨¸ë¦¬) ì¶”ê°€ íš¨ê³¼, ì™¸í˜• ë™ê¸°í™”, ì¥ë¹„ í”„ë¦¬ì…‹ ë“±
 }
 
 void GameRoom::HandleMonsterDead(std::shared_ptr<Creature> attacker, MonsterRef monster)
@@ -220,19 +307,19 @@ void GameRoom::HandleMonsterDead(std::shared_ptr<Creature> attacker, MonsterRef 
 	const uint64 monsterId = monster->GetObjectId();
 	if (_monsters.find(monsterId) == _monsters.end())
 	{
-		// ÀÌ¹Ì Ã³¸®µÆÀ¸¸é Áßº¹ ¹æÁö
+		// ï¿½Ì¹ï¿½ Ã³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ßºï¿½ ï¿½ï¿½ï¿½ï¿½
 		return;
 	}
 
-	// 1) Å³·¯°¡ ÇÃ·¹ÀÌ¾îÀÎÁö È®ÀÎ
+	// 1) Å³ï¿½ï¿½ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ï¿½ï¿½ï¿½ï¿½ È®ï¿½ï¿½
 	PlayerRef killer = nullptr;
 	if (attacker && attacker->GetObjectType() == Protocol::OBJECT_TYPE_PLAYER)
 		killer = std::static_pointer_cast<Player>(attacker);
 
-	// 2) °æÇèÄ¡ Áö±Ş
+	// 2) ï¿½ï¿½ï¿½ï¿½Ä¡ ï¿½ï¿½ï¿½ï¿½
 	if (killer)
 	{
-		const int64 exp = 1000; // TODO: ¸ó½ºÅÍ ÅÛÇÃ¸´¿¡¼­ ÀĞ±â
+		const int64 exp = 1000; // TODO: ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ã¸ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ğ±ï¿½
 		AddExpAndLevelUp(killer, exp);
 
 		auto* stInfo = killer->GetStatInfo();
@@ -252,8 +339,8 @@ void GameRoom::HandleMonsterDead(std::shared_ptr<Creature> attacker, MonsterRef 
 		SendToPlayer(killer->GetPlayerId(), ClientPacketHandler::MakeSendBuffer(st));
 	}
 
-	// 3) µå¶ø(·çÆÃ) = ¡°Áï½Ã ÀÎº¥ Áö±Ş¡± ¹æ½Ä (¹Ù´Ú ·çÇÁ ¸¸µé±â¿ë)
-	// 3) µå¶ø(·çÆÃ) = ¡°Áï½Ã ÀÎº¥ Áö±Ş¡± ¹æ½Ä (ÀúÀå Å×½ºÆ®¿ë)
+	// 3) ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½) = ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Îºï¿½ ï¿½ï¿½ï¿½Ş¡ï¿½ ï¿½ï¿½ï¿½ (ï¿½Ù´ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
+	// 3) ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½) = ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Îºï¿½ ï¿½ï¿½ï¿½Ş¡ï¿½ ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ï¿½ ï¿½×½ï¿½Æ®ï¿½ï¿½)
 	if (killer)
 	{
 		const int32 dropTemplateId = 2001;
@@ -262,14 +349,14 @@ void GameRoom::HandleMonsterDead(std::shared_ptr<Creature> attacker, MonsterRef 
 		const Protocol::ItemTemplateInfo* tpl = DataManager::Instance()->GetItemTemplate(dropTemplateId);
 		if (tpl == nullptr || static_cast<Protocol::ItemType>(tpl->itemtype()) == Protocol::ITEM_TYPE_NONE)
 		{
-			// ÅÛÇÃ¸´ ¾øÀ¸¸é ±×³É Á¾·á
+			// ï¿½ï¿½ï¿½Ã¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½×³ï¿½ ï¿½ï¿½ï¿½ï¿½
 		}
 		else
 		{
 			auto& items = killer->GetItems();
 			const int32 maxSlots = 24;
 
-			// 1) °°Àº ÅÛÇÃ¸´ ¾ÆÀÌÅÛ ÀÖÀ¸¸é ½ºÅÃ Áõ°¡(ÀÎº¥ ²Ë Â÷µµ Å×½ºÆ® °¡´É)
+			// 1) ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ã¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½(ï¿½Îºï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½×½ï¿½Æ® ï¿½ï¿½ï¿½ï¿½)
 			auto stackIt = std::find_if(items.begin(), items.end(),
 				[&](const Protocol::ItemInfo& it)
 				{
@@ -283,7 +370,7 @@ void GameRoom::HandleMonsterDead(std::shared_ptr<Creature> attacker, MonsterRef 
 				// Redis dirty
 				Persistence::PersistenceService::I().UpdateInventoryItem(
 					killer->GetPlayerId(),
-					stackIt->itemuid(),     // game_item_uid ÀÇ¹Ì
+					stackIt->itemuid(),     // game_item_uid ï¿½Ç¹ï¿½
 					stackIt->templateid(),
 					stackIt->slot(),
 					stackIt->count(),
@@ -297,7 +384,7 @@ void GameRoom::HandleMonsterDead(std::shared_ptr<Creature> attacker, MonsterRef 
 			}
 			else
 			{
-				// 2) ¾øÀ¸¸é »õ ½½·Ô »ı¼º
+				// 2) ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 				int32 emptySlot = FindEmptySlot(items, maxSlots);
 				if (emptySlot >= 0)
 				{
@@ -327,13 +414,13 @@ void GameRoom::HandleMonsterDead(std::shared_ptr<Creature> attacker, MonsterRef 
 				}
 				else
 				{
-					// ÀÎº¥ ²Ë Ã¡À¸¸é ±×³É µå¶ø Æó±â(Å×½ºÆ®´Ï±î OK)
+					// ï¿½Îºï¿½ ï¿½ï¿½ Ã¡ï¿½ï¿½ï¿½ï¿½ ï¿½×³ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½(ï¿½×½ï¿½Æ®ï¿½Ï±ï¿½ OK)
 				}
 			}
 		}
 	}
 
-	// 4) ¸¶Áö¸·¿¡ ¸ó½ºÅÍ Á¦°Å(ºê·ÎµåÄ³½ºÆ® despawn Æ÷ÇÔ)
+	// 4) ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½Îµï¿½Ä³ï¿½ï¿½Æ® despawn ï¿½ï¿½ï¿½ï¿½)
 	LeaveMonster(monsterId);
 }
 

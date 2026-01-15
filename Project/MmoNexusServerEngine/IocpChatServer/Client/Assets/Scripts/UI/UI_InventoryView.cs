@@ -11,6 +11,9 @@ public class UI_InventoryView : MonoBehaviour
     public Transform slotRoot;
     public int slotCount = 24;
 
+    [Header("Options")]
+    public bool hideEquippedInInventory = true; // 장착 중 아이템은 인벤에서 숨김
+
     [Header("Context Menu")]
     public UI_InventoryContextMenu contextMenu;
 
@@ -62,32 +65,57 @@ public class UI_InventoryView : MonoBehaviour
         for (int i = 0; i < slotCount; i++)
         {
             items.TryGetValue(i, out ItemInfo item);
+
+            if (hideEquippedInInventory && item != null && item.IsEquipped)
+                item = null;
+
             _slots[i].SetItem(item);
             _slots[i].SetSelected(i == _selectedSlot);
         }
 
-        if (_selectedSlot >= 0 && InventoryManager.Instance.GetItem(_selectedSlot) == null)
+        if (_selectedSlot >= 0)
         {
+            var selItem = InventoryManager.Instance.GetItem(_selectedSlot);
+            if (hideEquippedInInventory && selItem != null && selItem.IsEquipped)
+                selItem = null;
+
+            if (selItem == null)
+            {
             _selectedSlot = -1;
             for (int i = 0; i < slotCount; i++)
                 _slots[i].SetSelected(false);
+                    }
         }
 
         if (contextMenu && contextMenu.IsOpen)
         {
-            if (InventoryManager.Instance.GetItem(contextMenu.SlotIndex) == null)
+            var cmItem = InventoryManager.Instance.GetItem(contextMenu.SlotIndex);
+            if (hideEquippedInInventory && cmItem != null && cmItem.IsEquipped)
+                cmItem = null;
+
+            if (cmItem == null)
                 contextMenu.Hide();
         }
 
         if (detailPopupRoot && detailPopupRoot.activeSelf)
         {
-            if (_detailSlot < 0 || InventoryManager.Instance.GetItem(_detailSlot) == null)
+            ItemInfo dtItem = null;
+            if (_detailSlot >= 0)
+                dtItem = InventoryManager.Instance.GetItem(_detailSlot);
+            if (hideEquippedInInventory && dtItem != null && dtItem.IsEquipped)
+                dtItem = null;
+
+            if (_detailSlot < 0 || dtItem == null)
                 CloseDetail();
         }
     }
 
     public void OnSlotLeftClick(int slotIndex)
     {
+        var it = InventoryManager.Instance.GetItem(slotIndex);
+        if (hideEquippedInInventory && it != null && it.IsEquipped)
+            return;
+
         _selectedSlot = slotIndex;
 
         for (int i = 0; i < _slots.Count; i++)
@@ -100,6 +128,9 @@ public class UI_InventoryView : MonoBehaviour
     public void OnSlotRightClick(int slotIndex, Vector2 screenPos)
     {
         var item = InventoryManager.Instance.GetItem(slotIndex);
+        if (hideEquippedInInventory && item != null && item.IsEquipped)
+            item = null;
+
         if (item == null)
         {
             if (contextMenu) contextMenu.Hide();
@@ -128,6 +159,9 @@ public class UI_InventoryView : MonoBehaviour
     void RequestEquip(int slotIndex, bool equip)
     {
         var item = InventoryManager.Instance.GetItem(slotIndex);
+        if (hideEquippedInInventory && item != null && item.IsEquipped)
+            item = null;
+
         if (item == null) return;
 
         if (NetworkManager.Instance != null && NetworkManager.Instance.IsMapChanging)
@@ -149,6 +183,9 @@ public class UI_InventoryView : MonoBehaviour
     void RequestUseItem(int slotIndex)
     {
         var item = InventoryManager.Instance.GetItem(slotIndex);
+        if (hideEquippedInInventory && item != null && item.IsEquipped)
+            item = null;
+
         if (item == null) return;
 
         if (NetworkManager.Instance != null && NetworkManager.Instance.IsMapChanging)
@@ -172,6 +209,9 @@ public class UI_InventoryView : MonoBehaviour
     void OpenDetail(int slotIndex)
     {
         var item = InventoryManager.Instance.GetItem(slotIndex);
+        if (hideEquippedInInventory && item != null && item.IsEquipped)
+            item = null;
+
         if (item == null) return;
 
         _detailSlot = slotIndex;

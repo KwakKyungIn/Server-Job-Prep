@@ -87,6 +87,14 @@ public class UI_InventoryContextMenu : MonoBehaviour
         return (tid >= 3000 && tid <= 3999); // "3000대는 전부 사용아이템"
     }
 
+    static bool IsEquipable(ItemInfo item)
+    {
+        if (item == null) return false;
+        int tid = item.TemplateId;
+        // 1000~1999 Weapon, 2000~2999 Body, 4000~4999 Head
+        return (tid >= 1000 && tid < 2000) || (tid >= 2000 && tid < 3000) || (tid >= 4000 && tid < 5000);
+    }
+
     public void Show(
         int slotIndex,
         ItemInfo item,
@@ -102,6 +110,7 @@ public class UI_InventoryContextMenu : MonoBehaviour
         SlotIndex = slotIndex;
 
         bool consumable = IsConsumable(item);
+        bool equipable = IsEquipable(item);
         bool equipped = item != null && item.IsEquipped;
 
         // 라벨(선택)
@@ -112,8 +121,8 @@ public class UI_InventoryContextMenu : MonoBehaviour
         // 버튼 노출 규칙
         // - 사용아이템(3000대): Use만
         // - 장비아이템(그 외): Equip/Unequip 중 하나만
-        if (equipButton) equipButton.gameObject.SetActive(!consumable && !equipped);
-        if (unequipButton) unequipButton.gameObject.SetActive(!consumable && equipped);
+        if (equipButton) equipButton.gameObject.SetActive(!consumable && equipable && !equipped);
+        if (unequipButton) unequipButton.gameObject.SetActive(!consumable && equipable && equipped);
         if (useButton) useButton.gameObject.SetActive(consumable);
         if (detailsButton) detailsButton.gameObject.SetActive(true);
 

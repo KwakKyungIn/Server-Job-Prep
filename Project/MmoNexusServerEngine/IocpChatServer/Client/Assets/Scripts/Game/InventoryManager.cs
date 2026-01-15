@@ -121,4 +121,38 @@ public class InventoryManager
         }
         return -1;
     }
+
+    // ================= Equipment Helpers =================
+
+    public ItemInfo GetEquippedItem(EquipSlotType slotType)
+    {
+        // NOTE: Equipped items may be hidden in the inventory UI, but remain in this cache.
+        return _items.Values.FirstOrDefault(x => x != null && x.IsEquipped && EquipUtil.GetSlotType(x.TemplateId) == slotType);
+    }
+
+    public static bool IsEquipable(ItemInfo item)
+    {
+        if (item == null) return false;
+        return EquipUtil.GetSlotType(item.TemplateId) != EquipSlotType.None;
+    }
+
+}
+
+public enum EquipSlotType
+{
+    None = 0,
+    Weapon = 1,
+    Body = 2,
+    Head = 3,
+}
+
+public static class EquipUtil
+{
+    public static EquipSlotType GetSlotType(int templateId)
+    {
+        if (templateId >= 1000 && templateId < 2000) return EquipSlotType.Weapon;
+        if (templateId >= 2000 && templateId < 3000) return EquipSlotType.Body;
+        if (templateId >= 4000 && templateId < 5000) return EquipSlotType.Head;
+        return EquipSlotType.None;
+    }
 }
