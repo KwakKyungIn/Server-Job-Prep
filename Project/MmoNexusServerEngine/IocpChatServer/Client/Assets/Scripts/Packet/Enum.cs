@@ -55,11 +55,12 @@ namespace Protocol {
             "HAoXUEFSVFlfUkVBU09OX05PVF9NRU1CRVIQ7QcSHwoaUEFSVFlfUkVBU09O",
             "X0lOVkFMSURfUEFSVFkQ7gcSHQoYUEFSVFlfUkVBU09OX1NFTEZfVEFSR0VU",
             "EO8HEhYKEVBBUlRZX1JFQVNPTl9GVUxMEPAHEhoKFVBBUlRZX1JFQVNPTl9S",
-            "RUpFQ1RFRBDxBxIgChtQQVJUWV9SRUFTT05fSU5URVJOQUxfRVJST1IQywhi",
-            "BnByb3RvMw=="));
+            "RUpFQ1RFRBDxBxIgChtQQVJUWV9SRUFTT05fSU5URVJOQUxfRVJST1IQywgq",
+            "OgoQUXVpY2tTbG90UmVmVHlwZRILCgdRU19OT05FEAASCwoHUVNfSVRFTRAB",
+            "EgwKCFFTX1NLSUxMEAJiBnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
-          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Protocol.MoveState), typeof(global::Protocol.ActionState), typeof(global::Protocol.PlayerType), typeof(global::Protocol.ObjectType), typeof(global::Protocol.ItemType), typeof(global::Protocol.SkillType), typeof(global::Protocol.ConnectStatus), typeof(global::Protocol.RoomType), typeof(global::Protocol.PresenceStatus), typeof(global::Protocol.FriendStatus), typeof(global::Protocol.PartyOp), typeof(global::Protocol.PartyResultReason), }, null, null));
+          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Protocol.MoveState), typeof(global::Protocol.ActionState), typeof(global::Protocol.PlayerType), typeof(global::Protocol.ObjectType), typeof(global::Protocol.ItemType), typeof(global::Protocol.SkillType), typeof(global::Protocol.ConnectStatus), typeof(global::Protocol.RoomType), typeof(global::Protocol.PresenceStatus), typeof(global::Protocol.FriendStatus), typeof(global::Protocol.PartyOp), typeof(global::Protocol.PartyResultReason), typeof(global::Protocol.QuickSlotRefType), }, null, null));
     }
     #endregion
 
@@ -278,6 +279,12 @@ namespace Protocol {
     /// 서버 내부 에러
     /// </summary>
     [pbr::OriginalName("PARTY_REASON_INTERNAL_ERROR")] PartyReasonInternalError = 1099,
+  }
+
+  public enum QuickSlotRefType {
+    [pbr::OriginalName("QS_NONE")] QsNone = 0,
+    [pbr::OriginalName("QS_ITEM")] QsItem = 1,
+    [pbr::OriginalName("QS_SKILL")] QsSkill = 2,
   }
 
   #endregion

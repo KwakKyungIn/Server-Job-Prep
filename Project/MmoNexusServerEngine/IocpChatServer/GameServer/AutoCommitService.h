@@ -35,6 +35,17 @@ namespace Persistence
         // (테스트/디버그) 스레드 없이 1회 커밋 시도
         void TickOnce();
 
+        using SendQsFn = std::function<void(const Protocol::S2S_REQ_SAVE_QUICKSLOT&)>;
+
+        void Init(RedisManager* redis, SendCoreFn sendCore, SendInvFn sendInv, SendQsFn sendQs);
+
+    private:
+        SendQsFn _sendQs;
+
+        // inflight를 count로
+        std::unordered_map<uint64, int32> _inflightCount;
+
+
     private:
         AutoCommitService() = default;
 

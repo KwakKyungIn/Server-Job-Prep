@@ -58,7 +58,9 @@ namespace Protocol {
             "aWxlSW5mbxIQCghvYmplY3RJZBgBIAEoBBIPCgdvd25lcklkGAIgASgEEg8K",
             "B3NraWxsSWQYAyABKAUSJwoHcG9zSW5mbxgEIAEoCzIWLlByb3RvY29sLlBv",
             "c2l0aW9uSW5mbxINCgVzcGVlZBgFIAEoAhISCgpsaWZlVGltZU1zGAYgASgN",
-            "YgZwcm90bzM="));
+            "Il4KDVF1aWNrU2xvdEluZm8SEQoJc2xvdEluZGV4GAEgASgFEisKB3JlZlR5",
+            "cGUYAiABKA4yGi5Qcm90b2NvbC5RdWlja1Nsb3RSZWZUeXBlEg0KBXJlZklk",
+            "GAMgASgEYgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Protocol.EnumReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
@@ -72,7 +74,8 @@ namespace Protocol {
             new pbr::GeneratedClrTypeInfo(typeof(global::Protocol.SkillTemplateInfo), global::Protocol.SkillTemplateInfo.Parser, new[]{ "SkillId", "Name", "Cooldown", "Damage", "SkillType", "Range", "Radius", "Angle", "EffectId", "ProjectileSpeed", "ProjectileLifeMs", "HitRadius", "StopOnHit", "MaxHits" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Protocol.RoomInfo), global::Protocol.RoomInfo.Parser, new[]{ "RoomId", "Players" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Protocol.ChatMessage), global::Protocol.ChatMessage.Parser, new[]{ "SenderId", "Name", "Message" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Protocol.ProjectileInfo), global::Protocol.ProjectileInfo.Parser, new[]{ "ObjectId", "OwnerId", "SkillId", "PosInfo", "Speed", "LifeTimeMs" }, null, null, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::Protocol.ProjectileInfo), global::Protocol.ProjectileInfo.Parser, new[]{ "ObjectId", "OwnerId", "SkillId", "PosInfo", "Speed", "LifeTimeMs" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Protocol.QuickSlotInfo), global::Protocol.QuickSlotInfo.Parser, new[]{ "SlotIndex", "RefType", "RefId" }, null, null, null, null)
           }));
     }
     #endregion
@@ -4293,6 +4296,272 @@ namespace Protocol {
           }
           case 48: {
             LifeTimeMs = input.ReadUInt32();
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
+  }
+
+  public sealed partial class QuickSlotInfo : pb::IMessage<QuickSlotInfo>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
+    private static readonly pb::MessageParser<QuickSlotInfo> _parser = new pb::MessageParser<QuickSlotInfo>(() => new QuickSlotInfo());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pb::MessageParser<QuickSlotInfo> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::Protocol.StructReflection.Descriptor.MessageTypes[11]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public QuickSlotInfo() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public QuickSlotInfo(QuickSlotInfo other) : this() {
+      slotIndex_ = other.slotIndex_;
+      refType_ = other.refType_;
+      refId_ = other.refId_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public QuickSlotInfo Clone() {
+      return new QuickSlotInfo(this);
+    }
+
+    /// <summary>Field number for the "slotIndex" field.</summary>
+    public const int SlotIndexFieldNumber = 1;
+    private int slotIndex_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int SlotIndex {
+      get { return slotIndex_; }
+      set {
+        slotIndex_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "refType" field.</summary>
+    public const int RefTypeFieldNumber = 2;
+    private global::Protocol.QuickSlotRefType refType_ = global::Protocol.QuickSlotRefType.QsNone;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::Protocol.QuickSlotRefType RefType {
+      get { return refType_; }
+      set {
+        refType_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "refId" field.</summary>
+    public const int RefIdFieldNumber = 3;
+    private ulong refId_;
+    /// <summary>
+    /// itemUid or skillId
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public ulong RefId {
+      get { return refId_; }
+      set {
+        refId_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override bool Equals(object other) {
+      return Equals(other as QuickSlotInfo);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool Equals(QuickSlotInfo other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (SlotIndex != other.SlotIndex) return false;
+      if (RefType != other.RefType) return false;
+      if (RefId != other.RefId) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (SlotIndex != 0) hash ^= SlotIndex.GetHashCode();
+      if (RefType != global::Protocol.QuickSlotRefType.QsNone) hash ^= RefType.GetHashCode();
+      if (RefId != 0UL) hash ^= RefId.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
+      if (SlotIndex != 0) {
+        output.WriteRawTag(8);
+        output.WriteInt32(SlotIndex);
+      }
+      if (RefType != global::Protocol.QuickSlotRefType.QsNone) {
+        output.WriteRawTag(16);
+        output.WriteEnum((int) RefType);
+      }
+      if (RefId != 0UL) {
+        output.WriteRawTag(24);
+        output.WriteUInt64(RefId);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (SlotIndex != 0) {
+        output.WriteRawTag(8);
+        output.WriteInt32(SlotIndex);
+      }
+      if (RefType != global::Protocol.QuickSlotRefType.QsNone) {
+        output.WriteRawTag(16);
+        output.WriteEnum((int) RefType);
+      }
+      if (RefId != 0UL) {
+        output.WriteRawTag(24);
+        output.WriteUInt64(RefId);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int CalculateSize() {
+      int size = 0;
+      if (SlotIndex != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(SlotIndex);
+      }
+      if (RefType != global::Protocol.QuickSlotRefType.QsNone) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) RefType);
+      }
+      if (RefId != 0UL) {
+        size += 1 + pb::CodedOutputStream.ComputeUInt64Size(RefId);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(QuickSlotInfo other) {
+      if (other == null) {
+        return;
+      }
+      if (other.SlotIndex != 0) {
+        SlotIndex = other.SlotIndex;
+      }
+      if (other.RefType != global::Protocol.QuickSlotRefType.QsNone) {
+        RefType = other.RefType;
+      }
+      if (other.RefId != 0UL) {
+        RefId = other.RefId;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 8: {
+            SlotIndex = input.ReadInt32();
+            break;
+          }
+          case 16: {
+            RefType = (global::Protocol.QuickSlotRefType) input.ReadEnum();
+            break;
+          }
+          case 24: {
+            RefId = input.ReadUInt64();
+            break;
+          }
+        }
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 8: {
+            SlotIndex = input.ReadInt32();
+            break;
+          }
+          case 16: {
+            RefType = (global::Protocol.QuickSlotRefType) input.ReadEnum();
+            break;
+          }
+          case 24: {
+            RefId = input.ReadUInt64();
             break;
           }
         }

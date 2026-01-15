@@ -66,6 +66,9 @@ public class PacketManager
 		S_DUNGEON_ENTER_RES = 1042,
 		C_DUNGEON_EXIT_REQ = 1043,
 		S_DUNGEON_EXIT_RES = 1044,
+		S_QUICKSLOT_LIST = 1045,
+		C_SET_QUICKSLOT = 1046,
+		S_SET_QUICKSLOT = 1047,
 	}
 
 	public void Register()
@@ -118,6 +121,10 @@ public class PacketManager
 		_handler.Add((ushort)MsgId.S_DUNGEON_ENTER_RES, PacketHandler.S_DUNGEON_ENTER_RESHandler);
 		_onRecv.Add((ushort)MsgId.S_DUNGEON_EXIT_RES, MakePacket<S_DUNGEON_EXIT_RES>);
 		_handler.Add((ushort)MsgId.S_DUNGEON_EXIT_RES, PacketHandler.S_DUNGEON_EXIT_RESHandler);
+		_onRecv.Add((ushort)MsgId.S_QUICKSLOT_LIST, MakePacket<S_QUICKSLOT_LIST>);
+		_handler.Add((ushort)MsgId.S_QUICKSLOT_LIST, PacketHandler.S_QUICKSLOT_LISTHandler);
+		_onRecv.Add((ushort)MsgId.S_SET_QUICKSLOT, MakePacket<S_SET_QUICKSLOT>);
+		_handler.Add((ushort)MsgId.S_SET_QUICKSLOT, PacketHandler.S_SET_QUICKSLOTHandler);
 	}
 
 	public void OnRecvPacket(ServerSession session, ArraySegment<byte> buffer)

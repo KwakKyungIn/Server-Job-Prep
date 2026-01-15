@@ -57,6 +57,7 @@ public:
 
     int32 GetCount() const { return static_cast<int32>(_players.size()); }
 
+    void OnQuickSlotsLoaded(uint64 playerId, const Protocol::S2S_RES_QUICKSLOT_LOAD& pkt); // [NEW]
 
 private:
     struct Pending
@@ -64,6 +65,7 @@ private:
         PlayerRef player;
         bool itemsLoaded = false;
         bool statLoaded = false;
+        bool quickLoaded = false;
     };
 
 private:

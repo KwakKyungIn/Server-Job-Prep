@@ -4,6 +4,7 @@
 #include "RedisKeys.h"
 #include "RedisCodec.h"
 
+static constexpr int32 QS_MAX = 12; // 0~11
 namespace
 {
     static bool ToU64(const std::string& s, uint64& out)
@@ -216,20 +217,106 @@ namespace Persistence
 
         return true;
     }
+    void PersistenceService::PrimeFromDb_QuickSlot(uint64 pid,
+        const google::protobuf::RepeatedPtrField<Protocol::QuickSlotInfo>& slots)
+    {
+        if (!_redis) return;
 
-    void PersistenceService::ClearDirtyOnCommitSuccess(uint64 pid, bool coreOk, bool invOk)
+        const std::string key = KeyPlayerQuick(pid);
+        _redis->Del(key);
+
+        for (const auto& s : slots)
+        {
+            const int32 idx = s.slotindex();
+            if (idx < 0 || idx >= QS_MAX)
+                continue;
+
+            const int32 rt = (int32)s.reftype();
+            const uint64 rid = (uint64)s.refid();
+
+            if (rt == (int32)Protocol::QS_NONE || rid == 0)
+                continue;
+
+            _redis->HSet(key, std::to_string(idx), PackQuick(rt, rid));
+        }
+
+        _redis->SRem(KeyDirtyQuick(), std::to_string(pid));
+    }
+
+
+    void PersistenceService::MarkDirty_QuickSlot(uint64 pid)
+    {
+        if (!_redis) return;
+        _redis->SAdd(KeyDirtyQuick(), std::to_string(pid));
+    }
+
+    void PersistenceService::UpdateQuickSlot(uint64 pid, int32 slotIndex, Protocol::QuickSlotRefType refType, uint64 refId, bool markDirty)
+    {
+        if (!_redis) return;
+
+        const std::string key = KeyPlayerQuick(pid);
+        const std::string field = std::to_string(slotIndex);
+
+        if (refType == Protocol::QS_NONE || refId == 0)
+            _redis->HDel(key, field);
+        else
+            _redis->HSet(key, field, PackQuick((int32)refType, refId));
+
+        if (markDirty) MarkDirty_QuickSlot(pid);
+    }
+
+    bool PersistenceService::BuildSnapshot_QuickSlot(uint64 pid, Protocol::S2S_REQ_SAVE_QUICKSLOT& out)
+    {
+        if (!_redis) return false;
+
+        std::unordered_map<std::string, std::string> kv;
+
+        // 핵심: 키가 없거나 비어도 "빈 스냅샷" 저장이 의미가 있다 (전체 삭제)
+        // RedisManager 구현에 따라 HGetAll이 false를 줄 수도 있으니, false여도 진행한다.
+        _redis->HGetAll(KeyPlayerQuick(pid), kv);
+
+        out.set_playerid(pid);
+        out.clear_slots();
+
+        for (const auto& it : kv)
+        {
+            int32 slotIndex = 0;
+            if (!ToI32(it.first, slotIndex))
+                continue;
+
+            if (slotIndex < 0 || slotIndex >= QS_MAX)
+                continue;
+
+            int32 refType = 0;
+            uint64 refId = 0;
+            if (!UnpackQuick(it.second, refType, refId))
+                continue;
+
+            auto* s = out.add_slots();
+            s->set_slotindex(slotIndex);
+            s->set_reftype((Protocol::QuickSlotRefType)refType);
+            s->set_refid(refId);
+        }
+
+        return true;
+    }
+
+
+    void PersistenceService::ClearDirtyOnCommitSuccess(uint64 pid, bool coreOk, bool invOk, bool qsOk)
     {
         if (!_redis) return;
 
         const std::string pidStr = std::to_string(pid);
 
-        if (coreOk)
-            _redis->SRem(KeyDirtyPlayer(), pidStr);
+        if (coreOk) _redis->SRem(KeyDirtyPlayer(), pidStr);
 
         if (invOk)
         {
             _redis->SRem(KeyDirtyInv(), pidStr);
-            _redis->Del(KeyPlayerInvDel(pid)); // 인벤 저장 성공했으면 tombstone 비움
+            _redis->Del(KeyPlayerInvDel(pid));
         }
+
+        if (qsOk)
+            _redis->SRem(KeyDirtyQuick(), pidStr);
     }
 }

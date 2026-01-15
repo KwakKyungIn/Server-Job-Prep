@@ -93,6 +93,11 @@ bool ClientPacketHandler::Handle_C_ENTER_GAME(PacketSessionRef& session, Protoco
 				reqItem.set_playerid(playerId);
 				reqItem.set_gamesessionid(ps->GetSessionId());
 				G_DBSession->Send(S2SPacketHandler::MakeSendBuffer(reqItem));
+
+				Protocol::S2S_REQ_QUICKSLOT_LOAD reqQs;
+				reqQs.set_playerid(playerId);
+				reqQs.set_gamesessionid(ps->GetSessionId());
+				G_DBSession->Send(S2SPacketHandler::MakeSendBuffer(reqQs));
 			}
 		});
 

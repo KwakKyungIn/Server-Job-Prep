@@ -4,6 +4,7 @@
 #include "GameSession.h" // [필수] GameSession 클래스를 알기 위해 추가
 #include "Job.h"         // [필수] Job을 생성하기 위해 추가
 
+static constexpr int32 QS_MAX = 12; // 0~11
 PacketHandlerFunc DBAgentPacketHandler::GPacketHandler[UINT16_MAX];
 
 bool DBAgentPacketHandler::Handle_INVALID(PacketSessionRef& session, BYTE* buffer, int32 len)
@@ -633,6 +634,154 @@ bool DBAgentPacketHandler::Handle_S2S_REQ_GAME_ITEM_UID_SEED(PacketSessionRef& s
 
 			auto sendBuffer = DBAgentPacketHandler::MakeSendBuffer(res);
 			gameSession->Send(sendBuffer);
+		}));
+
+	return true;
+}
+
+bool DBAgentPacketHandler::Handle_S2S_REQ_QUICKSLOT_LOAD(PacketSessionRef& session, Protocol::S2S_REQ_QUICKSLOT_LOAD& pkt)
+{
+	auto gameSession = static_pointer_cast<GameSession>(session);
+
+	gameSession->PushJob(ObjectPool<Job>::MakeShared([gameSession, pkt]()
+		{
+			DBConnection* conn = GDBConnectionPool->Pop();
+			if (!conn) return;
+
+			Protocol::S2S_RES_QUICKSLOT_LOAD res;
+			res.set_success(false);
+			res.set_playerid(pkt.playerid());
+			res.set_gamesessionid(pkt.gamesessionid());
+
+			conn->Unbind();
+
+			int64 dbOwnerId = (int64)pkt.playerid();
+			int32 outSlotIndex = 0;
+			int32 outRefType = 0;
+			int64 outRefId = 0;
+
+			SQLLEN len = 0;
+
+			if (conn->Prepare(L"SELECT slot_index, ref_type, ref_id FROM PLAYER_QUICKSLOT WHERE owner_id = ? ORDER BY slot_index ASC"))
+			{
+				conn->BindParam(1, SQL_C_SBIGINT, SQL_BIGINT, sizeof(int64), &dbOwnerId, &len);
+
+				conn->BindCol(1, SQL_C_SLONG, sizeof(int32), &outSlotIndex, &len);
+				conn->BindCol(2, SQL_C_SLONG, sizeof(int32), &outRefType, &len);
+				conn->BindCol(3, SQL_C_SBIGINT, sizeof(int64), &outRefId, &len);
+
+				if (conn->Execute())
+				{
+					res.set_success(true);
+
+					while (conn->Fetch())
+					{
+						if (outSlotIndex < 0 || outSlotIndex >= QS_MAX)
+							continue;
+
+						auto* s = res.add_slots();
+						s->set_slotindex(outSlotIndex);
+						s->set_reftype(static_cast<Protocol::QuickSlotRefType>(outRefType));
+						s->set_refid((uint64)outRefId);
+					}
+
+					std::cout << "✅ [DB] Loaded QuickSlots for Player: " << pkt.playerid()
+						<< " Count: " << res.slots_size() << std::endl;
+				}
+			}
+
+			GDBConnectionPool->Push(conn);
+
+			auto sb = DBAgentPacketHandler::MakeSendBuffer(res);
+			gameSession->Send(sb);
+		}));
+
+	return true;
+}
+
+bool DBAgentPacketHandler::Handle_S2S_REQ_SAVE_QUICKSLOT(PacketSessionRef& session, Protocol::S2S_REQ_SAVE_QUICKSLOT& pkt)
+{
+	auto gameSession = static_pointer_cast<GameSession>(session);
+
+	gameSession->PushJob(ObjectPool<Job>::MakeShared([gameSession, pkt]()
+		{
+			DBConnection* conn = GDBConnectionPool->Pop();
+			if (!conn) return;
+
+			Protocol::S2S_RES_SAVE_QUICKSLOT res;
+			res.set_success(false);
+			res.set_playerid(pkt.playerid());
+
+			bool ok = true;
+			int64 dbOwnerId = (int64)pkt.playerid();
+			SQLLEN len = 0;
+
+			// BEGIN
+			conn->Unbind();
+			ok = conn->Execute(L"BEGIN TRAN");
+
+			// 1) DELETE all
+			if (ok)
+			{
+				conn->Unbind();
+				if (!conn->Prepare(L"DELETE FROM PLAYER_QUICKSLOT WHERE owner_id = ?"))
+					ok = false;
+				else
+				{
+					ok &= conn->BindParam(1, SQL_C_SBIGINT, SQL_BIGINT, sizeof(int64), &dbOwnerId, &len);
+					ok &= conn->Execute();
+				}
+			}
+
+			// 2) INSERT snapshot (non-empty only)
+			if (ok)
+			{
+				for (int i = 0; i < pkt.slots_size(); ++i)
+				{
+					const auto& s = pkt.slots(i);
+
+					// 빈 슬롯은 DB에 저장 안 함
+					if (s.reftype() == Protocol::QS_NONE || s.refid() == 0)
+						continue;
+
+					conn->Unbind();
+
+					int32 slotIndex = s.slotindex();
+
+					if (slotIndex < 0 || slotIndex >= QS_MAX)
+						continue;
+
+					int32 refType = (int32)s.reftype();
+					int64 refId = (int64)s.refid();
+
+					if (!conn->Prepare(L"INSERT INTO PLAYER_QUICKSLOT (owner_id, slot_index, ref_type, ref_id) VALUES (?, ?, ?, ?)"))
+					{
+						ok = false; break;
+					}
+
+					ok &= conn->BindParam(1, SQL_C_SBIGINT, SQL_BIGINT, sizeof(int64), &dbOwnerId, &len);
+					ok &= conn->BindParam(2, SQL_C_SLONG, SQL_INTEGER, sizeof(int32), &slotIndex, &len);
+					ok &= conn->BindParam(3, SQL_C_SLONG, SQL_INTEGER, sizeof(int32), &refType, &len);
+					ok &= conn->BindParam(4, SQL_C_SBIGINT, SQL_BIGINT, sizeof(int64), &refId, &len);
+
+					if (!ok || !conn->Execute())
+					{
+						ok = false; break;
+					}
+				}
+			}
+
+			// COMMIT/ROLLBACK
+			conn->Unbind();
+			if (ok) conn->Execute(L"COMMIT TRAN");
+			else    conn->Execute(L"ROLLBACK TRAN");
+
+			res.set_success(ok);
+
+			GDBConnectionPool->Push(conn);
+
+			auto sb = DBAgentPacketHandler::MakeSendBuffer(res);
+			gameSession->Send(sb);
 		}));
 
 	return true;

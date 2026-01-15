@@ -22,7 +22,7 @@ namespace _pbi = _pb::internal;
 
 namespace Protocol {
 }  // namespace Protocol
-static const ::_pb::EnumDescriptor* file_level_enum_descriptors_Enum_2eproto[12];
+static const ::_pb::EnumDescriptor* file_level_enum_descriptors_Enum_2eproto[13];
 static constexpr ::_pb::ServiceDescriptor const** file_level_service_descriptors_Enum_2eproto = nullptr;
 const uint32_t TableStruct_Enum_2eproto::offsets[1] = {};
 static constexpr ::_pbi::MigrationSchema* schemas = nullptr;
@@ -64,12 +64,13 @@ const char descriptor_table_protodef_Enum_2eproto[] PROTOBUF_SECTION_VARIABLE(pr
   "MEMBER\020\355\007\022\037\n\032PARTY_REASON_INVALID_PARTY\020"
   "\356\007\022\035\n\030PARTY_REASON_SELF_TARGET\020\357\007\022\026\n\021PAR"
   "TY_REASON_FULL\020\360\007\022\032\n\025PARTY_REASON_REJECT"
-  "ED\020\361\007\022 \n\033PARTY_REASON_INTERNAL_ERROR\020\313\010b"
-  "\006proto3"
+  "ED\020\361\007\022 \n\033PARTY_REASON_INTERNAL_ERROR\020\313\010*"
+  ":\n\020QuickSlotRefType\022\013\n\007QS_NONE\020\000\022\013\n\007QS_I"
+  "TEM\020\001\022\014\n\010QS_SKILL\020\002b\006proto3"
   ;
 static ::_pbi::once_flag descriptor_table_Enum_2eproto_once;
 const ::_pbi::DescriptorTable descriptor_table_Enum_2eproto = {
-    false, false, 1447, descriptor_table_protodef_Enum_2eproto,
+    false, false, 1507, descriptor_table_protodef_Enum_2eproto,
     "Enum.proto",
     &descriptor_table_Enum_2eproto_once, nullptr, 0, 0,
     schemas, file_default_instances, TableStruct_Enum_2eproto::offsets,
@@ -280,6 +281,21 @@ bool PartyResultReason_IsValid(int value) {
     case 1008:
     case 1009:
     case 1099:
+      return true;
+    default:
+      return false;
+  }
+}
+
+const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* QuickSlotRefType_descriptor() {
+  ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&descriptor_table_Enum_2eproto);
+  return file_level_enum_descriptors_Enum_2eproto[12];
+}
+bool QuickSlotRefType_IsValid(int value) {
+  switch (value) {
+    case 0:
+    case 1:
+    case 2:
       return true;
     default:
       return false;

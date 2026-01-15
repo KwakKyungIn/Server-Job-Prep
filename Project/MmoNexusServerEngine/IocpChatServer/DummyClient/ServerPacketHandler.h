@@ -54,6 +54,9 @@ public:
 		PKT_S_DUNGEON_ENTER_RES = 1042,
 		PKT_C_DUNGEON_EXIT_REQ = 1043,
 		PKT_S_DUNGEON_EXIT_RES = 1044,
+		PKT_S_QUICKSLOT_LIST = 1045,
+		PKT_C_SET_QUICKSLOT = 1046,
+		PKT_S_SET_QUICKSLOT = 1047,
 	};
 
 	static void Init()
@@ -84,6 +87,8 @@ public:
 		GPacketHandler[PKT_S_PARTY_STATUS_NTF] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S_PARTY_STATUS_NTF>(Handle_S_PARTY_STATUS_NTF, session, buffer, len); };
 		GPacketHandler[PKT_S_DUNGEON_ENTER_RES] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S_DUNGEON_ENTER_RES>(Handle_S_DUNGEON_ENTER_RES, session, buffer, len); };
 		GPacketHandler[PKT_S_DUNGEON_EXIT_RES] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S_DUNGEON_EXIT_RES>(Handle_S_DUNGEON_EXIT_RES, session, buffer, len); };
+		GPacketHandler[PKT_S_QUICKSLOT_LIST] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S_QUICKSLOT_LIST>(Handle_S_QUICKSLOT_LIST, session, buffer, len); };
+		GPacketHandler[PKT_S_SET_QUICKSLOT] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S_SET_QUICKSLOT>(Handle_S_SET_QUICKSLOT, session, buffer, len); };
 	}
 
 	static bool HandlePacket(PacketSessionRef& session, BYTE* buffer, int32 len)
@@ -112,6 +117,7 @@ public:
 	static SendBufferRef MakeSendBuffer(Protocol::C_PARTY_STATUS_REQ& pkt) { return MakeSendBuffer(pkt, PKT_C_PARTY_STATUS_REQ); }
 	static SendBufferRef MakeSendBuffer(Protocol::C_DUNGEON_ENTER_REQ& pkt) { return MakeSendBuffer(pkt, PKT_C_DUNGEON_ENTER_REQ); }
 	static SendBufferRef MakeSendBuffer(Protocol::C_DUNGEON_EXIT_REQ& pkt) { return MakeSendBuffer(pkt, PKT_C_DUNGEON_EXIT_REQ); }
+	static SendBufferRef MakeSendBuffer(Protocol::C_SET_QUICKSLOT& pkt) { return MakeSendBuffer(pkt, PKT_C_SET_QUICKSLOT); }
 
 public:
 	static PacketHandlerFunc GPacketHandler[UINT16_MAX];
@@ -140,6 +146,8 @@ public:
 	static bool Handle_S_PARTY_STATUS_NTF(PacketSessionRef& session, Protocol::S_PARTY_STATUS_NTF& pkt);
 	static bool Handle_S_DUNGEON_ENTER_RES(PacketSessionRef& session, Protocol::S_DUNGEON_ENTER_RES& pkt);
 	static bool Handle_S_DUNGEON_EXIT_RES(PacketSessionRef& session, Protocol::S_DUNGEON_EXIT_RES& pkt);
+	static bool Handle_S_QUICKSLOT_LIST(PacketSessionRef& session, Protocol::S_QUICKSLOT_LIST& pkt);
+	static bool Handle_S_SET_QUICKSLOT(PacketSessionRef& session, Protocol::S_SET_QUICKSLOT& pkt);
 
 private:
 	template<typename PacketType, typename ProcessFunc>

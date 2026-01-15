@@ -109,3 +109,9 @@ enum PartyResultReason {
     PARTY_REASON_REJECTED = 1009;          // 초대 거절
     PARTY_REASON_INTERNAL_ERROR = 1099;    // 서버 내부 에러
 }
+
+enum QuickSlotRefType {
+    QS_NONE = 0;
+    QS_ITEM = 1;
+    QS_SKILL = 2;
+}

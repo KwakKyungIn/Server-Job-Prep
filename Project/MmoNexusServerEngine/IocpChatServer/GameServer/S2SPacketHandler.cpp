@@ -111,9 +111,8 @@ bool S2SPacketHandler::Handle_S2S_RES_SAVE_PLAYER_CORE(PacketSessionRef& session
 	const uint64 pid = pkt.playerid();
 
 	if (pkt.success())
-		Persistence::PersistenceService::I().ClearDirtyOnCommitSuccess(pid, /*coreOk=*/true, /*invOk=*/false);
+		Persistence::PersistenceService::I().ClearDirtyOnCommitSuccess(pid, /*coreOk=*/true, /*invOk=*/false, /*qsOk=*/false);
 
-	// inflight 해제
 	Persistence::AutoCommitService::I().OnCommitFinished(pid);
 
 	return true;
@@ -125,7 +124,7 @@ bool S2SPacketHandler::Handle_S2S_RES_SAVE_INVENTORY(PacketSessionRef& session, 
 	const uint64 pid = pkt.playerid();
 
 	if (pkt.success())
-		Persistence::PersistenceService::I().ClearDirtyOnCommitSuccess(pid, /*coreOk=*/false, /*invOk=*/true);
+		Persistence::PersistenceService::I().ClearDirtyOnCommitSuccess(pid, /*coreOk=*/false, /*invOk=*/true,/*qsOk=*/false);
 
 	Persistence::AutoCommitService::I().OnCommitFinished(pid);
 
@@ -150,5 +149,40 @@ bool S2SPacketHandler::Handle_S2S_RES_GAME_ITEM_UID_SEED(PacketSessionRef& sessi
 
 	GameItemUidGen::Init(pkt.next_uid());
 	std::cout << "✅ [UID] Seed initialized. next_uid=" << pkt.next_uid() << std::endl;
+	return true;
+}
+
+bool S2SPacketHandler::Handle_S2S_RES_QUICKSLOT_LOAD(PacketSessionRef& session, Protocol::S2S_RES_QUICKSLOT_LOAD& pkt)
+{
+	PlayerSessionRef ps = GameSessionManager::GSessionManager->FindBySessionId(pkt.gamesessionid());
+	if (!ps) return true;
+
+	const uint64 playerId = pkt.playerid();
+	if (playerId == 0) return true;
+
+	const int32 ch = ps->GetPendingChannelId_AnyThread();
+	if (ch <= 0 || GRoomManager == nullptr)
+		return true;
+
+	auto lobby = GRoomManager->GetOrCreateLobby(ch);
+	if (!lobby) return true;
+
+	lobby->Push([playerId, pkt, lobby]() mutable
+		{
+			lobby->OnQuickSlotsLoaded(playerId, pkt);
+		});
+
+	return true;
+}
+
+
+bool S2SPacketHandler::Handle_S2S_RES_SAVE_QUICKSLOT(PacketSessionRef& session, Protocol::S2S_RES_SAVE_QUICKSLOT& pkt)
+{
+	const uint64 pid = pkt.playerid();
+
+	if (pkt.success())
+		Persistence::PersistenceService::I().ClearDirtyOnCommitSuccess(pid, /*coreOk=*/false, /*invOk=*/false, /*qsOk=*/true);
+
+	Persistence::AutoCommitService::I().OnCommitFinished(pid);
 	return true;
 }

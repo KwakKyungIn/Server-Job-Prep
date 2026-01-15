@@ -55,4 +55,34 @@ namespace Persistence
         outCount = cnt;
         return true;
     }
+
+    std::string PackQuick(int32 refType, uint64 refId)
+    {
+        return std::to_string(refType) + "|" + std::to_string(refId);
+    }
+
+    static bool ParseU64(const std::string& s, uint64& out)
+    {
+        try { out = (uint64)std::stoull(s); return true; }
+        catch (...) { return false; }
+    }
+
+    bool UnpackQuick(const std::string& s, int32& outRefType, uint64& outRefId)
+    {
+        size_t p = s.find('|');
+        if (p == std::string::npos) return false;
+
+        std::string a = s.substr(0, p);
+        std::string b = s.substr(p + 1);
+
+        int32 rt = 0;
+        if (!ParseI32(a, rt)) return false;
+
+        uint64 rid = 0;
+        if (!ParseU64(b, rid)) return false;
+
+        outRefType = rt;
+        outRefId = rid;
+        return true;
+    }
 }

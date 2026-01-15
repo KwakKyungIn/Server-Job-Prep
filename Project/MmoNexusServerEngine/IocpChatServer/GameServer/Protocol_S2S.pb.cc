@@ -282,8 +282,66 @@ struct S2S_RES_GAME_ITEM_UID_SEEDDefaultTypeInternal {
   };
 };
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 S2S_RES_GAME_ITEM_UID_SEEDDefaultTypeInternal _S2S_RES_GAME_ITEM_UID_SEED_default_instance_;
+PROTOBUF_CONSTEXPR S2S_REQ_QUICKSLOT_LOAD::S2S_REQ_QUICKSLOT_LOAD(
+    ::_pbi::ConstantInitialized): _impl_{
+    /*decltype(_impl_.playerid_)*/uint64_t{0u}
+  , /*decltype(_impl_.gamesessionid_)*/uint64_t{0u}
+  , /*decltype(_impl_._cached_size_)*/{}} {}
+struct S2S_REQ_QUICKSLOT_LOADDefaultTypeInternal {
+  PROTOBUF_CONSTEXPR S2S_REQ_QUICKSLOT_LOADDefaultTypeInternal()
+      : _instance(::_pbi::ConstantInitialized{}) {}
+  ~S2S_REQ_QUICKSLOT_LOADDefaultTypeInternal() {}
+  union {
+    S2S_REQ_QUICKSLOT_LOAD _instance;
+  };
+};
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 S2S_REQ_QUICKSLOT_LOADDefaultTypeInternal _S2S_REQ_QUICKSLOT_LOAD_default_instance_;
+PROTOBUF_CONSTEXPR S2S_RES_QUICKSLOT_LOAD::S2S_RES_QUICKSLOT_LOAD(
+    ::_pbi::ConstantInitialized): _impl_{
+    /*decltype(_impl_.slots_)*/{}
+  , /*decltype(_impl_.playerid_)*/uint64_t{0u}
+  , /*decltype(_impl_.gamesessionid_)*/uint64_t{0u}
+  , /*decltype(_impl_.success_)*/false
+  , /*decltype(_impl_._cached_size_)*/{}} {}
+struct S2S_RES_QUICKSLOT_LOADDefaultTypeInternal {
+  PROTOBUF_CONSTEXPR S2S_RES_QUICKSLOT_LOADDefaultTypeInternal()
+      : _instance(::_pbi::ConstantInitialized{}) {}
+  ~S2S_RES_QUICKSLOT_LOADDefaultTypeInternal() {}
+  union {
+    S2S_RES_QUICKSLOT_LOAD _instance;
+  };
+};
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 S2S_RES_QUICKSLOT_LOADDefaultTypeInternal _S2S_RES_QUICKSLOT_LOAD_default_instance_;
+PROTOBUF_CONSTEXPR S2S_REQ_SAVE_QUICKSLOT::S2S_REQ_SAVE_QUICKSLOT(
+    ::_pbi::ConstantInitialized): _impl_{
+    /*decltype(_impl_.slots_)*/{}
+  , /*decltype(_impl_.playerid_)*/uint64_t{0u}
+  , /*decltype(_impl_._cached_size_)*/{}} {}
+struct S2S_REQ_SAVE_QUICKSLOTDefaultTypeInternal {
+  PROTOBUF_CONSTEXPR S2S_REQ_SAVE_QUICKSLOTDefaultTypeInternal()
+      : _instance(::_pbi::ConstantInitialized{}) {}
+  ~S2S_REQ_SAVE_QUICKSLOTDefaultTypeInternal() {}
+  union {
+    S2S_REQ_SAVE_QUICKSLOT _instance;
+  };
+};
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 S2S_REQ_SAVE_QUICKSLOTDefaultTypeInternal _S2S_REQ_SAVE_QUICKSLOT_default_instance_;
+PROTOBUF_CONSTEXPR S2S_RES_SAVE_QUICKSLOT::S2S_RES_SAVE_QUICKSLOT(
+    ::_pbi::ConstantInitialized): _impl_{
+    /*decltype(_impl_.playerid_)*/uint64_t{0u}
+  , /*decltype(_impl_.success_)*/false
+  , /*decltype(_impl_._cached_size_)*/{}} {}
+struct S2S_RES_SAVE_QUICKSLOTDefaultTypeInternal {
+  PROTOBUF_CONSTEXPR S2S_RES_SAVE_QUICKSLOTDefaultTypeInternal()
+      : _instance(::_pbi::ConstantInitialized{}) {}
+  ~S2S_RES_SAVE_QUICKSLOTDefaultTypeInternal() {}
+  union {
+    S2S_RES_SAVE_QUICKSLOT _instance;
+  };
+};
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 S2S_RES_SAVE_QUICKSLOTDefaultTypeInternal _S2S_RES_SAVE_QUICKSLOT_default_instance_;
 }  // namespace Protocol
-static ::_pb::Metadata file_level_metadata_Protocol_5fS2S_2eproto[18];
+static ::_pb::Metadata file_level_metadata_Protocol_5fS2S_2eproto[22];
 static constexpr ::_pb::EnumDescriptor const** file_level_enum_descriptors_Protocol_5fS2S_2eproto = nullptr;
 static constexpr ::_pb::ServiceDescriptor const** file_level_service_descriptors_Protocol_5fS2S_2eproto = nullptr;
 
@@ -444,6 +502,40 @@ const uint32_t TableStruct_Protocol_5fS2S_2eproto::offsets[] PROTOBUF_SECTION_VA
   ~0u,  // no _inlined_string_donated_
   PROTOBUF_FIELD_OFFSET(::Protocol::S2S_RES_GAME_ITEM_UID_SEED, _impl_.success_),
   PROTOBUF_FIELD_OFFSET(::Protocol::S2S_RES_GAME_ITEM_UID_SEED, _impl_.next_uid_),
+  ~0u,  // no _has_bits_
+  PROTOBUF_FIELD_OFFSET(::Protocol::S2S_REQ_QUICKSLOT_LOAD, _internal_metadata_),
+  ~0u,  // no _extensions_
+  ~0u,  // no _oneof_case_
+  ~0u,  // no _weak_field_map_
+  ~0u,  // no _inlined_string_donated_
+  PROTOBUF_FIELD_OFFSET(::Protocol::S2S_REQ_QUICKSLOT_LOAD, _impl_.playerid_),
+  PROTOBUF_FIELD_OFFSET(::Protocol::S2S_REQ_QUICKSLOT_LOAD, _impl_.gamesessionid_),
+  ~0u,  // no _has_bits_
+  PROTOBUF_FIELD_OFFSET(::Protocol::S2S_RES_QUICKSLOT_LOAD, _internal_metadata_),
+  ~0u,  // no _extensions_
+  ~0u,  // no _oneof_case_
+  ~0u,  // no _weak_field_map_
+  ~0u,  // no _inlined_string_donated_
+  PROTOBUF_FIELD_OFFSET(::Protocol::S2S_RES_QUICKSLOT_LOAD, _impl_.success_),
+  PROTOBUF_FIELD_OFFSET(::Protocol::S2S_RES_QUICKSLOT_LOAD, _impl_.playerid_),
+  PROTOBUF_FIELD_OFFSET(::Protocol::S2S_RES_QUICKSLOT_LOAD, _impl_.gamesessionid_),
+  PROTOBUF_FIELD_OFFSET(::Protocol::S2S_RES_QUICKSLOT_LOAD, _impl_.slots_),
+  ~0u,  // no _has_bits_
+  PROTOBUF_FIELD_OFFSET(::Protocol::S2S_REQ_SAVE_QUICKSLOT, _internal_metadata_),
+  ~0u,  // no _extensions_
+  ~0u,  // no _oneof_case_
+  ~0u,  // no _weak_field_map_
+  ~0u,  // no _inlined_string_donated_
+  PROTOBUF_FIELD_OFFSET(::Protocol::S2S_REQ_SAVE_QUICKSLOT, _impl_.playerid_),
+  PROTOBUF_FIELD_OFFSET(::Protocol::S2S_REQ_SAVE_QUICKSLOT, _impl_.slots_),
+  ~0u,  // no _has_bits_
+  PROTOBUF_FIELD_OFFSET(::Protocol::S2S_RES_SAVE_QUICKSLOT, _internal_metadata_),
+  ~0u,  // no _extensions_
+  ~0u,  // no _oneof_case_
+  ~0u,  // no _weak_field_map_
+  ~0u,  // no _inlined_string_donated_
+  PROTOBUF_FIELD_OFFSET(::Protocol::S2S_RES_SAVE_QUICKSLOT, _impl_.success_),
+  PROTOBUF_FIELD_OFFSET(::Protocol::S2S_RES_SAVE_QUICKSLOT, _impl_.playerid_),
 };
 static const ::_pbi::MigrationSchema schemas[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
   { 0, -1, -1, sizeof(::Protocol::S2S_REQ_LOGIN)},
@@ -464,6 +556,10 @@ static const ::_pbi::MigrationSchema schemas[] PROTOBUF_SECTION_VARIABLE(protode
   { 128, -1, -1, sizeof(::Protocol::S2S_RES_ITEM_CREATE)},
   { 142, -1, -1, sizeof(::Protocol::S2S_REQ_GAME_ITEM_UID_SEED)},
   { 148, -1, -1, sizeof(::Protocol::S2S_RES_GAME_ITEM_UID_SEED)},
+  { 156, -1, -1, sizeof(::Protocol::S2S_REQ_QUICKSLOT_LOAD)},
+  { 164, -1, -1, sizeof(::Protocol::S2S_RES_QUICKSLOT_LOAD)},
+  { 174, -1, -1, sizeof(::Protocol::S2S_REQ_SAVE_QUICKSLOT)},
+  { 182, -1, -1, sizeof(::Protocol::S2S_RES_SAVE_QUICKSLOT)},
 };
 
 static const ::_pb::Message* const file_default_instances[] = {
@@ -485,6 +581,10 @@ static const ::_pb::Message* const file_default_instances[] = {
   &::Protocol::_S2S_RES_ITEM_CREATE_default_instance_._instance,
   &::Protocol::_S2S_REQ_GAME_ITEM_UID_SEED_default_instance_._instance,
   &::Protocol::_S2S_RES_GAME_ITEM_UID_SEED_default_instance_._instance,
+  &::Protocol::_S2S_REQ_QUICKSLOT_LOAD_default_instance_._instance,
+  &::Protocol::_S2S_RES_QUICKSLOT_LOAD_default_instance_._instance,
+  &::Protocol::_S2S_REQ_SAVE_QUICKSLOT_default_instance_._instance,
+  &::Protocol::_S2S_RES_SAVE_QUICKSLOT_default_instance_._instance,
 };
 
 const char descriptor_table_protodef_Protocol_5fS2S_2eproto[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) =
@@ -526,7 +626,15 @@ const char descriptor_table_protodef_Protocol_5fS2S_2eproto[] PROTOBUF_SECTION_V
   "ped\030\007 \001(\010\022\021\n\trequestId\030\010 \001(\004\"\034\n\032S2S_REQ_"
   "GAME_ITEM_UID_SEED\"\?\n\032S2S_RES_GAME_ITEM_"
   "UID_SEED\022\017\n\007success\030\001 \001(\010\022\020\n\010next_uid\030\002 "
-  "\001(\004b\006proto3"
+  "\001(\004\"A\n\026S2S_REQ_QUICKSLOT_LOAD\022\020\n\010playerI"
+  "d\030\001 \001(\004\022\025\n\rgameSessionId\030\002 \001(\004\"z\n\026S2S_RE"
+  "S_QUICKSLOT_LOAD\022\017\n\007success\030\001 \001(\010\022\020\n\010pla"
+  "yerId\030\002 \001(\004\022\025\n\rgameSessionId\030\003 \001(\004\022&\n\005sl"
+  "ots\030\004 \003(\0132\027.Protocol.QuickSlotInfo\"R\n\026S2"
+  "S_REQ_SAVE_QUICKSLOT\022\020\n\010playerId\030\001 \001(\004\022&"
+  "\n\005slots\030\002 \003(\0132\027.Protocol.QuickSlotInfo\";"
+  "\n\026S2S_RES_SAVE_QUICKSLOT\022\017\n\007success\030\001 \001("
+  "\010\022\020\n\010playerId\030\002 \001(\004b\006proto3"
   ;
 static const ::_pbi::DescriptorTable* const descriptor_table_Protocol_5fS2S_2eproto_deps[2] = {
   &::descriptor_table_Enum_2eproto,
@@ -534,9 +642,9 @@ static const ::_pbi::DescriptorTable* const descriptor_table_Protocol_5fS2S_2epr
 };
 static ::_pbi::once_flag descriptor_table_Protocol_5fS2S_2eproto_once;
 const ::_pbi::DescriptorTable descriptor_table_Protocol_5fS2S_2eproto = {
-    false, false, 1531, descriptor_table_protodef_Protocol_5fS2S_2eproto,
+    false, false, 1867, descriptor_table_protodef_Protocol_5fS2S_2eproto,
     "Protocol_S2S.proto",
-    &descriptor_table_Protocol_5fS2S_2eproto_once, descriptor_table_Protocol_5fS2S_2eproto_deps, 2, 18,
+    &descriptor_table_Protocol_5fS2S_2eproto_once, descriptor_table_Protocol_5fS2S_2eproto_deps, 2, 22,
     schemas, file_default_instances, TableStruct_Protocol_5fS2S_2eproto::offsets,
     file_level_metadata_Protocol_5fS2S_2eproto, file_level_enum_descriptors_Protocol_5fS2S_2eproto,
     file_level_service_descriptors_Protocol_5fS2S_2eproto,
@@ -4250,6 +4358,915 @@ void S2S_RES_GAME_ITEM_UID_SEED::InternalSwap(S2S_RES_GAME_ITEM_UID_SEED* other)
       file_level_metadata_Protocol_5fS2S_2eproto[17]);
 }
 
+// ===================================================================
+
+class S2S_REQ_QUICKSLOT_LOAD::_Internal {
+ public:
+};
+
+S2S_REQ_QUICKSLOT_LOAD::S2S_REQ_QUICKSLOT_LOAD(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                         bool is_message_owned)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
+  SharedCtor(arena, is_message_owned);
+  // @@protoc_insertion_point(arena_constructor:Protocol.S2S_REQ_QUICKSLOT_LOAD)
+}
+S2S_REQ_QUICKSLOT_LOAD::S2S_REQ_QUICKSLOT_LOAD(const S2S_REQ_QUICKSLOT_LOAD& from)
+  : ::PROTOBUF_NAMESPACE_ID::Message() {
+  S2S_REQ_QUICKSLOT_LOAD* const _this = this; (void)_this;
+  new (&_impl_) Impl_{
+      decltype(_impl_.playerid_){}
+    , decltype(_impl_.gamesessionid_){}
+    , /*decltype(_impl_._cached_size_)*/{}};
+
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  ::memcpy(&_impl_.playerid_, &from._impl_.playerid_,
+    static_cast<size_t>(reinterpret_cast<char*>(&_impl_.gamesessionid_) -
+    reinterpret_cast<char*>(&_impl_.playerid_)) + sizeof(_impl_.gamesessionid_));
+  // @@protoc_insertion_point(copy_constructor:Protocol.S2S_REQ_QUICKSLOT_LOAD)
+}
+
+inline void S2S_REQ_QUICKSLOT_LOAD::SharedCtor(
+    ::_pb::Arena* arena, bool is_message_owned) {
+  (void)arena;
+  (void)is_message_owned;
+  new (&_impl_) Impl_{
+      decltype(_impl_.playerid_){uint64_t{0u}}
+    , decltype(_impl_.gamesessionid_){uint64_t{0u}}
+    , /*decltype(_impl_._cached_size_)*/{}
+  };
+}
+
+S2S_REQ_QUICKSLOT_LOAD::~S2S_REQ_QUICKSLOT_LOAD() {
+  // @@protoc_insertion_point(destructor:Protocol.S2S_REQ_QUICKSLOT_LOAD)
+  if (auto *arena = _internal_metadata_.DeleteReturnArena<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>()) {
+  (void)arena;
+    return;
+  }
+  SharedDtor();
+}
+
+inline void S2S_REQ_QUICKSLOT_LOAD::SharedDtor() {
+  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
+}
+
+void S2S_REQ_QUICKSLOT_LOAD::SetCachedSize(int size) const {
+  _impl_._cached_size_.Set(size);
+}
+
+void S2S_REQ_QUICKSLOT_LOAD::Clear() {
+// @@protoc_insertion_point(message_clear_start:Protocol.S2S_REQ_QUICKSLOT_LOAD)
+  uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  ::memset(&_impl_.playerid_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&_impl_.gamesessionid_) -
+      reinterpret_cast<char*>(&_impl_.playerid_)) + sizeof(_impl_.gamesessionid_));
+  _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+}
+
+const char* S2S_REQ_QUICKSLOT_LOAD::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
+#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
+  while (!ctx->Done(&ptr)) {
+    uint32_t tag;
+    ptr = ::_pbi::ReadTag(ptr, &tag);
+    switch (tag >> 3) {
+      // uint64 playerId = 1;
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 8)) {
+          _impl_.playerid_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          CHK_(ptr);
+        } else
+          goto handle_unusual;
+        continue;
+      // uint64 gameSessionId = 2;
+      case 2:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 16)) {
+          _impl_.gamesessionid_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          CHK_(ptr);
+        } else
+          goto handle_unusual;
+        continue;
+      default:
+        goto handle_unusual;
+    }  // switch
+  handle_unusual:
+    if ((tag == 0) || ((tag & 7) == 4)) {
+      CHK_(ptr);
+      ctx->SetLastTag(tag);
+      goto message_done;
+    }
+    ptr = UnknownFieldParse(
+        tag,
+        _internal_metadata_.mutable_unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(),
+        ptr, ctx);
+    CHK_(ptr != nullptr);
+  }  // while
+message_done:
+  return ptr;
+failure:
+  ptr = nullptr;
+  goto message_done;
+#undef CHK_
+}
+
+uint8_t* S2S_REQ_QUICKSLOT_LOAD::_InternalSerialize(
+    uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+  // @@protoc_insertion_point(serialize_to_array_start:Protocol.S2S_REQ_QUICKSLOT_LOAD)
+  uint32_t cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  // uint64 playerId = 1;
+  if (this->_internal_playerid() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteUInt64ToArray(1, this->_internal_playerid(), target);
+  }
+
+  // uint64 gameSessionId = 2;
+  if (this->_internal_gamesessionid() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteUInt64ToArray(2, this->_internal_gamesessionid(), target);
+  }
+
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    target = ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance), target, stream);
+  }
+  // @@protoc_insertion_point(serialize_to_array_end:Protocol.S2S_REQ_QUICKSLOT_LOAD)
+  return target;
+}
+
+size_t S2S_REQ_QUICKSLOT_LOAD::ByteSizeLong() const {
+// @@protoc_insertion_point(message_byte_size_start:Protocol.S2S_REQ_QUICKSLOT_LOAD)
+  size_t total_size = 0;
+
+  uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  // uint64 playerId = 1;
+  if (this->_internal_playerid() != 0) {
+    total_size += ::_pbi::WireFormatLite::UInt64SizePlusOne(this->_internal_playerid());
+  }
+
+  // uint64 gameSessionId = 2;
+  if (this->_internal_gamesessionid() != 0) {
+    total_size += ::_pbi::WireFormatLite::UInt64SizePlusOne(this->_internal_gamesessionid());
+  }
+
+  return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
+}
+
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData S2S_REQ_QUICKSLOT_LOAD::_class_data_ = {
+    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSourceCheck,
+    S2S_REQ_QUICKSLOT_LOAD::MergeImpl
+};
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*S2S_REQ_QUICKSLOT_LOAD::GetClassData() const { return &_class_data_; }
+
+
+void S2S_REQ_QUICKSLOT_LOAD::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
+  auto* const _this = static_cast<S2S_REQ_QUICKSLOT_LOAD*>(&to_msg);
+  auto& from = static_cast<const S2S_REQ_QUICKSLOT_LOAD&>(from_msg);
+  // @@protoc_insertion_point(class_specific_merge_from_start:Protocol.S2S_REQ_QUICKSLOT_LOAD)
+  GOOGLE_DCHECK_NE(&from, _this);
+  uint32_t cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  if (from._internal_playerid() != 0) {
+    _this->_internal_set_playerid(from._internal_playerid());
+  }
+  if (from._internal_gamesessionid() != 0) {
+    _this->_internal_set_gamesessionid(from._internal_gamesessionid());
+  }
+  _this->_internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+}
+
+void S2S_REQ_QUICKSLOT_LOAD::CopyFrom(const S2S_REQ_QUICKSLOT_LOAD& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:Protocol.S2S_REQ_QUICKSLOT_LOAD)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool S2S_REQ_QUICKSLOT_LOAD::IsInitialized() const {
+  return true;
+}
+
+void S2S_REQ_QUICKSLOT_LOAD::InternalSwap(S2S_REQ_QUICKSLOT_LOAD* other) {
+  using std::swap;
+  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
+  ::PROTOBUF_NAMESPACE_ID::internal::memswap<
+      PROTOBUF_FIELD_OFFSET(S2S_REQ_QUICKSLOT_LOAD, _impl_.gamesessionid_)
+      + sizeof(S2S_REQ_QUICKSLOT_LOAD::_impl_.gamesessionid_)
+      - PROTOBUF_FIELD_OFFSET(S2S_REQ_QUICKSLOT_LOAD, _impl_.playerid_)>(
+          reinterpret_cast<char*>(&_impl_.playerid_),
+          reinterpret_cast<char*>(&other->_impl_.playerid_));
+}
+
+::PROTOBUF_NAMESPACE_ID::Metadata S2S_REQ_QUICKSLOT_LOAD::GetMetadata() const {
+  return ::_pbi::AssignDescriptors(
+      &descriptor_table_Protocol_5fS2S_2eproto_getter, &descriptor_table_Protocol_5fS2S_2eproto_once,
+      file_level_metadata_Protocol_5fS2S_2eproto[18]);
+}
+
+// ===================================================================
+
+class S2S_RES_QUICKSLOT_LOAD::_Internal {
+ public:
+};
+
+void S2S_RES_QUICKSLOT_LOAD::clear_slots() {
+  _impl_.slots_.Clear();
+}
+S2S_RES_QUICKSLOT_LOAD::S2S_RES_QUICKSLOT_LOAD(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                         bool is_message_owned)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
+  SharedCtor(arena, is_message_owned);
+  // @@protoc_insertion_point(arena_constructor:Protocol.S2S_RES_QUICKSLOT_LOAD)
+}
+S2S_RES_QUICKSLOT_LOAD::S2S_RES_QUICKSLOT_LOAD(const S2S_RES_QUICKSLOT_LOAD& from)
+  : ::PROTOBUF_NAMESPACE_ID::Message() {
+  S2S_RES_QUICKSLOT_LOAD* const _this = this; (void)_this;
+  new (&_impl_) Impl_{
+      decltype(_impl_.slots_){from._impl_.slots_}
+    , decltype(_impl_.playerid_){}
+    , decltype(_impl_.gamesessionid_){}
+    , decltype(_impl_.success_){}
+    , /*decltype(_impl_._cached_size_)*/{}};
+
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  ::memcpy(&_impl_.playerid_, &from._impl_.playerid_,
+    static_cast<size_t>(reinterpret_cast<char*>(&_impl_.success_) -
+    reinterpret_cast<char*>(&_impl_.playerid_)) + sizeof(_impl_.success_));
+  // @@protoc_insertion_point(copy_constructor:Protocol.S2S_RES_QUICKSLOT_LOAD)
+}
+
+inline void S2S_RES_QUICKSLOT_LOAD::SharedCtor(
+    ::_pb::Arena* arena, bool is_message_owned) {
+  (void)arena;
+  (void)is_message_owned;
+  new (&_impl_) Impl_{
+      decltype(_impl_.slots_){arena}
+    , decltype(_impl_.playerid_){uint64_t{0u}}
+    , decltype(_impl_.gamesessionid_){uint64_t{0u}}
+    , decltype(_impl_.success_){false}
+    , /*decltype(_impl_._cached_size_)*/{}
+  };
+}
+
+S2S_RES_QUICKSLOT_LOAD::~S2S_RES_QUICKSLOT_LOAD() {
+  // @@protoc_insertion_point(destructor:Protocol.S2S_RES_QUICKSLOT_LOAD)
+  if (auto *arena = _internal_metadata_.DeleteReturnArena<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>()) {
+  (void)arena;
+    return;
+  }
+  SharedDtor();
+}
+
+inline void S2S_RES_QUICKSLOT_LOAD::SharedDtor() {
+  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
+  _impl_.slots_.~RepeatedPtrField();
+}
+
+void S2S_RES_QUICKSLOT_LOAD::SetCachedSize(int size) const {
+  _impl_._cached_size_.Set(size);
+}
+
+void S2S_RES_QUICKSLOT_LOAD::Clear() {
+// @@protoc_insertion_point(message_clear_start:Protocol.S2S_RES_QUICKSLOT_LOAD)
+  uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  _impl_.slots_.Clear();
+  ::memset(&_impl_.playerid_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&_impl_.success_) -
+      reinterpret_cast<char*>(&_impl_.playerid_)) + sizeof(_impl_.success_));
+  _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+}
+
+const char* S2S_RES_QUICKSLOT_LOAD::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
+#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
+  while (!ctx->Done(&ptr)) {
+    uint32_t tag;
+    ptr = ::_pbi::ReadTag(ptr, &tag);
+    switch (tag >> 3) {
+      // bool success = 1;
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 8)) {
+          _impl_.success_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          CHK_(ptr);
+        } else
+          goto handle_unusual;
+        continue;
+      // uint64 playerId = 2;
+      case 2:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 16)) {
+          _impl_.playerid_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          CHK_(ptr);
+        } else
+          goto handle_unusual;
+        continue;
+      // uint64 gameSessionId = 3;
+      case 3:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 24)) {
+          _impl_.gamesessionid_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          CHK_(ptr);
+        } else
+          goto handle_unusual;
+        continue;
+      // repeated .Protocol.QuickSlotInfo slots = 4;
+      case 4:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 34)) {
+          ptr -= 1;
+          do {
+            ptr += 1;
+            ptr = ctx->ParseMessage(_internal_add_slots(), ptr);
+            CHK_(ptr);
+            if (!ctx->DataAvailable(ptr)) break;
+          } while (::PROTOBUF_NAMESPACE_ID::internal::ExpectTag<34>(ptr));
+        } else
+          goto handle_unusual;
+        continue;
+      default:
+        goto handle_unusual;
+    }  // switch
+  handle_unusual:
+    if ((tag == 0) || ((tag & 7) == 4)) {
+      CHK_(ptr);
+      ctx->SetLastTag(tag);
+      goto message_done;
+    }
+    ptr = UnknownFieldParse(
+        tag,
+        _internal_metadata_.mutable_unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(),
+        ptr, ctx);
+    CHK_(ptr != nullptr);
+  }  // while
+message_done:
+  return ptr;
+failure:
+  ptr = nullptr;
+  goto message_done;
+#undef CHK_
+}
+
+uint8_t* S2S_RES_QUICKSLOT_LOAD::_InternalSerialize(
+    uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+  // @@protoc_insertion_point(serialize_to_array_start:Protocol.S2S_RES_QUICKSLOT_LOAD)
+  uint32_t cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  // bool success = 1;
+  if (this->_internal_success() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteBoolToArray(1, this->_internal_success(), target);
+  }
+
+  // uint64 playerId = 2;
+  if (this->_internal_playerid() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteUInt64ToArray(2, this->_internal_playerid(), target);
+  }
+
+  // uint64 gameSessionId = 3;
+  if (this->_internal_gamesessionid() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteUInt64ToArray(3, this->_internal_gamesessionid(), target);
+  }
+
+  // repeated .Protocol.QuickSlotInfo slots = 4;
+  for (unsigned i = 0,
+      n = static_cast<unsigned>(this->_internal_slots_size()); i < n; i++) {
+    const auto& repfield = this->_internal_slots(i);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
+        InternalWriteMessage(4, repfield, repfield.GetCachedSize(), target, stream);
+  }
+
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    target = ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance), target, stream);
+  }
+  // @@protoc_insertion_point(serialize_to_array_end:Protocol.S2S_RES_QUICKSLOT_LOAD)
+  return target;
+}
+
+size_t S2S_RES_QUICKSLOT_LOAD::ByteSizeLong() const {
+// @@protoc_insertion_point(message_byte_size_start:Protocol.S2S_RES_QUICKSLOT_LOAD)
+  size_t total_size = 0;
+
+  uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  // repeated .Protocol.QuickSlotInfo slots = 4;
+  total_size += 1UL * this->_internal_slots_size();
+  for (const auto& msg : this->_impl_.slots_) {
+    total_size +=
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
+  }
+
+  // uint64 playerId = 2;
+  if (this->_internal_playerid() != 0) {
+    total_size += ::_pbi::WireFormatLite::UInt64SizePlusOne(this->_internal_playerid());
+  }
+
+  // uint64 gameSessionId = 3;
+  if (this->_internal_gamesessionid() != 0) {
+    total_size += ::_pbi::WireFormatLite::UInt64SizePlusOne(this->_internal_gamesessionid());
+  }
+
+  // bool success = 1;
+  if (this->_internal_success() != 0) {
+    total_size += 1 + 1;
+  }
+
+  return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
+}
+
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData S2S_RES_QUICKSLOT_LOAD::_class_data_ = {
+    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSourceCheck,
+    S2S_RES_QUICKSLOT_LOAD::MergeImpl
+};
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*S2S_RES_QUICKSLOT_LOAD::GetClassData() const { return &_class_data_; }
+
+
+void S2S_RES_QUICKSLOT_LOAD::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
+  auto* const _this = static_cast<S2S_RES_QUICKSLOT_LOAD*>(&to_msg);
+  auto& from = static_cast<const S2S_RES_QUICKSLOT_LOAD&>(from_msg);
+  // @@protoc_insertion_point(class_specific_merge_from_start:Protocol.S2S_RES_QUICKSLOT_LOAD)
+  GOOGLE_DCHECK_NE(&from, _this);
+  uint32_t cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  _this->_impl_.slots_.MergeFrom(from._impl_.slots_);
+  if (from._internal_playerid() != 0) {
+    _this->_internal_set_playerid(from._internal_playerid());
+  }
+  if (from._internal_gamesessionid() != 0) {
+    _this->_internal_set_gamesessionid(from._internal_gamesessionid());
+  }
+  if (from._internal_success() != 0) {
+    _this->_internal_set_success(from._internal_success());
+  }
+  _this->_internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+}
+
+void S2S_RES_QUICKSLOT_LOAD::CopyFrom(const S2S_RES_QUICKSLOT_LOAD& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:Protocol.S2S_RES_QUICKSLOT_LOAD)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool S2S_RES_QUICKSLOT_LOAD::IsInitialized() const {
+  return true;
+}
+
+void S2S_RES_QUICKSLOT_LOAD::InternalSwap(S2S_RES_QUICKSLOT_LOAD* other) {
+  using std::swap;
+  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
+  _impl_.slots_.InternalSwap(&other->_impl_.slots_);
+  ::PROTOBUF_NAMESPACE_ID::internal::memswap<
+      PROTOBUF_FIELD_OFFSET(S2S_RES_QUICKSLOT_LOAD, _impl_.success_)
+      + sizeof(S2S_RES_QUICKSLOT_LOAD::_impl_.success_)
+      - PROTOBUF_FIELD_OFFSET(S2S_RES_QUICKSLOT_LOAD, _impl_.playerid_)>(
+          reinterpret_cast<char*>(&_impl_.playerid_),
+          reinterpret_cast<char*>(&other->_impl_.playerid_));
+}
+
+::PROTOBUF_NAMESPACE_ID::Metadata S2S_RES_QUICKSLOT_LOAD::GetMetadata() const {
+  return ::_pbi::AssignDescriptors(
+      &descriptor_table_Protocol_5fS2S_2eproto_getter, &descriptor_table_Protocol_5fS2S_2eproto_once,
+      file_level_metadata_Protocol_5fS2S_2eproto[19]);
+}
+
+// ===================================================================
+
+class S2S_REQ_SAVE_QUICKSLOT::_Internal {
+ public:
+};
+
+void S2S_REQ_SAVE_QUICKSLOT::clear_slots() {
+  _impl_.slots_.Clear();
+}
+S2S_REQ_SAVE_QUICKSLOT::S2S_REQ_SAVE_QUICKSLOT(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                         bool is_message_owned)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
+  SharedCtor(arena, is_message_owned);
+  // @@protoc_insertion_point(arena_constructor:Protocol.S2S_REQ_SAVE_QUICKSLOT)
+}
+S2S_REQ_SAVE_QUICKSLOT::S2S_REQ_SAVE_QUICKSLOT(const S2S_REQ_SAVE_QUICKSLOT& from)
+  : ::PROTOBUF_NAMESPACE_ID::Message() {
+  S2S_REQ_SAVE_QUICKSLOT* const _this = this; (void)_this;
+  new (&_impl_) Impl_{
+      decltype(_impl_.slots_){from._impl_.slots_}
+    , decltype(_impl_.playerid_){}
+    , /*decltype(_impl_._cached_size_)*/{}};
+
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  _this->_impl_.playerid_ = from._impl_.playerid_;
+  // @@protoc_insertion_point(copy_constructor:Protocol.S2S_REQ_SAVE_QUICKSLOT)
+}
+
+inline void S2S_REQ_SAVE_QUICKSLOT::SharedCtor(
+    ::_pb::Arena* arena, bool is_message_owned) {
+  (void)arena;
+  (void)is_message_owned;
+  new (&_impl_) Impl_{
+      decltype(_impl_.slots_){arena}
+    , decltype(_impl_.playerid_){uint64_t{0u}}
+    , /*decltype(_impl_._cached_size_)*/{}
+  };
+}
+
+S2S_REQ_SAVE_QUICKSLOT::~S2S_REQ_SAVE_QUICKSLOT() {
+  // @@protoc_insertion_point(destructor:Protocol.S2S_REQ_SAVE_QUICKSLOT)
+  if (auto *arena = _internal_metadata_.DeleteReturnArena<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>()) {
+  (void)arena;
+    return;
+  }
+  SharedDtor();
+}
+
+inline void S2S_REQ_SAVE_QUICKSLOT::SharedDtor() {
+  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
+  _impl_.slots_.~RepeatedPtrField();
+}
+
+void S2S_REQ_SAVE_QUICKSLOT::SetCachedSize(int size) const {
+  _impl_._cached_size_.Set(size);
+}
+
+void S2S_REQ_SAVE_QUICKSLOT::Clear() {
+// @@protoc_insertion_point(message_clear_start:Protocol.S2S_REQ_SAVE_QUICKSLOT)
+  uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  _impl_.slots_.Clear();
+  _impl_.playerid_ = uint64_t{0u};
+  _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+}
+
+const char* S2S_REQ_SAVE_QUICKSLOT::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
+#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
+  while (!ctx->Done(&ptr)) {
+    uint32_t tag;
+    ptr = ::_pbi::ReadTag(ptr, &tag);
+    switch (tag >> 3) {
+      // uint64 playerId = 1;
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 8)) {
+          _impl_.playerid_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          CHK_(ptr);
+        } else
+          goto handle_unusual;
+        continue;
+      // repeated .Protocol.QuickSlotInfo slots = 2;
+      case 2:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 18)) {
+          ptr -= 1;
+          do {
+            ptr += 1;
+            ptr = ctx->ParseMessage(_internal_add_slots(), ptr);
+            CHK_(ptr);
+            if (!ctx->DataAvailable(ptr)) break;
+          } while (::PROTOBUF_NAMESPACE_ID::internal::ExpectTag<18>(ptr));
+        } else
+          goto handle_unusual;
+        continue;
+      default:
+        goto handle_unusual;
+    }  // switch
+  handle_unusual:
+    if ((tag == 0) || ((tag & 7) == 4)) {
+      CHK_(ptr);
+      ctx->SetLastTag(tag);
+      goto message_done;
+    }
+    ptr = UnknownFieldParse(
+        tag,
+        _internal_metadata_.mutable_unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(),
+        ptr, ctx);
+    CHK_(ptr != nullptr);
+  }  // while
+message_done:
+  return ptr;
+failure:
+  ptr = nullptr;
+  goto message_done;
+#undef CHK_
+}
+
+uint8_t* S2S_REQ_SAVE_QUICKSLOT::_InternalSerialize(
+    uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+  // @@protoc_insertion_point(serialize_to_array_start:Protocol.S2S_REQ_SAVE_QUICKSLOT)
+  uint32_t cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  // uint64 playerId = 1;
+  if (this->_internal_playerid() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteUInt64ToArray(1, this->_internal_playerid(), target);
+  }
+
+  // repeated .Protocol.QuickSlotInfo slots = 2;
+  for (unsigned i = 0,
+      n = static_cast<unsigned>(this->_internal_slots_size()); i < n; i++) {
+    const auto& repfield = this->_internal_slots(i);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
+        InternalWriteMessage(2, repfield, repfield.GetCachedSize(), target, stream);
+  }
+
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    target = ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance), target, stream);
+  }
+  // @@protoc_insertion_point(serialize_to_array_end:Protocol.S2S_REQ_SAVE_QUICKSLOT)
+  return target;
+}
+
+size_t S2S_REQ_SAVE_QUICKSLOT::ByteSizeLong() const {
+// @@protoc_insertion_point(message_byte_size_start:Protocol.S2S_REQ_SAVE_QUICKSLOT)
+  size_t total_size = 0;
+
+  uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  // repeated .Protocol.QuickSlotInfo slots = 2;
+  total_size += 1UL * this->_internal_slots_size();
+  for (const auto& msg : this->_impl_.slots_) {
+    total_size +=
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
+  }
+
+  // uint64 playerId = 1;
+  if (this->_internal_playerid() != 0) {
+    total_size += ::_pbi::WireFormatLite::UInt64SizePlusOne(this->_internal_playerid());
+  }
+
+  return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
+}
+
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData S2S_REQ_SAVE_QUICKSLOT::_class_data_ = {
+    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSourceCheck,
+    S2S_REQ_SAVE_QUICKSLOT::MergeImpl
+};
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*S2S_REQ_SAVE_QUICKSLOT::GetClassData() const { return &_class_data_; }
+
+
+void S2S_REQ_SAVE_QUICKSLOT::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
+  auto* const _this = static_cast<S2S_REQ_SAVE_QUICKSLOT*>(&to_msg);
+  auto& from = static_cast<const S2S_REQ_SAVE_QUICKSLOT&>(from_msg);
+  // @@protoc_insertion_point(class_specific_merge_from_start:Protocol.S2S_REQ_SAVE_QUICKSLOT)
+  GOOGLE_DCHECK_NE(&from, _this);
+  uint32_t cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  _this->_impl_.slots_.MergeFrom(from._impl_.slots_);
+  if (from._internal_playerid() != 0) {
+    _this->_internal_set_playerid(from._internal_playerid());
+  }
+  _this->_internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+}
+
+void S2S_REQ_SAVE_QUICKSLOT::CopyFrom(const S2S_REQ_SAVE_QUICKSLOT& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:Protocol.S2S_REQ_SAVE_QUICKSLOT)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool S2S_REQ_SAVE_QUICKSLOT::IsInitialized() const {
+  return true;
+}
+
+void S2S_REQ_SAVE_QUICKSLOT::InternalSwap(S2S_REQ_SAVE_QUICKSLOT* other) {
+  using std::swap;
+  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
+  _impl_.slots_.InternalSwap(&other->_impl_.slots_);
+  swap(_impl_.playerid_, other->_impl_.playerid_);
+}
+
+::PROTOBUF_NAMESPACE_ID::Metadata S2S_REQ_SAVE_QUICKSLOT::GetMetadata() const {
+  return ::_pbi::AssignDescriptors(
+      &descriptor_table_Protocol_5fS2S_2eproto_getter, &descriptor_table_Protocol_5fS2S_2eproto_once,
+      file_level_metadata_Protocol_5fS2S_2eproto[20]);
+}
+
+// ===================================================================
+
+class S2S_RES_SAVE_QUICKSLOT::_Internal {
+ public:
+};
+
+S2S_RES_SAVE_QUICKSLOT::S2S_RES_SAVE_QUICKSLOT(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                         bool is_message_owned)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
+  SharedCtor(arena, is_message_owned);
+  // @@protoc_insertion_point(arena_constructor:Protocol.S2S_RES_SAVE_QUICKSLOT)
+}
+S2S_RES_SAVE_QUICKSLOT::S2S_RES_SAVE_QUICKSLOT(const S2S_RES_SAVE_QUICKSLOT& from)
+  : ::PROTOBUF_NAMESPACE_ID::Message() {
+  S2S_RES_SAVE_QUICKSLOT* const _this = this; (void)_this;
+  new (&_impl_) Impl_{
+      decltype(_impl_.playerid_){}
+    , decltype(_impl_.success_){}
+    , /*decltype(_impl_._cached_size_)*/{}};
+
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  ::memcpy(&_impl_.playerid_, &from._impl_.playerid_,
+    static_cast<size_t>(reinterpret_cast<char*>(&_impl_.success_) -
+    reinterpret_cast<char*>(&_impl_.playerid_)) + sizeof(_impl_.success_));
+  // @@protoc_insertion_point(copy_constructor:Protocol.S2S_RES_SAVE_QUICKSLOT)
+}
+
+inline void S2S_RES_SAVE_QUICKSLOT::SharedCtor(
+    ::_pb::Arena* arena, bool is_message_owned) {
+  (void)arena;
+  (void)is_message_owned;
+  new (&_impl_) Impl_{
+      decltype(_impl_.playerid_){uint64_t{0u}}
+    , decltype(_impl_.success_){false}
+    , /*decltype(_impl_._cached_size_)*/{}
+  };
+}
+
+S2S_RES_SAVE_QUICKSLOT::~S2S_RES_SAVE_QUICKSLOT() {
+  // @@protoc_insertion_point(destructor:Protocol.S2S_RES_SAVE_QUICKSLOT)
+  if (auto *arena = _internal_metadata_.DeleteReturnArena<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>()) {
+  (void)arena;
+    return;
+  }
+  SharedDtor();
+}
+
+inline void S2S_RES_SAVE_QUICKSLOT::SharedDtor() {
+  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
+}
+
+void S2S_RES_SAVE_QUICKSLOT::SetCachedSize(int size) const {
+  _impl_._cached_size_.Set(size);
+}
+
+void S2S_RES_SAVE_QUICKSLOT::Clear() {
+// @@protoc_insertion_point(message_clear_start:Protocol.S2S_RES_SAVE_QUICKSLOT)
+  uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  ::memset(&_impl_.playerid_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&_impl_.success_) -
+      reinterpret_cast<char*>(&_impl_.playerid_)) + sizeof(_impl_.success_));
+  _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+}
+
+const char* S2S_RES_SAVE_QUICKSLOT::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
+#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
+  while (!ctx->Done(&ptr)) {
+    uint32_t tag;
+    ptr = ::_pbi::ReadTag(ptr, &tag);
+    switch (tag >> 3) {
+      // bool success = 1;
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 8)) {
+          _impl_.success_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          CHK_(ptr);
+        } else
+          goto handle_unusual;
+        continue;
+      // uint64 playerId = 2;
+      case 2:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 16)) {
+          _impl_.playerid_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          CHK_(ptr);
+        } else
+          goto handle_unusual;
+        continue;
+      default:
+        goto handle_unusual;
+    }  // switch
+  handle_unusual:
+    if ((tag == 0) || ((tag & 7) == 4)) {
+      CHK_(ptr);
+      ctx->SetLastTag(tag);
+      goto message_done;
+    }
+    ptr = UnknownFieldParse(
+        tag,
+        _internal_metadata_.mutable_unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(),
+        ptr, ctx);
+    CHK_(ptr != nullptr);
+  }  // while
+message_done:
+  return ptr;
+failure:
+  ptr = nullptr;
+  goto message_done;
+#undef CHK_
+}
+
+uint8_t* S2S_RES_SAVE_QUICKSLOT::_InternalSerialize(
+    uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+  // @@protoc_insertion_point(serialize_to_array_start:Protocol.S2S_RES_SAVE_QUICKSLOT)
+  uint32_t cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  // bool success = 1;
+  if (this->_internal_success() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteBoolToArray(1, this->_internal_success(), target);
+  }
+
+  // uint64 playerId = 2;
+  if (this->_internal_playerid() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteUInt64ToArray(2, this->_internal_playerid(), target);
+  }
+
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    target = ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance), target, stream);
+  }
+  // @@protoc_insertion_point(serialize_to_array_end:Protocol.S2S_RES_SAVE_QUICKSLOT)
+  return target;
+}
+
+size_t S2S_RES_SAVE_QUICKSLOT::ByteSizeLong() const {
+// @@protoc_insertion_point(message_byte_size_start:Protocol.S2S_RES_SAVE_QUICKSLOT)
+  size_t total_size = 0;
+
+  uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  // uint64 playerId = 2;
+  if (this->_internal_playerid() != 0) {
+    total_size += ::_pbi::WireFormatLite::UInt64SizePlusOne(this->_internal_playerid());
+  }
+
+  // bool success = 1;
+  if (this->_internal_success() != 0) {
+    total_size += 1 + 1;
+  }
+
+  return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
+}
+
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData S2S_RES_SAVE_QUICKSLOT::_class_data_ = {
+    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSourceCheck,
+    S2S_RES_SAVE_QUICKSLOT::MergeImpl
+};
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*S2S_RES_SAVE_QUICKSLOT::GetClassData() const { return &_class_data_; }
+
+
+void S2S_RES_SAVE_QUICKSLOT::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
+  auto* const _this = static_cast<S2S_RES_SAVE_QUICKSLOT*>(&to_msg);
+  auto& from = static_cast<const S2S_RES_SAVE_QUICKSLOT&>(from_msg);
+  // @@protoc_insertion_point(class_specific_merge_from_start:Protocol.S2S_RES_SAVE_QUICKSLOT)
+  GOOGLE_DCHECK_NE(&from, _this);
+  uint32_t cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  if (from._internal_playerid() != 0) {
+    _this->_internal_set_playerid(from._internal_playerid());
+  }
+  if (from._internal_success() != 0) {
+    _this->_internal_set_success(from._internal_success());
+  }
+  _this->_internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+}
+
+void S2S_RES_SAVE_QUICKSLOT::CopyFrom(const S2S_RES_SAVE_QUICKSLOT& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:Protocol.S2S_RES_SAVE_QUICKSLOT)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool S2S_RES_SAVE_QUICKSLOT::IsInitialized() const {
+  return true;
+}
+
+void S2S_RES_SAVE_QUICKSLOT::InternalSwap(S2S_RES_SAVE_QUICKSLOT* other) {
+  using std::swap;
+  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
+  ::PROTOBUF_NAMESPACE_ID::internal::memswap<
+      PROTOBUF_FIELD_OFFSET(S2S_RES_SAVE_QUICKSLOT, _impl_.success_)
+      + sizeof(S2S_RES_SAVE_QUICKSLOT::_impl_.success_)
+      - PROTOBUF_FIELD_OFFSET(S2S_RES_SAVE_QUICKSLOT, _impl_.playerid_)>(
+          reinterpret_cast<char*>(&_impl_.playerid_),
+          reinterpret_cast<char*>(&other->_impl_.playerid_));
+}
+
+::PROTOBUF_NAMESPACE_ID::Metadata S2S_RES_SAVE_QUICKSLOT::GetMetadata() const {
+  return ::_pbi::AssignDescriptors(
+      &descriptor_table_Protocol_5fS2S_2eproto_getter, &descriptor_table_Protocol_5fS2S_2eproto_once,
+      file_level_metadata_Protocol_5fS2S_2eproto[21]);
+}
+
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace Protocol
 PROTOBUF_NAMESPACE_OPEN
@@ -4324,6 +5341,22 @@ Arena::CreateMaybeMessage< ::Protocol::S2S_REQ_GAME_ITEM_UID_SEED >(Arena* arena
 template<> PROTOBUF_NOINLINE ::Protocol::S2S_RES_GAME_ITEM_UID_SEED*
 Arena::CreateMaybeMessage< ::Protocol::S2S_RES_GAME_ITEM_UID_SEED >(Arena* arena) {
   return Arena::CreateMessageInternal< ::Protocol::S2S_RES_GAME_ITEM_UID_SEED >(arena);
+}
+template<> PROTOBUF_NOINLINE ::Protocol::S2S_REQ_QUICKSLOT_LOAD*
+Arena::CreateMaybeMessage< ::Protocol::S2S_REQ_QUICKSLOT_LOAD >(Arena* arena) {
+  return Arena::CreateMessageInternal< ::Protocol::S2S_REQ_QUICKSLOT_LOAD >(arena);
+}
+template<> PROTOBUF_NOINLINE ::Protocol::S2S_RES_QUICKSLOT_LOAD*
+Arena::CreateMaybeMessage< ::Protocol::S2S_RES_QUICKSLOT_LOAD >(Arena* arena) {
+  return Arena::CreateMessageInternal< ::Protocol::S2S_RES_QUICKSLOT_LOAD >(arena);
+}
+template<> PROTOBUF_NOINLINE ::Protocol::S2S_REQ_SAVE_QUICKSLOT*
+Arena::CreateMaybeMessage< ::Protocol::S2S_REQ_SAVE_QUICKSLOT >(Arena* arena) {
+  return Arena::CreateMessageInternal< ::Protocol::S2S_REQ_SAVE_QUICKSLOT >(arena);
+}
+template<> PROTOBUF_NOINLINE ::Protocol::S2S_RES_SAVE_QUICKSLOT*
+Arena::CreateMaybeMessage< ::Protocol::S2S_RES_SAVE_QUICKSLOT >(Arena* arena) {
+  return Arena::CreateMessageInternal< ::Protocol::S2S_RES_SAVE_QUICKSLOT >(arena);
 }
 PROTOBUF_NAMESPACE_CLOSE
 

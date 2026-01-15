@@ -42,7 +42,19 @@ namespace Persistence
         bool BuildSnapshot_Inventory(uint64 pid, Protocol::S2S_REQ_SAVE_INVENTORY& out);
 
         // ===== Clear on commit success =====
-        void ClearDirtyOnCommitSuccess(uint64 pid, bool coreOk, bool invOk);
+        void ClearDirtyOnCommitSuccess(uint64 pid, bool coreOk, bool invOk, bool qsOk);
+
+
+        // ===== Prime (DB -> Redis) =====
+        void PrimeFromDb_QuickSlot(uint64 pid, const google::protobuf::RepeatedPtrField<Protocol::QuickSlotInfo>& slots);
+
+        // ===== Runtime updates =====
+        void UpdateQuickSlot(uint64 pid, int32 slotIndex, Protocol::QuickSlotRefType refType, uint64 refId, bool markDirty = true);
+        void MarkDirty_QuickSlot(uint64 pid);
+
+        // ===== Snapshot build =====
+        bool BuildSnapshot_QuickSlot(uint64 pid, Protocol::S2S_REQ_SAVE_QUICKSLOT& out);
+
 
     private:
         PersistenceService() = default;

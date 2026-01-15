@@ -27,6 +27,10 @@ public:
 		PKT_S2S_RES_ITEM_CREATE = 2015,
 		PKT_S2S_REQ_GAME_ITEM_UID_SEED = 2016,
 		PKT_S2S_RES_GAME_ITEM_UID_SEED = 2017,
+		PKT_S2S_REQ_QUICKSLOT_LOAD = 2018,
+		PKT_S2S_RES_QUICKSLOT_LOAD = 2019,
+		PKT_S2S_REQ_SAVE_QUICKSLOT = 2020,
+		PKT_S2S_RES_SAVE_QUICKSLOT = 2021,
 	};
 
 	static void Init()
@@ -42,6 +46,8 @@ public:
 		GPacketHandler[PKT_S2S_REQ_SAVE_INVENTORY] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S2S_REQ_SAVE_INVENTORY>(Handle_S2S_REQ_SAVE_INVENTORY, session, buffer, len); };
 		GPacketHandler[PKT_S2S_REQ_ITEM_CREATE] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S2S_REQ_ITEM_CREATE>(Handle_S2S_REQ_ITEM_CREATE, session, buffer, len); };
 		GPacketHandler[PKT_S2S_REQ_GAME_ITEM_UID_SEED] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S2S_REQ_GAME_ITEM_UID_SEED>(Handle_S2S_REQ_GAME_ITEM_UID_SEED, session, buffer, len); };
+		GPacketHandler[PKT_S2S_REQ_QUICKSLOT_LOAD] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S2S_REQ_QUICKSLOT_LOAD>(Handle_S2S_REQ_QUICKSLOT_LOAD, session, buffer, len); };
+		GPacketHandler[PKT_S2S_REQ_SAVE_QUICKSLOT] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S2S_REQ_SAVE_QUICKSLOT>(Handle_S2S_REQ_SAVE_QUICKSLOT, session, buffer, len); };
 	}
 
 	static bool HandlePacket(PacketSessionRef& session, BYTE* buffer, int32 len)
@@ -58,6 +64,8 @@ public:
 	static SendBufferRef MakeSendBuffer(Protocol::S2S_RES_SAVE_INVENTORY& pkt) { return MakeSendBuffer(pkt, PKT_S2S_RES_SAVE_INVENTORY); }
 	static SendBufferRef MakeSendBuffer(Protocol::S2S_RES_ITEM_CREATE& pkt) { return MakeSendBuffer(pkt, PKT_S2S_RES_ITEM_CREATE); }
 	static SendBufferRef MakeSendBuffer(Protocol::S2S_RES_GAME_ITEM_UID_SEED& pkt) { return MakeSendBuffer(pkt, PKT_S2S_RES_GAME_ITEM_UID_SEED); }
+	static SendBufferRef MakeSendBuffer(Protocol::S2S_RES_QUICKSLOT_LOAD& pkt) { return MakeSendBuffer(pkt, PKT_S2S_RES_QUICKSLOT_LOAD); }
+	static SendBufferRef MakeSendBuffer(Protocol::S2S_RES_SAVE_QUICKSLOT& pkt) { return MakeSendBuffer(pkt, PKT_S2S_RES_SAVE_QUICKSLOT); }
 
 public:
 	static PacketHandlerFunc GPacketHandler[UINT16_MAX];
@@ -71,6 +79,8 @@ public:
 	static bool Handle_S2S_REQ_SAVE_INVENTORY(PacketSessionRef& session, Protocol::S2S_REQ_SAVE_INVENTORY& pkt);
 	static bool Handle_S2S_REQ_ITEM_CREATE(PacketSessionRef& session, Protocol::S2S_REQ_ITEM_CREATE& pkt);
 	static bool Handle_S2S_REQ_GAME_ITEM_UID_SEED(PacketSessionRef& session, Protocol::S2S_REQ_GAME_ITEM_UID_SEED& pkt);
+	static bool Handle_S2S_REQ_QUICKSLOT_LOAD(PacketSessionRef& session, Protocol::S2S_REQ_QUICKSLOT_LOAD& pkt);
+	static bool Handle_S2S_REQ_SAVE_QUICKSLOT(PacketSessionRef& session, Protocol::S2S_REQ_SAVE_QUICKSLOT& pkt);
 
 private:
 	template<typename PacketType, typename ProcessFunc>

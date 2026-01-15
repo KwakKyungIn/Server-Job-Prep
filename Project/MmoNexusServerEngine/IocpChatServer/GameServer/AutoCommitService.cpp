@@ -16,11 +16,12 @@ namespace Persistence
         return s;
     }
 
-    void AutoCommitService::Init(RedisManager* redis, SendCoreFn sendCore, SendInvFn sendInv)
+    void AutoCommitService::Init(RedisManager* redis, SendCoreFn sendCore, SendInvFn sendInv, SendQsFn sendQs)
     {
         _redis = redis;
         _sendCore = std::move(sendCore);
         _sendInv = std::move(sendInv);
+        _sendQs = std::move(sendQs);
     }
 
     void AutoCommitService::Start()
@@ -56,7 +57,13 @@ namespace Persistence
     void AutoCommitService::OnCommitFinished(uint64 pid)
     {
         std::lock_guard<std::mutex> lock(_mx);
-        _inflight.erase(pid);
+        auto it = _inflightCount.find(pid);
+        if (it == _inflightCount.end())
+            return;
+
+        it->second -= 1;
+        if (it->second <= 0)
+            _inflightCount.erase(it);
     }
 
     bool AutoCommitService::ParsePid(const std::string& s, uint64& outPid)
@@ -96,83 +103,58 @@ namespace Persistence
         }
     }
 
+
     void AutoCommitService::TickCommit_Internal()
     {
         if (!_redis) return;
 
-        // 1) targets 수집: dirty set + flushNow
         std::unordered_set<uint64> targets;
 
         // dirty:player
-        {
-            std::vector<std::string> pids;
-            if (_redis->SMembers(KeyDirtyPlayer(), pids))
-            {
-                for (auto& s : pids)
-                {
-                    uint64 pid = 0;
-                    if (ParsePid(s, pid)) targets.insert(pid);
-                }
-            }
-        }
+        { std::vector<std::string> pids; if (_redis->SMembers(KeyDirtyPlayer(), pids)) for (auto& s : pids) { uint64 pid = 0; if (ParsePid(s, pid)) targets.insert(pid); } }
 
         // dirty:inv
-        {
-            std::vector<std::string> pids;
-            if (_redis->SMembers(KeyDirtyInv(), pids))
-            {
-                for (auto& s : pids)
-                {
-                    uint64 pid = 0;
-                    if (ParsePid(s, pid)) targets.insert(pid);
-                }
-            }
-        }
+        { std::vector<std::string> pids; if (_redis->SMembers(KeyDirtyInv(), pids)) for (auto& s : pids) { uint64 pid = 0; if (ParsePid(s, pid)) targets.insert(pid); } }
 
-        // flushNow (즉시 저장 요청)
+        // dirty:qs  [NEW]
+        { std::vector<std::string> pids; if (_redis->SMembers(KeyDirtyQuick(), pids)) for (auto& s : pids) { uint64 pid = 0; if (ParsePid(s, pid)) targets.insert(pid); } }
+
+        // flushNow
         {
             std::lock_guard<std::mutex> lock(_mx);
-            for (uint64 pid : _flushNow)
-                targets.insert(pid);
+            for (uint64 pid : _flushNow) targets.insert(pid);
             _flushNow.clear();
         }
 
-        // 2) pid별 snapshot -> send
         for (uint64 pid : targets)
         {
-            // in-flight 가드
+            // inflight 가드
             {
                 std::lock_guard<std::mutex> lock(_mx);
-                if (_inflight.count(pid))
+                if (_inflightCount.count(pid))
                     continue;
-                _inflight.insert(pid);
             }
 
             Protocol::S2S_REQ_SAVE_PLAYER_CORE coreReq;
             Protocol::S2S_REQ_SAVE_INVENTORY invReq;
+            Protocol::S2S_REQ_SAVE_QUICKSLOT qsReq;
 
             const bool coreOk = PersistenceService::I().BuildSnapshot_PlayerCore(pid, coreReq);
             const bool invOk = PersistenceService::I().BuildSnapshot_Inventory(pid, invReq);
+            const bool qsOk = PersistenceService::I().BuildSnapshot_QuickSlot(pid, qsReq);
 
-            bool sentAny = false;
+            int32 sentCount = 0;
 
-            if (coreOk && _sendCore)
-            {
-                _sendCore(coreReq);
-                sentAny = true;
-            }
+            if (coreOk && _sendCore) { _sendCore(coreReq); sentCount++; }
+            if (invOk && _sendInv) { _sendInv(invReq);  sentCount++; }
+            if (qsOk && _sendQs) { _sendQs(qsReq);    sentCount++; }
 
-            if (invOk && _sendInv)
-            {
-                _sendInv(invReq);
-                sentAny = true;
-            }
+            if (sentCount <= 0)
+                continue;
 
-            // 아무 것도 못 보냈으면 inflight 해제(재시도 가능)
-            if (!sentAny)
             {
                 std::lock_guard<std::mutex> lock(_mx);
-                _inflight.erase(pid);
+                _inflightCount[pid] = sentCount;
             }
         }
     }

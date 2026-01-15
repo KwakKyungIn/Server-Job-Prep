@@ -257,7 +257,15 @@ int main()
 			auto tmp = pkt;
 			auto sb = S2SPacketHandler::MakeSendBuffer(tmp);
 			G_DBSession->Send(sb);
+		},
+		[](const Protocol::S2S_REQ_SAVE_QUICKSLOT& pkt)
+		{
+			if (!G_DBSession) return;
+			auto tmp = pkt;
+			auto sb = S2SPacketHandler::MakeSendBuffer(tmp);
+			G_DBSession->Send(sb);
 		}
+
 	);
 
 

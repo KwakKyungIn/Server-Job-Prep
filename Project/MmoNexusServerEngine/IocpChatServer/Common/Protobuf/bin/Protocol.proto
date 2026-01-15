@@ -318,3 +318,23 @@ message S_DUNGEON_EXIT_RES {
   int64 returnInstanceid = 3; 
   DungeonExitFailReason reason = 4;
 }
+
+// ============================================================
+// [QUICKSLOT] (NEW)
+// ============================================================
+
+
+message S_QUICKSLOT_LIST {
+    repeated QuickSlotInfo slots = 1; 
+}
+
+message C_SET_QUICKSLOT {
+    int32 slotIndex = 1;         
+    QuickSlotRefType refType = 2; 
+    uint64 refId = 3;            
+}
+
+message S_SET_QUICKSLOT {
+    bool success = 1;
+    QuickSlotInfo slot = 2;
+}

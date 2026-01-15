@@ -6,6 +6,7 @@
 #include "RoomManager.h"
 #include "PersistenceService.h"
 
+static constexpr int32 QS_MAX = 12; // 0~11
 
 void LobbyRoom::EnterGame(PlayerSessionRef ps, uint64 playerId, int32 channelId, int32 mapId, const Protocol::PositionInfo& spawn)
 {
@@ -28,11 +29,12 @@ void LobbyRoom::EnterGame(PlayerSessionRef ps, uint64 playerId, int32 channelId,
     auto& slot = _players[playerId];
 
     // ✅ Transfer 슬롯이 이미 있고 Ready 상태면 재생성 금지
-    if (slot.player && slot.itemsLoaded && slot.statLoaded)
+    if (slot.player && slot.itemsLoaded && slot.statLoaded && slot.quickLoaded)
     {
         printf("⚠️ [Lobby] EnterGame blocked - Player already ready: %llu\n", playerId);
         return;
     }
+
 
     // 새로 만들거나, 있으면 갱신(재접속/중복 EnterGame)
     if (!slot.player)
@@ -65,10 +67,12 @@ void LobbyRoom::EnterGame(PlayerSessionRef ps, uint64 playerId, int32 channelId,
     // 이번 EnterGame 사이클에서 DB 응답을 다시 받을 거니까 flag reset
     slot.itemsLoaded = false;
     slot.statLoaded = false;
+    slot.quickLoaded = false;
 
     // Lobby가 소유 + "어떤 Room에도 속함" 보장
     Adopt(slot.player, false);  // ✅ isTransfer = false
 }
+
 void LobbyRoom::TryEnterWorldIfReady(uint64 playerId)
 {
     if (!IsReady(playerId))
@@ -168,7 +172,8 @@ bool LobbyRoom::IsReady(uint64 playerId) const
 {
     auto it = _players.find(playerId);
     if (it == _players.end()) return false;
-    return (it->second.player != nullptr) && it->second.itemsLoaded && it->second.statLoaded;
+    return (it->second.player != nullptr) && it->second.itemsLoaded && it->second.statLoaded && it->second.quickLoaded;
+
 }
 
 PlayerRef LobbyRoom::DetachIfReady(uint64 playerId)
@@ -199,6 +204,7 @@ void LobbyRoom::Adopt(PlayerRef player, bool isTransfer)
             it->second.player = player;
             it->second.itemsLoaded = true;
             it->second.statLoaded = true;
+            it->second.quickLoaded = true;
         }
         else
         {
@@ -207,6 +213,7 @@ void LobbyRoom::Adopt(PlayerRef player, bool isTransfer)
             slot.player = player;
             slot.itemsLoaded = true;
             slot.statLoaded = true;
+            slot.quickLoaded = true;
         }
     }
     else
@@ -219,6 +226,7 @@ void LobbyRoom::Adopt(PlayerRef player, bool isTransfer)
 
     player->SetRoom(shared_from_this());
 }
+
 PlayerRef LobbyRoom::Detach(uint64 playerId)
 {
     auto it = _players.find(playerId);
@@ -241,3 +249,38 @@ PlayerRef LobbyRoom::Find(uint64 playerId) const
         return nullptr;
     return it->second.player;
 }
+
+void LobbyRoom::OnQuickSlotsLoaded(uint64 playerId, const Protocol::S2S_RES_QUICKSLOT_LOAD& pkt)
+{
+    auto it = _players.find(playerId);
+    if (it == _players.end()) return;
+    if (!it->second.player) return;
+    if (!pkt.success()) return;
+
+    PlayerRef p = it->second.player;
+
+    // Redis Prime
+    Persistence::PersistenceService::I().PrimeFromDb_QuickSlot(playerId, pkt.slots());
+
+    // ✅ Client sync (snapshot)
+    if (auto ps = p->GetSession())
+    {
+        Protocol::S_QUICKSLOT_LIST out;
+
+        // 안전: DB에 이상치가 있어도 클라엔 0~11만 보냄
+        for (const auto& s : pkt.slots())
+        {
+            if (s.slotindex() < 0 || s.slotindex() >= QS_MAX)
+                continue;
+
+            auto* add = out.add_slots();
+            add->CopyFrom(s);
+        }
+
+        ps->Send(ClientPacketHandler::MakeSendBuffer(out));
+    }
+
+    it->second.quickLoaded = true;
+    TryEnterWorldIfReady(playerId);
+}
+

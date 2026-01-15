@@ -120,3 +120,9 @@ message ProjectileInfo {
   float  speed = 5;         // (선택) 클라 보간용/디버그
   uint32 lifeTimeMs = 6;    // (선택) 디버그용
 }
+
+message QuickSlotInfo {
+    int32 slotIndex = 1;
+    QuickSlotRefType refType = 2;
+    uint64 refId = 3; // itemUid or skillId
+}

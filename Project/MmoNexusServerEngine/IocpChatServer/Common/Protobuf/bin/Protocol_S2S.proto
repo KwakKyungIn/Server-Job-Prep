@@ -141,3 +141,25 @@ message S2S_RES_GAME_ITEM_UID_SEED {
   bool success = 1;
   uint64 next_uid = 2; // DBø°º≠ ∞ËªÍ«— MAX(game_item_uid)+1
 }
+
+message S2S_REQ_QUICKSLOT_LOAD {
+    uint64 playerId = 1;
+    uint64 gameSessionId = 2;
+}
+
+message S2S_RES_QUICKSLOT_LOAD {
+    bool success = 1;
+    uint64 playerId = 2;
+    uint64 gameSessionId = 3;
+    repeated QuickSlotInfo slots = 4;
+}
+
+message S2S_REQ_SAVE_QUICKSLOT {
+    uint64 playerId = 1;
+    repeated QuickSlotInfo slots = 2; // ¿¸√º Ω∫≥¿º¶
+}
+
+message S2S_RES_SAVE_QUICKSLOT {
+    bool success = 1;
+    uint64 playerId = 2;
+}
