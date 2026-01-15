@@ -4,7 +4,7 @@ using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using Protocol;
 
-public class UI_ItemSlot : MonoBehaviour, IPointerClickHandler
+public class UI_ItemSlot : MonoBehaviour, IPointerClickHandler, IBeginDragHandler, IDragHandler, IEndDragHandler
 {
     public Image icon;
     public TMP_Text countText;
@@ -15,6 +15,14 @@ public class UI_ItemSlot : MonoBehaviour, IPointerClickHandler
     UI_InventoryView _owner;
     ItemInfo _item;
 
+    Canvas _canvas;
+    bool _dragging;
+
+    void Awake()
+    {
+        _canvas = GetComponentInParent<Canvas>();
+    }
+
     public void Init(int slotIndex, UI_InventoryView owner)
     {
         _slotIndex = slotIndex;
@@ -23,12 +31,44 @@ public class UI_ItemSlot : MonoBehaviour, IPointerClickHandler
 
     public void OnPointerClick(PointerEventData eventData)
     {
+        // Drag 종료 후 PointerClick가 함께 호출되는 케이스 방지
+        if (_dragging) return;
         if (_owner == null) return;
 
         if (eventData.button == PointerEventData.InputButton.Left)
             _owner.OnSlotLeftClick(_slotIndex);
         else if (eventData.button == PointerEventData.InputButton.Right)
             _owner.OnSlotRightClick(_slotIndex, eventData.position);
+    }
+
+    // ============================================================
+    // [Drag & Drop -> QuickSlot]
+    // ============================================================
+    public void OnBeginDrag(PointerEventData eventData)
+    {
+        if (_item == null) return;
+
+        _dragging = true;
+        UI_DragPayload.SetItem(_item);
+
+        // show drag ghost
+        var sp = ItemIconDB.Get(_item.TemplateId);
+        UI_DragGhost.Begin(_canvas, sp, eventData.position);
+    }
+
+    public void OnDrag(PointerEventData eventData)
+    {
+        if (!_dragging) return;
+        UI_DragGhost.UpdatePos(eventData.position);
+    }
+
+    public void OnEndDrag(PointerEventData eventData)
+    {
+        if (!_dragging) return;
+        _dragging = false;
+
+        UI_DragGhost.End();
+        UI_DragPayload.Clear();
     }
 
     public void SetSelected(bool v)

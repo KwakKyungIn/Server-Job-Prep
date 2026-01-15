@@ -40,6 +40,11 @@ public class PacketHandler
     public static Action<S_DUNGEON_ENTER_RES> OnDungeonEnterRes;
     public static Action<S_DUNGEON_EXIT_RES> OnDungeonExitRes;
 
+
+    public static Action<RepeatedField<QuickSlotInfo>> OnQuickSlotList;
+    public static Action<QuickSlotInfo> OnQuickSlotChanged;
+
+
     //====================나중에 채울거임===========================
     public static Action<S_PARTY_CHAT_NTF> OnPartyChatNtf;
     public static Action<S_PARTY_INFO_NTF> OnPartyInfoNtf;
@@ -308,7 +313,6 @@ public class PacketHandler
         Debug.Log($"[PartyStatus] partyId={pkt.PartyId} ver={pkt.Version} members={pkt.Members.Count}");
         OnPartyStatusNtf?.Invoke(pkt);
     }
-
     public static void S_DUNGEON_ENTER_RESHandler(ServerSession session, IMessage packet)
     {
         var pkt = packet as S_DUNGEON_ENTER_RES;
@@ -327,6 +331,24 @@ public class PacketHandler
         Debug.Log($"[DungeonExitRes] success={pkt.Success} returnMap={pkt.ReturnMapId} returnInst={pkt.ReturnInstanceid} reason={pkt.Reason}");
 
         OnDungeonExitRes?.Invoke(pkt);
+    }
+    public static void S_QUICKSLOT_LISTHandler(ServerSession session, IMessage packet)
+    {
+        var pkt = packet as S_QUICKSLOT_LIST;
+        if (pkt == null) return;
+
+        Debug.Log($"[QuickSlot] Loaded slots={pkt.Slots.Count}");
+        OnQuickSlotList?.Invoke(pkt.Slots);
+    }
+
+    public static void S_SET_QUICKSLOTHandler(ServerSession session, IMessage packet)
+    {
+        var pkt = packet as S_SET_QUICKSLOT;
+        if (pkt == null) return;
+
+        Debug.Log($"[QuickSlot] Set slot success={pkt.Success} idx={pkt.Slot?.SlotIndex} type={pkt.Slot?.RefType} refId={pkt.Slot?.RefId}");
+        if (pkt.Success && pkt.Slot != null)
+            OnQuickSlotChanged?.Invoke(pkt.Slot);
     }
 }
 
