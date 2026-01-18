@@ -71,11 +71,11 @@ bool DBAgentPacketHandler::Handle_S2S_REQ_LOGIN(PacketSessionRef& session, Proto
 						{
 							success = true;
 							playerId = outId;
-							std::cout << "✅ [DB] Login Success! Name: " << pkt.name() << " ID: " << playerId << std::endl;
+							std::cout << " [DB] Login Success! Name: " << pkt.name() << " ID: " << playerId << std::endl;
 						}
 						else
 						{
-							std::cout << "⚠️ [DB] User Not Found: " << pkt.name() << std::endl;
+							std::cout << " [DB] User Not Found: " << pkt.name() << std::endl;
 							success = false;
 							// TODO: CreateAccount
 						}
@@ -160,7 +160,7 @@ bool DBAgentPacketHandler::Handle_S2S_REQ_ITEMS_LOAD(PacketSessionRef& session, 
 							item->set_count(outCount);
 							item->set_isequipped(outEquipped != 0);
 						}
-						std::cout << "✅ [DB] Loaded Items for Player: " << pkt.playerid() << " Count: " << resPkt.items_size() << std::endl;
+						std::cout << " [DB] Loaded Items for Player: " << pkt.playerid() << " Count: " << resPkt.items_size() << std::endl;
 					}
 				}
 			}
@@ -255,7 +255,7 @@ bool DBAgentPacketHandler::Handle_S2S_REQ_LOAD_GAME_DATA(PacketSessionRef& sessi
 							itemData->set_defensebonus(defBonus);
 							itemData->set_hpbonus(hpBonus);
 						}
-						std::cout << "⚔️ [DB] Loaded Item Templates: " << resPkt.items_size() << std::endl;
+						std::cout << " [DB] Loaded Item Templates: " << resPkt.items_size() << std::endl;
 					}
 				}
 			}
@@ -685,7 +685,7 @@ bool DBAgentPacketHandler::Handle_S2S_REQ_QUICKSLOT_LOAD(PacketSessionRef& sessi
 						s->set_refid((uint64)outRefId);
 					}
 
-					std::cout << "✅ [DB] Loaded QuickSlots for Player: " << pkt.playerid()
+					std::cout << " [DB] Loaded QuickSlots for Player: " << pkt.playerid()
 						<< " Count: " << res.slots_size() << std::endl;
 				}
 			}

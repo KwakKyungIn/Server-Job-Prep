@@ -16,7 +16,7 @@ bool S2SPacketHandler::Handle_INVALID(PacketSessionRef& session, BYTE* buffer, i
 // [RES] DB -> LoginServer : "로그인 결과 (ID: 100)"
 bool S2SPacketHandler::Handle_S2S_RES_LOGIN(PacketSessionRef& session, Protocol::S2S_RES_LOGIN& pkt)
 {
-	std::cout << "🔍 [DEBUG] Handle_S2S_RES_LOGIN Called. Success: " << pkt.success() << std::endl;
+	std::cout << " [DEBUG] Handle_S2S_RES_LOGIN Called. Success: " << pkt.success() << std::endl;
 	// 1. 요청했던 클라이언트 세션 찾기
 	// [수정] LoginSessionManager를 사용해서 찾는다.
 	// 반환 타입이 이미 shared_ptr<ClientSession>이므로 캐스팅 불필요!
@@ -24,7 +24,7 @@ bool S2SPacketHandler::Handle_S2S_RES_LOGIN(PacketSessionRef& session, Protocol:
 
 	if (clientSession == nullptr)
 	{
-		std::cout << "💀 [DEBUG] ClientSession Not Found! ID: " << pkt.playersessionid() << std::endl;
+		std::cout << " [DEBUG] ClientSession Not Found! ID: " << pkt.playersessionid() << std::endl;
 		// 유저가 로그인 요청 후 응답 오기 전에 끊어짐
 		return true;
 	}
@@ -82,12 +82,12 @@ bool S2SPacketHandler::Handle_S2S_RES_LOGIN(PacketSessionRef& session, Protocol:
 
 		}
 
-		printf("✅ [Login] Success! User: %llu\n", rawId);
+		printf(" [Login] Success! User: %llu\n", rawId);
 	}
 	else
 	{
 		resPkt.set_success(false);
-		printf("❌ [Login] Failed (Invalid ID/PW)\n");
+		printf(" [Login] Failed (Invalid ID/PW)\n");
 	}
 
 	// 3. 클라에게 전송

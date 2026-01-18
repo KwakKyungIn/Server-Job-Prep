@@ -69,6 +69,19 @@ public class PacketManager
 		S_QUICKSLOT_LIST = 1045,
 		C_SET_QUICKSLOT = 1046,
 		S_SET_QUICKSLOT = 1047,
+		C_TRADE_REQ = 1048,
+		S_TRADE_INVITE = 1049,
+		C_TRADE_INVITE_RESP = 1050,
+		S_TRADE_START = 1051,
+		C_TRADE_OFFER_SET = 1052,
+		S_TRADE_OFFER_UPDATE = 1053,
+		C_TRADE_READY = 1054,
+		S_TRADE_READY_STATE = 1055,
+		S_TRADE_LOCKED = 1056,
+		C_TRADE_CONFIRM = 1057,
+		C_TRADE_CANCEL = 1058,
+		S_TRADE_CANCELLED = 1059,
+		S_TRADE_RESULT = 1060,
 	}
 
 	public void Register()
@@ -125,6 +138,20 @@ public class PacketManager
 		_handler.Add((ushort)MsgId.S_QUICKSLOT_LIST, PacketHandler.S_QUICKSLOT_LISTHandler);
 		_onRecv.Add((ushort)MsgId.S_SET_QUICKSLOT, MakePacket<S_SET_QUICKSLOT>);
 		_handler.Add((ushort)MsgId.S_SET_QUICKSLOT, PacketHandler.S_SET_QUICKSLOTHandler);
+		_onRecv.Add((ushort)MsgId.S_TRADE_INVITE, MakePacket<S_TRADE_INVITE>);
+		_handler.Add((ushort)MsgId.S_TRADE_INVITE, PacketHandler.S_TRADE_INVITEHandler);
+		_onRecv.Add((ushort)MsgId.S_TRADE_START, MakePacket<S_TRADE_START>);
+		_handler.Add((ushort)MsgId.S_TRADE_START, PacketHandler.S_TRADE_STARTHandler);
+		_onRecv.Add((ushort)MsgId.S_TRADE_OFFER_UPDATE, MakePacket<S_TRADE_OFFER_UPDATE>);
+		_handler.Add((ushort)MsgId.S_TRADE_OFFER_UPDATE, PacketHandler.S_TRADE_OFFER_UPDATEHandler);
+		_onRecv.Add((ushort)MsgId.S_TRADE_READY_STATE, MakePacket<S_TRADE_READY_STATE>);
+		_handler.Add((ushort)MsgId.S_TRADE_READY_STATE, PacketHandler.S_TRADE_READY_STATEHandler);
+		_onRecv.Add((ushort)MsgId.S_TRADE_LOCKED, MakePacket<S_TRADE_LOCKED>);
+		_handler.Add((ushort)MsgId.S_TRADE_LOCKED, PacketHandler.S_TRADE_LOCKEDHandler);
+		_onRecv.Add((ushort)MsgId.S_TRADE_CANCELLED, MakePacket<S_TRADE_CANCELLED>);
+		_handler.Add((ushort)MsgId.S_TRADE_CANCELLED, PacketHandler.S_TRADE_CANCELLEDHandler);
+		_onRecv.Add((ushort)MsgId.S_TRADE_RESULT, MakePacket<S_TRADE_RESULT>);
+		_handler.Add((ushort)MsgId.S_TRADE_RESULT, PacketHandler.S_TRADE_RESULTHandler);
 	}
 
 	public void OnRecvPacket(ServerSession session, ArraySegment<byte> buffer)

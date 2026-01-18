@@ -22,7 +22,7 @@ namespace _pbi = _pb::internal;
 
 namespace Protocol {
 }  // namespace Protocol
-static const ::_pb::EnumDescriptor* file_level_enum_descriptors_Enum_2eproto[13];
+static const ::_pb::EnumDescriptor* file_level_enum_descriptors_Enum_2eproto[15];
 static constexpr ::_pb::ServiceDescriptor const** file_level_service_descriptors_Enum_2eproto = nullptr;
 const uint32_t TableStruct_Enum_2eproto::offsets[1] = {};
 static constexpr ::_pbi::MigrationSchema* schemas = nullptr;
@@ -66,11 +66,23 @@ const char descriptor_table_protodef_Enum_2eproto[] PROTOBUF_SECTION_VARIABLE(pr
   "TY_REASON_FULL\020\360\007\022\032\n\025PARTY_REASON_REJECT"
   "ED\020\361\007\022 \n\033PARTY_REASON_INTERNAL_ERROR\020\313\010*"
   ":\n\020QuickSlotRefType\022\013\n\007QS_NONE\020\000\022\013\n\007QS_I"
-  "TEM\020\001\022\014\n\010QS_SKILL\020\002b\006proto3"
+  "TEM\020\001\022\014\n\010QS_SKILL\020\002*\316\001\n\021TradeCancelReaso"
+  "n\022\025\n\021TRADE_CANCEL_NONE\020\000\022\030\n\024TRADE_CANCEL"
+  "_BY_SELF\020\001\022\031\n\025TRADE_CANCEL_DECLINED\020\002\022\033\n"
+  "\027TRADE_CANCEL_DISCONNECT\020\003\022\033\n\027TRADE_CANC"
+  "EL_MAP_CHANGE\020\004\022\030\n\024TRADE_CANCEL_TIMEOUT\020"
+  "\005\022\031\n\025TRADE_CANCEL_INTERNAL\020\006*\220\002\n\rTradeFa"
+  "ilCode\022\023\n\017TRADE_FAIL_NONE\020\000\022\035\n\031TRADE_FAI"
+  "L_INVALID_TARGET\020\001\022\036\n\032TRADE_FAIL_ALREADY"
+  "_TRADING\020\002\022\037\n\033TRADE_FAIL_DISTANCE_TOO_FA"
+  "R\020\003\022\034\n\030TRADE_FAIL_INVALID_STATE\020\004\022\033\n\027TRA"
+  "DE_FAIL_INVALID_ITEM\020\005\022\035\n\031TRADE_FAIL_INV"
+  "ENTORY_FULL\020\006\022\027\n\023TRADE_FAIL_INTERNAL\020\007\022\027"
+  "\n\023TRADE_FAIL_REJECTED\020\010b\006proto3"
   ;
 static ::_pbi::once_flag descriptor_table_Enum_2eproto_once;
 const ::_pbi::DescriptorTable descriptor_table_Enum_2eproto = {
-    false, false, 1507, descriptor_table_protodef_Enum_2eproto,
+    false, false, 1991, descriptor_table_protodef_Enum_2eproto,
     "Enum.proto",
     &descriptor_table_Enum_2eproto_once, nullptr, 0, 0,
     schemas, file_default_instances, TableStruct_Enum_2eproto::offsets,
@@ -296,6 +308,46 @@ bool QuickSlotRefType_IsValid(int value) {
     case 0:
     case 1:
     case 2:
+      return true;
+    default:
+      return false;
+  }
+}
+
+const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* TradeCancelReason_descriptor() {
+  ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&descriptor_table_Enum_2eproto);
+  return file_level_enum_descriptors_Enum_2eproto[13];
+}
+bool TradeCancelReason_IsValid(int value) {
+  switch (value) {
+    case 0:
+    case 1:
+    case 2:
+    case 3:
+    case 4:
+    case 5:
+    case 6:
+      return true;
+    default:
+      return false;
+  }
+}
+
+const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* TradeFailCode_descriptor() {
+  ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&descriptor_table_Enum_2eproto);
+  return file_level_enum_descriptors_Enum_2eproto[14];
+}
+bool TradeFailCode_IsValid(int value) {
+  switch (value) {
+    case 0:
+    case 1:
+    case 2:
+    case 3:
+    case 4:
+    case 5:
+    case 6:
+    case 7:
+    case 8:
       return true;
     default:
       return false;

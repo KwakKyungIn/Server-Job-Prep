@@ -86,7 +86,7 @@ void RoomManager::UpdateAll()
             roomsCopy.push_back(kv.second);
     }
 
-    // ✅ Update는 Room Actor에서 돌려라
+    //  Update는 Room Actor에서 돌려라
     for (auto& room : roomsCopy)
     {
         if (!room) continue;
@@ -96,7 +96,7 @@ void RoomManager::UpdateAll()
             });
     }
 
-    // ✅ purge는 레지스트리에서 처리
+    //  purge는 레지스트리에서 처리
     const uint64 nowMs = ::GetTickCount64();
     PurgeInstanceRooms(nowMs);
 }

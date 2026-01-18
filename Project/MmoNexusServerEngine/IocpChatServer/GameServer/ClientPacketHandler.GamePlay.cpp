@@ -112,7 +112,7 @@ bool ClientPacketHandler::Handle_C_SKILL(PacketSessionRef& session, Protocol::C_
 			auto gr = std::static_pointer_cast<GameRoom>(room);
 			gr->Push([gr, self, playerId, skillId, castYaw, clientTimeMs]()
 				{
-					// ✅ NEW: HandleSkillById 시그니처 확장 필요
+					//  NEW: HandleSkillById 시그니처 확장 필요
 					gr->HandleSkillById(self, playerId, skillId, castYaw, clientTimeMs);
 				});
 		});

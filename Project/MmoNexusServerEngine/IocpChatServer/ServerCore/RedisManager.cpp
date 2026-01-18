@@ -24,7 +24,7 @@ bool RedisManager::Connect(const std::string& ip, int32 port, const std::string&
             [](const std::string& host, std::size_t port, cpp_redis::client::connect_state status)
             {
                 if (status == cpp_redis::client::connect_state::dropped)
-                    std::cout << "❌ [Redis] Connection Dropped!" << std::endl;
+                    std::cout << " [Redis] Connection Dropped!" << std::endl;
             });
 
         if (!password.empty())
@@ -36,12 +36,12 @@ bool RedisManager::Connect(const std::string& ip, int32 port, const std::string&
             // if (r.is_error()) return false;
         }
 
-        std::cout << "✅ [Redis] Connected to " << ip << ":" << port << std::endl;
+        std::cout << " [Redis] Connected to " << ip << ":" << port << std::endl;
         return true;
     }
     catch (const std::exception& e)
     {
-        std::cout << "❌ [Redis] Connection Failed: " << e.what() << std::endl;
+        std::cout << " [Redis] Connection Failed: " << e.what() << std::endl;
         return false;
     }
 }
@@ -58,7 +58,7 @@ bool RedisManager::Set(const std::string& key, const std::string& value, int32 e
         auto reply = future.get();
         if (reply.is_error())
         {
-            std::cout << "❌ [Redis] Set Failed: " << reply.error() << std::endl;
+            std::cout << " [Redis] Set Failed: " << reply.error() << std::endl;
             return false;
         }
 
@@ -72,7 +72,7 @@ bool RedisManager::Set(const std::string& key, const std::string& value, int32 e
     }
     catch (const std::exception& e)
     {
-        std::cout << "❌ [Redis] Set Exception: " << e.what() << std::endl;
+        std::cout << " [Redis] Set Exception: " << e.what() << std::endl;
         return false;
     }
 }
@@ -97,7 +97,7 @@ std::string RedisManager::Get(const std::string& key)
     }
     catch (const std::exception& e)
     {
-        std::cout << "❌ [Redis] Get Exception: " << e.what() << std::endl;
+        std::cout << " [Redis] Get Exception: " << e.what() << std::endl;
         return "";
     }
 }

@@ -432,7 +432,7 @@ void Monster::UpdateAttack(uint64 nowMs, uint64 deltaMs)
 
 	_lastAttackMs = nowMs;
 
-	printf("🥊 [Monster] Attack!\n");
+	printf(" [Monster] Attack!\n");
 	room->HandleSkill(static_pointer_cast<Creature>(shared_from_this()), 1, _posInfo->yaw(), 0);
 }
 

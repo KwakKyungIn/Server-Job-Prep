@@ -34,7 +34,7 @@ void GameRoom::Init(int32 channelId, int32 mapId, int32 sizeX, int32 sizeY, int3
 
 		_interestRadius = config->interestRadius;   // A의 AOI 필터 반경이 맵별로 달라짐
 
-		printf("✅ [GameRoom] Init with Config - MapId: %d, Size: (%d, %d), Cell: %d, Nav: %s\n",
+		printf(" [GameRoom] Init with Config - MapId: %d, Size: (%d, %d), Cell: %d, Nav: %s\n",
 			mapId, config->sizeX, config->sizeY, config->aoiCellSize,
 			config->navMeshPath.empty() ? "None" : "Load");
 	}
@@ -52,7 +52,7 @@ void GameRoom::Init(int32 channelId, int32 mapId, int32 sizeX, int32 sizeY, int3
 		_map->Init(&tempConfig);
 		_grid.Init(0, 0, sizeX, sizeY, zoneSize);
 
-		printf("⚠️ [GameRoom] Init Fallback (No Config) - MapId: %d, Size: (%d, %d), Cell: %d\n",
+		printf(" [GameRoom] Init Fallback (No Config) - MapId: %d, Size: (%d, %d), Cell: %d\n",
 			mapId, sizeX, sizeY, zoneSize);
 	}
 
@@ -79,14 +79,14 @@ void GameRoom::Init(int32 channelId, int32 mapId, int32 sizeX, int32 sizeY, int3
 	// 방에 입장 (이때 EnterMonster가 호출되면서 Zone에 등록됨)
 	EnterMonster(slime);
 
-	printf("👾 [Test] Slime_King Spawned at (%.1f, %.1f, %.1f)\n",
+	printf("[Test] Slime_King Spawned at (%.1f, %.1f, %.1f)\n",
 		slime->GetPosInfo()->x(), slime->GetPosInfo()->y(), slime->GetPosInfo()->z());
 
 	// 디버그용: SpatialGrid 기준으로 확인
 	int32 debugZoneIndex = _grid.GetZoneIndex(*slime->GetPosInfo());
 	Zone& debugZone = _grid.GetZone(debugZoneIndex);
 
-	printf("🔍 [DEBUG] Monster Check: Slime ID %llu is in Zone [%d]. Players in Zone: %zu, Monsters in Zone: %zu\n",
+	printf(" [DEBUG] Monster Check: Slime ID %llu is in Zone [%d]. Players in Zone: %zu, Monsters in Zone: %zu\n",
 		slime->GetObjectId(),
 		debugZoneIndex,
 		debugZone.players.size(),

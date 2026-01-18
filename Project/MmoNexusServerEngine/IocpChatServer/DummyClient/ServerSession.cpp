@@ -6,7 +6,7 @@ extern PacketSessionRef g_session;
 
 void ServerSession::OnConnected()
 {
-	std::cout << "\n✅ [DummyClient] Connected To GameServer!" << std::endl;
+	std::cout << "\n [DummyClient] Connected To GameServer!" << std::endl;
 
 	// [KEY POINT] 연결 성공 시, 전역 변수에 '나(this)'를 할당한다.
 	// 이 한 줄이 실행되어야 Main의 '접속 대기' 루프가 깨진다.
@@ -15,7 +15,7 @@ void ServerSession::OnConnected()
 
 void ServerSession::OnDisconnected()
 {
-	std::cout << "\n❌ [DummyClient] Disconnected" << std::endl;
+	std::cout << "\n [DummyClient] Disconnected" << std::endl;
 
 	// 연결 끊기면 전역 변수도 비워주는 센스
 	if (g_session == shared_from_this())

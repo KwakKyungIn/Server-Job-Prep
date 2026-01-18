@@ -18,7 +18,7 @@ BOOL WINAPI CtrlHandler(DWORD fdwCtrlType)
 	case CTRL_CLOSE_EVENT:
 	case CTRL_LOGOFF_EVENT:
 	case CTRL_SHUTDOWN_EVENT:
-		std::cout << "🛑 [ChatServer] Shutdown Initiated..." << std::endl;
+		std::cout << " [ChatServer] Shutdown Initiated..." << std::endl;
 		extern std::atomic<bool> GIsRunning;
 		GIsRunning = false;
 		return TRUE;
@@ -58,7 +58,7 @@ int main()
 	ASSERT_CRASH(dbService->Start());
 	ASSERT_CRASH(gameService->Start());
 
-	std::cout << "✅ [ChatServer] Running... (Press Ctrl+C to quit)" << std::endl;
+	std::cout << " [ChatServer] Running... (Press Ctrl+C to quit)" << std::endl;
 
 	// 6. 스레드 런칭 (Hybrid Architecture)
 	// [CHANGE] 모든 스레드가 IO만 하지 않고, 로직(Job)도 처리하도록 분리
@@ -68,7 +68,7 @@ int main()
 	int32 networkThreadCount = threadCount / 2;
 	int32 logicThreadCount = threadCount - networkThreadCount;
 
-	std::cout << "🚀 [System] Worker Threads -> Network: " << networkThreadCount
+	std::cout << " [System] Worker Threads -> Network: " << networkThreadCount
 		<< " | Logic(Job): " << logicThreadCount << std::endl;
 
 	// 6-1. Network Workers (IO 담당)
@@ -107,7 +107,7 @@ int main()
 
 	GThreadManager->Join();
 
-	std::cout << "🛑 [ChatServer] Cleaning up resources..." << std::endl;
+	std::cout << " [ChatServer] Cleaning up resources..." << std::endl;
 	dbService->CloseService();
 	gameService->CloseService();
 

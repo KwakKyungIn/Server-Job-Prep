@@ -26,7 +26,7 @@ void GameRoom::TransferMapChangeById(PlayerSessionRef session,
 
     PlayerRef player = it->second;
 
-    // ✅ 목적 채널 확정
+    //  목적 채널 확정
     int32 destChannelId = targetChannelId;
     if (destChannelId <= 0)
         destChannelId = player->GetChannelId();
@@ -39,9 +39,16 @@ void GameRoom::TransferMapChangeById(PlayerSessionRef session,
         return;
     }
 
+    // [Trade] mapchange -> force cancel
+    const uint64 tradeId = player->ActiveTradeId_ActorOnly();
+    if (tradeId != 0)
+    {
+        CancelTrade_ActorOnly(tradeId, Protocol::TRADE_CANCEL_MAP_CHANGE);
+    }
+
     Leave(session, player);
 
-    player->SetChannelId(destChannelId);     // ✅ 핵심
+    player->SetChannelId(destChannelId);     //  핵심
     player->SetMapId(targetMapId);
     player->SetInstanceId(targetInstanceId);
     if (player->GetPosInfo())
@@ -56,7 +63,7 @@ void GameRoom::TransferMapChangeById(PlayerSessionRef session,
 
     lobby->Push([lobby, newRoom, session, player, pid]() mutable
         {
-            lobby->Adopt(player, true); // ✅ transfer=true 권장
+            lobby->Adopt(player, true); //  transfer=true 권장
 
             newRoom->Push([newRoom, lobby, session, player, pid]() mutable
                 {
@@ -65,7 +72,7 @@ void GameRoom::TransferMapChangeById(PlayerSessionRef session,
                     session->Post([newRoom](PlayerSessionRef s)
                         {
                             s->SetCurrentRoom(newRoom);
-                            s->EndMapChange(); // ✅ 1회
+                            s->EndMapChange(); //  1회
                         });
 
                     lobby->Push([lobby, pid]() { lobby->Detach(pid); });
@@ -76,13 +83,13 @@ void GameRoom::TransferMapChangeById(PlayerSessionRef session,
 // GameRoom.cpp
 void GameRoom::SaveReturnLocation_ActorOnly(uint64 playerId)
 {
-	PlayerRef p = FindPlayer_ActorOnly(playerId);
-	if (!p) return;
+    PlayerRef p = FindPlayer_ActorOnly(playerId);
+    if (!p) return;
 
-	auto pos = p->GetPosInfo();
-	if (!pos) return;
+    auto pos = p->GetPosInfo();
+    if (!pos) return;
 
-	// ✅ 정책: return map/instance는 "Player가 들고있는 값" 기준
-	p->SetReturnLocation(p->GetMapId(), p->GetInstanceId(), *pos);
+    //  정책: return map/instance는 "Player가 들고있는 값" 기준
+    p->SetReturnLocation(p->GetMapId(), p->GetInstanceId(), *pos);
 }
 

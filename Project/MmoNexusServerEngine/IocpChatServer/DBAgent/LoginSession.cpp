@@ -4,12 +4,12 @@
 
 void LoginSession::OnConnected()
 {
-	std::cout << "✅ [DBAgent] LoginServer Connected!" << std::endl;
+	std::cout << " [DBAgent] LoginServer Connected!" << std::endl;
 }
 
 void LoginSession::OnDisconnected()
 {
-	std::cout << "❌ [DBAgent] LoginServer Disconnected" << std::endl;
+	std::cout << " [DBAgent] LoginServer Disconnected" << std::endl;
 }
 
 void LoginSession::OnRecvPacket(BYTE* buffer, int32 len)

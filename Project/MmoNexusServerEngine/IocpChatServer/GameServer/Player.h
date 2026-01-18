@@ -75,7 +75,7 @@ public:
 	std::unordered_set<uint64>& VisiblePlayers_ActorOnly() { return _visiblePlayers; }
 	std::unordered_set<uint64>& VisibleMonsters_ActorOnly() { return _visibleMonsters; }
 
-	// ✅ [NEW] Projectile visible set
+	//  [NEW] Projectile visible set
 	std::unordered_set<uint64>& VisibleProjectiles_ActorOnly() { return _visibleProjectiles; }
 	const std::unordered_set<uint64>& VisibleProjectiles_ActorOnly() const { return _visibleProjectiles; }
 
@@ -100,6 +100,10 @@ public:
 	}
 
 	std::vector<Protocol::ItemInfo>& GetItems() { return _items; }
+
+	// [Trade] (Room thread ONLY)
+	uint64 ActiveTradeId_ActorOnly() const { return _activeTradeId; }
+	void SetActiveTradeId_ActorOnly(uint64 v) { _activeTradeId = v; }
 
 	// ===== Move Validation (Room thread ONLY) =====
 	bool HasMoveStamp_ActorOnly() const { return _hasMoveStamp; }
@@ -131,12 +135,13 @@ public:
 	}
 
 
-		
+
 
 protected:
 	// [Core Data] Player 고유 데이터
 	Protocol::PlayerInfo	_playerInfo;
 	std::vector<Protocol::ItemInfo> _items;
+	uint64 _activeTradeId = 0;
 
 	// [References]
 	std::weak_ptr<PlayerSession> _session;
@@ -158,15 +163,15 @@ protected:
 
 	// _room, _zoneIndex는 Creature로 이사 갔으니 삭제.
 
-	private:
-		// visible set (ids)
-		std::unordered_set<uint64> _visiblePlayers;
-		std::unordered_set<uint64> _visibleMonsters; // monster objectId
-		std::unordered_set<uint64> _visibleProjectiles;
-		// lazy update state
-		Protocol::PositionInfo _lastAoiPos;
-		uint64 _lastAoiTickMs = 0;
+private:
+	// visible set (ids)
+	std::unordered_set<uint64> _visiblePlayers;
+	std::unordered_set<uint64> _visibleMonsters; // monster objectId
+	std::unordered_set<uint64> _visibleProjectiles;
+	// lazy update state
+	Protocol::PositionInfo _lastAoiPos;
+	uint64 _lastAoiTickMs = 0;
 
-		// snapshot seq
-		uint32 _snapshotSeq = 0;
+	// snapshot seq
+	uint32 _snapshotSeq = 0;
 };

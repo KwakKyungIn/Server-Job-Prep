@@ -23,7 +23,7 @@ void GameSessionManager::Remove(PlayerSessionRef session)
     // 1) sessionId 인덱스 제거
     _bySessionId.erase(sessionId);
 
-    // 2) ✅ session->GetPlayerId() 같은 우회 접근 절대 금지
+    // 2)  session->GetPlayerId() 같은 우회 접근 절대 금지
     auto it = _playerIdBySessionId.find(sessionId);
     if (it != _playerIdBySessionId.end())
     {
@@ -33,7 +33,7 @@ void GameSessionManager::Remove(PlayerSessionRef session)
         if (playerId != 0)
         {
             _byPlayerId.erase(playerId);
-            _nameByPlayerId.erase(playerId); // ✅ 이름도 정리
+            _nameByPlayerId.erase(playerId); //  이름도 정리
         }
     }
 }
@@ -46,7 +46,7 @@ void GameSessionManager::BindPlayerId(PlayerSessionRef session, uint64 playerId)
 
     const uint64 sessionId = session->GetSessionId();
 
-    // ✅ 같은 세션이 예전에 다른 playerId로 바인딩돼 있던 경우 정리
+    //  같은 세션이 예전에 다른 playerId로 바인딩돼 있던 경우 정리
     auto prev = _playerIdBySessionId.find(sessionId);
     if (prev != _playerIdBySessionId.end())
     {
@@ -61,7 +61,7 @@ void GameSessionManager::BindPlayerId(PlayerSessionRef session, uint64 playerId)
         _playerIdBySessionId[sessionId] = playerId;
     }
 
-    // ✅ 같은 playerId가 이미 다른 세션에 붙어있던 경우 덮어쓰기(중복 로그인 정책에 맞게 조정 가능)
+    //  같은 playerId가 이미 다른 세션에 붙어있던 경우 덮어쓰기(중복 로그인 정책에 맞게 조정 가능)
     _byPlayerId[playerId] = session;
 }
 

@@ -4,12 +4,12 @@
 
 void GameServerSession::OnConnected()
 {
-	std::cout << "✅ [LoginServer] GameServer Connected!" << std::endl;
+	std::cout << " [LoginServer] GameServer Connected!" << std::endl;
 }
 
 void GameServerSession::OnDisconnected()
 {
-	std::cout << "❌ [LoginServer] GameServer Disconnected" << std::endl;
+	std::cout << " [LoginServer] GameServer Disconnected" << std::endl;
 }
 
 void GameServerSession::OnRecvPacket(BYTE* buffer, int32 len)

@@ -20,7 +20,7 @@ bool ClientPacketHandler::Handle_C_SET_QUICKSLOT(PacketSessionRef& session, Prot
     if (idx < 0 || idx >= QS_MAX)
         return true; // 무시
 
-    // ✅ pid 확보: 너 코드 스타일상 AnyThread getter 있을 확률 큼
+    //  pid 확보: 너 코드 스타일상 AnyThread getter 있을 확률 큼
     // 없으면 네가 가진 방식(세션->playerId 조회)으로 바꿔.
     const uint64 pid = ps->GetPlayerId_AnyThread();
     if (pid == 0)
@@ -48,10 +48,10 @@ bool ClientPacketHandler::Handle_C_SET_QUICKSLOT(PacketSessionRef& session, Prot
 
     ps->Post([pid, idx, rt, refId](PlayerSessionRef self) mutable
         {
-            // ✅ Redis 반영 + dirty
+            //  Redis 반영 + dirty
             Persistence::PersistenceService::I().UpdateQuickSlot(pid, idx, rt, refId, /*markDirty=*/true);
 
-            // ✅ Ack (확정 echo)
+            //  Ack (확정 echo)
             Protocol::S_SET_QUICKSLOT out;
             out.set_success(true);
 

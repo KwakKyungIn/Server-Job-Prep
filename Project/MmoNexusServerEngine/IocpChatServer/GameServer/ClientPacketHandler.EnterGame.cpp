@@ -21,7 +21,7 @@ bool ClientPacketHandler::Handle_C_ENTER_GAME(PacketSessionRef& session, Protoco
 
 	if (value.empty())
 	{
-		printf("❌ [EnterGame] Invalid Token: %s\n", token.c_str());
+		printf(" [EnterGame] Invalid Token: %s\n", token.c_str());
 		ps->Disconnect(L"Invalid Token");
 		return false;
 	}
@@ -34,7 +34,7 @@ bool ClientPacketHandler::Handle_C_ENTER_GAME(PacketSessionRef& session, Protoco
 	int32 mapId = pkt.mapid();
 	DataManager* dm = DataManager::Instance();
 
-	// ✅ ENTER_GAME은 "월드맵만" 허용. 던전맵 요청이면 기본 월드맵으로 교정
+	//  ENTER_GAME은 "월드맵만" 허용. 던전맵 요청이면 기본 월드맵으로 교정
 	if (!dm)
 	{
 		mapId = 1;
@@ -65,10 +65,10 @@ bool ClientPacketHandler::Handle_C_ENTER_GAME(PacketSessionRef& session, Protoco
 			GameSessionManager::GSessionManager->BindPlayerId(ps, playerId);
 			ps->SetPlayerId_ActorOnly(playerId);
 
-			// ✅ [A 핵심] pending enter 컨텍스트 먼저 박아라 (DB 응답 라우팅 키)
+			//  [A 핵심] pending enter 컨텍스트 먼저 박아라 (DB 응답 라우팅 키)
 			ps->SetPendingEnter_ActorOnly(channelId, mapId, /*instanceId=*/0);
 
-			// ✅ [A 핵심] GLobbyRoom 제거 → 채널별 Lobby로 고정
+			//  [A 핵심] GLobbyRoom 제거 → 채널별 Lobby로 고정
 			if (GRoomManager)
 			{
 				auto lobby = GRoomManager->GetOrCreateLobby(channelId);

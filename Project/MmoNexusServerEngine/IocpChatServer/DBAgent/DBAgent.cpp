@@ -23,7 +23,7 @@ BOOL WINAPI CtrlHandler(DWORD fdwCtrlType)
 	case CTRL_CLOSE_EVENT:
 	case CTRL_LOGOFF_EVENT:
 	case CTRL_SHUTDOWN_EVENT:
-		std::cout << "🛑 [DBAgent] Shutdown Initiated..." << std::endl;
+		std::cout << " [DBAgent] Shutdown Initiated..." << std::endl;
 		extern std::atomic<bool> GIsRunning;
 		GIsRunning = false;
 		return TRUE;
@@ -79,7 +79,7 @@ int main()
 	ASSERT_CRASH(loginService->Start());
 	//ASSERT_CRASH(chatService->Start());
 
-	std::cout << "✅ [DBAgent] Listening on Port 7778(Game) & 7779(Login)..." << std::endl;
+	std::cout << " [DBAgent] Listening on Port 7778(Game) & 7779(Login)..." << std::endl;
 
 	// 4. 스레드 런칭 (Hybrid Architecture)
 	int32 threadCount = std::thread::hardware_concurrency();
@@ -88,7 +88,7 @@ int main()
 	int32 networkThreadCount = threadCount / 2;
 	int32 logicThreadCount = threadCount - networkThreadCount;
 
-	std::cout << "🚀 [System] Worker Threads -> Network: " << networkThreadCount
+	std::cout << " [System] Worker Threads -> Network: " << networkThreadCount
 		<< " | Logic(DB): " << logicThreadCount << std::endl;
 
 	// 4-1. 네트워크 스레드
@@ -125,7 +125,7 @@ int main()
 	// 5. 대기 및 종료
 	GThreadManager->Join();
 
-	std::cout << "🛑 [DBAgent] Cleaning up resources..." << std::endl;
+	std::cout << " [DBAgent] Cleaning up resources..." << std::endl;
 
 	gameService->CloseService();
 	loginService->CloseService(); // [ADD]

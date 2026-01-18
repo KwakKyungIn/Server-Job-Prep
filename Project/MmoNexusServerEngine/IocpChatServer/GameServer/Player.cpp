@@ -44,7 +44,7 @@ void Player::OnDamaged(std::shared_ptr<Creature> attacker, int32 damage)
 
 	const uint64 pid = GetPlayerId();
 
-	// ✅ [A] 런타임 변화 -> Redis + Dirty
+	//  [A] 런타임 변화 -> Redis + Dirty
 	Persistence::PersistenceService::I().UpdatePlayerCore(
 		pid,
 		st->level(),
@@ -60,7 +60,7 @@ void Player::OnDead(std::shared_ptr<Creature> attacker)
 	Creature::OnDead(attacker);
 
 	// 2. 플레이어 전용 로직 (예: 부활 UI 팝업, 경험치 하락)
-	printf("💀 [Player Dead] %s has been slain!\n", _playerInfo.name().c_str());
+	printf(" [Player Dead] %s has been slain!\n", _playerInfo.name().c_str());
 
 	// TODO: 변신 해제, 버프 초기화 등
 }

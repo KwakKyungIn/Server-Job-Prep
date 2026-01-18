@@ -8,12 +8,12 @@
 void GameSession::OnConnected()
 {
 	// GameServer가 우리(ChatServer)에게 접속했다!
-	std::cout << "✅ [ChatServer] GameServer Connected!" << std::endl;
+	std::cout << " [ChatServer] GameServer Connected!" << std::endl;
 }
 
 void GameSession::OnDisconnected()
 {
-	std::cout << "❌ [ChatServer] GameServer Disconnected" << std::endl;
+	std::cout << " [ChatServer] GameServer Disconnected" << std::endl;
 }
 
 void GameSession::OnRecvPacket(BYTE* buffer, int32 len)

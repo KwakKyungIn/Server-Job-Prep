@@ -30,7 +30,7 @@ BOOL WINAPI CtrlHandler(DWORD fdwCtrlType)
 	case CTRL_CLOSE_EVENT:
 	case CTRL_LOGOFF_EVENT:
 	case CTRL_SHUTDOWN_EVENT:
-		std::cout << "\n🛑 [Client] Shutdown Initiated..." << std::endl;
+		std::cout << "\n [Client] Shutdown Initiated..." << std::endl;
 		g_isRunning = false; // 루프 탈출 신호
 		return TRUE;
 	default:
@@ -145,7 +145,7 @@ int main()
 	}
 
 	// [Graceful Exit]
-	std::cout << "🛑 [Client] Closing connection..." << std::endl;
+	std::cout << " [Client] Closing connection..." << std::endl;
 
 	if (g_session)
 	{

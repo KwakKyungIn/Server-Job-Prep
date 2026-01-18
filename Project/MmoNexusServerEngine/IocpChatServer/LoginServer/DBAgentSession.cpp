@@ -4,12 +4,12 @@
 
 void DBAgentSession::OnConnected()
 {
-	printf("✅ [DBAgentSession] Connected To DBAgent!\n");
+	printf(" [DBAgentSession] Connected To DBAgent!\n");
 }
 
 void DBAgentSession::OnDisconnected()
 {
-	printf("❌ [DBAgentSession] Disconnected From DBAgent.\n");
+	printf(" [DBAgentSession] Disconnected From DBAgent.\n");
 }
 
 void DBAgentSession::OnRecvPacket(BYTE* buffer, int32 len)

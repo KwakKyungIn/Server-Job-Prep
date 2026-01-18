@@ -75,7 +75,7 @@ bool DBConnection::Execute()
         return true;
 
     case SQL_NO_DATA:
-        // ✅ UPDATE/DELETE에서 "매칭 0행"을 드라이버가 SQL_NO_DATA로 주는 케이스 대응
+        //  UPDATE/DELETE에서 "매칭 0행"을 드라이버가 SQL_NO_DATA로 주는 케이스 대응
         // 이 경우는 '실패'가 아니라 '정상 실행(0 row)'로 취급해야
         // 상위에서 RowCount==0 보고 INSERT로 갈 수 있다.
         return true;
@@ -98,7 +98,7 @@ bool DBConnection::Execute(const WCHAR* query)
         return true;
 
     case SQL_NO_DATA:
-        // ✅ 위와 동일: 정상 실행(0 row)
+        //  위와 동일: 정상 실행(0 row)
         return true;
 
     default:

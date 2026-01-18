@@ -25,7 +25,7 @@ bool ClientPacketHandler::Handle_C_MAP_CHANGE_REQ(PacketSessionRef& session, Pro
 
 	if (!dm || !dm->IsValidMapId(targetMapId) || !dm->IsWorldMapId(targetMapId))
 	{
-		std::cout << "❌ [MapChange] rejected. targetMapId=" << targetMapId << std::endl;
+		std::cout << " [MapChange] rejected. targetMapId=" << targetMapId << std::endl;
 		return true;
 	}
 

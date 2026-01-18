@@ -26,7 +26,7 @@ void GameRoom::HandleSkill(std::shared_ptr<Creature> attacker, int32 skillId, fl
     const Protocol::SkillType type = skillData->skilltype();
 
     // =========================================================
-    // ✅ [C] PROJECTILE: 즉시 데미지 금지 -> Projectile 생성
+    //  [C] PROJECTILE: 즉시 데미지 금지 -> Projectile 생성
     // =========================================================
     if (type == Protocol::SKILL_PROJECTILE)
     {
@@ -125,7 +125,7 @@ void GameRoom::HandleSkill(std::shared_ptr<Creature> attacker, int32 skillId, fl
     }
 }
 
-// ✅ 기존 버전 유지 (다른 호출부 안 깨지게)
+//  기존 버전 유지 (다른 호출부 안 깨지게)
 //    내부적으로 NEW 버전으로 포워딩
 void GameRoom::HandleSkill(std::shared_ptr<Creature> attacker, int32 skillId)
 {
@@ -133,7 +133,7 @@ void GameRoom::HandleSkill(std::shared_ptr<Creature> attacker, int32 skillId)
 }
 
 
-// ✅ NEW: 확장 버전
+//  NEW: 확장 버전
 void GameRoom::HandleSkillById(PlayerSessionRef session, uint64 playerId, int32 skillId, float castYaw, uint32 clientTimeMs)
 {
 	auto it = _players.find(playerId);
@@ -147,7 +147,7 @@ void GameRoom::HandleSkillById(PlayerSessionRef session, uint64 playerId, int32 
 	HandleSkill(attacker, skillId, castYaw, clientTimeMs);
 }
 
-// ✅ 기존 버전 유지 (기존 호출부 안 깨지게)
+//  기존 버전 유지 (기존 호출부 안 깨지게)
 void GameRoom::HandleSkillById(PlayerSessionRef session, uint64 playerId, int32 skillId)
 {
 	HandleSkillById(session, playerId, skillId, /*castYaw=*/0.f, /*clientTimeMs=*/0);

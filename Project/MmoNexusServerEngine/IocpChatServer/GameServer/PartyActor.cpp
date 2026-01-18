@@ -21,13 +21,13 @@ void PartyActor::LeaveAndHandleInstance(uint64 playerId)
     const uint64 partyId = core.GetPartyIdByPlayerId(playerId);
     if (partyId == 0) return;
 
-    // ✅ Leave 전에 스냅샷(여기서 instanceId 확인)
+    //  Leave 전에 스냅샷(여기서 instanceId 확인)
     const PartyManagerCore::Party before = core.GetSnapshot(partyId);
 
     PartyManagerCore::Party after;
     bool disbanded = false;
 
-    // ✅ 여기서 성공/실패 확정
+    //  여기서 성공/실패 확정
     if (!core.Leave(playerId, after, disbanded))
         return;
 
@@ -54,7 +54,7 @@ void PartyActor::LeaveAndHandleInstance(uint64 playerId)
                     {
                         MarkInstanceRoomClosing(closed);
 
-                        // ✅ 파티 메타도 정리 (던전 stuck 방지)
+                        //  파티 메타도 정리 (던전 stuck 방지)
                         PartyActor::Instance().Push([beforePartyId]()
                             {
                                 PartyActor::Instance().Core().ClearPartyInstance(beforePartyId);
@@ -80,7 +80,7 @@ void PartyActor::LeaveAndHandleInstance(uint64 playerId)
                 {
                     MarkInstanceRoomClosing(closed);
 
-                    // ✅ 파티 메타 정리(이미 파티는 없어졌지만, 안전)
+                    //  파티 메타 정리(이미 파티는 없어졌지만, 안전)
                     PartyActor::Instance().Push([closedPartyId]()
                         {
                             PartyActor::Instance().Core().ClearPartyInstance(closedPartyId);

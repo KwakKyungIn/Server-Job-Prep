@@ -49,7 +49,7 @@ bool GameRoom::EnterRegister(PlayerSessionRef session, PlayerRef player)
 	Zone& enterZone = _grid.GetZone(zoneIndex);
 	enterZone.players.insert(player);
 
-	printf("🎮 [EnterRegister] Player %llu Zone[%d] at (%.1f, %.1f, %.1f)\n",
+	printf(" [EnterRegister] Player %llu Zone[%d] at (%.1f, %.1f, %.1f)\n",
 		player->GetPlayerId(), zoneIndex,
 		player->GetPosInfo()->x(),
 		player->GetPosInfo()->y(),
@@ -81,7 +81,7 @@ void GameRoom::Enter(PlayerSessionRef session, PlayerRef player)
 	// 2) 스폰 전송은 그 다음
 	UpdateAOI(session, player, true /*forceFullSnapshot*/);
 
-	printf("✅ [Enter-Login] Player %llu\n", player->GetPlayerId());
+	printf(" [Enter-Login] Player %llu\n", player->GetPlayerId());
 }
 
 // [맵 이동 입장]
@@ -92,7 +92,7 @@ void GameRoom::EnterMapChange(PlayerSessionRef session, PlayerRef player)
 	if (!session || !player)
 		return;
 
-	// ✅ EnterRegister 실패하면 MapChange 상태를 반드시 풀어줘야 한다.
+	//  EnterRegister 실패하면 MapChange 상태를 반드시 풀어줘야 한다.
 	if (EnterRegister(session, player) == false)
 	{
 		session->Post([](PlayerSessionRef ps)
@@ -109,12 +109,12 @@ void GameRoom::EnterMapChange(PlayerSessionRef session, PlayerRef player)
 	endPkt.set_token(session->GetMapChangeToken());
 	endPkt.set_mapid(_mapId);
 	endPkt.mutable_pos()->CopyFrom(*player->GetPosInfo());
-	endPkt.set_instanceid(_instanceId);     
-	endPkt.set_targetchannelid(_channelId);       
+	endPkt.set_instanceid(_instanceId);
+	endPkt.set_targetchannelid(_channelId);
 
 	session->Send(ClientPacketHandler::MakeSendBuffer(endPkt));
 
-	// ❌ 여기서 EndMapChange 하면 안 됨 (중복/조기해제/레이스)
+	//  여기서 EndMapChange 하면 안 됨 (중복/조기해제/레이스)
 	// session->EndMapChange();
 
 	// 2) 스폰은 그 다음
@@ -147,13 +147,20 @@ void GameRoom::EnterMapChange(PlayerSessionRef session, PlayerRef player)
 			}
 		});
 
-	printf("✅ [MapChange-END] Player %llu -> Map %d (Inst=%lld) Token=%llu Channel=%d\n",
+	printf(" [MapChange-END] Player %llu -> Map %d (Inst=%lld) Token=%llu Channel=%d\n",
 		playerId, _mapId, (long long)_instanceId, endPkt.token(), endPkt.targetchannelid());
 }
 
 void GameRoom::Leave(PlayerSessionRef session, PlayerRef player)
 {
 	if (!session || !player) return;
+
+	// [Trade] disconnect/leave -> force cancel
+	const uint64 tradeId = player->ActiveTradeId_ActorOnly();
+	if (tradeId != 0)
+	{
+		CancelTrade_ActorOnly(tradeId, Protocol::TRADE_CANCEL_DISCONNECT);
+	}
 
 	const uint64 meId = player->GetPlayerId();
 	auto itMe = _players.find(meId);
@@ -175,7 +182,7 @@ void GameRoom::Leave(PlayerSessionRef session, PlayerRef player)
 		}
 		visP.clear();
 
-		// ✅ [추가] 내가 보던 몬스터들의 viewers에서 나 제거
+		//  [추가] 내가 보던 몬스터들의 viewers에서 나 제거
 		auto& visM = player->VisibleMonsters_ActorOnly();
 		for (uint64 mid : visM)
 		{

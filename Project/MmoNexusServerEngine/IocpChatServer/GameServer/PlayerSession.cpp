@@ -24,22 +24,22 @@ void PlayerSession::OnDisconnected()
 
     GameSessionManager::GSessionManager->Remove(self);
 
-    // ✅ 모든 정리는 Session Actor thread에서
+    //  모든 정리는 Session Actor thread에서
     Post([=](PlayerSessionRef ps)
         {
             ps->CancelMapChange();
 
-            // ✅ Session은 PlayerRef 금지. ID만 쓴다.
+            //  Session은 PlayerRef 금지. ID만 쓴다.
             const uint64 playerId = ps->GetPlayerId_AnyThread();
 
-            // ✅ 라우팅 즉시 차단 (제일 먼저)
+            //  라우팅 즉시 차단 (제일 먼저)
             RoomActorRef room = ps->GetCurrentRoom_ActorOnly();
             ps->SetCurrentRoom(nullptr);
 
-            // ✅ 바인딩 정리
+            //  바인딩 정리
             if (playerId != 0)
             {
-                // ✅ [A] 안전빵: disconnect면 저장 트리거
+                //  [A] 안전빵: disconnect면 저장 트리거
             // (최적화는 나중에: invDirty 실제로 있을 때만 찍도록 바꿔도 됨)
                 Persistence::PersistenceService::I().MarkDirty_PlayerCore(playerId);
                 Persistence::PersistenceService::I().MarkDirty_Inventory(playerId);
@@ -49,7 +49,7 @@ void PlayerSession::OnDisconnected()
                 ps->ClearPlayerId_ActorOnly();
             }
 
-            // ✅ 룸에서 플레이어 제거(룸 스레드에서만)
+            //  룸에서 플레이어 제거(룸 스레드에서만)
             if (playerId != 0 && room && room->GetKind() == RoomKind::Game)
             {
                 auto gr = std::dynamic_pointer_cast<GameRoom>(room);
@@ -60,7 +60,7 @@ void PlayerSession::OnDisconnected()
                 }
             }
 
-            // ✅ 오프라인 강제 복귀 정책(인스턴스 멤버십 제거)
+            //  오프라인 강제 복귀 정책(인스턴스 멤버십 제거)
             if (playerId != 0)
             {
                 InstanceActor::Instance().Push([playerId]()

@@ -126,7 +126,7 @@ bool InstanceManagerCore::OnMemberOffline(uint64 playerId, InstanceInfo& outClos
 
     if (empty)
     {
-        // ✅ 마지막 멤버가 빠졌으면 자동 Close
+        //  마지막 멤버가 빠졌으면 자동 Close
         InstanceInfo closed;
         if (GetInstanceById(instanceId, closed))
         {

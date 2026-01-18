@@ -65,7 +65,7 @@ void GameRoom::SendSpawnBatchedToMe(PlayerSessionRef session,
 {
     if (!session) return;
 
-    // ✅ 스냅샷 모드면 "패킷 리스트"를 먼저 만들고,
+    //  스냅샷 모드면 "패킷 리스트"를 먼저 만들고,
     //    첫 패킷 begin=true, 마지막 패킷 end=true로 마감한다.
     std::vector<Protocol::S_SPAWN> pkts;
     pkts.reserve(
@@ -115,7 +115,7 @@ void GameRoom::SendSpawnBatchedToMe(PlayerSessionRef session,
         pkts.push_back(std::move(pkt));
     }
 
-    // ✅ 스폰이 "0개"인 스냅샷도 begin/end로 닫아줘야 클라가 완료를 알 수 있다.
+    //  스폰이 "0개"인 스냅샷도 begin/end로 닫아줘야 클라가 완료를 알 수 있다.
     if (snapshotMode && pkts.empty())
     {
         Protocol::S_SPAWN emptyPkt;
@@ -126,7 +126,7 @@ void GameRoom::SendSpawnBatchedToMe(PlayerSessionRef session,
         return;
     }
 
-    // ✅ 스냅샷이면 첫/끝 플래그 마감
+    //  스냅샷이면 첫/끝 플래그 마감
     if (snapshotMode && !pkts.empty())
     {
         pkts.front().set_snapshot_begin(true);
@@ -178,7 +178,7 @@ void GameRoom::UpdateAOI(PlayerSessionRef session, PlayerRef me, bool forceFullS
     Vector<MonsterRef> candMonsters;
     CollectCandidates(me->GetZoneIndex(), candPlayers, candMonsters);
 
-    // ✅ [ADD] projectile 후보는 zone에서 직접 긁음 (CollectCandidates 영향 최소)
+    //  [ADD] projectile 후보는 zone에서 직접 긁음 (CollectCandidates 영향 최소)
     Vector<Zone*> candZones;
     _grid.GetNearbyZones(me->GetZoneIndex(), EffectiveAoiRadiusCells(), candZones);
 
@@ -221,7 +221,7 @@ void GameRoom::UpdateAOI(PlayerSessionRef session, PlayerRef me, bool forceFullS
         newVisMonsters.insert(mid);
     }
 
-    // ✅ [ADD] projectiles
+    //  [ADD] projectiles
     for (Zone* z : candZones)
     {
         if (!z) continue;
@@ -247,9 +247,9 @@ void GameRoom::UpdateAOI(PlayerSessionRef session, PlayerRef me, bool forceFullS
     // old sets
     auto& oldP = me->VisiblePlayers_ActorOnly();
     auto& oldM = me->VisibleMonsters_ActorOnly();
-    auto& oldPr = me->VisibleProjectiles_ActorOnly(); // ✅ [ADD]
+    auto& oldPr = me->VisibleProjectiles_ActorOnly(); //  [ADD]
 
-    // ✅ forceFullSnapshot이면, 기존에 보던 몬스터/투사체 viewers에서 나 제거하고 비움
+    //  forceFullSnapshot이면, 기존에 보던 몬스터/투사체 viewers에서 나 제거하고 비움
     if (forceFullSnapshot)
     {
         for (uint64 mid : oldM)
@@ -274,10 +274,10 @@ void GameRoom::UpdateAOI(PlayerSessionRef session, PlayerRef me, bool forceFullS
     // diff 계산
     Vector<uint64> toDespawnP;
     Vector<uint64> toDespawnM;
-    Vector<uint64> toDespawnPr;              // ✅ [ADD]
+    Vector<uint64> toDespawnPr;              //  [ADD]
     Vector<PlayerRef> toSpawnP;
     Vector<MonsterRef> toSpawnM;
-    Vector<ProjectileRef> toSpawnPr;         // ✅ [ADD]
+    Vector<ProjectileRef> toSpawnPr;         //  [ADD]
 
     // despawn players: old - new
     for (uint64 pid : oldP)
@@ -306,12 +306,12 @@ void GameRoom::UpdateAOI(PlayerSessionRef session, PlayerRef me, bool forceFullS
                 toSpawnM.push_back(it->second);
         }
 
-    // ✅ [ADD] despawn projectiles: old - new
+    //  [ADD] despawn projectiles: old - new
     for (uint64 prid : oldPr)
         if (newVisProjectiles.find(prid) == newVisProjectiles.end())
             toDespawnPr.push_back(prid);
 
-    // ✅ [ADD] spawn projectiles: new - old
+    //  [ADD] spawn projectiles: new - old
     for (uint64 prid : newVisProjectiles)
         if (oldPr.find(prid) == oldPr.end())
         {
@@ -334,7 +334,7 @@ void GameRoom::UpdateAOI(PlayerSessionRef session, PlayerRef me, bool forceFullS
         m->Viewers_ActorOnly().insert(meId);
     }
 
-    // ✅ [ADD] 투사체 viewers 동기화 (despawn: remove, spawn: add)
+    //  [ADD] 투사체 viewers 동기화 (despawn: remove, spawn: add)
     for (uint64 prid : toDespawnPr)
     {
         auto it = _projectiles.find(prid);
@@ -354,7 +354,7 @@ void GameRoom::UpdateAOI(PlayerSessionRef session, PlayerRef me, bool forceFullS
         ids.reserve(toDespawnP.size() + toDespawnM.size() + toDespawnPr.size());
         for (uint64 pid : toDespawnP) ids.push_back(pid);
         for (uint64 mid : toDespawnM) ids.push_back(mid);
-        for (uint64 prid : toDespawnPr) ids.push_back(prid); // ✅ [ADD]
+        for (uint64 prid : toDespawnPr) ids.push_back(prid); //  [ADD]
 
         if (!ids.empty())
             SendDespawnBatchedToMe(session, ids);
@@ -363,7 +363,7 @@ void GameRoom::UpdateAOI(PlayerSessionRef session, PlayerRef me, bool forceFullS
     // === 2) 나에게 spawn(배칭) ===
     if (forceFullSnapshot)
     {
-        // ✅ 스냅샷 모드: players/monsters/projectiles를 "한 스트림"으로 begin/end 마감
+        //  스냅샷 모드: players/monsters/projectiles를 "한 스트림"으로 begin/end 마감
         const uint32 snapId = me->NextSnapshotSeq_ActorOnly();
         std::vector<Protocol::S_SPAWN> pkts;
 
@@ -404,7 +404,7 @@ void GameRoom::UpdateAOI(PlayerSessionRef session, PlayerRef me, bool forceFullS
         }
 
         // ---- projectiles batching ----
-        const int32 batchProj = 200; // ✅ [ADD] 필요하면 숫자만 조절
+        const int32 batchProj = 200; //  [ADD] 필요하면 숫자만 조절
         for (int32 t = 0; t < (int32)toSpawnPr.size(); )
         {
             Protocol::S_SPAWN pkt;
@@ -442,7 +442,7 @@ void GameRoom::UpdateAOI(PlayerSessionRef session, PlayerRef me, bool forceFullS
     }
     else
     {
-        // ✅ 평소 모드: 기존 함수 그대로 + 투사체 스폰만 추가 전송(스냅샷 플래그 없음)
+        //  평소 모드: 기존 함수 그대로 + 투사체 스폰만 추가 전송(스냅샷 플래그 없음)
         SendSpawnBatchedToMe(session, toSpawnP, toSpawnM, false, 0);
 
         if (!toSpawnPr.empty())
@@ -498,7 +498,7 @@ void GameRoom::UpdateAOI(PlayerSessionRef session, PlayerRef me, bool forceFullS
     // === 4) 내 visible set 갱신 ===
     oldP = std::move(newVisPlayers);
     oldM = std::move(newVisMonsters);
-    oldPr = std::move(newVisProjectiles); // ✅ [ADD]
+    oldPr = std::move(newVisProjectiles); //  [ADD]
 
     // === 5) lazy update state 갱신 ===
     me->SetLastAoiPos_ActorOnly(*me->GetPosInfo());

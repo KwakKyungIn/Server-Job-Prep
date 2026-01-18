@@ -21,7 +21,7 @@ bool ServerPacketHandler::Handle_S_LOGIN_RES(PacketSessionRef& session, Protocol
 	}
 	else
 	{
-		std::cout << "💀 [Login Failed] Check your ID." << std::endl;
+		std::cout << " [Login Failed] Check your ID." << std::endl;
 		g_isLoggedIn = false;
 	}
 	return true;

@@ -408,6 +408,68 @@ inline bool QuickSlotRefType_Parse(
   return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<QuickSlotRefType>(
     QuickSlotRefType_descriptor(), name, value);
 }
+enum TradeCancelReason : int {
+  TRADE_CANCEL_NONE = 0,
+  TRADE_CANCEL_BY_SELF = 1,
+  TRADE_CANCEL_DECLINED = 2,
+  TRADE_CANCEL_DISCONNECT = 3,
+  TRADE_CANCEL_MAP_CHANGE = 4,
+  TRADE_CANCEL_TIMEOUT = 5,
+  TRADE_CANCEL_INTERNAL = 6,
+  TradeCancelReason_INT_MIN_SENTINEL_DO_NOT_USE_ = std::numeric_limits<int32_t>::min(),
+  TradeCancelReason_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits<int32_t>::max()
+};
+bool TradeCancelReason_IsValid(int value);
+constexpr TradeCancelReason TradeCancelReason_MIN = TRADE_CANCEL_NONE;
+constexpr TradeCancelReason TradeCancelReason_MAX = TRADE_CANCEL_INTERNAL;
+constexpr int TradeCancelReason_ARRAYSIZE = TradeCancelReason_MAX + 1;
+
+const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* TradeCancelReason_descriptor();
+template<typename T>
+inline const std::string& TradeCancelReason_Name(T enum_t_value) {
+  static_assert(::std::is_same<T, TradeCancelReason>::value ||
+    ::std::is_integral<T>::value,
+    "Incorrect type passed to function TradeCancelReason_Name.");
+  return ::PROTOBUF_NAMESPACE_ID::internal::NameOfEnum(
+    TradeCancelReason_descriptor(), enum_t_value);
+}
+inline bool TradeCancelReason_Parse(
+    ::PROTOBUF_NAMESPACE_ID::ConstStringParam name, TradeCancelReason* value) {
+  return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<TradeCancelReason>(
+    TradeCancelReason_descriptor(), name, value);
+}
+enum TradeFailCode : int {
+  TRADE_FAIL_NONE = 0,
+  TRADE_FAIL_INVALID_TARGET = 1,
+  TRADE_FAIL_ALREADY_TRADING = 2,
+  TRADE_FAIL_DISTANCE_TOO_FAR = 3,
+  TRADE_FAIL_INVALID_STATE = 4,
+  TRADE_FAIL_INVALID_ITEM = 5,
+  TRADE_FAIL_INVENTORY_FULL = 6,
+  TRADE_FAIL_INTERNAL = 7,
+  TRADE_FAIL_REJECTED = 8,
+  TradeFailCode_INT_MIN_SENTINEL_DO_NOT_USE_ = std::numeric_limits<int32_t>::min(),
+  TradeFailCode_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits<int32_t>::max()
+};
+bool TradeFailCode_IsValid(int value);
+constexpr TradeFailCode TradeFailCode_MIN = TRADE_FAIL_NONE;
+constexpr TradeFailCode TradeFailCode_MAX = TRADE_FAIL_REJECTED;
+constexpr int TradeFailCode_ARRAYSIZE = TradeFailCode_MAX + 1;
+
+const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* TradeFailCode_descriptor();
+template<typename T>
+inline const std::string& TradeFailCode_Name(T enum_t_value) {
+  static_assert(::std::is_same<T, TradeFailCode>::value ||
+    ::std::is_integral<T>::value,
+    "Incorrect type passed to function TradeFailCode_Name.");
+  return ::PROTOBUF_NAMESPACE_ID::internal::NameOfEnum(
+    TradeFailCode_descriptor(), enum_t_value);
+}
+inline bool TradeFailCode_Parse(
+    ::PROTOBUF_NAMESPACE_ID::ConstStringParam name, TradeFailCode* value) {
+  return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<TradeFailCode>(
+    TradeFailCode_descriptor(), name, value);
+}
 // ===================================================================
 
 
@@ -494,6 +556,16 @@ template <> struct is_proto_enum< ::Protocol::QuickSlotRefType> : ::std::true_ty
 template <>
 inline const EnumDescriptor* GetEnumDescriptor< ::Protocol::QuickSlotRefType>() {
   return ::Protocol::QuickSlotRefType_descriptor();
+}
+template <> struct is_proto_enum< ::Protocol::TradeCancelReason> : ::std::true_type {};
+template <>
+inline const EnumDescriptor* GetEnumDescriptor< ::Protocol::TradeCancelReason>() {
+  return ::Protocol::TradeCancelReason_descriptor();
+}
+template <> struct is_proto_enum< ::Protocol::TradeFailCode> : ::std::true_type {};
+template <>
+inline const EnumDescriptor* GetEnumDescriptor< ::Protocol::TradeFailCode>() {
+  return ::Protocol::TradeFailCode_descriptor();
 }
 
 PROTOBUF_NAMESPACE_CLOSE

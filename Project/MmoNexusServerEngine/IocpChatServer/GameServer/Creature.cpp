@@ -104,7 +104,7 @@ void Creature::UseSkill(int32 skillId)
     }
 
 
-    printf("⚔️ [Skill] %s used Skill %d (Cooldown: %dms)\n",
+    printf(" [Skill] %s used Skill %d (Cooldown: %dms)\n",
         (GetObjectType() == Protocol::OBJECT_TYPE_PLAYER ? "Player" : "Monster"),
         skillId, skillData->cooldown());
 }

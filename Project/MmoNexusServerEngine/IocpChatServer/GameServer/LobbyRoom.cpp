@@ -13,10 +13,10 @@ void LobbyRoom::EnterGame(PlayerSessionRef ps, uint64 playerId, int32 channelId,
     if (!ps) return;
     if (playerId == 0) return;
 
-    // ✅ Transfer 중이면 거부
+    //  Transfer 중이면 거부
     if (ps->IsMapChanging())
     {
-        printf("⚠️ [Lobby] EnterGame blocked - MapChanging in progress: %llu\n", playerId);
+        printf(" [Lobby] EnterGame blocked - MapChanging in progress: %llu\n", playerId);
         return;
     }
 
@@ -28,10 +28,10 @@ void LobbyRoom::EnterGame(PlayerSessionRef ps, uint64 playerId, int32 channelId,
 
     auto& slot = _players[playerId];
 
-    // ✅ Transfer 슬롯이 이미 있고 Ready 상태면 재생성 금지
+    //  Transfer 슬롯이 이미 있고 Ready 상태면 재생성 금지
     if (slot.player && slot.itemsLoaded && slot.statLoaded && slot.quickLoaded)
     {
-        printf("⚠️ [Lobby] EnterGame blocked - Player already ready: %llu\n", playerId);
+        printf(" [Lobby] EnterGame blocked - Player already ready: %llu\n", playerId);
         return;
     }
 
@@ -70,7 +70,7 @@ void LobbyRoom::EnterGame(PlayerSessionRef ps, uint64 playerId, int32 channelId,
     slot.quickLoaded = false;
 
     // Lobby가 소유 + "어떤 Room에도 속함" 보장
-    Adopt(slot.player, false);  // ✅ isTransfer = false
+    Adopt(slot.player, false);  //  isTransfer = false
 }
 
 void LobbyRoom::TryEnterWorldIfReady(uint64 playerId)
@@ -106,7 +106,7 @@ void LobbyRoom::TryEnterWorldIfReady(uint64 playerId)
         return;
     }
 
-    // ✅ [A 마무리] 월드 진입 “확정” 시점에서 pending enter 제거 (Actor thread에서만!)
+    //  [A 마무리] 월드 진입 “확정” 시점에서 pending enter 제거 (Actor thread에서만!)
     ps->Post([](PlayerSessionRef self)
         {
             self->ClearPendingEnter_ActorOnly();
@@ -130,7 +130,7 @@ void LobbyRoom::OnItemsLoaded(uint64 playerId, const Protocol::S2S_RES_ITEMS_LOA
     // 1) 인벤 반영
     p->SetItems(pkt.items());
 
-    // 1.1) ✅ 장비 3슬롯 정책 정규화(로그인 시 중복 장착 방지)
+    // 1.1)  장비 3슬롯 정책 정규화(로그인 시 중복 장착 방지)
     // - 1000~1999 : Weapon
     // - 2000~2999 : Body
     // - 4000~4999 : Head
@@ -253,7 +253,7 @@ void LobbyRoom::Adopt(PlayerRef player, bool isTransfer)
     const uint64 pid = player->GetPlayerId();
     if (pid == 0) return;
 
-    // ✅ Transfer 중에는 find로 먼저 체크 (operator[] 함정 회피)
+    //  Transfer 중에는 find로 먼저 체크 (operator[] 함정 회피)
     if (isTransfer)
     {
         auto it = _players.find(pid);
@@ -321,7 +321,7 @@ void LobbyRoom::OnQuickSlotsLoaded(uint64 playerId, const Protocol::S2S_RES_QUIC
     // Redis Prime
     Persistence::PersistenceService::I().PrimeFromDb_QuickSlot(playerId, pkt.slots());
 
-    // ✅ Client sync (snapshot)
+    //  Client sync (snapshot)
     if (auto ps = p->GetSession())
     {
         Protocol::S_QUICKSLOT_LIST out;

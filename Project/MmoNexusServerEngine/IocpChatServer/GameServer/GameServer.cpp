@@ -36,7 +36,7 @@ BOOL WINAPI CtrlHandler(DWORD fdwCtrlType)
 	{
 	case CTRL_C_EVENT:
 	case CTRL_CLOSE_EVENT:
-		std::cout << "🛑 [System] Server Shutdown Initiated..." << std::endl;
+		std::cout << " [System] Server Shutdown Initiated..." << std::endl;
 		GIsRunning = false;
 		return TRUE;
 	default:
@@ -67,7 +67,7 @@ void ConsoleThread()
 		auto GetSession = [&](uint64 pid) -> PlayerSessionRef {
 			auto session = GameSessionManager::GSessionManager->FindByPlayerId(pid);
 			if (session == nullptr) {
-				std::cout << "❌ [Test] Player " << pid << " not found in SessionManager!" << std::endl;
+				std::cout << " [Test] Player " << pid << " not found in SessionManager!" << std::endl;
 			}
 			return session;
 			};
@@ -171,29 +171,29 @@ int main()
 	S2SPacketHandler::Init();
 
 	{
-		// ✅ 1) exe 옆 "Maps.json" 존재/오픈 검증 (CWD 기준)
+		//  1) exe 옆 "Maps.json" 존재/오픈 검증 (CWD 기준)
 		std::ifstream ifs("Maps.json");
 		if (!ifs.is_open())
 		{
-			std::cout << "❌ [GameServer] Maps.json not found (expected next to exe). "
+			std::cout << " [GameServer] Maps.json not found (expected next to exe). "
 				"Fallback InitMapRegistry() will be used.\n";
 		}
 		else
 		{
-			std::cout << "✅ [GameServer] Maps.json found.\n";
+			std::cout << " [GameServer] Maps.json found.\n";
 		}
 		// 파일 핸들은 여기서 닫아도 되고(스코프 종료), 명시적으로 닫아도 됨
 		// ifs.close();
 
-		// ✅ 2) 실제 로드 (DataManager 내부에서 다시 열어서 파싱)
+		//  2) 실제 로드 (DataManager 내부에서 다시 열어서 파싱)
 		DataManager* dm = DataManager::Instance();
 		if (!dm->LoadMapConfigsFromJson("Maps.json"))
 		{
-			std::cout << "⚠️ [GameServer] Maps.json load failed. fallback InitMapRegistry() will be used.\n";
+			std::cout << " [GameServer] Maps.json load failed. fallback InitMapRegistry() will be used.\n";
 		}
 		else
 		{
-			std::cout << "✅ [GameServer] Maps.json loaded.\n";
+			std::cout << " [GameServer] Maps.json loaded.\n";
 		}
 	}
 
@@ -273,8 +273,8 @@ int main()
 
 	GThreadManager->Launch([=]() { ConsoleThread(); });
 
-	std::cout << "✅ [GameServer] Running... (Press Ctrl+C to quit)" << std::endl;
-	std::cout << "💬 [Command] /p_create [pid], /p_invite [inviter] [target], /p_accept [pid] [partyId] [1/0]" << std::endl;
+	std::cout << " [GameServer] Running... (Press Ctrl+C to quit)" << std::endl;
+	std::cout << " [Command] /p_create [pid], /p_invite [inviter] [target], /p_accept [pid] [partyId] [1/0]" << std::endl;
 
 	// 스레드 런칭 로직 (기존 유지)
 	int32 threadCount = std::thread::hardware_concurrency();

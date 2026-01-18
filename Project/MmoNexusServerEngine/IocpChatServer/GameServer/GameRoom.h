@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include "JobQueue.h"
 #include "Protocol.pb.h"
 #include "SpatialGrid.h"
@@ -38,10 +38,10 @@ public:
     // =========================================================
     virtual RoomKind GetKind() const override { return RoomKind::Game; }
 
-    // °øÅë Actor ½ÇÇà API (SessionÀÌ Room¿¡ ¶ó¿ìÆÃÇÒ ¶§ »ç¿ë)
+    // ï¿½ï¿½ï¿½ï¿½ Actor ï¿½ï¿½ï¿½ï¿½ API (Sessionï¿½ï¿½ Roomï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½)
     virtual void Push(std::function<void()> fn) override
     {
-        // GameRoomÀº JobQueue·Î Á÷·Ä ½ÇÇà
+        // GameRoomï¿½ï¿½ JobQueueï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
         _jobQueue->Push(MakeShared<Job>([fn = std::move(fn)]() mutable { fn(); }));
     }
 
@@ -52,14 +52,14 @@ public:
     // [Job System]
     // =========================================================
 
-    // 1. [Lambda] ÀÎÀÚ°¡ 1°³ÀÎ °æ¿ì
+    // 1. [Lambda] ï¿½ï¿½ï¿½Ú°ï¿½ 1ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
     template<typename F>
     void PushJob(F&& job)
     {
         _jobQueue->Push(MakeShared<Job>(std::forward<F>(job)));
     }
 
-    // 2. [Member Function] ÀÎÀÚ°¡ 2°³ ÀÌ»óÀÎ °æ¿ì
+    // 2. [Member Function] ï¿½ï¿½ï¿½Ú°ï¿½ 2ï¿½ï¿½ ï¿½Ì»ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
     template<typename F, typename A, typename... Args>
     void PushJob(F func, A&& arg, Args&&... args)
     {
@@ -81,7 +81,7 @@ public:
 
     int32 GetPlayerCountApprox() const { return _playerCount.load(std::memory_order_acquire); }
 
-    // RoomManager purge ÆÇ´Ü¿ë (´Ù¸¥ ½º·¹µå¿¡¼­ ÀÐ¾îµµ ¾ÈÀü)
+    // RoomManager purge ï¿½Ç´Ü¿ï¿½ (ï¿½Ù¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½å¿¡ï¿½ï¿½ ï¿½Ð¾îµµ ï¿½ï¿½ï¿½ï¿½)
     bool ShouldPurge(uint64 nowMs) const;
 
 
@@ -89,14 +89,14 @@ public:
     // [Content Logic]
     void Enter(PlayerSessionRef session, PlayerRef player);
     void Leave(PlayerSessionRef session, PlayerRef player);
-    void HandleMove(PlayerSessionRef session, PlayerRef player,Protocol::C_MOVE pkt);
+    void HandleMove(PlayerSessionRef session, PlayerRef player, Protocol::C_MOVE pkt);
 
     void EnterMonster(MonsterRef monster);
     void LeaveMonster(uint64 objectId);
 
-    bool EnterRegister(PlayerSessionRef session, PlayerRef player); // µî·Ï¸¸
-    void SendEnterSpawns(PlayerSessionRef session, PlayerRef player); // ½ºÆù¸¸
-    void EnterMapChange(PlayerSessionRef session, PlayerRef player); // ¸ÊÀÌµ¿
+    bool EnterRegister(PlayerSessionRef session, PlayerRef player); // ï¿½ï¿½Ï¸ï¿½
+    void SendEnterSpawns(PlayerSessionRef session, PlayerRef player); // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    void EnterMapChange(PlayerSessionRef session, PlayerRef player); // ï¿½ï¿½ï¿½Ìµï¿½
 
 
     PlayerRef  FindNearestPlayer(Protocol::PositionInfo* pos, float range);
@@ -105,32 +105,40 @@ public:
     void BroadcastToZone(SendBufferRef sendBuffer, int32 zoneIndex, uint64 exceptId = 0);
     void Broadcast(SendBufferRef sendBuffer, uint64 exceptId = 0);
 
-    // ½ºÅ³ ÆÇÁ¤
+    // ï¿½ï¿½Å³ ï¿½ï¿½ï¿½ï¿½
     void HandleSkill(std::shared_ptr<Creature> attacker, int32 skillId);
     void OnMonsterMoved(MonsterRef monster);
 
-    //(Æ÷¼Ç)¾ÆÀÌÅÛ
-    void HandleUseItem(PlayerSessionRef session, PlayerRef player,Protocol::C_USE_ITEM pkt);
+    //(ï¿½ï¿½ï¿½ï¿½)ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    void HandleUseItem(PlayerSessionRef session, PlayerRef player, Protocol::C_USE_ITEM pkt);
 
-    // º¸»ó + ¸ó½ºÅÍ Á¦°Å(Despawn)±îÁö ·ë¿¡¼­ Á÷·Ä Ã³¸®
+    // ï¿½ï¿½ï¿½ï¿½ + ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½(Despawn)ï¿½ï¿½ï¿½ï¿½ ï¿½ë¿¡ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Ã³ï¿½ï¿½
     void HandleMonsterDead(std::shared_ptr<Creature> attacker, MonsterRef monster);
 
     void BroadcastChat(const Protocol::S_CHAT_NTF& ntf);
 
     void LeaveById(PlayerSessionRef session, uint64 playerId);
 
-    // Room thread(ÀâÅ¥)¿¡¼­¸¸ È£Ãâ
+    // Room thread(ï¿½ï¿½Å¥)ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ È£ï¿½ï¿½
     PlayerRef FindPlayer_ActorOnly(uint64 playerId) const;
-    // [ById] SessionÀº PlayerRef ±ÝÁö. Room thread¿¡¼­ Find ÈÄ Ã³¸®ÇÑ´Ù.
+    // [ById] Sessionï¿½ï¿½ PlayerRef ï¿½ï¿½ï¿½ï¿½. Room threadï¿½ï¿½ï¿½ï¿½ Find ï¿½ï¿½ Ã³ï¿½ï¿½ï¿½Ñ´ï¿½.
     void HandleMoveById(PlayerSessionRef session, uint64 playerId, Protocol::C_MOVE pkt);
     void HandleUseItemById(PlayerSessionRef session, uint64 playerId, Protocol::C_USE_ITEM pkt);
     void HandleEquipItemById(PlayerSessionRef session, uint64 playerId, Protocol::C_EQUIP_ITEM pkt);
 
-    // ===== [ById Router] (Room thread¿¡¼­ Find ÈÄ Ã³¸®) =====
+    // ===== [Trade v1] =====
+    void HandleTradeReqById(PlayerSessionRef session, uint64 fromPlayerId, uint64 targetPlayerId);
+    void HandleTradeInviteRespById(PlayerSessionRef session, uint64 responderId, bool accept);
+    void HandleTradeOfferSetById(PlayerSessionRef session, uint64 playerId, Protocol::C_TRADE_OFFER_SET pkt);
+    void HandleTradeReadyById(PlayerSessionRef session, uint64 playerId, Protocol::C_TRADE_READY pkt);
+    void HandleTradeConfirmById(PlayerSessionRef session, uint64 playerId, Protocol::C_TRADE_CONFIRM pkt);
+    void HandleTradeCancelById(PlayerSessionRef session, uint64 playerId, Protocol::C_TRADE_CANCEL pkt);
+
+    // ===== [ById Router] (Room threadï¿½ï¿½ï¿½ï¿½ Find ï¿½ï¿½ Ã³ï¿½ï¿½) =====
     void HandleSkillById(PlayerSessionRef session, uint64 playerId, int32 skillId);
     void HandleChatById(PlayerSessionRef session, uint64 playerId, const std::string& msg);
 
-    // ===== [MapChange] ACK ÀÌÈÄ ½ÇÁ¦ ÀüÀÌ(OldRoom thread¿¡¼­ ¼öÇà) =====
+    // ===== [MapChange] ACK ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½(OldRoom threadï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½) =====
     void TransferMapChangeById(PlayerSessionRef session,
         uint64 playerId,
         int32 targetChannelId,
@@ -138,11 +146,11 @@ public:
         int64 targetInstanceId,
         const Protocol::PositionInfo& spawn);
 
-    public:
-        void EnterProjectile(ProjectileRef p);
-        void LeaveProjectile(uint64 projectileId);
-        void OnProjectileMoved(ProjectileRef p);
-        void UpdateProjectiles(uint64 deltaMs);
+public:
+    void EnterProjectile(ProjectileRef p);
+    void LeaveProjectile(uint64 projectileId);
+    void OnProjectileMoved(ProjectileRef p);
+    void UpdateProjectiles(uint64 deltaMs);
 
     void SaveReturnLocation_ActorOnly(uint64 playerId);
 
@@ -159,23 +167,23 @@ private:
     Map<uint64, PlayerRef>  _players;
     Map<uint64, MonsterRef> _monsters;
 
-    SpatialGrid             _grid;      // AOI Ã¥ÀÓ
+    SpatialGrid             _grid;      // AOI Ã¥ï¿½ï¿½
 
     int32 _channelId = 1;
     int32 _mapId = 1;
 
     // =========================================================
-     //  Instance Lifetime State (RoomManager°¡ ÀÐ´Â °ªµéÀº atomic)
+     //  Instance Lifetime State (RoomManagerï¿½ï¿½ ï¿½Ð´ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ atomic)
    // =========================================================
     int64 _instanceId = 0; // 0 = world/field, >0 = instance
     std::atomic<int32> _playerCount{ 0 };
     std::atomic<bool>  _closing{ false };
-    std::atomic<uint64> _emptySinceMs{ 0 }; // playerCount==0ÀÌ µÈ ½ÃÁ¡(Áö¿¬ purge ¿ë)
+    std::atomic<uint64> _emptySinceMs{ 0 }; // playerCount==0ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½ purge ï¿½ï¿½)
 
 
-    std::unique_ptr<BattleSystem> _battle; // ÀüÅõ ·ÎÁ÷ ¿£Áø
+    std::unique_ptr<BattleSystem> _battle; // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 private:
-    // ===== AOI v2 Params (ÀÏ´Ü °íÁ¤°ª) =====
+    // ===== AOI v2 Params (ï¿½Ï´ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½) =====
     int32 _aoiNeighborRadiusCells = 2; // 5x5
     float _interestRadius = 150.f;
     float _lazyUpdateDist = 10.f;      // 10m
@@ -196,7 +204,7 @@ private:
     uint32 GetConnectivityId_ActorOnly(const Protocol::PositionInfo& pos) const;
 
 
-    // ¹èÄª Àü¼Û
+    // ï¿½ï¿½Äª ï¿½ï¿½ï¿½ï¿½
     void SendSpawnBatchedToMe(PlayerSessionRef session,
         const Vector<PlayerRef>& spawnPlayers,
         const Vector<MonsterRef>& spawnMonsters,
@@ -207,7 +215,64 @@ private:
 
     int32 EffectiveAoiRadiusCells() const;
 
-    Map<uint64, ProjectileRef> _projectiles; 
+
+    // =========================================================
+    // Trade v1 (Phase 1: In-memory commit + FlushNow)
+    //  - All trade logic runs on GameRoom actor thread
+    // =========================================================
+    enum class TradeState : uint8
+    {
+        None = 0,
+        Invited = 1,
+        Active = 2,
+        Locked = 3,
+        Committing = 4,
+    };
+
+    struct TradeOfferEntry
+    {
+        uint64 itemUid = 0;
+        int32 templateId = 0;
+        int32 count = 0;
+    };
+
+    struct TradeSession
+    {
+        uint64 tradeId = 0;
+        uint64 playerAId = 0;
+        uint64 playerBId = 0;
+
+        std::unordered_map<uint64, TradeOfferEntry> offerA; // itemUid -> entry
+        std::unordered_map<uint64, TradeOfferEntry> offerB;
+
+        bool readyA = false;
+        bool readyB = false;
+        bool confirmA = false;
+        bool confirmB = false;
+
+        TradeState state = TradeState::None;
+
+        uint64 createdAtMs = 0;
+        uint64 lastTouchedMs = 0;
+    };
+
+    void UpdateTrades_ActorOnly(uint64 nowMs);
+    void CancelTrade_ActorOnly(uint64 tradeId, Protocol::TradeCancelReason reason, Protocol::TradeFailCode failCode = Protocol::TRADE_FAIL_NONE, const std::string& msg = "");
+    void SendOfferUpdate_ActorOnly(uint64 tradeId, uint64 whoPlayerId);
+    void SendReadyState_ActorOnly(uint64 tradeId);
+
+    bool TryCommitTrade_ActorOnly(uint64 tradeId, Protocol::TradeFailCode& outFail, std::string& outMsg);
+
+    TradeSession* FindTrade_ActorOnly(uint64 tradeId);
+    TradeSession* FindTradeByPlayer_ActorOnly(uint64 playerId);
+
+    static constexpr int32 kTradeMaxInventorySlots = 24;
+    static constexpr uint64 kTradeTimeoutMs = 60'000;
+
+    std::unordered_map<uint64, TradeSession> _trades;
+    std::unordered_map<uint64, uint64> _tradeByPlayer;
+
+    Map<uint64, ProjectileRef> _projectiles;
     uint64 _lastUpdateMs = 0;
 
 };

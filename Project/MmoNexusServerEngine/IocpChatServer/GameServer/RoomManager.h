@@ -23,7 +23,7 @@ public:
     std::shared_ptr<GameRoom> GetOrCreateRoom(int32 channelId, int32 mapId, int64 instanceId = 0);
     std::shared_ptr<GameRoom> FindRoom(int32 channelId, int32 mapId, int64 instanceId = 0);
 
-    // ✅ 채널당 1개 로비 (Player staging / EnterGame -> World로 transfer용)
+    //  채널당 1개 로비 (Player staging / EnterGame -> World로 transfer용)
     std::shared_ptr<LobbyRoom> GetOrCreateLobby(int32 channelId);
 
 
@@ -36,7 +36,7 @@ private:
 
     void PurgeInstanceRooms(uint64 nowMs);
 
-    // ✅ channelId -> lobby
+    //  channelId -> lobby
     std::unordered_map<int32, std::shared_ptr<LobbyRoom>> _lobbies;
 
 };

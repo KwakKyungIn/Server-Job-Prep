@@ -53,7 +53,7 @@ protected:
     Protocol::PositionInfo* _posInfo = nullptr;
     Protocol::StatInfo* _statInfo = nullptr;
 
-    // ✅ RoomActor로 변경
+    //  RoomActor로 변경
     std::weak_ptr<RoomActor> _room;
     int32 _zoneIndex = -1;
 

@@ -81,6 +81,13 @@ void GameRoom::HandleUseItem(PlayerSessionRef session, PlayerRef player, Protoco
 	const uint64 playerId = player->GetPlayerId();
 	if (_players.find(playerId) == _players.end()) return;
 
+	// [Trade] trading -> block item actions (to avoid desync)
+	if (player->ActiveTradeId_ActorOnly() != 0)
+	{
+		// TODO: send item action fail message if needed
+		return;
+	}
+
 	// �κ����� ������ ã��
 	auto& items = player->GetItems();
 	auto it = std::find_if(items.begin(), items.end(),
@@ -171,11 +178,18 @@ void GameRoom::HandleUseItem(PlayerSessionRef session, PlayerRef player, Protoco
 
 void GameRoom::HandleUseItemById(PlayerSessionRef session, uint64 playerId, Protocol::C_USE_ITEM pkt)
 {
-	auto it = _players.find(playerId);
-	if (it == _players.end())
+	auto itPlayer = _players.find(playerId);
+	if (itPlayer == _players.end())
 		return;
 
-	HandleUseItem(session, it->second, pkt); // ���� ���� ����
+	PlayerRef player = itPlayer->second;
+	if (!player) return;
+
+	// [Trade] trading -> block item actions (to avoid desync)
+	if (player->ActiveTradeId_ActorOnly() != 0)
+		return;
+
+	HandleUseItem(session, player, pkt);
 }
 
 void GameRoom::HandleEquipItemById(PlayerSessionRef session, uint64 playerId, Protocol::C_EQUIP_ITEM pkt)
@@ -186,6 +200,13 @@ void GameRoom::HandleEquipItemById(PlayerSessionRef session, uint64 playerId, Pr
 
 	PlayerRef player = itPlayer->second;
 	if (!player) return;
+
+	// [Trade] trading -> block item actions (to avoid desync)
+	if (player->ActiveTradeId_ActorOnly() != 0)
+	{
+		// TODO: send item action fail message if needed
+		return;
+	}
 
 	// 1) 대상 아이템 찾기 (UID 우선)
 	Protocol::ItemInfo* targetItem = nullptr;
@@ -228,7 +249,7 @@ void GameRoom::HandleEquipItemById(PlayerSessionRef session, uint64 playerId, Pr
 			if (GetEquipSlotFromTemplate(item.templateid()) != targetSlot)
 				continue;
 
-			// ✅ auto-unequip
+			//  auto-unequip
 			item.set_isequipped(false);
 
 			Persistence::PersistenceService::I().UpdateInventoryItem(
@@ -252,7 +273,7 @@ void GameRoom::HandleEquipItemById(PlayerSessionRef session, uint64 playerId, Pr
 			}
 		}
 
-		// ✅ target equip
+		//  target equip
 		targetItem->set_isequipped(true);
 	}
 	else

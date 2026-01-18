@@ -24,11 +24,11 @@ bool GameMap::Init(const MapConfig* config)
     {
         if (_navSystem->Load(config->navMeshPath))
         {
-            std::cout << "✅ [GameMap] NavMesh Loaded: " << config->navMeshPath << std::endl;
+            std::cout << " [GameMap] NavMesh Loaded: " << config->navMeshPath << std::endl;
         }
         else
         {
-            std::cout << "❌ [GameMap] NavMesh Load Failed: " << config->navMeshPath << std::endl;
+            std::cout << " [GameMap] NavMesh Load Failed: " << config->navMeshPath << std::endl;
             // 실패 시 로직? (일단 진행하되 이동 불가 처리되겠지)
         }
     }

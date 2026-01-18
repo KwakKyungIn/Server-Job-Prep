@@ -4,12 +4,12 @@
 
 void GameSession::OnConnected()
 {
-	std::cout << "✅ [DBAgent] GameServer Connected!" << std::endl;
+	std::cout << " [DBAgent] GameServer Connected!" << std::endl;
 }
 
 void GameSession::OnDisconnected()
 {
-	std::cout << "❌ [DBAgent] GameServer Disconnected" << std::endl;
+	std::cout << " [DBAgent] GameServer Disconnected" << std::endl;
 }
 
 void GameSession::OnRecvPacket(BYTE* buffer, int32 len)

@@ -202,6 +202,12 @@
     <ClCompile Include="GameRoom.Projectile.cpp">
       <Filter>GameContents\Room</Filter>
     </ClCompile>
+    <ClCompile Include="GameRoom.Trade.cpp">
+      <Filter>GameContents\Room</Filter>
+    </ClCompile>
+    <ClCompile Include="ClientPacketHandler.Trade.cpp">
+      <Filter>Handler</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">

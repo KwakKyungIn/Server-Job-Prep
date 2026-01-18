@@ -60,12 +60,12 @@ struct NavMeshTileHeader
 
 bool NavSystem::Load(const std::string& path)
 {
-	std::cout << "🔍 [NavSystem] Loading: " << path << std::endl;
+	std::cout << " [NavSystem] Loading: " << path << std::endl;
 
 	std::ifstream file(path, std::ios::binary);
 	if (!file.is_open())
 	{
-		std::cout << "❌ [Error] File Not Found!" << std::endl;
+		std::cout << " [Error] File Not Found!" << std::endl;
 		return false;
 	}
 
@@ -82,14 +82,14 @@ bool NavSystem::Load(const std::string& path)
 	// [Case 1] MSET 포맷 (RecastDemo 전용) -> 포장 뜯기
 	if (isMset)
 	{
-		std::cout << "📦 [Info] Detected 'MSET' format (TESM). Unpacking..." << std::endl;
+		std::cout << " [Info] Detected 'MSET' format (TESM). Unpacking..." << std::endl;
 
 		NavMeshSetHeader header;
 		file.read((char*)&header, sizeof(NavMeshSetHeader));
 
 		if (header.version != 1)
 		{
-			std::cout << "❌ [Error] MSET Version mismatch! (Expected: 1, Got: " << header.version << ")" << std::endl;
+			std::cout << " [Error] MSET Version mismatch! (Expected: 1, Got: " << header.version << ")" << std::endl;
 			return false;
 		}
 
@@ -97,12 +97,12 @@ bool NavSystem::Load(const std::string& path)
 		dtStatus status = _navMesh->init(&header.params);
 		if (dtStatusFailed(status))
 		{
-			std::cout << "❌ [Error] dtNavMesh::init(params) Failed! Status: " << status << std::endl;
+			std::cout << " [Error] dtNavMesh::init(params) Failed! Status: " << status << std::endl;
 			return false;
 		}
 
 		// 2. 타일 루프 돌면서 추가
-		std::cout << "🧩 [Info] Loading " << header.numTiles << " tiles..." << std::endl;
+		std::cout << " [Info] Loading " << header.numTiles << " tiles..." << std::endl;
 
 		for (int i = 0; i < header.numTiles; ++i)
 		{
@@ -111,7 +111,7 @@ bool NavSystem::Load(const std::string& path)
 
 			if (!tileHeader.tileRef || !tileHeader.dataSize)
 			{
-				std::cout << "⚠️ [Warning] Invalid Tile Header at index " << i << std::endl;
+				std::cout << " [Warning] Invalid Tile Header at index " << i << std::endl;
 				break;
 			}
 
@@ -119,7 +119,7 @@ bool NavSystem::Load(const std::string& path)
 			unsigned char* data = (unsigned char*)dtAlloc(tileHeader.dataSize, DT_ALLOC_PERM);
 			if (!data)
 			{
-				std::cout << "❌ [Error] Memory Alloc Failed for Tile " << i << std::endl;
+				std::cout << " [Error] Memory Alloc Failed for Tile " << i << std::endl;
 				return false;
 			}
 
@@ -131,7 +131,7 @@ bool NavSystem::Load(const std::string& path)
 
 			if (dtStatusFailed(status))
 			{
-				std::cout << "❌ [Error] Failed to add tile " << i << " (Status: " << status << ")" << std::endl;
+				std::cout << " [Error] Failed to add tile " << i << " (Status: " << status << ")" << std::endl;
 				dtFree(data);
 				return false;
 			}
@@ -140,7 +140,7 @@ bool NavSystem::Load(const std::string& path)
 	// [Case 2] Raw Detour 포맷 (DNAV) -> 기존 방식
 	else
 	{
-		std::cout << "🥩 [Info] Detected Raw Detour format (Single Block)." << std::endl;
+		std::cout << " [Info] Detected Raw Detour format (Single Block)." << std::endl;
 
 		file.seekg(0, std::ios::end);
 		size_t size = file.tellg();
@@ -154,7 +154,7 @@ bool NavSystem::Load(const std::string& path)
 		dtStatus status = _navMesh->init(data, (int)size, DT_TILE_FREE_DATA);
 		if (dtStatusFailed(status))
 		{
-			std::cout << "❌ [Error] Raw init Failed! Status: " << status << std::endl;
+			std::cout << " [Error] Raw init Failed! Status: " << status << std::endl;
 			std::cout << "   (Maybe wrong file format? Magic: " << magicBuf[0] << magicBuf[1] << magicBuf[2] << magicBuf[3] << ")" << std::endl;
 			dtFree(data);
 			return false;
@@ -165,7 +165,7 @@ bool NavSystem::Load(const std::string& path)
 	dtStatus status = _navQuery->init(_navMesh, 2048);
 	if (dtStatusFailed(status))
 	{
-		std::cout << "❌ [Error] Query Init Failed!" << std::endl;
+		std::cout << " [Error] Query Init Failed!" << std::endl;
 		return false;
 	}
 
@@ -173,7 +173,7 @@ bool NavSystem::Load(const std::string& path)
 	_polyGroups.clear();
 	_nextGroupId = 1;
 
-	std::cout << "✅ [Success] NavMesh Loaded Perfectly!" << std::endl;
+	std::cout << " [Success] NavMesh Loaded Perfectly!" << std::endl;
 	return true;
 }
 
@@ -187,7 +187,7 @@ bool NavSystem::ValidateMove(const Protocol::PositionInfo& current,
 	dtPolyRef startRef = FindNearestPoly(startPos, _polyPickExt);
 	if (!startRef)
 	{
-		NAV_LOG("❌ [Nav] OUTSIDE_NAV_DROP");
+		NAV_LOG(" [Nav] OUTSIDE_NAV_DROP");
 		return false;
 	}
 
@@ -208,7 +208,7 @@ bool NavSystem::ValidateMove(const Protocol::PositionInfo& current,
 			outAdjusted.set_z(endPos[2]);
 			outAdjusted.set_yaw(target.yaw());
 
-			NAV_LOG("✅ [Nav] VALIDATE_OK");
+			NAV_LOG(" [Nav] VALIDATE_OK");
 			return true;
 		}
 		else
@@ -250,7 +250,7 @@ bool NavSystem::ValidateMove(const Protocol::PositionInfo& current,
 			outAdjusted.set_z(hitPos[2]);
 			outAdjusted.set_yaw(target.yaw());
 
-			NAV_LOG("⚠️ [Nav] COLLIDE_SLIDE_FAIL_HITSNAP");
+			NAV_LOG(" [Nav] COLLIDE_SLIDE_FAIL_HITSNAP");
 			return true;
 		}
 
@@ -259,7 +259,7 @@ bool NavSystem::ValidateMove(const Protocol::PositionInfo& current,
 		outAdjusted.set_z(startPos[2]);
 		outAdjusted.set_yaw(target.yaw());
 
-		NAV_LOG("❌ [Nav] COLLIDE_FAIL_ROLLBACK");
+		NAV_LOG(" [Nav] COLLIDE_FAIL_ROLLBACK");
 		return true;
 	}
 }
@@ -367,7 +367,7 @@ bool NavSystem::RaycastNav(const Protocol::PositionInfo& start,
 
 	dtStatus status = _navQuery->raycast(
 		startRef,
-		startNearest,   // ✅ 시작점 nearest로 오차 흡수
+		startNearest,   //  시작점 nearest로 오차 흡수
 		endPos,
 		&_filter,
 		&outT,
@@ -402,7 +402,7 @@ static void CompressWaypoints(std::vector<Vector3>& pts, float minDist)
 			out.push_back(b);
 	}
 
-	// ✅ 마지막은 end 유지
+	//  마지막은 end 유지
 	if (!out.empty())
 		out.back() = pts.back();
 
@@ -486,7 +486,7 @@ bool NavSystem::FindPathWaypoints(const Protocol::PositionInfo& start,
 		const float* p = &straightPath[i * 3];
 		float y = p[1];
 
-		// ✅ 높이 안정화 (polyHeight 우선)
+		//  높이 안정화 (polyHeight 우선)
 		if (straightPolys[i] != 0)
 		{
 			float h = 0.0f;
@@ -509,7 +509,7 @@ bool NavSystem::FindPathWaypoints(const Protocol::PositionInfo& start,
 		outWaypoints.emplace_back(p[0], y, p[2]);
 	}
 
-	// ✅ 떨림/불필요한 점 방지 (5cm)
+	//  떨림/불필요한 점 방지 (5cm)
 	CompressWaypoints(outWaypoints, 0.05f);
 
 	return true;

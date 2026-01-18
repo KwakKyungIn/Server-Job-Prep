@@ -57,10 +57,21 @@ namespace Protocol {
             "EO8HEhYKEVBBUlRZX1JFQVNPTl9GVUxMEPAHEhoKFVBBUlRZX1JFQVNPTl9S",
             "RUpFQ1RFRBDxBxIgChtQQVJUWV9SRUFTT05fSU5URVJOQUxfRVJST1IQywgq",
             "OgoQUXVpY2tTbG90UmVmVHlwZRILCgdRU19OT05FEAASCwoHUVNfSVRFTRAB",
-            "EgwKCFFTX1NLSUxMEAJiBnByb3RvMw=="));
+            "EgwKCFFTX1NLSUxMEAIqzgEKEVRyYWRlQ2FuY2VsUmVhc29uEhUKEVRSQURF",
+            "X0NBTkNFTF9OT05FEAASGAoUVFJBREVfQ0FOQ0VMX0JZX1NFTEYQARIZChVU",
+            "UkFERV9DQU5DRUxfREVDTElORUQQAhIbChdUUkFERV9DQU5DRUxfRElTQ09O",
+            "TkVDVBADEhsKF1RSQURFX0NBTkNFTF9NQVBfQ0hBTkdFEAQSGAoUVFJBREVf",
+            "Q0FOQ0VMX1RJTUVPVVQQBRIZChVUUkFERV9DQU5DRUxfSU5URVJOQUwQBiqQ",
+            "AgoNVHJhZGVGYWlsQ29kZRITCg9UUkFERV9GQUlMX05PTkUQABIdChlUUkFE",
+            "RV9GQUlMX0lOVkFMSURfVEFSR0VUEAESHgoaVFJBREVfRkFJTF9BTFJFQURZ",
+            "X1RSQURJTkcQAhIfChtUUkFERV9GQUlMX0RJU1RBTkNFX1RPT19GQVIQAxIc",
+            "ChhUUkFERV9GQUlMX0lOVkFMSURfU1RBVEUQBBIbChdUUkFERV9GQUlMX0lO",
+            "VkFMSURfSVRFTRAFEh0KGVRSQURFX0ZBSUxfSU5WRU5UT1JZX0ZVTEwQBhIX",
+            "ChNUUkFERV9GQUlMX0lOVEVSTkFMEAcSFwoTVFJBREVfRkFJTF9SRUpFQ1RF",
+            "RBAIYgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
-          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Protocol.MoveState), typeof(global::Protocol.ActionState), typeof(global::Protocol.PlayerType), typeof(global::Protocol.ObjectType), typeof(global::Protocol.ItemType), typeof(global::Protocol.SkillType), typeof(global::Protocol.ConnectStatus), typeof(global::Protocol.RoomType), typeof(global::Protocol.PresenceStatus), typeof(global::Protocol.FriendStatus), typeof(global::Protocol.PartyOp), typeof(global::Protocol.PartyResultReason), typeof(global::Protocol.QuickSlotRefType), }, null, null));
+          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Protocol.MoveState), typeof(global::Protocol.ActionState), typeof(global::Protocol.PlayerType), typeof(global::Protocol.ObjectType), typeof(global::Protocol.ItemType), typeof(global::Protocol.SkillType), typeof(global::Protocol.ConnectStatus), typeof(global::Protocol.RoomType), typeof(global::Protocol.PresenceStatus), typeof(global::Protocol.FriendStatus), typeof(global::Protocol.PartyOp), typeof(global::Protocol.PartyResultReason), typeof(global::Protocol.QuickSlotRefType), typeof(global::Protocol.TradeCancelReason), typeof(global::Protocol.TradeFailCode), }, null, null));
     }
     #endregion
 
@@ -285,6 +296,31 @@ namespace Protocol {
     [pbr::OriginalName("QS_NONE")] QsNone = 0,
     [pbr::OriginalName("QS_ITEM")] QsItem = 1,
     [pbr::OriginalName("QS_SKILL")] QsSkill = 2,
+  }
+
+  /// <summary>
+  /// ===== [Trade] =====
+  /// </summary>
+  public enum TradeCancelReason {
+    [pbr::OriginalName("TRADE_CANCEL_NONE")] TradeCancelNone = 0,
+    [pbr::OriginalName("TRADE_CANCEL_BY_SELF")] TradeCancelBySelf = 1,
+    [pbr::OriginalName("TRADE_CANCEL_DECLINED")] TradeCancelDeclined = 2,
+    [pbr::OriginalName("TRADE_CANCEL_DISCONNECT")] TradeCancelDisconnect = 3,
+    [pbr::OriginalName("TRADE_CANCEL_MAP_CHANGE")] TradeCancelMapChange = 4,
+    [pbr::OriginalName("TRADE_CANCEL_TIMEOUT")] TradeCancelTimeout = 5,
+    [pbr::OriginalName("TRADE_CANCEL_INTERNAL")] TradeCancelInternal = 6,
+  }
+
+  public enum TradeFailCode {
+    [pbr::OriginalName("TRADE_FAIL_NONE")] TradeFailNone = 0,
+    [pbr::OriginalName("TRADE_FAIL_INVALID_TARGET")] TradeFailInvalidTarget = 1,
+    [pbr::OriginalName("TRADE_FAIL_ALREADY_TRADING")] TradeFailAlreadyTrading = 2,
+    [pbr::OriginalName("TRADE_FAIL_DISTANCE_TOO_FAR")] TradeFailDistanceTooFar = 3,
+    [pbr::OriginalName("TRADE_FAIL_INVALID_STATE")] TradeFailInvalidState = 4,
+    [pbr::OriginalName("TRADE_FAIL_INVALID_ITEM")] TradeFailInvalidItem = 5,
+    [pbr::OriginalName("TRADE_FAIL_INVENTORY_FULL")] TradeFailInventoryFull = 6,
+    [pbr::OriginalName("TRADE_FAIL_INTERNAL")] TradeFailInternal = 7,
+    [pbr::OriginalName("TRADE_FAIL_REJECTED")] TradeFailRejected = 8,
   }
 
   #endregion

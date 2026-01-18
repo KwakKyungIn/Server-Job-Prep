@@ -34,13 +34,13 @@ void GameRoom::HandleMove(PlayerSessionRef session, PlayerRef player, Protocol::
     const auto& reqRaw = pkt.posinfo();
     if (!IsFinitePos(reqRaw) || IsCrazyPos(reqRaw))
     {
-        std::cout << "❌ [MOVE_INVALID_INPUT] ID: " << playerId << std::endl;
+        std::cout << " [MOVE_INVALID_INPUT] ID: " << playerId << std::endl;
         return;
     }
 
     if (_grid.GetZoneIndex(reqRaw) < 0)
     {
-        std::cout << "❌ [MOVE_INVALID_INPUT] OUT_OF_BOUNDS ID: " << playerId << std::endl;
+        std::cout << " [MOVE_INVALID_INPUT] OUT_OF_BOUNDS ID: " << playerId << std::endl;
         return;
     }
 
@@ -66,7 +66,7 @@ void GameRoom::HandleMove(PlayerSessionRef session, PlayerRef player, Protocol::
                 return;
             }
 
-            std::cout << "❌ [MOVE_SEQ_REWIND_DROP] ID: " << playerId
+            std::cout << " [MOVE_SEQ_REWIND_DROP] ID: " << playerId
                 << " seq=" << seq << " last=" << lastSeq << std::endl;
             return;
         }
@@ -89,7 +89,7 @@ void GameRoom::HandleMove(PlayerSessionRef session, PlayerRef player, Protocol::
 
     if (speedRes.policy == MoveValidate::SpeedPolicy::CLAMPED)
     {
-        std::cout << "⚠️ [SPEED_EXCEEDED_CLAMP] ID: " << playerId
+        std::cout << " [SPEED_EXCEEDED_CLAMP] ID: " << playerId
             << " reqDist=" << speedRes.reqDist2D
             << " maxDist=" << speedRes.maxDist
             << " dt=" << speedRes.dtSec << std::endl;
@@ -100,7 +100,7 @@ void GameRoom::HandleMove(PlayerSessionRef session, PlayerRef player, Protocol::
     Protocol::PositionInfo fixed;
     if (!_map || _map->ValidateMove(cur, reqClamped, fixed) == false)
     {
-        std::cout << "❌ [FAIL] ID: " << playerId << " blocked by NavMesh!" << std::endl;
+        std::cout << " [FAIL] ID: " << playerId << " blocked by NavMesh!" << std::endl;
         return;
     }
 

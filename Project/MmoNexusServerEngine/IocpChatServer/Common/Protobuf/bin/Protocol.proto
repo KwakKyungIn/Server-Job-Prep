@@ -338,3 +338,76 @@ message S_SET_QUICKSLOT {
     bool success = 1;
     QuickSlotInfo slot = 2;
 }
+
+
+// ============================================================
+// [TRADE] (NEW)
+// ============================================================
+
+message C_TRADE_REQ {
+    uint64 targetPlayerId = 1;
+}
+
+message S_TRADE_INVITE {
+    uint64 fromPlayerId = 1;
+    string fromName = 2;
+}
+
+message C_TRADE_INVITE_RESP {
+    bool accept = 1;
+}
+
+message S_TRADE_START {
+    uint64 tradeId = 1;
+    uint64 peerId = 2;
+    string peerName = 3;
+}
+
+message C_TRADE_OFFER_SET {
+    uint64 tradeId = 1;
+    uint64 itemUid = 2;
+    int32 count = 3;
+}
+
+message S_TRADE_OFFER_UPDATE {
+    uint64 tradeId = 1;
+    uint64 whoPlayerId = 2;
+    repeated TradeOfferItem items = 3;
+}
+
+message C_TRADE_READY {
+    uint64 tradeId = 1;
+    bool ready = 2;
+}
+
+message S_TRADE_READY_STATE {
+    uint64 tradeId = 1;
+    bool aReady = 2;
+    bool bReady = 3;
+}
+
+message S_TRADE_LOCKED {
+    uint64 tradeId = 1;
+}
+
+message C_TRADE_CONFIRM {
+    uint64 tradeId = 1;
+}
+
+message C_TRADE_CANCEL {
+    uint64 tradeId = 1;
+    TradeCancelReason reason = 2;
+}
+
+message S_TRADE_CANCELLED {
+    uint64 tradeId = 1;
+    TradeCancelReason reason = 2;
+}
+
+message S_TRADE_RESULT {
+    uint64 tradeId = 1;
+    bool success = 2;
+    TradeFailCode failCode = 3;
+    string msg = 4;
+}
+

@@ -28,7 +28,7 @@ bool ClientPacketHandler::Handle_C_LOGIN(PacketSessionRef& session, Protocol::C_
 	// 3. DBAgent 연결 확인
 	if (GDBAgentSession == nullptr)
 	{
-		printf("❌ [Login] DB Connection Lost!\n");
+		printf(" [Login] DB Connection Lost!\n");
 		return false;
 	}
 
@@ -41,7 +41,7 @@ bool ClientPacketHandler::Handle_C_LOGIN(PacketSessionRef& session, Protocol::C_
 	auto sendBuffer = S2SPacketHandler::MakeSendBuffer(reqPkt);
 	GDBAgentSession->Send(sendBuffer);
 
-	printf("🚀 [Login] Request DB Verification for: %s\n", pkt.userid().c_str());
+	printf(" [Login] Request DB Verification for: %s\n", pkt.userid().c_str());
 
 	return true;
 }

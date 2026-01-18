@@ -57,6 +57,19 @@ public:
 		PKT_S_QUICKSLOT_LIST = 1045,
 		PKT_C_SET_QUICKSLOT = 1046,
 		PKT_S_SET_QUICKSLOT = 1047,
+		PKT_C_TRADE_REQ = 1048,
+		PKT_S_TRADE_INVITE = 1049,
+		PKT_C_TRADE_INVITE_RESP = 1050,
+		PKT_S_TRADE_START = 1051,
+		PKT_C_TRADE_OFFER_SET = 1052,
+		PKT_S_TRADE_OFFER_UPDATE = 1053,
+		PKT_C_TRADE_READY = 1054,
+		PKT_S_TRADE_READY_STATE = 1055,
+		PKT_S_TRADE_LOCKED = 1056,
+		PKT_C_TRADE_CONFIRM = 1057,
+		PKT_C_TRADE_CANCEL = 1058,
+		PKT_S_TRADE_CANCELLED = 1059,
+		PKT_S_TRADE_RESULT = 1060,
 	};
 
 	static void Init()
@@ -89,6 +102,13 @@ public:
 		GPacketHandler[PKT_S_DUNGEON_EXIT_RES] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S_DUNGEON_EXIT_RES>(Handle_S_DUNGEON_EXIT_RES, session, buffer, len); };
 		GPacketHandler[PKT_S_QUICKSLOT_LIST] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S_QUICKSLOT_LIST>(Handle_S_QUICKSLOT_LIST, session, buffer, len); };
 		GPacketHandler[PKT_S_SET_QUICKSLOT] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S_SET_QUICKSLOT>(Handle_S_SET_QUICKSLOT, session, buffer, len); };
+		GPacketHandler[PKT_S_TRADE_INVITE] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S_TRADE_INVITE>(Handle_S_TRADE_INVITE, session, buffer, len); };
+		GPacketHandler[PKT_S_TRADE_START] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S_TRADE_START>(Handle_S_TRADE_START, session, buffer, len); };
+		GPacketHandler[PKT_S_TRADE_OFFER_UPDATE] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S_TRADE_OFFER_UPDATE>(Handle_S_TRADE_OFFER_UPDATE, session, buffer, len); };
+		GPacketHandler[PKT_S_TRADE_READY_STATE] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S_TRADE_READY_STATE>(Handle_S_TRADE_READY_STATE, session, buffer, len); };
+		GPacketHandler[PKT_S_TRADE_LOCKED] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S_TRADE_LOCKED>(Handle_S_TRADE_LOCKED, session, buffer, len); };
+		GPacketHandler[PKT_S_TRADE_CANCELLED] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S_TRADE_CANCELLED>(Handle_S_TRADE_CANCELLED, session, buffer, len); };
+		GPacketHandler[PKT_S_TRADE_RESULT] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S_TRADE_RESULT>(Handle_S_TRADE_RESULT, session, buffer, len); };
 	}
 
 	static bool HandlePacket(PacketSessionRef& session, BYTE* buffer, int32 len)
@@ -118,6 +138,12 @@ public:
 	static SendBufferRef MakeSendBuffer(Protocol::C_DUNGEON_ENTER_REQ& pkt) { return MakeSendBuffer(pkt, PKT_C_DUNGEON_ENTER_REQ); }
 	static SendBufferRef MakeSendBuffer(Protocol::C_DUNGEON_EXIT_REQ& pkt) { return MakeSendBuffer(pkt, PKT_C_DUNGEON_EXIT_REQ); }
 	static SendBufferRef MakeSendBuffer(Protocol::C_SET_QUICKSLOT& pkt) { return MakeSendBuffer(pkt, PKT_C_SET_QUICKSLOT); }
+	static SendBufferRef MakeSendBuffer(Protocol::C_TRADE_REQ& pkt) { return MakeSendBuffer(pkt, PKT_C_TRADE_REQ); }
+	static SendBufferRef MakeSendBuffer(Protocol::C_TRADE_INVITE_RESP& pkt) { return MakeSendBuffer(pkt, PKT_C_TRADE_INVITE_RESP); }
+	static SendBufferRef MakeSendBuffer(Protocol::C_TRADE_OFFER_SET& pkt) { return MakeSendBuffer(pkt, PKT_C_TRADE_OFFER_SET); }
+	static SendBufferRef MakeSendBuffer(Protocol::C_TRADE_READY& pkt) { return MakeSendBuffer(pkt, PKT_C_TRADE_READY); }
+	static SendBufferRef MakeSendBuffer(Protocol::C_TRADE_CONFIRM& pkt) { return MakeSendBuffer(pkt, PKT_C_TRADE_CONFIRM); }
+	static SendBufferRef MakeSendBuffer(Protocol::C_TRADE_CANCEL& pkt) { return MakeSendBuffer(pkt, PKT_C_TRADE_CANCEL); }
 
 public:
 	static PacketHandlerFunc GPacketHandler[UINT16_MAX];
@@ -148,6 +174,13 @@ public:
 	static bool Handle_S_DUNGEON_EXIT_RES(PacketSessionRef& session, Protocol::S_DUNGEON_EXIT_RES& pkt);
 	static bool Handle_S_QUICKSLOT_LIST(PacketSessionRef& session, Protocol::S_QUICKSLOT_LIST& pkt);
 	static bool Handle_S_SET_QUICKSLOT(PacketSessionRef& session, Protocol::S_SET_QUICKSLOT& pkt);
+	static bool Handle_S_TRADE_INVITE(PacketSessionRef& session, Protocol::S_TRADE_INVITE& pkt);
+	static bool Handle_S_TRADE_START(PacketSessionRef& session, Protocol::S_TRADE_START& pkt);
+	static bool Handle_S_TRADE_OFFER_UPDATE(PacketSessionRef& session, Protocol::S_TRADE_OFFER_UPDATE& pkt);
+	static bool Handle_S_TRADE_READY_STATE(PacketSessionRef& session, Protocol::S_TRADE_READY_STATE& pkt);
+	static bool Handle_S_TRADE_LOCKED(PacketSessionRef& session, Protocol::S_TRADE_LOCKED& pkt);
+	static bool Handle_S_TRADE_CANCELLED(PacketSessionRef& session, Protocol::S_TRADE_CANCELLED& pkt);
+	static bool Handle_S_TRADE_RESULT(PacketSessionRef& session, Protocol::S_TRADE_RESULT& pkt);
 
 private:
 	template<typename PacketType, typename ProcessFunc>

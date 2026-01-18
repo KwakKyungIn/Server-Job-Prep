@@ -7,7 +7,7 @@
 
 void GameRoom::Update()
 {
-	// ✅ deltaMs 계산(투사체만 사용해도 됨)
+	//  deltaMs 계산(투사체만 사용해도 됨)
 	const uint64 now = ::GetTickCount64();
 	if (_lastUpdateMs == 0)
 		_lastUpdateMs = now;
@@ -20,8 +20,11 @@ void GameRoom::Update()
 	for (auto& item : _monsters)
 		item.second->Update(now, deltaMs);
 
-	// ✅ Projectile tick
+	//  Projectile tick
 	UpdateProjectiles(deltaMs);
+
+	//  Trade timeout tick
+	UpdateTrades_ActorOnly(now);
 }
 
 void GameRoom::EnterMonster(MonsterRef monster)
@@ -142,7 +145,7 @@ void GameRoom::OnMonsterMoved(MonsterRef monster)
 		monster->SetZoneIndex(newZoneIndex);
 	}
 
-	// 1) ✅ Cheap: 기존 viewers에게 MOVE만
+	// 1)  Cheap: 기존 viewers에게 MOVE만
 	{
 		Protocol::S_MOVE movePkt;
 		movePkt.set_objectid(mid);
@@ -154,7 +157,7 @@ void GameRoom::OnMonsterMoved(MonsterRef monster)
 			SendToPlayer(pid, sb);
 	}
 
-	// 2) ✅ Expensive 트리거 판단
+	// 2)  Expensive 트리거 판단
 	float lastX, lastZ;
 	monster->GetLastAoiExpensivePos(lastX, lastZ);
 
@@ -254,7 +257,7 @@ PlayerRef GameRoom::FindNearestPlayer(Protocol::PositionInfo* pos, float range)
 	Vector<Zone*> zones;
 	_grid.GetNearbyZones(zoneIndex, EffectiveAoiRadiusCells(), zones);
 
-	// ✅ Connectivity 필터 (벽 너머 타겟 금지)
+	//  Connectivity 필터 (벽 너머 타겟 금지)
 	const uint32 myConn = GetConnectivityId_ActorOnly(*pos);
 
 	PlayerRef target = nullptr;
@@ -270,14 +273,14 @@ PlayerRef GameRoom::FindNearestPlayer(Protocol::PositionInfo* pos, float range)
 
 			const auto& pp = *player->GetPosInfo();
 
-			// ✅ Range 컷 (성능 + 정확도)
+			//  Range 컷 (성능 + 정확도)
 			const float dx = pp.x() - pos->x();
 			const float dz = pp.z() - pos->z();
 			const float distSqr = dx * dx + dz * dz;
 			if (distSqr > rangeSqr)
 				continue;
 
-			// ✅ Connectivity 컷
+			//  Connectivity 컷
 			if (GetConnectivityId_ActorOnly(pp) != myConn)
 				continue;
 

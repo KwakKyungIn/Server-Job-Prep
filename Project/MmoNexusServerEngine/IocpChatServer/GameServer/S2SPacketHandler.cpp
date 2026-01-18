@@ -42,7 +42,7 @@ bool S2SPacketHandler::Handle_S2S_RES_LOAD_PLAYER_DATA(PacketSessionRef& session
 		return true;
 	}
 
-	const uint64 playerId = pkt.playerid(); // ✅ 패킷에 있음. 이게 제일 정직함.
+	const uint64 playerId = pkt.playerid(); //  패킷에 있음. 이게 제일 정직함.
 	if (playerId == 0) return true;
 
 	const int32 ch = ps->GetPendingChannelId_AnyThread();
@@ -143,12 +143,12 @@ bool S2SPacketHandler::Handle_S2S_RES_GAME_ITEM_UID_SEED(PacketSessionRef& sessi
 {
 	if (!pkt.success() || pkt.next_uid() == 0)
 	{
-		std::cout << "❌ [UID] Seed load failed" << std::endl;
+		std::cout << " [UID] Seed load failed" << std::endl;
 		return true;
 	}
 
 	GameItemUidGen::Init(pkt.next_uid());
-	std::cout << "✅ [UID] Seed initialized. next_uid=" << pkt.next_uid() << std::endl;
+	std::cout << " [UID] Seed initialized. next_uid=" << pkt.next_uid() << std::endl;
 	return true;
 }
 

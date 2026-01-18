@@ -4,7 +4,7 @@
 #include "JobQueue.h"
 #include "Job.h"
 #include "Protocol.pb.h"
-#include "RoomActor.h"   // ✅ currentRoom 타입
+#include "RoomActor.h"   //  currentRoom 타입
 #include <atomic>
 #include <mutex>
 
@@ -124,7 +124,7 @@ public:
             }));
     }
 
-    // ✅ Session 라우팅: "현재 Room"에만 던진다.
+    //  Session 라우팅: "현재 Room"에만 던진다.
     template<typename F>
     void PostRoom(F&& fn)
     {
@@ -137,7 +137,7 @@ public:
     }
 
 public:
-    // ✅ Room Actor가 session->Post(...)로만 호출
+    //  Room Actor가 session->Post(...)로만 호출
     void SetCurrentRoom(RoomActorRef room) { _currentRoom = room; }
 
     void ClearCurrentRoom(RoomActorRef room)
@@ -162,10 +162,10 @@ private:
 private:
     shared_ptr<JobQueue> _jobQueue;
 
-    // ✅ playerId만 유지
+    //  playerId만 유지
     std::atomic<uint64> _playerId{ 0 };
 
-    // ✅ currentRoom 타입 통일
+    //  currentRoom 타입 통일
     std::weak_ptr<RoomActor> _currentRoom;
 
 private:

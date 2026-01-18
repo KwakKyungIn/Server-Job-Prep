@@ -80,7 +80,7 @@ void DataManager::LoadFromPacket(const Protocol::S2S_RES_LOAD_GAME_DATA& pkt)
 		_skillTemplates[skill.skillid()] = skill;
 	}
 
-	std::cout << "📚 [DataManager] Load Complete. Stats: " << _statTemplates.size()
+	std::cout << " [DataManager] Load Complete. Stats: " << _statTemplates.size()
 		<< ", Items: " << _itemTemplates.size()
 		<< ", Skills: " << _skillTemplates.size() << std::endl;
 }
@@ -114,7 +114,7 @@ bool DataManager::LoadMapConfigsFromJson(const std::string& path)
 	std::ifstream ifs(path);
 	if (!ifs.is_open())
 	{
-		std::cout << "❌ [DataManager] Failed to open: " << path << std::endl;
+		std::cout << " [DataManager] Failed to open: " << path << std::endl;
 		return false;
 	}
 
@@ -122,7 +122,7 @@ bool DataManager::LoadMapConfigsFromJson(const std::string& path)
 	try { ifs >> j; }
 	catch (const std::exception& e)
 	{
-		std::cout << "❌ [DataManager] JSON parse error: " << e.what() << std::endl;
+		std::cout << " [DataManager] JSON parse error: " << e.what() << std::endl;
 		return false;
 	}
 
@@ -131,7 +131,7 @@ bool DataManager::LoadMapConfigsFromJson(const std::string& path)
 
 	if (!j.contains("maps") || !j["maps"].is_array())
 	{
-		std::cout << "❌ [DataManager] maps array missing" << std::endl;
+		std::cout << " [DataManager] maps array missing" << std::endl;
 		return false;
 	}
 
@@ -172,7 +172,7 @@ bool DataManager::LoadMapConfigsFromJson(const std::string& path)
 		}
 	}
 
-	std::cout << "✅ [DataManager] MapConfigs loaded: " << _mapConfigs.size()
+	std::cout << " [DataManager] MapConfigs loaded: " << _mapConfigs.size()
 		<< " (defaultWorldMapId=" << _defaultWorldMapId << ")\n";
 	return true;
 }

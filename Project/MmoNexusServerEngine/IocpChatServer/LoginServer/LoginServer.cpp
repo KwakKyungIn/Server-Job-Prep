@@ -31,7 +31,7 @@ BOOL WINAPI CtrlHandler(DWORD fdwCtrlType)
 	{
 	case CTRL_C_EVENT:
 	case CTRL_CLOSE_EVENT:
-		std::cout << "🛑 [LoginServer] Shutdown Initiated..." << std::endl;
+		std::cout << " [LoginServer] Shutdown Initiated..." << std::endl;
 		GIsRunning = false;
 		return TRUE;
 	default:
@@ -53,7 +53,7 @@ int main()
 	// [Redis Test] 서버 켜질 때 Redis 살아있는지 신고식
 	if (GRedisManager->Set("LoginServer_Alive", "OK", 60))
 	{
-		std::cout << "✅ [Redis] Connection Verified." << std::endl;
+		std::cout << " [Redis] Connection Verified." << std::endl;
 	}
 
 	// 2. IOCP 코어 생성
@@ -109,7 +109,7 @@ int main()
 	ASSERT_CRASH(dbService->Start());
 	ASSERT_CRASH(gameServerService->Start());
 
-	std::cout << "✅ [LoginServer] Listening on 7776 & Connecting to DB..." << std::endl;
+	std::cout << " [LoginServer] Listening on 7776 & Connecting to DB..." << std::endl;
 
 	// 4. 스레드 풀 가동
 	int32 threadCount = std::thread::hardware_concurrency();

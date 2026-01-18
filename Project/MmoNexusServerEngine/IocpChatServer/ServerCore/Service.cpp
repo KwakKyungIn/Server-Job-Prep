@@ -124,7 +124,7 @@ bool ClientService::Start()
 		SessionRef session = CreateSession();
 		if (session->Connect() == false)
 		{
-			std::cout << "⚠️ [Warning] Initial Connection Failed. Will retry later via Heartbeat." << std::endl;
+			std::cout << " [Warning] Initial Connection Failed. Will retry later via Heartbeat." << std::endl;
 			//return false;
 		}
 			

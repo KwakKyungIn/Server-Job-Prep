@@ -67,7 +67,7 @@ bool ClientPacketHandler::Handle_C_DUNGEON_ENTER_REQ(PacketSessionRef& session, 
 				return;
 			}
 
-			// ✅ channelId는 "player 값"으로만 읽는다 (Room actor에서)
+			//  channelId는 "player 값"으로만 읽는다 (Room actor에서)
 			gr->PushJob([gr, requesterId, dungeonMapId, spawn]()
 				{
 					int32 channelId = 0;

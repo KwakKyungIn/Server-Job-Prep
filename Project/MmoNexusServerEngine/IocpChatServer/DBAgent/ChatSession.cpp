@@ -4,12 +4,12 @@
 
 void ChatSession::OnConnected()
 {
-	std::cout << "✅ [DBAgent] ChatServer Connected!" << std::endl;
+	std::cout << " [DBAgent] ChatServer Connected!" << std::endl;
 }
 
 void ChatSession::OnDisconnected()
 {
-	std::cout << "❌ [DBAgent] ChatServer Disconnected" << std::endl;
+	std::cout << " [DBAgent] ChatServer Disconnected" << std::endl;
 }
 
 void ChatSession::OnRecvPacket(BYTE* buffer, int32 len)

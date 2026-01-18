@@ -21,7 +21,7 @@ public:
     PartyManagerCore& Core() { return _core; }
     const PartyManagerCore& Core() const { return _core; }
 
-    // ✅ 6번 연결 지점: 여기로 모아라
+    //  6번 연결 지점: 여기로 모아라
     void LeaveAndHandleInstance(uint64 playerId);
     void DisbandAndHandleInstance(uint64 leaderId);
     void KickAndHandleInstance(uint64 leaderId, uint64 targetId);

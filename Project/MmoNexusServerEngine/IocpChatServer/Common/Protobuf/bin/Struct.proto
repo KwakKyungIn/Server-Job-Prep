@@ -126,3 +126,11 @@ message QuickSlotInfo {
     QuickSlotRefType refType = 2;
     uint64 refId = 3; // itemUid or skillId
 }
+
+
+// ===== [Trade] =====
+message TradeOfferItem {
+    uint64 itemUid = 1;
+    int32 templateId = 2;
+    int32 count = 3;
+}
