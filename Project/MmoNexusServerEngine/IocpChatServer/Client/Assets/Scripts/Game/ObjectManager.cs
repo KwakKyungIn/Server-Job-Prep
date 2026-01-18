@@ -40,7 +40,7 @@ public class ObjectManager : MonoBehaviour
 
     void Start()
     {
-        
+
     }
 
     void OnDestroy()
@@ -354,6 +354,11 @@ public class ObjectManager : MonoBehaviour
             go = Instantiate(OtherPlayerPrefab, pos, Quaternion.identity);
             go.AddComponent<PlayerController>();
         }
+
+        // Identity component for world interactions (right-click -> trade, etc.)
+        var ident = go.GetComponent<PlayerIdentity>();
+        if (ident == null) ident = go.AddComponent<PlayerIdentity>();
+        ident.Init(info.PlayerId, info.Name, isMine);
 
         go.name = $"Player_{info.PlayerId}_{info.Name}";
         _objects.Add(info.PlayerId, go);

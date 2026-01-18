@@ -51,6 +51,16 @@ public class PacketHandler
     public static Action<S_PARTY_RESULT> OnPartyResult;
     public static Action<S_PARTY_INVITE_NTF> OnPartyInviteNtf;
     public static Action<S_PARTY_STATUS_NTF> OnPartyStatusNtf;
+
+
+    // [Trade Events]
+    public static Action<S_TRADE_INVITE> OnTradeInvite;
+    public static Action<S_TRADE_START> OnTradeStart;
+    public static Action<S_TRADE_OFFER_UPDATE> OnTradeOfferUpdate;
+    public static Action<S_TRADE_READY_STATE> OnTradeReadyState;
+    public static Action<S_TRADE_LOCKED> OnTradeLocked;
+    public static Action<S_TRADE_CANCELLED> OnTradeCancelled;
+    public static Action<S_TRADE_RESULT> OnTradeResult;
     // ============================================================
     // [LOGIN & ENTRY HANDLERS]
     // ============================================================
@@ -350,6 +360,75 @@ public class PacketHandler
         if (pkt.Success && pkt.Slot != null)
             OnQuickSlotChanged?.Invoke(pkt.Slot);
     }
+
+
+    // ============================================================
+    // [TRADE HANDLERS]
+    // ============================================================
+
+    public static void S_TRADE_INVITEHandler(ServerSession session, IMessage packet)
+    {
+        var pkt = packet as S_TRADE_INVITE;
+        if (pkt == null) return;
+
+        Debug.Log($"[TradeInvite] from={pkt.FromPlayerId} name={pkt.FromName}");
+        OnTradeInvite?.Invoke(pkt);
+    }
+
+    public static void S_TRADE_STARTHandler(ServerSession session, IMessage packet)
+    {
+        var pkt = packet as S_TRADE_START;
+        if (pkt == null) return;
+
+        Debug.Log($"[TradeStart] tradeId={pkt.TradeId} peer={pkt.PeerId} name={pkt.PeerName}");
+        OnTradeStart?.Invoke(pkt);
+    }
+
+    public static void S_TRADE_OFFER_UPDATEHandler(ServerSession session, IMessage packet)
+    {
+        var pkt = packet as S_TRADE_OFFER_UPDATE;
+        if (pkt == null) return;
+
+        Debug.Log($"[TradeOfferUpdate] tradeId={pkt.TradeId} who={pkt.WhoPlayerId} items={pkt.Items.Count}");
+        OnTradeOfferUpdate?.Invoke(pkt);
+    }
+
+    public static void S_TRADE_READY_STATEHandler(ServerSession session, IMessage packet)
+    {
+        var pkt = packet as S_TRADE_READY_STATE;
+        if (pkt == null) return;
+
+        Debug.Log($"[TradeReadyState] tradeId={pkt.TradeId} A={pkt.AReady} B={pkt.BReady}");
+        OnTradeReadyState?.Invoke(pkt);
+    }
+
+    public static void S_TRADE_LOCKEDHandler(ServerSession session, IMessage packet)
+    {
+        var pkt = packet as S_TRADE_LOCKED;
+        if (pkt == null) return;
+
+        Debug.Log($"[TradeLocked] tradeId={pkt.TradeId}");
+        OnTradeLocked?.Invoke(pkt);
+    }
+
+    public static void S_TRADE_CANCELLEDHandler(ServerSession session, IMessage packet)
+    {
+        var pkt = packet as S_TRADE_CANCELLED;
+        if (pkt == null) return;
+
+        Debug.Log($"[TradeCancelled] tradeId={pkt.TradeId} reason={pkt.Reason}");
+        OnTradeCancelled?.Invoke(pkt);
+    }
+
+    public static void S_TRADE_RESULTHandler(ServerSession session, IMessage packet)
+    {
+        var pkt = packet as S_TRADE_RESULT;
+        if (pkt == null) return;
+
+        Debug.Log($"[TradeResult] tradeId={pkt.TradeId} success={pkt.Success} fail={pkt.FailCode} msg={pkt.Msg}");
+        OnTradeResult?.Invoke(pkt);
+    }
+
 }
 
 

@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Net;
@@ -27,7 +27,7 @@ public class NetworkManager : MonoBehaviour
 
     public void EndMapChange(ulong token)
     {
-        // ÅäÅ« ´Ù¸£¸é ¹«½Ã (²¿ÀÓ ¹æÁö)
+        // ï¿½ï¿½Å« ï¿½Ù¸ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
         if (MapChangeToken != token)
         {
             Debug.LogWarning($"[NetworkManager] EndMapChange ignored (token mismatch) cur={MapChangeToken} recv={token}");
@@ -61,6 +61,7 @@ public class NetworkManager : MonoBehaviour
         InventoryManager.Instance.Init();
         StatManager.Instance.Init();
         QuickSlotManager.Instance.Init();
+        TradeManager.Instance.Init();
         Debug.Log($"[ConnectionDebug] 1. Start() - Initial Connect to LoginServer ({ip}:{port})");
         Connect(ip, port);
     }

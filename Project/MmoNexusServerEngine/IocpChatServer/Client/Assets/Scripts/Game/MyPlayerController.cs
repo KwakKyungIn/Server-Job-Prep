@@ -2,6 +2,7 @@
 using Protocol;
 using System.Collections;
 using UnityEngine.AI;
+using UnityEngine.EventSystems;
 public class MyPlayerController : MonoBehaviour
 {
     float _speed = 5.0f;
@@ -82,6 +83,23 @@ public class MyPlayerController : MonoBehaviour
             _curMoveState = MoveState.MoveIdle;
             _anim?.SetMoveState(_curMoveState);
             return;
+        }
+
+        // ============================================================
+        // [RIGHT CLICK -> TRADE REQUEST]
+        // ============================================================
+        // - 우클릭한 대상이 다른 플레이어면 즉시 거래 신청
+        // - UI 위 클릭은 무시
+        if (Input.GetMouseButtonDown(1))
+        {
+            if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
+            {
+                // UI 위에서는 월드 상호작용 금지
+            }
+            else
+            {
+                TryRequestTradeByRightClick();
+            }
         }
 
 
@@ -247,6 +265,30 @@ public class MyPlayerController : MonoBehaviour
         }
 
         transform.position = nextPos;
+    }
+
+    void TryRequestTradeByRightClick()
+    {
+        if (TradeManager.Instance != null)
+            TradeManager.Instance.Init();
+
+        if (TradeManager.Instance != null && TradeManager.Instance.InTrade)
+            return;
+
+        var cam = Camera.main;
+        if (cam == null) return;
+
+        Ray ray = cam.ScreenPointToRay(Input.mousePosition);
+        if (!Physics.Raycast(ray, out RaycastHit hit, 200f))
+            return;
+
+        var ident = hit.collider != null ? hit.collider.GetComponentInParent<PlayerIdentity>() : null;
+        if (ident == null) return;
+        if (ident.IsMine) return;
+        if (ident.PlayerId == 0) return;
+
+        Debug.Log($"🤝 [Trade] RightClick -> RequestTrade target={ident.PlayerName}({ident.PlayerId})");
+        TradeManager.Instance.RequestTrade(ident.PlayerId);
     }
 
     IEnumerator CoSendPacket()

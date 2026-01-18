@@ -112,6 +112,17 @@ public class InventoryManager
         return _items;
     }
 
+    public ItemInfo GetItemByUid(ulong itemUid)
+    {
+        foreach (var kv in _items)
+        {
+            var it = kv.Value;
+            if (it != null && it.ItemUid == itemUid)
+                return it;
+        }
+        return null;
+    }
+
     public int GetEmptySlot()
     {
         for (int i = 0; i < 20; i++)
