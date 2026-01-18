@@ -163,3 +163,43 @@ message S2S_RES_SAVE_QUICKSLOT {
     bool success = 1;
     uint64 playerId = 2;
 }
+
+// ============================================================
+// [TRADE] Atomic commit (Phase 2)
+//  - DBAgent applies both players' inventory changes in a single SQL transaction.
+//  - GameServer applies memory/redis only after success response.
+// ============================================================
+
+message S2S_REQ_TRADE_COMMIT {
+    uint64 tradeId = 1;
+
+    // Routing: which GameRoom should receive the response.
+    int32 channelId = 2;
+    int32 mapId = 3;
+    int64 instanceId = 4;
+
+    uint64 playerAId = 5;
+    uint64 playerBId = 6;
+
+    repeated ItemInfo finalAItems = 7;
+    repeated uint64 deletedAItemUids = 8;
+
+    repeated ItemInfo finalBItems = 9;
+    repeated uint64 deletedBItemUids = 10;
+
+    uint64 requestId = 11; // optional (debug/matching)
+}
+
+message S2S_RES_TRADE_COMMIT {
+    uint64 tradeId = 1;
+
+    // Routing echo
+    int32 channelId = 2;
+    int32 mapId = 3;
+    int64 instanceId = 4;
+
+    bool success = 5;
+    TradeFailCode failCode = 6;
+
+    uint64 requestId = 7; // echo
+}

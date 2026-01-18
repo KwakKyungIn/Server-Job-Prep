@@ -81,6 +81,9 @@ extern S2S_REQ_SAVE_PLAYER_COREDefaultTypeInternal _S2S_REQ_SAVE_PLAYER_CORE_def
 class S2S_REQ_SAVE_QUICKSLOT;
 struct S2S_REQ_SAVE_QUICKSLOTDefaultTypeInternal;
 extern S2S_REQ_SAVE_QUICKSLOTDefaultTypeInternal _S2S_REQ_SAVE_QUICKSLOT_default_instance_;
+class S2S_REQ_TRADE_COMMIT;
+struct S2S_REQ_TRADE_COMMITDefaultTypeInternal;
+extern S2S_REQ_TRADE_COMMITDefaultTypeInternal _S2S_REQ_TRADE_COMMIT_default_instance_;
 class S2S_RES_GAME_ITEM_UID_SEED;
 struct S2S_RES_GAME_ITEM_UID_SEEDDefaultTypeInternal;
 extern S2S_RES_GAME_ITEM_UID_SEEDDefaultTypeInternal _S2S_RES_GAME_ITEM_UID_SEED_default_instance_;
@@ -114,6 +117,9 @@ extern S2S_RES_SAVE_PLAYER_COREDefaultTypeInternal _S2S_RES_SAVE_PLAYER_CORE_def
 class S2S_RES_SAVE_QUICKSLOT;
 struct S2S_RES_SAVE_QUICKSLOTDefaultTypeInternal;
 extern S2S_RES_SAVE_QUICKSLOTDefaultTypeInternal _S2S_RES_SAVE_QUICKSLOT_default_instance_;
+class S2S_RES_TRADE_COMMIT;
+struct S2S_RES_TRADE_COMMITDefaultTypeInternal;
+extern S2S_RES_TRADE_COMMITDefaultTypeInternal _S2S_RES_TRADE_COMMIT_default_instance_;
 }  // namespace Protocol
 PROTOBUF_NAMESPACE_OPEN
 template<> ::Protocol::S2S_REQ_GAME_ITEM_UID_SEED* Arena::CreateMaybeMessage<::Protocol::S2S_REQ_GAME_ITEM_UID_SEED>(Arena*);
@@ -127,6 +133,7 @@ template<> ::Protocol::S2S_REQ_QUICKSLOT_LOAD* Arena::CreateMaybeMessage<::Proto
 template<> ::Protocol::S2S_REQ_SAVE_INVENTORY* Arena::CreateMaybeMessage<::Protocol::S2S_REQ_SAVE_INVENTORY>(Arena*);
 template<> ::Protocol::S2S_REQ_SAVE_PLAYER_CORE* Arena::CreateMaybeMessage<::Protocol::S2S_REQ_SAVE_PLAYER_CORE>(Arena*);
 template<> ::Protocol::S2S_REQ_SAVE_QUICKSLOT* Arena::CreateMaybeMessage<::Protocol::S2S_REQ_SAVE_QUICKSLOT>(Arena*);
+template<> ::Protocol::S2S_REQ_TRADE_COMMIT* Arena::CreateMaybeMessage<::Protocol::S2S_REQ_TRADE_COMMIT>(Arena*);
 template<> ::Protocol::S2S_RES_GAME_ITEM_UID_SEED* Arena::CreateMaybeMessage<::Protocol::S2S_RES_GAME_ITEM_UID_SEED>(Arena*);
 template<> ::Protocol::S2S_RES_HEART_BEAT* Arena::CreateMaybeMessage<::Protocol::S2S_RES_HEART_BEAT>(Arena*);
 template<> ::Protocol::S2S_RES_ITEMS_LOAD* Arena::CreateMaybeMessage<::Protocol::S2S_RES_ITEMS_LOAD>(Arena*);
@@ -138,6 +145,7 @@ template<> ::Protocol::S2S_RES_QUICKSLOT_LOAD* Arena::CreateMaybeMessage<::Proto
 template<> ::Protocol::S2S_RES_SAVE_INVENTORY* Arena::CreateMaybeMessage<::Protocol::S2S_RES_SAVE_INVENTORY>(Arena*);
 template<> ::Protocol::S2S_RES_SAVE_PLAYER_CORE* Arena::CreateMaybeMessage<::Protocol::S2S_RES_SAVE_PLAYER_CORE>(Arena*);
 template<> ::Protocol::S2S_RES_SAVE_QUICKSLOT* Arena::CreateMaybeMessage<::Protocol::S2S_RES_SAVE_QUICKSLOT>(Arena*);
+template<> ::Protocol::S2S_RES_TRADE_COMMIT* Arena::CreateMaybeMessage<::Protocol::S2S_RES_TRADE_COMMIT>(Arena*);
 PROTOBUF_NAMESPACE_CLOSE
 namespace Protocol {
 
@@ -3808,6 +3816,524 @@ class S2S_RES_SAVE_QUICKSLOT final :
   union { Impl_ _impl_; };
   friend struct ::TableStruct_Protocol_5fS2S_2eproto;
 };
+// -------------------------------------------------------------------
+
+class S2S_REQ_TRADE_COMMIT final :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:Protocol.S2S_REQ_TRADE_COMMIT) */ {
+ public:
+  inline S2S_REQ_TRADE_COMMIT() : S2S_REQ_TRADE_COMMIT(nullptr) {}
+  ~S2S_REQ_TRADE_COMMIT() override;
+  explicit PROTOBUF_CONSTEXPR S2S_REQ_TRADE_COMMIT(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+
+  S2S_REQ_TRADE_COMMIT(const S2S_REQ_TRADE_COMMIT& from);
+  S2S_REQ_TRADE_COMMIT(S2S_REQ_TRADE_COMMIT&& from) noexcept
+    : S2S_REQ_TRADE_COMMIT() {
+    *this = ::std::move(from);
+  }
+
+  inline S2S_REQ_TRADE_COMMIT& operator=(const S2S_REQ_TRADE_COMMIT& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline S2S_REQ_TRADE_COMMIT& operator=(S2S_REQ_TRADE_COMMIT&& from) noexcept {
+    if (this == &from) return *this;
+    if (GetOwningArena() == from.GetOwningArena()
+  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+        && GetOwningArena() != nullptr
+  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+    ) {
+      InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return default_instance().GetMetadata().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return default_instance().GetMetadata().reflection;
+  }
+  static const S2S_REQ_TRADE_COMMIT& default_instance() {
+    return *internal_default_instance();
+  }
+  static inline const S2S_REQ_TRADE_COMMIT* internal_default_instance() {
+    return reinterpret_cast<const S2S_REQ_TRADE_COMMIT*>(
+               &_S2S_REQ_TRADE_COMMIT_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    22;
+
+  friend void swap(S2S_REQ_TRADE_COMMIT& a, S2S_REQ_TRADE_COMMIT& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(S2S_REQ_TRADE_COMMIT* other) {
+    if (other == this) return;
+  #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetOwningArena() != nullptr &&
+        GetOwningArena() == other->GetOwningArena()) {
+   #else  // PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetOwningArena() == other->GetOwningArena()) {
+  #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(S2S_REQ_TRADE_COMMIT* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetOwningArena() == other->GetOwningArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  S2S_REQ_TRADE_COMMIT* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
+    return CreateMaybeMessage<S2S_REQ_TRADE_COMMIT>(arena);
+  }
+  using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
+  void CopyFrom(const S2S_REQ_TRADE_COMMIT& from);
+  using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
+  void MergeFrom( const S2S_REQ_TRADE_COMMIT& from) {
+    S2S_REQ_TRADE_COMMIT::MergeImpl(*this, from);
+  }
+  private:
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg);
+  public:
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  uint8_t* _InternalSerialize(
+      uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
+
+  private:
+  void SharedCtor(::PROTOBUF_NAMESPACE_ID::Arena* arena, bool is_message_owned);
+  void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(S2S_REQ_TRADE_COMMIT* other);
+
+  private:
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "Protocol.S2S_REQ_TRADE_COMMIT";
+  }
+  protected:
+  explicit S2S_REQ_TRADE_COMMIT(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                       bool is_message_owned = false);
+  public:
+
+  static const ClassData _class_data_;
+  const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*GetClassData() const final;
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kFinalAItemsFieldNumber = 7,
+    kDeletedAItemUidsFieldNumber = 8,
+    kFinalBItemsFieldNumber = 9,
+    kDeletedBItemUidsFieldNumber = 10,
+    kTradeIdFieldNumber = 1,
+    kChannelIdFieldNumber = 2,
+    kMapIdFieldNumber = 3,
+    kInstanceIdFieldNumber = 4,
+    kPlayerAIdFieldNumber = 5,
+    kPlayerBIdFieldNumber = 6,
+    kRequestIdFieldNumber = 11,
+  };
+  // repeated .Protocol.ItemInfo finalAItems = 7;
+  int finalaitems_size() const;
+  private:
+  int _internal_finalaitems_size() const;
+  public:
+  void clear_finalaitems();
+  ::Protocol::ItemInfo* mutable_finalaitems(int index);
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::Protocol::ItemInfo >*
+      mutable_finalaitems();
+  private:
+  const ::Protocol::ItemInfo& _internal_finalaitems(int index) const;
+  ::Protocol::ItemInfo* _internal_add_finalaitems();
+  public:
+  const ::Protocol::ItemInfo& finalaitems(int index) const;
+  ::Protocol::ItemInfo* add_finalaitems();
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::Protocol::ItemInfo >&
+      finalaitems() const;
+
+  // repeated uint64 deletedAItemUids = 8;
+  int deletedaitemuids_size() const;
+  private:
+  int _internal_deletedaitemuids_size() const;
+  public:
+  void clear_deletedaitemuids();
+  private:
+  uint64_t _internal_deletedaitemuids(int index) const;
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint64_t >&
+      _internal_deletedaitemuids() const;
+  void _internal_add_deletedaitemuids(uint64_t value);
+  ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint64_t >*
+      _internal_mutable_deletedaitemuids();
+  public:
+  uint64_t deletedaitemuids(int index) const;
+  void set_deletedaitemuids(int index, uint64_t value);
+  void add_deletedaitemuids(uint64_t value);
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint64_t >&
+      deletedaitemuids() const;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint64_t >*
+      mutable_deletedaitemuids();
+
+  // repeated .Protocol.ItemInfo finalBItems = 9;
+  int finalbitems_size() const;
+  private:
+  int _internal_finalbitems_size() const;
+  public:
+  void clear_finalbitems();
+  ::Protocol::ItemInfo* mutable_finalbitems(int index);
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::Protocol::ItemInfo >*
+      mutable_finalbitems();
+  private:
+  const ::Protocol::ItemInfo& _internal_finalbitems(int index) const;
+  ::Protocol::ItemInfo* _internal_add_finalbitems();
+  public:
+  const ::Protocol::ItemInfo& finalbitems(int index) const;
+  ::Protocol::ItemInfo* add_finalbitems();
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::Protocol::ItemInfo >&
+      finalbitems() const;
+
+  // repeated uint64 deletedBItemUids = 10;
+  int deletedbitemuids_size() const;
+  private:
+  int _internal_deletedbitemuids_size() const;
+  public:
+  void clear_deletedbitemuids();
+  private:
+  uint64_t _internal_deletedbitemuids(int index) const;
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint64_t >&
+      _internal_deletedbitemuids() const;
+  void _internal_add_deletedbitemuids(uint64_t value);
+  ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint64_t >*
+      _internal_mutable_deletedbitemuids();
+  public:
+  uint64_t deletedbitemuids(int index) const;
+  void set_deletedbitemuids(int index, uint64_t value);
+  void add_deletedbitemuids(uint64_t value);
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint64_t >&
+      deletedbitemuids() const;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint64_t >*
+      mutable_deletedbitemuids();
+
+  // uint64 tradeId = 1;
+  void clear_tradeid();
+  uint64_t tradeid() const;
+  void set_tradeid(uint64_t value);
+  private:
+  uint64_t _internal_tradeid() const;
+  void _internal_set_tradeid(uint64_t value);
+  public:
+
+  // int32 channelId = 2;
+  void clear_channelid();
+  int32_t channelid() const;
+  void set_channelid(int32_t value);
+  private:
+  int32_t _internal_channelid() const;
+  void _internal_set_channelid(int32_t value);
+  public:
+
+  // int32 mapId = 3;
+  void clear_mapid();
+  int32_t mapid() const;
+  void set_mapid(int32_t value);
+  private:
+  int32_t _internal_mapid() const;
+  void _internal_set_mapid(int32_t value);
+  public:
+
+  // int64 instanceId = 4;
+  void clear_instanceid();
+  int64_t instanceid() const;
+  void set_instanceid(int64_t value);
+  private:
+  int64_t _internal_instanceid() const;
+  void _internal_set_instanceid(int64_t value);
+  public:
+
+  // uint64 playerAId = 5;
+  void clear_playeraid();
+  uint64_t playeraid() const;
+  void set_playeraid(uint64_t value);
+  private:
+  uint64_t _internal_playeraid() const;
+  void _internal_set_playeraid(uint64_t value);
+  public:
+
+  // uint64 playerBId = 6;
+  void clear_playerbid();
+  uint64_t playerbid() const;
+  void set_playerbid(uint64_t value);
+  private:
+  uint64_t _internal_playerbid() const;
+  void _internal_set_playerbid(uint64_t value);
+  public:
+
+  // uint64 requestId = 11;
+  void clear_requestid();
+  uint64_t requestid() const;
+  void set_requestid(uint64_t value);
+  private:
+  uint64_t _internal_requestid() const;
+  void _internal_set_requestid(uint64_t value);
+  public:
+
+  // @@protoc_insertion_point(class_scope:Protocol.S2S_REQ_TRADE_COMMIT)
+ private:
+  class _Internal;
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  struct Impl_ {
+    ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::Protocol::ItemInfo > finalaitems_;
+    ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint64_t > deletedaitemuids_;
+    mutable std::atomic<int> _deletedaitemuids_cached_byte_size_;
+    ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::Protocol::ItemInfo > finalbitems_;
+    ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint64_t > deletedbitemuids_;
+    mutable std::atomic<int> _deletedbitemuids_cached_byte_size_;
+    uint64_t tradeid_;
+    int32_t channelid_;
+    int32_t mapid_;
+    int64_t instanceid_;
+    uint64_t playeraid_;
+    uint64_t playerbid_;
+    uint64_t requestid_;
+    mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  };
+  union { Impl_ _impl_; };
+  friend struct ::TableStruct_Protocol_5fS2S_2eproto;
+};
+// -------------------------------------------------------------------
+
+class S2S_RES_TRADE_COMMIT final :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:Protocol.S2S_RES_TRADE_COMMIT) */ {
+ public:
+  inline S2S_RES_TRADE_COMMIT() : S2S_RES_TRADE_COMMIT(nullptr) {}
+  ~S2S_RES_TRADE_COMMIT() override;
+  explicit PROTOBUF_CONSTEXPR S2S_RES_TRADE_COMMIT(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+
+  S2S_RES_TRADE_COMMIT(const S2S_RES_TRADE_COMMIT& from);
+  S2S_RES_TRADE_COMMIT(S2S_RES_TRADE_COMMIT&& from) noexcept
+    : S2S_RES_TRADE_COMMIT() {
+    *this = ::std::move(from);
+  }
+
+  inline S2S_RES_TRADE_COMMIT& operator=(const S2S_RES_TRADE_COMMIT& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline S2S_RES_TRADE_COMMIT& operator=(S2S_RES_TRADE_COMMIT&& from) noexcept {
+    if (this == &from) return *this;
+    if (GetOwningArena() == from.GetOwningArena()
+  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+        && GetOwningArena() != nullptr
+  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+    ) {
+      InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return default_instance().GetMetadata().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return default_instance().GetMetadata().reflection;
+  }
+  static const S2S_RES_TRADE_COMMIT& default_instance() {
+    return *internal_default_instance();
+  }
+  static inline const S2S_RES_TRADE_COMMIT* internal_default_instance() {
+    return reinterpret_cast<const S2S_RES_TRADE_COMMIT*>(
+               &_S2S_RES_TRADE_COMMIT_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    23;
+
+  friend void swap(S2S_RES_TRADE_COMMIT& a, S2S_RES_TRADE_COMMIT& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(S2S_RES_TRADE_COMMIT* other) {
+    if (other == this) return;
+  #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetOwningArena() != nullptr &&
+        GetOwningArena() == other->GetOwningArena()) {
+   #else  // PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetOwningArena() == other->GetOwningArena()) {
+  #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(S2S_RES_TRADE_COMMIT* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetOwningArena() == other->GetOwningArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  S2S_RES_TRADE_COMMIT* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
+    return CreateMaybeMessage<S2S_RES_TRADE_COMMIT>(arena);
+  }
+  using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
+  void CopyFrom(const S2S_RES_TRADE_COMMIT& from);
+  using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
+  void MergeFrom( const S2S_RES_TRADE_COMMIT& from) {
+    S2S_RES_TRADE_COMMIT::MergeImpl(*this, from);
+  }
+  private:
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg);
+  public:
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  uint8_t* _InternalSerialize(
+      uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
+
+  private:
+  void SharedCtor(::PROTOBUF_NAMESPACE_ID::Arena* arena, bool is_message_owned);
+  void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(S2S_RES_TRADE_COMMIT* other);
+
+  private:
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "Protocol.S2S_RES_TRADE_COMMIT";
+  }
+  protected:
+  explicit S2S_RES_TRADE_COMMIT(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                       bool is_message_owned = false);
+  public:
+
+  static const ClassData _class_data_;
+  const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*GetClassData() const final;
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kTradeIdFieldNumber = 1,
+    kChannelIdFieldNumber = 2,
+    kMapIdFieldNumber = 3,
+    kInstanceIdFieldNumber = 4,
+    kSuccessFieldNumber = 5,
+    kFailCodeFieldNumber = 6,
+    kRequestIdFieldNumber = 7,
+  };
+  // uint64 tradeId = 1;
+  void clear_tradeid();
+  uint64_t tradeid() const;
+  void set_tradeid(uint64_t value);
+  private:
+  uint64_t _internal_tradeid() const;
+  void _internal_set_tradeid(uint64_t value);
+  public:
+
+  // int32 channelId = 2;
+  void clear_channelid();
+  int32_t channelid() const;
+  void set_channelid(int32_t value);
+  private:
+  int32_t _internal_channelid() const;
+  void _internal_set_channelid(int32_t value);
+  public:
+
+  // int32 mapId = 3;
+  void clear_mapid();
+  int32_t mapid() const;
+  void set_mapid(int32_t value);
+  private:
+  int32_t _internal_mapid() const;
+  void _internal_set_mapid(int32_t value);
+  public:
+
+  // int64 instanceId = 4;
+  void clear_instanceid();
+  int64_t instanceid() const;
+  void set_instanceid(int64_t value);
+  private:
+  int64_t _internal_instanceid() const;
+  void _internal_set_instanceid(int64_t value);
+  public:
+
+  // bool success = 5;
+  void clear_success();
+  bool success() const;
+  void set_success(bool value);
+  private:
+  bool _internal_success() const;
+  void _internal_set_success(bool value);
+  public:
+
+  // .Protocol.TradeFailCode failCode = 6;
+  void clear_failcode();
+  ::Protocol::TradeFailCode failcode() const;
+  void set_failcode(::Protocol::TradeFailCode value);
+  private:
+  ::Protocol::TradeFailCode _internal_failcode() const;
+  void _internal_set_failcode(::Protocol::TradeFailCode value);
+  public:
+
+  // uint64 requestId = 7;
+  void clear_requestid();
+  uint64_t requestid() const;
+  void set_requestid(uint64_t value);
+  private:
+  uint64_t _internal_requestid() const;
+  void _internal_set_requestid(uint64_t value);
+  public:
+
+  // @@protoc_insertion_point(class_scope:Protocol.S2S_RES_TRADE_COMMIT)
+ private:
+  class _Internal;
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  struct Impl_ {
+    uint64_t tradeid_;
+    int32_t channelid_;
+    int32_t mapid_;
+    int64_t instanceid_;
+    bool success_;
+    int failcode_;
+    uint64_t requestid_;
+    mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  };
+  union { Impl_ _impl_; };
+  friend struct ::TableStruct_Protocol_5fS2S_2eproto;
+};
 // ===================================================================
 
 
@@ -5304,9 +5830,469 @@ inline void S2S_RES_SAVE_QUICKSLOT::set_playerid(uint64_t value) {
   // @@protoc_insertion_point(field_set:Protocol.S2S_RES_SAVE_QUICKSLOT.playerId)
 }
 
+// -------------------------------------------------------------------
+
+// S2S_REQ_TRADE_COMMIT
+
+// uint64 tradeId = 1;
+inline void S2S_REQ_TRADE_COMMIT::clear_tradeid() {
+  _impl_.tradeid_ = uint64_t{0u};
+}
+inline uint64_t S2S_REQ_TRADE_COMMIT::_internal_tradeid() const {
+  return _impl_.tradeid_;
+}
+inline uint64_t S2S_REQ_TRADE_COMMIT::tradeid() const {
+  // @@protoc_insertion_point(field_get:Protocol.S2S_REQ_TRADE_COMMIT.tradeId)
+  return _internal_tradeid();
+}
+inline void S2S_REQ_TRADE_COMMIT::_internal_set_tradeid(uint64_t value) {
+  
+  _impl_.tradeid_ = value;
+}
+inline void S2S_REQ_TRADE_COMMIT::set_tradeid(uint64_t value) {
+  _internal_set_tradeid(value);
+  // @@protoc_insertion_point(field_set:Protocol.S2S_REQ_TRADE_COMMIT.tradeId)
+}
+
+// int32 channelId = 2;
+inline void S2S_REQ_TRADE_COMMIT::clear_channelid() {
+  _impl_.channelid_ = 0;
+}
+inline int32_t S2S_REQ_TRADE_COMMIT::_internal_channelid() const {
+  return _impl_.channelid_;
+}
+inline int32_t S2S_REQ_TRADE_COMMIT::channelid() const {
+  // @@protoc_insertion_point(field_get:Protocol.S2S_REQ_TRADE_COMMIT.channelId)
+  return _internal_channelid();
+}
+inline void S2S_REQ_TRADE_COMMIT::_internal_set_channelid(int32_t value) {
+  
+  _impl_.channelid_ = value;
+}
+inline void S2S_REQ_TRADE_COMMIT::set_channelid(int32_t value) {
+  _internal_set_channelid(value);
+  // @@protoc_insertion_point(field_set:Protocol.S2S_REQ_TRADE_COMMIT.channelId)
+}
+
+// int32 mapId = 3;
+inline void S2S_REQ_TRADE_COMMIT::clear_mapid() {
+  _impl_.mapid_ = 0;
+}
+inline int32_t S2S_REQ_TRADE_COMMIT::_internal_mapid() const {
+  return _impl_.mapid_;
+}
+inline int32_t S2S_REQ_TRADE_COMMIT::mapid() const {
+  // @@protoc_insertion_point(field_get:Protocol.S2S_REQ_TRADE_COMMIT.mapId)
+  return _internal_mapid();
+}
+inline void S2S_REQ_TRADE_COMMIT::_internal_set_mapid(int32_t value) {
+  
+  _impl_.mapid_ = value;
+}
+inline void S2S_REQ_TRADE_COMMIT::set_mapid(int32_t value) {
+  _internal_set_mapid(value);
+  // @@protoc_insertion_point(field_set:Protocol.S2S_REQ_TRADE_COMMIT.mapId)
+}
+
+// int64 instanceId = 4;
+inline void S2S_REQ_TRADE_COMMIT::clear_instanceid() {
+  _impl_.instanceid_ = int64_t{0};
+}
+inline int64_t S2S_REQ_TRADE_COMMIT::_internal_instanceid() const {
+  return _impl_.instanceid_;
+}
+inline int64_t S2S_REQ_TRADE_COMMIT::instanceid() const {
+  // @@protoc_insertion_point(field_get:Protocol.S2S_REQ_TRADE_COMMIT.instanceId)
+  return _internal_instanceid();
+}
+inline void S2S_REQ_TRADE_COMMIT::_internal_set_instanceid(int64_t value) {
+  
+  _impl_.instanceid_ = value;
+}
+inline void S2S_REQ_TRADE_COMMIT::set_instanceid(int64_t value) {
+  _internal_set_instanceid(value);
+  // @@protoc_insertion_point(field_set:Protocol.S2S_REQ_TRADE_COMMIT.instanceId)
+}
+
+// uint64 playerAId = 5;
+inline void S2S_REQ_TRADE_COMMIT::clear_playeraid() {
+  _impl_.playeraid_ = uint64_t{0u};
+}
+inline uint64_t S2S_REQ_TRADE_COMMIT::_internal_playeraid() const {
+  return _impl_.playeraid_;
+}
+inline uint64_t S2S_REQ_TRADE_COMMIT::playeraid() const {
+  // @@protoc_insertion_point(field_get:Protocol.S2S_REQ_TRADE_COMMIT.playerAId)
+  return _internal_playeraid();
+}
+inline void S2S_REQ_TRADE_COMMIT::_internal_set_playeraid(uint64_t value) {
+  
+  _impl_.playeraid_ = value;
+}
+inline void S2S_REQ_TRADE_COMMIT::set_playeraid(uint64_t value) {
+  _internal_set_playeraid(value);
+  // @@protoc_insertion_point(field_set:Protocol.S2S_REQ_TRADE_COMMIT.playerAId)
+}
+
+// uint64 playerBId = 6;
+inline void S2S_REQ_TRADE_COMMIT::clear_playerbid() {
+  _impl_.playerbid_ = uint64_t{0u};
+}
+inline uint64_t S2S_REQ_TRADE_COMMIT::_internal_playerbid() const {
+  return _impl_.playerbid_;
+}
+inline uint64_t S2S_REQ_TRADE_COMMIT::playerbid() const {
+  // @@protoc_insertion_point(field_get:Protocol.S2S_REQ_TRADE_COMMIT.playerBId)
+  return _internal_playerbid();
+}
+inline void S2S_REQ_TRADE_COMMIT::_internal_set_playerbid(uint64_t value) {
+  
+  _impl_.playerbid_ = value;
+}
+inline void S2S_REQ_TRADE_COMMIT::set_playerbid(uint64_t value) {
+  _internal_set_playerbid(value);
+  // @@protoc_insertion_point(field_set:Protocol.S2S_REQ_TRADE_COMMIT.playerBId)
+}
+
+// repeated .Protocol.ItemInfo finalAItems = 7;
+inline int S2S_REQ_TRADE_COMMIT::_internal_finalaitems_size() const {
+  return _impl_.finalaitems_.size();
+}
+inline int S2S_REQ_TRADE_COMMIT::finalaitems_size() const {
+  return _internal_finalaitems_size();
+}
+inline ::Protocol::ItemInfo* S2S_REQ_TRADE_COMMIT::mutable_finalaitems(int index) {
+  // @@protoc_insertion_point(field_mutable:Protocol.S2S_REQ_TRADE_COMMIT.finalAItems)
+  return _impl_.finalaitems_.Mutable(index);
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::Protocol::ItemInfo >*
+S2S_REQ_TRADE_COMMIT::mutable_finalaitems() {
+  // @@protoc_insertion_point(field_mutable_list:Protocol.S2S_REQ_TRADE_COMMIT.finalAItems)
+  return &_impl_.finalaitems_;
+}
+inline const ::Protocol::ItemInfo& S2S_REQ_TRADE_COMMIT::_internal_finalaitems(int index) const {
+  return _impl_.finalaitems_.Get(index);
+}
+inline const ::Protocol::ItemInfo& S2S_REQ_TRADE_COMMIT::finalaitems(int index) const {
+  // @@protoc_insertion_point(field_get:Protocol.S2S_REQ_TRADE_COMMIT.finalAItems)
+  return _internal_finalaitems(index);
+}
+inline ::Protocol::ItemInfo* S2S_REQ_TRADE_COMMIT::_internal_add_finalaitems() {
+  return _impl_.finalaitems_.Add();
+}
+inline ::Protocol::ItemInfo* S2S_REQ_TRADE_COMMIT::add_finalaitems() {
+  ::Protocol::ItemInfo* _add = _internal_add_finalaitems();
+  // @@protoc_insertion_point(field_add:Protocol.S2S_REQ_TRADE_COMMIT.finalAItems)
+  return _add;
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::Protocol::ItemInfo >&
+S2S_REQ_TRADE_COMMIT::finalaitems() const {
+  // @@protoc_insertion_point(field_list:Protocol.S2S_REQ_TRADE_COMMIT.finalAItems)
+  return _impl_.finalaitems_;
+}
+
+// repeated uint64 deletedAItemUids = 8;
+inline int S2S_REQ_TRADE_COMMIT::_internal_deletedaitemuids_size() const {
+  return _impl_.deletedaitemuids_.size();
+}
+inline int S2S_REQ_TRADE_COMMIT::deletedaitemuids_size() const {
+  return _internal_deletedaitemuids_size();
+}
+inline void S2S_REQ_TRADE_COMMIT::clear_deletedaitemuids() {
+  _impl_.deletedaitemuids_.Clear();
+}
+inline uint64_t S2S_REQ_TRADE_COMMIT::_internal_deletedaitemuids(int index) const {
+  return _impl_.deletedaitemuids_.Get(index);
+}
+inline uint64_t S2S_REQ_TRADE_COMMIT::deletedaitemuids(int index) const {
+  // @@protoc_insertion_point(field_get:Protocol.S2S_REQ_TRADE_COMMIT.deletedAItemUids)
+  return _internal_deletedaitemuids(index);
+}
+inline void S2S_REQ_TRADE_COMMIT::set_deletedaitemuids(int index, uint64_t value) {
+  _impl_.deletedaitemuids_.Set(index, value);
+  // @@protoc_insertion_point(field_set:Protocol.S2S_REQ_TRADE_COMMIT.deletedAItemUids)
+}
+inline void S2S_REQ_TRADE_COMMIT::_internal_add_deletedaitemuids(uint64_t value) {
+  _impl_.deletedaitemuids_.Add(value);
+}
+inline void S2S_REQ_TRADE_COMMIT::add_deletedaitemuids(uint64_t value) {
+  _internal_add_deletedaitemuids(value);
+  // @@protoc_insertion_point(field_add:Protocol.S2S_REQ_TRADE_COMMIT.deletedAItemUids)
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint64_t >&
+S2S_REQ_TRADE_COMMIT::_internal_deletedaitemuids() const {
+  return _impl_.deletedaitemuids_;
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint64_t >&
+S2S_REQ_TRADE_COMMIT::deletedaitemuids() const {
+  // @@protoc_insertion_point(field_list:Protocol.S2S_REQ_TRADE_COMMIT.deletedAItemUids)
+  return _internal_deletedaitemuids();
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint64_t >*
+S2S_REQ_TRADE_COMMIT::_internal_mutable_deletedaitemuids() {
+  return &_impl_.deletedaitemuids_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint64_t >*
+S2S_REQ_TRADE_COMMIT::mutable_deletedaitemuids() {
+  // @@protoc_insertion_point(field_mutable_list:Protocol.S2S_REQ_TRADE_COMMIT.deletedAItemUids)
+  return _internal_mutable_deletedaitemuids();
+}
+
+// repeated .Protocol.ItemInfo finalBItems = 9;
+inline int S2S_REQ_TRADE_COMMIT::_internal_finalbitems_size() const {
+  return _impl_.finalbitems_.size();
+}
+inline int S2S_REQ_TRADE_COMMIT::finalbitems_size() const {
+  return _internal_finalbitems_size();
+}
+inline ::Protocol::ItemInfo* S2S_REQ_TRADE_COMMIT::mutable_finalbitems(int index) {
+  // @@protoc_insertion_point(field_mutable:Protocol.S2S_REQ_TRADE_COMMIT.finalBItems)
+  return _impl_.finalbitems_.Mutable(index);
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::Protocol::ItemInfo >*
+S2S_REQ_TRADE_COMMIT::mutable_finalbitems() {
+  // @@protoc_insertion_point(field_mutable_list:Protocol.S2S_REQ_TRADE_COMMIT.finalBItems)
+  return &_impl_.finalbitems_;
+}
+inline const ::Protocol::ItemInfo& S2S_REQ_TRADE_COMMIT::_internal_finalbitems(int index) const {
+  return _impl_.finalbitems_.Get(index);
+}
+inline const ::Protocol::ItemInfo& S2S_REQ_TRADE_COMMIT::finalbitems(int index) const {
+  // @@protoc_insertion_point(field_get:Protocol.S2S_REQ_TRADE_COMMIT.finalBItems)
+  return _internal_finalbitems(index);
+}
+inline ::Protocol::ItemInfo* S2S_REQ_TRADE_COMMIT::_internal_add_finalbitems() {
+  return _impl_.finalbitems_.Add();
+}
+inline ::Protocol::ItemInfo* S2S_REQ_TRADE_COMMIT::add_finalbitems() {
+  ::Protocol::ItemInfo* _add = _internal_add_finalbitems();
+  // @@protoc_insertion_point(field_add:Protocol.S2S_REQ_TRADE_COMMIT.finalBItems)
+  return _add;
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::Protocol::ItemInfo >&
+S2S_REQ_TRADE_COMMIT::finalbitems() const {
+  // @@protoc_insertion_point(field_list:Protocol.S2S_REQ_TRADE_COMMIT.finalBItems)
+  return _impl_.finalbitems_;
+}
+
+// repeated uint64 deletedBItemUids = 10;
+inline int S2S_REQ_TRADE_COMMIT::_internal_deletedbitemuids_size() const {
+  return _impl_.deletedbitemuids_.size();
+}
+inline int S2S_REQ_TRADE_COMMIT::deletedbitemuids_size() const {
+  return _internal_deletedbitemuids_size();
+}
+inline void S2S_REQ_TRADE_COMMIT::clear_deletedbitemuids() {
+  _impl_.deletedbitemuids_.Clear();
+}
+inline uint64_t S2S_REQ_TRADE_COMMIT::_internal_deletedbitemuids(int index) const {
+  return _impl_.deletedbitemuids_.Get(index);
+}
+inline uint64_t S2S_REQ_TRADE_COMMIT::deletedbitemuids(int index) const {
+  // @@protoc_insertion_point(field_get:Protocol.S2S_REQ_TRADE_COMMIT.deletedBItemUids)
+  return _internal_deletedbitemuids(index);
+}
+inline void S2S_REQ_TRADE_COMMIT::set_deletedbitemuids(int index, uint64_t value) {
+  _impl_.deletedbitemuids_.Set(index, value);
+  // @@protoc_insertion_point(field_set:Protocol.S2S_REQ_TRADE_COMMIT.deletedBItemUids)
+}
+inline void S2S_REQ_TRADE_COMMIT::_internal_add_deletedbitemuids(uint64_t value) {
+  _impl_.deletedbitemuids_.Add(value);
+}
+inline void S2S_REQ_TRADE_COMMIT::add_deletedbitemuids(uint64_t value) {
+  _internal_add_deletedbitemuids(value);
+  // @@protoc_insertion_point(field_add:Protocol.S2S_REQ_TRADE_COMMIT.deletedBItemUids)
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint64_t >&
+S2S_REQ_TRADE_COMMIT::_internal_deletedbitemuids() const {
+  return _impl_.deletedbitemuids_;
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint64_t >&
+S2S_REQ_TRADE_COMMIT::deletedbitemuids() const {
+  // @@protoc_insertion_point(field_list:Protocol.S2S_REQ_TRADE_COMMIT.deletedBItemUids)
+  return _internal_deletedbitemuids();
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint64_t >*
+S2S_REQ_TRADE_COMMIT::_internal_mutable_deletedbitemuids() {
+  return &_impl_.deletedbitemuids_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint64_t >*
+S2S_REQ_TRADE_COMMIT::mutable_deletedbitemuids() {
+  // @@protoc_insertion_point(field_mutable_list:Protocol.S2S_REQ_TRADE_COMMIT.deletedBItemUids)
+  return _internal_mutable_deletedbitemuids();
+}
+
+// uint64 requestId = 11;
+inline void S2S_REQ_TRADE_COMMIT::clear_requestid() {
+  _impl_.requestid_ = uint64_t{0u};
+}
+inline uint64_t S2S_REQ_TRADE_COMMIT::_internal_requestid() const {
+  return _impl_.requestid_;
+}
+inline uint64_t S2S_REQ_TRADE_COMMIT::requestid() const {
+  // @@protoc_insertion_point(field_get:Protocol.S2S_REQ_TRADE_COMMIT.requestId)
+  return _internal_requestid();
+}
+inline void S2S_REQ_TRADE_COMMIT::_internal_set_requestid(uint64_t value) {
+  
+  _impl_.requestid_ = value;
+}
+inline void S2S_REQ_TRADE_COMMIT::set_requestid(uint64_t value) {
+  _internal_set_requestid(value);
+  // @@protoc_insertion_point(field_set:Protocol.S2S_REQ_TRADE_COMMIT.requestId)
+}
+
+// -------------------------------------------------------------------
+
+// S2S_RES_TRADE_COMMIT
+
+// uint64 tradeId = 1;
+inline void S2S_RES_TRADE_COMMIT::clear_tradeid() {
+  _impl_.tradeid_ = uint64_t{0u};
+}
+inline uint64_t S2S_RES_TRADE_COMMIT::_internal_tradeid() const {
+  return _impl_.tradeid_;
+}
+inline uint64_t S2S_RES_TRADE_COMMIT::tradeid() const {
+  // @@protoc_insertion_point(field_get:Protocol.S2S_RES_TRADE_COMMIT.tradeId)
+  return _internal_tradeid();
+}
+inline void S2S_RES_TRADE_COMMIT::_internal_set_tradeid(uint64_t value) {
+  
+  _impl_.tradeid_ = value;
+}
+inline void S2S_RES_TRADE_COMMIT::set_tradeid(uint64_t value) {
+  _internal_set_tradeid(value);
+  // @@protoc_insertion_point(field_set:Protocol.S2S_RES_TRADE_COMMIT.tradeId)
+}
+
+// int32 channelId = 2;
+inline void S2S_RES_TRADE_COMMIT::clear_channelid() {
+  _impl_.channelid_ = 0;
+}
+inline int32_t S2S_RES_TRADE_COMMIT::_internal_channelid() const {
+  return _impl_.channelid_;
+}
+inline int32_t S2S_RES_TRADE_COMMIT::channelid() const {
+  // @@protoc_insertion_point(field_get:Protocol.S2S_RES_TRADE_COMMIT.channelId)
+  return _internal_channelid();
+}
+inline void S2S_RES_TRADE_COMMIT::_internal_set_channelid(int32_t value) {
+  
+  _impl_.channelid_ = value;
+}
+inline void S2S_RES_TRADE_COMMIT::set_channelid(int32_t value) {
+  _internal_set_channelid(value);
+  // @@protoc_insertion_point(field_set:Protocol.S2S_RES_TRADE_COMMIT.channelId)
+}
+
+// int32 mapId = 3;
+inline void S2S_RES_TRADE_COMMIT::clear_mapid() {
+  _impl_.mapid_ = 0;
+}
+inline int32_t S2S_RES_TRADE_COMMIT::_internal_mapid() const {
+  return _impl_.mapid_;
+}
+inline int32_t S2S_RES_TRADE_COMMIT::mapid() const {
+  // @@protoc_insertion_point(field_get:Protocol.S2S_RES_TRADE_COMMIT.mapId)
+  return _internal_mapid();
+}
+inline void S2S_RES_TRADE_COMMIT::_internal_set_mapid(int32_t value) {
+  
+  _impl_.mapid_ = value;
+}
+inline void S2S_RES_TRADE_COMMIT::set_mapid(int32_t value) {
+  _internal_set_mapid(value);
+  // @@protoc_insertion_point(field_set:Protocol.S2S_RES_TRADE_COMMIT.mapId)
+}
+
+// int64 instanceId = 4;
+inline void S2S_RES_TRADE_COMMIT::clear_instanceid() {
+  _impl_.instanceid_ = int64_t{0};
+}
+inline int64_t S2S_RES_TRADE_COMMIT::_internal_instanceid() const {
+  return _impl_.instanceid_;
+}
+inline int64_t S2S_RES_TRADE_COMMIT::instanceid() const {
+  // @@protoc_insertion_point(field_get:Protocol.S2S_RES_TRADE_COMMIT.instanceId)
+  return _internal_instanceid();
+}
+inline void S2S_RES_TRADE_COMMIT::_internal_set_instanceid(int64_t value) {
+  
+  _impl_.instanceid_ = value;
+}
+inline void S2S_RES_TRADE_COMMIT::set_instanceid(int64_t value) {
+  _internal_set_instanceid(value);
+  // @@protoc_insertion_point(field_set:Protocol.S2S_RES_TRADE_COMMIT.instanceId)
+}
+
+// bool success = 5;
+inline void S2S_RES_TRADE_COMMIT::clear_success() {
+  _impl_.success_ = false;
+}
+inline bool S2S_RES_TRADE_COMMIT::_internal_success() const {
+  return _impl_.success_;
+}
+inline bool S2S_RES_TRADE_COMMIT::success() const {
+  // @@protoc_insertion_point(field_get:Protocol.S2S_RES_TRADE_COMMIT.success)
+  return _internal_success();
+}
+inline void S2S_RES_TRADE_COMMIT::_internal_set_success(bool value) {
+  
+  _impl_.success_ = value;
+}
+inline void S2S_RES_TRADE_COMMIT::set_success(bool value) {
+  _internal_set_success(value);
+  // @@protoc_insertion_point(field_set:Protocol.S2S_RES_TRADE_COMMIT.success)
+}
+
+// .Protocol.TradeFailCode failCode = 6;
+inline void S2S_RES_TRADE_COMMIT::clear_failcode() {
+  _impl_.failcode_ = 0;
+}
+inline ::Protocol::TradeFailCode S2S_RES_TRADE_COMMIT::_internal_failcode() const {
+  return static_cast< ::Protocol::TradeFailCode >(_impl_.failcode_);
+}
+inline ::Protocol::TradeFailCode S2S_RES_TRADE_COMMIT::failcode() const {
+  // @@protoc_insertion_point(field_get:Protocol.S2S_RES_TRADE_COMMIT.failCode)
+  return _internal_failcode();
+}
+inline void S2S_RES_TRADE_COMMIT::_internal_set_failcode(::Protocol::TradeFailCode value) {
+  
+  _impl_.failcode_ = value;
+}
+inline void S2S_RES_TRADE_COMMIT::set_failcode(::Protocol::TradeFailCode value) {
+  _internal_set_failcode(value);
+  // @@protoc_insertion_point(field_set:Protocol.S2S_RES_TRADE_COMMIT.failCode)
+}
+
+// uint64 requestId = 7;
+inline void S2S_RES_TRADE_COMMIT::clear_requestid() {
+  _impl_.requestid_ = uint64_t{0u};
+}
+inline uint64_t S2S_RES_TRADE_COMMIT::_internal_requestid() const {
+  return _impl_.requestid_;
+}
+inline uint64_t S2S_RES_TRADE_COMMIT::requestid() const {
+  // @@protoc_insertion_point(field_get:Protocol.S2S_RES_TRADE_COMMIT.requestId)
+  return _internal_requestid();
+}
+inline void S2S_RES_TRADE_COMMIT::_internal_set_requestid(uint64_t value) {
+  
+  _impl_.requestid_ = value;
+}
+inline void S2S_RES_TRADE_COMMIT::set_requestid(uint64_t value) {
+  _internal_set_requestid(value);
+  // @@protoc_insertion_point(field_set:Protocol.S2S_RES_TRADE_COMMIT.requestId)
+}
+
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------

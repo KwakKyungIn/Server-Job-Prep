@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "JobQueue.h"
 #include "Protocol.pb.h"
+#include "Protocol_S2S.pb.h"
 #include "SpatialGrid.h"
 #include "BattleSystem.h"
 #include "RoomActor.h" 
@@ -74,6 +75,9 @@ public:
     // =========================================================
     void SetInstanceId(int64 instanceId) { _instanceId = instanceId; }
     int64 GetInstanceId() const { return _instanceId; }
+
+    // [Trade Phase 2] DBAgent commit response (must run on actor thread)
+    void OnTradeCommitResult(Protocol::S2S_RES_TRADE_COMMIT pkt);
     bool IsInstanceRoom() const { return _instanceId != 0; }
 
     void MarkClosing(bool value = true) { _closing.store(value, std::memory_order_release); }
@@ -236,6 +240,21 @@ private:
         int32 count = 0;
     };
 
+    struct TradeCommitPlan
+    {
+        // Final snapshots for DBAgent (atomic SQL transaction)
+        std::vector<Protocol::ItemInfo> finalAItems;
+        std::vector<uint64> deletedAItemUids;
+        std::vector<Protocol::ItemInfo> finalBItems;
+        std::vector<uint64> deletedBItemUids;
+
+        // Client notifications (applied after DB success)
+        std::vector<Protocol::ItemInfo> notifyChangeA;
+        std::vector<uint64> notifyRemoveA;
+        std::vector<Protocol::ItemInfo> notifyChangeB;
+        std::vector<uint64> notifyRemoveB;
+    };
+
     struct TradeSession
     {
         uint64 tradeId = 0;
@@ -254,6 +273,10 @@ private:
 
         uint64 createdAtMs = 0;
         uint64 lastTouchedMs = 0;
+
+        // Phase 2: pending DB atomic commit (Actor thread only)
+        uint64 commitRequestId = 0;
+        std::unique_ptr<TradeCommitPlan> commitPlan;
     };
 
     void UpdateTrades_ActorOnly(uint64 nowMs);
@@ -261,7 +284,9 @@ private:
     void SendOfferUpdate_ActorOnly(uint64 tradeId, uint64 whoPlayerId);
     void SendReadyState_ActorOnly(uint64 tradeId);
 
-    bool TryCommitTrade_ActorOnly(uint64 tradeId, Protocol::TradeFailCode& outFail, std::string& outMsg);
+    bool BuildTradeCommitPlan_ActorOnly(uint64 tradeId, TradeCommitPlan& outPlan, Protocol::TradeFailCode& outFail, std::string& outMsg);
+    bool StartTradeCommitPhase2_ActorOnly(uint64 tradeId, Protocol::TradeFailCode& outFail, std::string& outMsg);
+    void OnTradeCommitResult_ActorOnly(const Protocol::S2S_RES_TRADE_COMMIT& pkt);
 
     TradeSession* FindTrade_ActorOnly(uint64 tradeId);
     TradeSession* FindTradeByPlayer_ActorOnly(uint64 playerId);

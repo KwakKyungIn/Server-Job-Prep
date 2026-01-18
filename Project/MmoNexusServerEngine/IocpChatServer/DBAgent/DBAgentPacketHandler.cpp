@@ -786,3 +786,189 @@ bool DBAgentPacketHandler::Handle_S2S_REQ_SAVE_QUICKSLOT(PacketSessionRef& sessi
 
 	return true;
 }
+
+// [Game -> DB] Trade atomic commit (Phase 2)
+// Apply both players' inventory snapshots in a single SQL transaction.
+bool DBAgentPacketHandler::Handle_S2S_REQ_TRADE_COMMIT(
+	PacketSessionRef& session,
+	Protocol::S2S_REQ_TRADE_COMMIT& pkt)
+{
+	auto gameSession = static_pointer_cast<GameSession>(session);
+
+	gameSession->PushJob(ObjectPool<Job>::MakeShared([gameSession, pkt]()
+		{
+			DBConnection* conn = GDBConnectionPool->Pop();
+			if (!conn)
+				return;
+
+			bool ok = true;
+			SQLLEN len = 0;
+
+			int64 playerAId = (int64)pkt.playeraid();
+			int64 playerBId = (int64)pkt.playerbid();
+
+			Protocol::S2S_RES_TRADE_COMMIT res;
+			res.set_tradeid(pkt.tradeid());
+			res.set_channelid(pkt.channelid());
+			res.set_mapid(pkt.mapid());
+			res.set_instanceid(pkt.instanceid());
+			res.set_requestid(pkt.requestid());
+			res.set_success(false);
+			res.set_failcode(Protocol::TRADE_FAIL_INTERNAL);
+
+			// ===============================
+			// BEGIN TRAN
+			// ===============================
+			conn->Unbind();
+			ok = conn->Execute(L"BEGIN TRAN");
+
+			// ===============================
+			// A: DELETE
+			// ===============================
+			if (ok)
+			{
+				for (uint64 uid : pkt.deletedaitemuids())
+				{
+					int64 itemUid = (int64)uid;
+
+					conn->Unbind();
+					if (!conn->Prepare(L"DELETE FROM ITEMS WHERE owner_id=? AND game_item_uid=?"))
+					{
+						ok = false; break;
+					}
+
+					ok &= conn->BindParam(1, SQL_C_SBIGINT, SQL_BIGINT, sizeof(int64), &playerAId, &len);
+					ok &= conn->BindParam(2, SQL_C_SBIGINT, SQL_BIGINT, sizeof(int64), &itemUid, &len);
+					ok &= conn->Execute();
+
+					if (!ok) break;
+				}
+			}
+
+			// ===============================
+			// A: UPSERT
+			// ===============================
+			if (ok)
+			{
+				for (const auto& item : pkt.finalaitems())
+				{
+					int64 itemUid = (int64)item.itemuid();
+					int32 templateId = item.templateid();
+					int32 slotIndex = item.slot();
+					int32 count = item.count();
+					int32 isEquipped = item.isequipped();
+
+					conn->Unbind();
+					if (!conn->Prepare(
+						L"UPDATE ITEMS SET owner_id=?, template_id=?, slot_index=?, count=?, is_equipped=? "
+						L"WHERE game_item_uid=?; "
+						L"IF @@ROWCOUNT = 0 "
+						L"INSERT INTO ITEMS(owner_id, game_item_uid, template_id, slot_index, count, is_equipped) "
+						L"VALUES(?,?,?,?,?,?)"))
+					{
+						ok = false; break;
+					}
+
+					// UPDATE
+					ok &= conn->BindParam(1, SQL_C_SBIGINT, SQL_BIGINT, sizeof(int64), &playerAId, &len);
+					ok &= conn->BindParam(2, SQL_C_SLONG, SQL_INTEGER, sizeof(int32), &templateId, &len);
+					ok &= conn->BindParam(3, SQL_C_SLONG, SQL_INTEGER, sizeof(int32), &slotIndex, &len);
+					ok &= conn->BindParam(4, SQL_C_SLONG, SQL_INTEGER, sizeof(int32), &count, &len);
+					ok &= conn->BindParam(5, SQL_C_SLONG, SQL_INTEGER, sizeof(int32), &isEquipped, &len);
+					ok &= conn->BindParam(6, SQL_C_SBIGINT, SQL_BIGINT, sizeof(int64), &itemUid, &len);
+
+					// INSERT
+					ok &= conn->BindParam(7, SQL_C_SBIGINT, SQL_BIGINT, sizeof(int64), &playerAId, &len);
+					ok &= conn->BindParam(8, SQL_C_SBIGINT, SQL_BIGINT, sizeof(int64), &itemUid, &len);
+					ok &= conn->BindParam(9, SQL_C_SLONG, SQL_INTEGER, sizeof(int32), &templateId, &len);
+					ok &= conn->BindParam(10, SQL_C_SLONG, SQL_INTEGER, sizeof(int32), &slotIndex, &len);
+					ok &= conn->BindParam(11, SQL_C_SLONG, SQL_INTEGER, sizeof(int32), &count, &len);
+					ok &= conn->BindParam(12, SQL_C_SLONG, SQL_INTEGER, sizeof(int32), &isEquipped, &len);
+
+					ok &= conn->Execute();
+
+					if (!ok) break;
+				}
+			}
+
+			// ===============================
+			// B: DELETE + UPSERT (동일 패턴)
+			// ===============================
+			if (ok)
+			{
+				for (uint64 uid : pkt.deletedbitemuids())
+				{
+					int64 itemUid = (int64)uid;
+
+					conn->Unbind();
+					if (!conn->Prepare(L"DELETE FROM ITEMS WHERE owner_id=? AND game_item_uid=?"))
+					{
+						ok = false; break;
+					}
+
+					ok &= conn->BindParam(1, SQL_C_SBIGINT, SQL_BIGINT, sizeof(int64), &playerBId, &len);
+					ok &= conn->BindParam(2, SQL_C_SBIGINT, SQL_BIGINT, sizeof(int64), &itemUid, &len);
+					ok &= conn->Execute();
+
+					if (!ok) break;
+				}
+			}
+
+			if (ok)
+			{
+				for (const auto& item : pkt.finalbitems())
+				{
+					int64 itemUid = (int64)item.itemuid();
+					int32 templateId = item.templateid();
+					int32 slotIndex = item.slot();
+					int32 count = item.count();
+					int32 isEquipped = item.isequipped();
+
+					conn->Unbind();
+					if (!conn->Prepare(
+						L"UPDATE ITEMS SET owner_id=?, template_id=?, slot_index=?, count=?, is_equipped=? "
+						L"WHERE game_item_uid=?; "
+						L"IF @@ROWCOUNT = 0 "
+						L"INSERT INTO ITEMS(owner_id, game_item_uid, template_id, slot_index, count, is_equipped) "
+						L"VALUES(?,?,?,?,?,?)"))
+					{
+						ok = false; break;
+					}
+
+					ok &= conn->BindParam(1, SQL_C_SBIGINT, SQL_BIGINT, sizeof(int64), &playerBId, &len);
+					ok &= conn->BindParam(2, SQL_C_SLONG, SQL_INTEGER, sizeof(int32), &templateId, &len);
+					ok &= conn->BindParam(3, SQL_C_SLONG, SQL_INTEGER, sizeof(int32), &slotIndex, &len);
+					ok &= conn->BindParam(4, SQL_C_SLONG, SQL_INTEGER, sizeof(int32), &count, &len);
+					ok &= conn->BindParam(5, SQL_C_SLONG, SQL_INTEGER, sizeof(int32), &isEquipped, &len);
+					ok &= conn->BindParam(6, SQL_C_SBIGINT, SQL_BIGINT, sizeof(int64), &itemUid, &len);
+
+					ok &= conn->BindParam(7, SQL_C_SBIGINT, SQL_BIGINT, sizeof(int64), &playerBId, &len);
+					ok &= conn->BindParam(8, SQL_C_SBIGINT, SQL_BIGINT, sizeof(int64), &itemUid, &len);
+					ok &= conn->BindParam(9, SQL_C_SLONG, SQL_INTEGER, sizeof(int32), &templateId, &len);
+					ok &= conn->BindParam(10, SQL_C_SLONG, SQL_INTEGER, sizeof(int32), &slotIndex, &len);
+					ok &= conn->BindParam(11, SQL_C_SLONG, SQL_INTEGER, sizeof(int32), &count, &len);
+					ok &= conn->BindParam(12, SQL_C_SLONG, SQL_INTEGER, sizeof(int32), &isEquipped, &len);
+
+					ok &= conn->Execute();
+
+					if (!ok) break;
+				}
+			}
+
+			// ===============================
+			// COMMIT / ROLLBACK
+			// ===============================
+			conn->Unbind();
+			if (ok) conn->Execute(L"COMMIT TRAN");
+			else    conn->Execute(L"ROLLBACK TRAN");
+
+			res.set_success(ok);
+			res.set_failcode(ok ? Protocol::TRADE_FAIL_NONE : Protocol::TRADE_FAIL_INTERNAL);
+
+			GDBConnectionPool->Push(conn);
+
+			gameSession->Send(DBAgentPacketHandler::MakeSendBuffer(res));
+		}));
+
+	return true;
+}

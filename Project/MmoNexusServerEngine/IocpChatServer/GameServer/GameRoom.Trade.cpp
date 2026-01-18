@@ -3,6 +3,7 @@
 #include "Player.h"
 #include "PlayerSession.h"
 #include "ClientPacketHandler.h"
+#include "S2SPacketHandler.h"
 #include "GameRoom.Net.h"
 #include "PersistenceService.h"
 #include "AutoCommitService.h"
@@ -395,24 +396,12 @@ void GameRoom::HandleTradeConfirmById(PlayerSessionRef session, uint64 playerId,
         Protocol::TradeFailCode failCode = Protocol::TRADE_FAIL_INTERNAL;
         std::string msg;
 
-        if (!TryCommitTrade_ActorOnly(tradeId, failCode, msg))
+        // Phase 2: DBAgent atomic commit (single SQL transaction for A/B)
+        if (!StartTradeCommitPhase2_ActorOnly(tradeId, failCode, msg))
         {
             CancelTrade_ActorOnly(tradeId, Protocol::TRADE_CANCEL_INTERNAL, failCode, msg);
             return;
         }
-
-        SendTradeResult(ts->playerAId, tradeId, true, Protocol::TRADE_FAIL_NONE, "");
-        SendTradeResult(ts->playerBId, tradeId, true, Protocol::TRADE_FAIL_NONE, "");
-
-        _tradeByPlayer.erase(ts->playerAId);
-        _tradeByPlayer.erase(ts->playerBId);
-
-        PlayerRef a = FindPlayer_ActorOnly(ts->playerAId);
-        PlayerRef b = FindPlayer_ActorOnly(ts->playerBId);
-        if (a) a->SetActiveTradeId_ActorOnly(0);
-        if (b) b->SetActiveTradeId_ActorOnly(0);
-
-        _trades.erase(tradeId);
     }
 }
 
@@ -426,6 +415,10 @@ void GameRoom::HandleTradeCancelById(PlayerSessionRef session, uint64 playerId, 
         return;
 
     if (playerId != ts->playerAId && playerId != ts->playerBId)
+        return;
+
+    // Once DBAgent commit is in flight, do not allow user-driven cancellation.
+    if (ts->state == TradeState::Committing)
         return;
 
     CancelTrade_ActorOnly(tradeId, pkt.reason());
@@ -474,6 +467,10 @@ void GameRoom::CancelTrade_ActorOnly(uint64 tradeId, Protocol::TradeCancelReason
     TradeSession* ts = FindTrade_ActorOnly(tradeId);
     if (!ts) return;
 
+    // Do not cancel a commit-in-flight trade unless it's an internal cancellation (e.g., DBAgent failure).
+    if (ts->state == TradeState::Committing && reason != Protocol::TRADE_CANCEL_INTERNAL)
+        return;
+
     const uint64 aId = ts->playerAId;
     const uint64 bId = ts->playerBId;
 
@@ -519,8 +516,10 @@ void GameRoom::UpdateTrades_ActorOnly(uint64 nowMs)
     }
 }
 
-bool GameRoom::TryCommitTrade_ActorOnly(uint64 tradeId, Protocol::TradeFailCode& outFail, std::string& outMsg)
+bool GameRoom::BuildTradeCommitPlan_ActorOnly(uint64 tradeId, TradeCommitPlan& outPlan, Protocol::TradeFailCode& outFail, std::string& outMsg)
 {
+    outPlan = TradeCommitPlan{};
+
     TradeSession* ts = FindTrade_ActorOnly(tradeId);
     if (!ts)
     {
@@ -538,6 +537,7 @@ bool GameRoom::TryCommitTrade_ActorOnly(uint64 tradeId, Protocol::TradeFailCode&
         return false;
     }
 
+    // Validate offers against current memory snapshot.
     for (const auto& kv : ts->offerA)
     {
         const TradeOfferEntry& e = kv.second;
@@ -561,6 +561,11 @@ bool GameRoom::TryCommitTrade_ActorOnly(uint64 tradeId, Protocol::TradeFailCode&
             return false;
         }
     }
+
+    // Work on temporary snapshots; memory is applied only after DBAgent success.
+    std::vector<Protocol::ItemInfo> aItems = a->GetItems();
+    std::vector<Protocol::ItemInfo> bItems = b->GetItems();
+
     std::vector<int32> slotsForA;
     std::vector<int32> slotsForB;
 
@@ -573,7 +578,7 @@ bool GameRoom::TryCommitTrade_ActorOnly(uint64 tradeId, Protocol::TradeFailCode&
     for (const auto& kv : ts->offerA)
     {
         const TradeOfferEntry& e = kv.second;
-        const Protocol::ItemInfo* it = FindItemByUidConst(a->GetItems(), e.itemUid);
+        const Protocol::ItemInfo* it = FindItemByUidConst(aItems, e.itemUid);
         if (it && e.count == it->count())
             freedSlotsA.push_back(it->slot());
     }
@@ -581,149 +586,106 @@ bool GameRoom::TryCommitTrade_ActorOnly(uint64 tradeId, Protocol::TradeFailCode&
     for (const auto& kv : ts->offerB)
     {
         const TradeOfferEntry& e = kv.second;
-        const Protocol::ItemInfo* it = FindItemByUidConst(b->GetItems(), e.itemUid);
+        const Protocol::ItemInfo* it = FindItemByUidConst(bItems, e.itemUid);
         if (it && e.count == it->count())
             freedSlotsB.push_back(it->slot());
     }
 
-    if (!AllocateEmptySlots(a->GetItems(), kTradeMaxInventorySlots, static_cast<int32>(ts->offerB.size()), freedSlotsA, slotsForA))
+    if (!AllocateEmptySlots(aItems, kTradeMaxInventorySlots, static_cast<int32>(ts->offerB.size()), freedSlotsA, slotsForA))
     {
         outFail = Protocol::TRADE_FAIL_INVENTORY_FULL;
         outMsg = "A inventory full";
         return false;
     }
 
-    if (!AllocateEmptySlots(b->GetItems(), kTradeMaxInventorySlots, static_cast<int32>(ts->offerA.size()), freedSlotsB, slotsForB))
+    if (!AllocateEmptySlots(bItems, kTradeMaxInventorySlots, static_cast<int32>(ts->offerA.size()), freedSlotsB, slotsForB))
     {
         outFail = Protocol::TRADE_FAIL_INVENTORY_FULL;
         outMsg = "B inventory full";
         return false;
     }
 
+    auto eraseByUid = [](std::vector<Protocol::ItemInfo>& items, uint64 uid) -> bool
+        {
+            for (auto it = items.begin(); it != items.end(); ++it)
+            {
+                if (static_cast<uint64>(it->itemuid()) == uid)
+                {
+                    items.erase(it);
+                    return true;
+                }
+            }
+            return false;
+        };
 
-    std::vector<uint64> removeA;
-    std::vector<uint64> removeB;
-    removeA.reserve(ts->offerA.size());
-    removeB.reserve(ts->offerB.size());
-
+    // Apply giver A changes (remove or decrement).
     for (const auto& kv : ts->offerA)
     {
         const TradeOfferEntry& e = kv.second;
-        Protocol::ItemInfo* it = FindItemByUid(a->GetItems(), e.itemUid);
+        Protocol::ItemInfo* it = FindItemByUid(aItems, e.itemUid);
         if (!it)
         {
             outFail = Protocol::TRADE_FAIL_INTERNAL;
-            outMsg = "commit: item missing A";
+            outMsg = "commit plan: item missing A";
             return false;
         }
 
         if (e.count == it->count())
         {
-            removeA.push_back(e.itemUid);
+            outPlan.deletedAItemUids.push_back(e.itemUid);
+            outPlan.notifyRemoveA.push_back(e.itemUid);
+
+            if (!eraseByUid(aItems, e.itemUid))
+            {
+                outFail = Protocol::TRADE_FAIL_INTERNAL;
+                outMsg = "commit plan: erase failed A";
+                return false;
+            }
         }
         else
         {
             it->set_count(it->count() - e.count);
-
-            Persistence::PersistenceService::I().UpdateInventoryItem(
-                a->GetPlayerId(),
-                static_cast<uint64>(it->itemuid()),
-                it->templateid(),
-                it->slot(),
-                it->count(),
-                it->isequipped()
-            );
-
-
-            Protocol::S_CHANGE_ITEM ch;
-            *ch.mutable_item() = *it;
-            SendToPlayer(a->GetPlayerId(), ClientPacketHandler::MakeSendBuffer(ch));
+            outPlan.notifyChangeA.push_back(*it);
         }
     }
 
-    for (uint64 uid : removeA)
-    {
-        auto& items = a->GetItems();
-        for (auto itv = items.begin(); itv != items.end(); ++itv)
-        {
-            if (static_cast<uint64>(itv->itemuid()) == uid)
-            {
-                Persistence::PersistenceService::I().RemoveInventoryItem(a->GetPlayerId(), uid);
-
-                Protocol::S_REMOVE_ITEM rm;
-                rm.set_itemuid(uid);
-                SendToPlayer(a->GetPlayerId(), ClientPacketHandler::MakeSendBuffer(rm));
-
-                items.erase(itv);
-                break;
-            }
-        }
-    }
-
+    // Apply giver B changes (remove or decrement).
     for (const auto& kv : ts->offerB)
     {
         const TradeOfferEntry& e = kv.second;
-        Protocol::ItemInfo* it = FindItemByUid(b->GetItems(), e.itemUid);
+        Protocol::ItemInfo* it = FindItemByUid(bItems, e.itemUid);
         if (!it)
         {
             outFail = Protocol::TRADE_FAIL_INTERNAL;
-            outMsg = "commit: item missing B";
+            outMsg = "commit plan: item missing B";
             return false;
         }
 
         if (e.count == it->count())
         {
-            removeB.push_back(e.itemUid);
+            outPlan.deletedBItemUids.push_back(e.itemUid);
+            outPlan.notifyRemoveB.push_back(e.itemUid);
+
+            if (!eraseByUid(bItems, e.itemUid))
+            {
+                outFail = Protocol::TRADE_FAIL_INTERNAL;
+                outMsg = "commit plan: erase failed B";
+                return false;
+            }
         }
         else
         {
             it->set_count(it->count() - e.count);
-
-            Persistence::PersistenceService::I().UpdateInventoryItem(
-                b->GetPlayerId(),
-                static_cast<uint64>(it->itemuid()),
-                it->templateid(),
-                it->slot(),
-                it->count(),
-                it->isequipped()
-            );
-
-
-            Protocol::S_CHANGE_ITEM ch;
-            *ch.mutable_item() = *it;
-            SendToPlayer(b->GetPlayerId(), ClientPacketHandler::MakeSendBuffer(ch));
+            outPlan.notifyChangeB.push_back(*it);
         }
     }
 
-    for (uint64 uid : removeB)
-    {
-        auto& items = b->GetItems();
-        for (auto itv = items.begin(); itv != items.end(); ++itv)
-        {
-            if (static_cast<uint64>(itv->itemuid()) == uid)
-            {
-                Persistence::PersistenceService::I().RemoveInventoryItem(b->GetPlayerId(), uid);
-
-                Protocol::S_REMOVE_ITEM rm;
-                rm.set_itemuid(uid);
-                SendToPlayer(b->GetPlayerId(), ClientPacketHandler::MakeSendBuffer(rm));
-
-                items.erase(itv);
-                break;
-            }
-        }
-    }
-
+    // Add incoming items to A (from B's offer).
     {
         int idx = 0;
         for (const auto& kv : ts->offerB)
         {
             const TradeOfferEntry& e = kv.second;
-            const Protocol::ItemInfo* giverItem = FindItemByUidConst(b->GetItems(), e.itemUid);
-            if (!giverItem)
-            {
-                // giver item might have been erased above (full removal). Use cached templateId.
-            }
 
             Protocol::ItemInfo newItem;
             newItem.set_itemuid(GameItemUidGen::Alloc());
@@ -732,24 +694,12 @@ bool GameRoom::TryCommitTrade_ActorOnly(uint64 tradeId, Protocol::TradeFailCode&
             newItem.set_slot(slotsForA[idx++]);
             newItem.set_isequipped(false);
 
-            a->GetItems().push_back(newItem);
-
-            Persistence::PersistenceService::I().UpdateInventoryItem(
-                a->GetPlayerId(),
-                static_cast<uint64>(newItem.itemuid()),
-                newItem.templateid(),
-                newItem.slot(),
-                newItem.count(),
-                newItem.isequipped()
-            );
-
-
-            Protocol::S_CHANGE_ITEM ch;
-            *ch.mutable_item() = newItem;
-            SendToPlayer(a->GetPlayerId(), ClientPacketHandler::MakeSendBuffer(ch));
+            aItems.push_back(newItem);
+            outPlan.notifyChangeA.push_back(newItem);
         }
     }
 
+    // Add incoming items to B (from A's offer).
     {
         int idx = 0;
         for (const auto& kv : ts->offerA)
@@ -763,29 +713,177 @@ bool GameRoom::TryCommitTrade_ActorOnly(uint64 tradeId, Protocol::TradeFailCode&
             newItem.set_slot(slotsForB[idx++]);
             newItem.set_isequipped(false);
 
-            b->GetItems().push_back(newItem);
-
-            Persistence::PersistenceService::I().UpdateInventoryItem(
-                b->GetPlayerId(),
-                static_cast<uint64>(newItem.itemuid()),
-                newItem.templateid(),
-                newItem.slot(),
-                newItem.count(),
-                newItem.isequipped()
-            );
-
-
-            Protocol::S_CHANGE_ITEM ch;
-            *ch.mutable_item() = newItem;
-            SendToPlayer(b->GetPlayerId(), ClientPacketHandler::MakeSendBuffer(ch));
+            bItems.push_back(newItem);
+            outPlan.notifyChangeB.push_back(newItem);
         }
     }
 
-    // FlushNow (Phase 1 safety)
-    Persistence::AutoCommitService::I().RequestFlushNow(a->GetPlayerId());
-    Persistence::AutoCommitService::I().RequestFlushNow(b->GetPlayerId());
+    outPlan.finalAItems = std::move(aItems);
+    outPlan.finalBItems = std::move(bItems);
 
     outFail = Protocol::TRADE_FAIL_NONE;
     outMsg.clear();
     return true;
+}
+
+bool GameRoom::StartTradeCommitPhase2_ActorOnly(uint64 tradeId, Protocol::TradeFailCode& outFail, std::string& outMsg)
+{
+    TradeSession* ts = FindTrade_ActorOnly(tradeId);
+    if (!ts)
+    {
+        outFail = Protocol::TRADE_FAIL_INVALID_STATE;
+        outMsg = "trade not found";
+        return false;
+    }
+
+    if (ts->commitPlan)
+    {
+        outFail = Protocol::TRADE_FAIL_INVALID_STATE;
+        outMsg = "commit already in flight";
+        return false;
+    }
+
+    TradeCommitPlan plan;
+    if (!BuildTradeCommitPlan_ActorOnly(tradeId, plan, outFail, outMsg))
+        return false;
+
+    ts->commitPlan = std::make_unique<TradeCommitPlan>(std::move(plan));
+
+    // Build S2S request.
+    Protocol::S2S_REQ_TRADE_COMMIT req;
+    req.set_tradeid(tradeId);
+    req.set_channelid(GetChannelId());
+    req.set_mapid(GetMapId());
+    req.set_instanceid(GetInstanceId());
+    req.set_playeraid(ts->playerAId);
+    req.set_playerbid(ts->playerBId);
+
+    for (const auto& it : ts->commitPlan->finalAItems)
+        *req.add_finalaitems() = it;
+    for (uint64 uid : ts->commitPlan->deletedAItemUids)
+        req.add_deletedaitemuids(uid);
+
+    for (const auto& it : ts->commitPlan->finalBItems)
+        *req.add_finalbitems() = it;
+    for (uint64 uid : ts->commitPlan->deletedBItemUids)
+        req.add_deletedbitemuids(uid);
+
+    // Optional request id (useful for stale response filtering).
+    static std::atomic<uint64> s_tradeCommitReqGen{ 1 };
+    ts->commitRequestId = s_tradeCommitReqGen.fetch_add(1);
+    req.set_requestid(ts->commitRequestId);
+
+    extern shared_ptr<PacketSession> G_DBSession;
+    if (G_DBSession == nullptr)
+    {
+        outFail = Protocol::TRADE_FAIL_INTERNAL;
+        outMsg = "DB session missing";
+        ts->commitPlan.reset();
+        ts->commitRequestId = 0;
+        return false;
+    }
+
+    // Note: S2SPacketHandler is auto-generated from Protocol_S2S.proto.
+    G_DBSession->Send(S2SPacketHandler::MakeSendBuffer(req));
+    return true;
+}
+
+void GameRoom::OnTradeCommitResult(Protocol::S2S_RES_TRADE_COMMIT pkt)
+{
+    // This is called on GameRoom actor thread.
+    OnTradeCommitResult_ActorOnly(pkt);
+}
+
+void GameRoom::OnTradeCommitResult_ActorOnly(const Protocol::S2S_RES_TRADE_COMMIT& pkt)
+{
+    const uint64 tradeId = pkt.tradeid();
+    TradeSession* ts = FindTrade_ActorOnly(tradeId);
+    if (!ts)
+        return;
+
+    if (ts->state != TradeState::Committing)
+        return;
+
+    if (ts->commitRequestId != 0 && pkt.requestid() != 0 && pkt.requestid() != ts->commitRequestId)
+        return; // stale response
+
+    if (!ts->commitPlan)
+    {
+        CancelTrade_ActorOnly(tradeId, Protocol::TRADE_CANCEL_INTERNAL, Protocol::TRADE_FAIL_INTERNAL, "missing commit plan");
+        return;
+    }
+
+    if (!pkt.success())
+    {
+        Protocol::TradeFailCode fail = pkt.failcode();
+        if (fail == Protocol::TRADE_FAIL_NONE)
+            fail = Protocol::TRADE_FAIL_INTERNAL;
+        CancelTrade_ActorOnly(tradeId, Protocol::TRADE_CANCEL_INTERNAL, fail, "DB commit failed");
+        return;
+    }
+
+    PlayerRef a = FindPlayer_ActorOnly(ts->playerAId);
+    PlayerRef b = FindPlayer_ActorOnly(ts->playerBId);
+    if (!a || !b)
+    {
+        CancelTrade_ActorOnly(tradeId, Protocol::TRADE_CANCEL_INTERNAL, Protocol::TRADE_FAIL_INTERNAL, "player missing");
+        return;
+    }
+
+    const TradeCommitPlan& plan = *ts->commitPlan;
+
+    // Apply memory snapshots.
+    a->GetItems() = plan.finalAItems;
+    b->GetItems() = plan.finalBItems;
+
+    // Sync Redis (no extra autocommit flush).
+    for (uint64 uid : plan.deletedAItemUids)
+        Persistence::PersistenceService::I().RemoveInventoryItem(a->GetPlayerId(), uid, /*markDirty=*/false);
+    for (const auto& it : plan.finalAItems)
+        Persistence::PersistenceService::I().UpdateInventoryItem(a->GetPlayerId(), static_cast<uint64>(it.itemuid()), it.templateid(), it.slot(), it.count(), it.isequipped(), /*markDirty=*/false);
+    Persistence::PersistenceService::I().ClearDirtyOnCommitSuccess(a->GetPlayerId(), /*coreOk=*/false, /*invOk=*/true, /*qsOk=*/false);
+
+    for (uint64 uid : plan.deletedBItemUids)
+        Persistence::PersistenceService::I().RemoveInventoryItem(b->GetPlayerId(), uid, /*markDirty=*/false);
+    for (const auto& it : plan.finalBItems)
+        Persistence::PersistenceService::I().UpdateInventoryItem(b->GetPlayerId(), static_cast<uint64>(it.itemuid()), it.templateid(), it.slot(), it.count(), it.isequipped(), /*markDirty=*/false);
+    Persistence::PersistenceService::I().ClearDirtyOnCommitSuccess(b->GetPlayerId(), /*coreOk=*/false, /*invOk=*/true, /*qsOk=*/false);
+
+    // Notify clients (inventory delta).
+    for (uint64 uid : plan.notifyRemoveA)
+    {
+        Protocol::S_REMOVE_ITEM rm;
+        rm.set_itemuid(uid);
+        SendToPlayer(a->GetPlayerId(), ClientPacketHandler::MakeSendBuffer(rm));
+    }
+    for (const auto& it : plan.notifyChangeA)
+    {
+        Protocol::S_CHANGE_ITEM ch;
+        *ch.mutable_item() = it;
+        SendToPlayer(a->GetPlayerId(), ClientPacketHandler::MakeSendBuffer(ch));
+    }
+
+    for (uint64 uid : plan.notifyRemoveB)
+    {
+        Protocol::S_REMOVE_ITEM rm;
+        rm.set_itemuid(uid);
+        SendToPlayer(b->GetPlayerId(), ClientPacketHandler::MakeSendBuffer(rm));
+    }
+    for (const auto& it : plan.notifyChangeB)
+    {
+        Protocol::S_CHANGE_ITEM ch;
+        *ch.mutable_item() = it;
+        SendToPlayer(b->GetPlayerId(), ClientPacketHandler::MakeSendBuffer(ch));
+    }
+
+    SendTradeResult(ts->playerAId, tradeId, true, Protocol::TRADE_FAIL_NONE, "");
+    SendTradeResult(ts->playerBId, tradeId, true, Protocol::TRADE_FAIL_NONE, "");
+
+    _tradeByPlayer.erase(ts->playerAId);
+    _tradeByPlayer.erase(ts->playerBId);
+
+    a->SetActiveTradeId_ActorOnly(0);
+    b->SetActiveTradeId_ActorOnly(0);
+
+    _trades.erase(tradeId);
 }

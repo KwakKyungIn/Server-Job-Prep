@@ -23,7 +23,7 @@ bool S2SPacketHandler::Handle_INVALID(PacketSessionRef& session, BYTE* buffer, i
 // [DB -> Game] 로그인 결과 도착
 bool S2SPacketHandler::Handle_S2S_RES_LOGIN(PacketSessionRef& session, Protocol::S2S_RES_LOGIN& pkt)
 {
-	
+
 	return true;
 }
 
@@ -127,6 +127,25 @@ bool S2SPacketHandler::Handle_S2S_RES_SAVE_INVENTORY(PacketSessionRef& session, 
 		Persistence::PersistenceService::I().ClearDirtyOnCommitSuccess(pid, /*coreOk=*/false, /*invOk=*/true,/*qsOk=*/false);
 
 	Persistence::AutoCommitService::I().OnCommitFinished(pid);
+
+	return true;
+}
+
+// [DB -> Game] Trade atomic commit result (Phase 2)
+bool S2SPacketHandler::Handle_S2S_RES_TRADE_COMMIT(PacketSessionRef& session, Protocol::S2S_RES_TRADE_COMMIT& pkt)
+{
+	if (GRoomManager == nullptr)
+		return true;
+
+	auto room = GRoomManager->FindRoom(pkt.channelid(), pkt.mapid(), pkt.instanceid());
+	if (!room)
+		return true;
+
+	// Move to actor thread.
+	room->Push([room, pkt]() mutable
+		{
+			room->OnTradeCommitResult(pkt);
+		});
 
 	return true;
 }
