@@ -23,6 +23,13 @@ public class MyPlayerController : MonoBehaviour
     // ✅ [ADD] 카메라 기준 이동을 위한 FollowCamera 참조
     public FollowCamera followCam;
 
+    // ✅ [Trade RMB Click vs Drag]
+    // - RMB 드래그는 카메라 회전(orbit)로 쓰고
+    // - RMB 짧은 클릭만 거래 요청으로 처리
+    const float TRADE_RMB_CLICK_MAX_DRAG_PX = 6f;
+    bool _tradeRmbCandidate = false;
+    Vector3 _tradeRmbDownPos;
+
     uint _moveSeq = 0;
 
     // 권장 튜닝값
@@ -88,21 +95,42 @@ public class MyPlayerController : MonoBehaviour
         // ============================================================
         // [RIGHT CLICK -> TRADE REQUEST]
         // ============================================================
-        // - 우클릭한 대상이 다른 플레이어면 즉시 거래 신청
+        // - 우클릭 드래그는 카메라 회전(orbit)
+        // - 우클릭 짧은 클릭만 거래 신청
         // - UI 위 클릭은 무시
         if (Input.GetMouseButtonDown(1))
         {
-            if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
+            bool overUI = (EventSystem.current != null) && EventSystem.current.IsPointerOverGameObject();
+            if (overUI)
             {
-                // UI 위에서는 월드 상호작용 금지
+                _tradeRmbCandidate = false;
             }
             else
             {
-                TryRequestTradeByRightClick();
+                _tradeRmbCandidate = true;
+                _tradeRmbDownPos = Input.mousePosition;
             }
         }
 
+        if (_tradeRmbCandidate && Input.GetMouseButton(1))
+        {
+            // 드래그로 판정되면 카메라 회전 의도로 보고 trade 후보를 버린다
+            float drag = (Input.mousePosition - _tradeRmbDownPos).magnitude;
+            if (drag >= TRADE_RMB_CLICK_MAX_DRAG_PX)
+                _tradeRmbCandidate = false;
+        }
 
+        if (Input.GetMouseButtonUp(1))
+        {
+            bool overUI = (EventSystem.current != null) && EventSystem.current.IsPointerOverGameObject();
+            if (_tradeRmbCandidate && !overUI)
+            {
+                float drag = (Input.mousePosition - _tradeRmbDownPos).magnitude;
+                if (drag < TRADE_RMB_CLICK_MAX_DRAG_PX)
+                    TryRequestTradeByRightClick();
+            }
+            _tradeRmbCandidate = false;
+        }
         // ============================================================
         // [ATTACK]
         // ============================================================

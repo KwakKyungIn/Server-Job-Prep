@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-using UnityEngine.EventSystems; // ✅ 추가
+using UnityEngine.EventSystems; // ✅ UI 위 입력 차단
 
 public class FollowCamera : MonoBehaviour
 {
@@ -18,8 +18,15 @@ public class FollowCamera : MonoBehaviour
     public float followSpeed = 12f;
     public float rotateSpeed = 12f;
 
+    [Header("Input")]
+    [Tooltip("Right click is treated as orbit only when the mouse is dragged more than this many pixels.")]
+    public float rightDragThresholdPx = 6f;
+
     float _yaw;
     float _pitch;
+
+    bool _orbiting = false;
+    Vector3 _rmbDownPos;
 
     void Start()
     {
@@ -42,26 +49,52 @@ public class FollowCamera : MonoBehaviour
         bool overUI = (EventSystem.current != null) && EventSystem.current.IsPointerOverGameObject();
         if (overUI)
         {
-            // UI 조작 중 커서 락 풀기(카메라가 잡아채는 느낌 제거)
-            Cursor.lockState = CursorLockMode.None;
-            Cursor.visible = true;
+            ResetOrbitInput();
+            SetCursorUnlocked();
         }
         else
         {
-            // 우클릭 누르는 동안만 회전 (MMO 기본)
+            // ✅ [FIX] RMB 클릭(월드 상호작용) vs RMB 드래그(카메라 회전) 분리
+            if (Input.GetMouseButtonDown(1))
+            {
+                _orbiting = false;
+                _rmbDownPos = Input.mousePosition;
+            }
+
             if (Input.GetMouseButton(1))
             {
-                _yaw += Input.GetAxis("Mouse X") * mouseSensitivity;
-                _pitch -= Input.GetAxis("Mouse Y") * mouseSensitivity;
-                _pitch = ClampAngle(_pitch, pitchMin, pitchMax);
+                // 드래그 임계치 넘기기 전에는 '클릭'으로 취급해서 커서 락/회전 금지
+                if (_orbiting == false)
+                {
+                    float drag = (Input.mousePosition - _rmbDownPos).magnitude;
+                    if (drag >= rightDragThresholdPx)
+                        _orbiting = true;
+                }
 
-                Cursor.lockState = CursorLockMode.Locked;
-                Cursor.visible = false;
+                if (_orbiting)
+                {
+                    _yaw += Input.GetAxis("Mouse X") * mouseSensitivity;
+                    _pitch -= Input.GetAxis("Mouse Y") * mouseSensitivity;
+                    _pitch = ClampAngle(_pitch, pitchMin, pitchMax);
+
+                    Cursor.lockState = CursorLockMode.Locked;
+                    Cursor.visible = false;
+                }
+                else
+                {
+                    SetCursorUnlocked();
+                }
             }
             else
             {
-                Cursor.lockState = CursorLockMode.None;
-                Cursor.visible = true;
+                ResetOrbitInput();
+                SetCursorUnlocked();
+            }
+
+            if (Input.GetMouseButtonUp(1))
+            {
+                ResetOrbitInput();
+                SetCursorUnlocked();
             }
         }
 
@@ -72,6 +105,17 @@ public class FollowCamera : MonoBehaviour
 
         Quaternion desiredRot = Quaternion.LookRotation((target.position + Vector3.up * 1.5f) - transform.position);
         transform.rotation = Quaternion.Slerp(transform.rotation, desiredRot, rotateSpeed * Time.deltaTime);
+    }
+
+    void ResetOrbitInput()
+    {
+        _orbiting = false;
+    }
+
+    void SetCursorUnlocked()
+    {
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
     }
 
     static float ClampAngle(float angle, float min, float max)
