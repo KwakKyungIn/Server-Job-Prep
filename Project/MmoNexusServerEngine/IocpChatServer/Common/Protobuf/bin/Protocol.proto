@@ -93,6 +93,9 @@ message C_SKILL {
 message S_SKILL {
     uint64 objectId = 1; 
     int32 skillId = 2;    
+    // Skill cooldown duration in milliseconds (authoritative from server).
+    // Client can use this to drive UI cooldown overlay.
+    int32 cooldownMs = 3;
 }
 
 message S_CHANGE_HP {

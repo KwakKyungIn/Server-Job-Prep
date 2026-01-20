@@ -36,6 +36,7 @@ void GameRoom::HandleSkill(std::shared_ptr<Creature> attacker, int32 skillId, fl
             Protocol::S_SKILL skillPkt;
             skillPkt.set_objectid(NetId(attacker));
             skillPkt.set_skillid(skillId);
+            skillPkt.set_cooldownms(skillData->cooldown());
 
             SendBufferRef skillBuffer = ClientPacketHandler::MakeSendBuffer(skillPkt);
             BroadcastToZone(skillBuffer, zoneIndex);
@@ -103,6 +104,7 @@ void GameRoom::HandleSkill(std::shared_ptr<Creature> attacker, int32 skillId, fl
         Protocol::S_SKILL skillPkt;
         skillPkt.set_objectid(NetId(attacker));
         skillPkt.set_skillid(skillId);
+        skillPkt.set_cooldownms(skillData->cooldown());
 
         SendBufferRef skillBuffer = ClientPacketHandler::MakeSendBuffer(skillPkt);
         BroadcastToZone(skillBuffer, result.zoneIndex);
@@ -129,26 +131,26 @@ void GameRoom::HandleSkill(std::shared_ptr<Creature> attacker, int32 skillId, fl
 //    내부적으로 NEW 버전으로 포워딩
 void GameRoom::HandleSkill(std::shared_ptr<Creature> attacker, int32 skillId)
 {
-	HandleSkill(attacker, skillId, /*castYaw=*/0.f, /*clientTimeMs=*/0);
+    HandleSkill(attacker, skillId, /*castYaw=*/0.f, /*clientTimeMs=*/0);
 }
 
 
 //  NEW: 확장 버전
 void GameRoom::HandleSkillById(PlayerSessionRef session, uint64 playerId, int32 skillId, float castYaw, uint32 clientTimeMs)
 {
-	auto it = _players.find(playerId);
-	if (it == _players.end())
-		return;
+    auto it = _players.find(playerId);
+    if (it == _players.end())
+        return;
 
-	PlayerRef player = it->second;
-	if (!player) return;
+    PlayerRef player = it->second;
+    if (!player) return;
 
-	std::shared_ptr<Creature> attacker = std::static_pointer_cast<Creature>(player);
-	HandleSkill(attacker, skillId, castYaw, clientTimeMs);
+    std::shared_ptr<Creature> attacker = std::static_pointer_cast<Creature>(player);
+    HandleSkill(attacker, skillId, castYaw, clientTimeMs);
 }
 
 //  기존 버전 유지 (기존 호출부 안 깨지게)
 void GameRoom::HandleSkillById(PlayerSessionRef session, uint64 playerId, int32 skillId)
 {
-	HandleSkillById(session, playerId, skillId, /*castYaw=*/0.f, /*clientTimeMs=*/0);
+    HandleSkillById(session, playerId, skillId, /*castYaw=*/0.f, /*clientTimeMs=*/0);
 }

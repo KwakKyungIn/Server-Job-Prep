@@ -2285,6 +2285,7 @@ class S_SKILL final :
   enum : int {
     kObjectIdFieldNumber = 1,
     kSkillIdFieldNumber = 2,
+    kCooldownMsFieldNumber = 3,
   };
   // uint64 objectId = 1;
   void clear_objectid();
@@ -2304,6 +2305,15 @@ class S_SKILL final :
   void _internal_set_skillid(int32_t value);
   public:
 
+  // int32 cooldownMs = 3;
+  void clear_cooldownms();
+  int32_t cooldownms() const;
+  void set_cooldownms(int32_t value);
+  private:
+  int32_t _internal_cooldownms() const;
+  void _internal_set_cooldownms(int32_t value);
+  public:
+
   // @@protoc_insertion_point(class_scope:Protocol.S_SKILL)
  private:
   class _Internal;
@@ -2314,6 +2324,7 @@ class S_SKILL final :
   struct Impl_ {
     uint64_t objectid_;
     int32_t skillid_;
+    int32_t cooldownms_;
     mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   };
   union { Impl_ _impl_; };
@@ -12021,6 +12032,26 @@ inline void S_SKILL::_internal_set_skillid(int32_t value) {
 inline void S_SKILL::set_skillid(int32_t value) {
   _internal_set_skillid(value);
   // @@protoc_insertion_point(field_set:Protocol.S_SKILL.skillId)
+}
+
+// int32 cooldownMs = 3;
+inline void S_SKILL::clear_cooldownms() {
+  _impl_.cooldownms_ = 0;
+}
+inline int32_t S_SKILL::_internal_cooldownms() const {
+  return _impl_.cooldownms_;
+}
+inline int32_t S_SKILL::cooldownms() const {
+  // @@protoc_insertion_point(field_get:Protocol.S_SKILL.cooldownMs)
+  return _internal_cooldownms();
+}
+inline void S_SKILL::_internal_set_cooldownms(int32_t value) {
+  
+  _impl_.cooldownms_ = value;
+}
+inline void S_SKILL::set_cooldownms(int32_t value) {
+  _internal_set_cooldownms(value);
+  // @@protoc_insertion_point(field_set:Protocol.S_SKILL.cooldownMs)
 }
 
 // -------------------------------------------------------------------

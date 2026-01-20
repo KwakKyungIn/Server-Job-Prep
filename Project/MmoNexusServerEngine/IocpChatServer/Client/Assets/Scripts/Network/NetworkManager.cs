@@ -61,6 +61,7 @@ public class NetworkManager : MonoBehaviour
         InventoryManager.Instance.Init();
         StatManager.Instance.Init();
         QuickSlotManager.Instance.Init();
+        SkillCooldownManager.Instance.Init();
         TradeManager.Instance.Init();
         Debug.Log($"[ConnectionDebug] 1. Start() - Initial Connect to LoginServer ({ip}:{port})");
         Connect(ip, port);
