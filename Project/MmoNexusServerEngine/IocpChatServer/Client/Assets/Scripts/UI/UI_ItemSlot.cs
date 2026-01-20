@@ -4,7 +4,7 @@ using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using Protocol;
 
-public class UI_ItemSlot : MonoBehaviour, IPointerClickHandler, IBeginDragHandler, IDragHandler, IEndDragHandler
+public class UI_ItemSlot : MonoBehaviour, IPointerClickHandler, IBeginDragHandler, IDragHandler, IEndDragHandler, IDropHandler
 {
     public Image icon;
     public TMP_Text countText;
@@ -69,6 +69,31 @@ public class UI_ItemSlot : MonoBehaviour, IPointerClickHandler, IBeginDragHandle
 
         UI_DragGhost.End();
         UI_DragPayload.Clear();
+    }
+
+    // ============================================================
+    // [Drag & Drop -> Inventory] (Move / Swap / Merge)
+    // ============================================================
+    public void OnDrop(PointerEventData eventData)
+    {
+        if (!UI_DragPayload.HasPayload)
+            return;
+
+        var payload = UI_DragPayload.Current;
+        if (payload.Type != UI_DragPayload.PayloadType.Item)
+            return;
+
+        int fromSlot = payload.InventorySlot;
+        int toSlot = _slotIndex;
+        if (fromSlot < 0 || toSlot < 0 || fromSlot == toSlot)
+            return;
+
+        // If the destination slot actually holds an equipped item (hidden by UI), block the drop.
+        var realDst = InventoryManager.Instance.GetItem(toSlot);
+        if (realDst != null && realDst.IsEquipped)
+            return;
+
+        InventoryManager.Instance.RequestInvDragDrop(fromSlot, toSlot, payload.RefId);
     }
 
     public void SetSelected(bool v)

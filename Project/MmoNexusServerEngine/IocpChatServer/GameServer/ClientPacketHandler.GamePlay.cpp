@@ -87,6 +87,34 @@ bool ClientPacketHandler::Handle_C_USE_ITEM(PacketSessionRef& session, Protocol:
 	return true;
 }
 
+bool ClientPacketHandler::Handle_C_INV_DRAG_DROP(PacketSessionRef& session, Protocol::C_INV_DRAG_DROP& pkt)
+{
+	PlayerSessionRef ps = static_pointer_cast<PlayerSession>(session);
+	if (!ps) return false;
+
+	if (ps->IsMapChanging())
+		return true;
+
+	const uint64 playerId = ps->GetPlayerId_AnyThread();
+	if (playerId == 0)
+		return true;
+
+	ps->PostRoom([playerId, pkt](PlayerSessionRef self, RoomActorRef room) mutable
+		{
+			if (!room) return;
+			if (self->IsMapChanging()) return;
+			if (room->GetKind() != RoomKind::Game) return;
+
+			auto gr = std::static_pointer_cast<GameRoom>(room);
+			gr->Push([gr, self, playerId, pkt]() mutable
+				{
+					gr->HandleInvDragDropById(self, playerId, pkt);
+				});
+		});
+
+	return true;
+}
+
 bool ClientPacketHandler::Handle_C_SKILL(PacketSessionRef& session, Protocol::C_SKILL& pkt)
 {
 	PlayerSessionRef ps = static_pointer_cast<PlayerSession>(session);

@@ -116,6 +116,9 @@ public:
     //(����)������
     void HandleUseItem(PlayerSessionRef session, PlayerRef player, Protocol::C_USE_ITEM pkt);
 
+    // Inventory drag & drop (move / swap / merge)
+    void HandleInvDragDrop(PlayerSessionRef session, PlayerRef player, Protocol::C_INV_DRAG_DROP pkt);
+
     // ���� + ���� ����(Despawn)���� �뿡�� ���� ó��
     void HandleMonsterDead(std::shared_ptr<Creature> attacker, MonsterRef monster);
 
@@ -129,6 +132,7 @@ public:
     void HandleMoveById(PlayerSessionRef session, uint64 playerId, Protocol::C_MOVE pkt);
     void HandleUseItemById(PlayerSessionRef session, uint64 playerId, Protocol::C_USE_ITEM pkt);
     void HandleEquipItemById(PlayerSessionRef session, uint64 playerId, Protocol::C_EQUIP_ITEM pkt);
+    void HandleInvDragDropById(PlayerSessionRef session, uint64 playerId, Protocol::C_INV_DRAG_DROP pkt);
 
     // ===== [Trade v1] =====
     void HandleTradeReqById(PlayerSessionRef session, uint64 fromPlayerId, uint64 targetPlayerId);

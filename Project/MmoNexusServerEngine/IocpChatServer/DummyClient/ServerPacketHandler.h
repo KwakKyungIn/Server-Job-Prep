@@ -70,6 +70,7 @@ public:
 		PKT_C_TRADE_CANCEL = 1058,
 		PKT_S_TRADE_CANCELLED = 1059,
 		PKT_S_TRADE_RESULT = 1060,
+		PKT_C_INV_DRAG_DROP = 1061,
 	};
 
 	static void Init()
@@ -144,6 +145,7 @@ public:
 	static SendBufferRef MakeSendBuffer(Protocol::C_TRADE_READY& pkt) { return MakeSendBuffer(pkt, PKT_C_TRADE_READY); }
 	static SendBufferRef MakeSendBuffer(Protocol::C_TRADE_CONFIRM& pkt) { return MakeSendBuffer(pkt, PKT_C_TRADE_CONFIRM); }
 	static SendBufferRef MakeSendBuffer(Protocol::C_TRADE_CANCEL& pkt) { return MakeSendBuffer(pkt, PKT_C_TRADE_CANCEL); }
+	static SendBufferRef MakeSendBuffer(Protocol::C_INV_DRAG_DROP& pkt) { return MakeSendBuffer(pkt, PKT_C_INV_DRAG_DROP); }
 
 public:
 	static PacketHandlerFunc GPacketHandler[UINT16_MAX];

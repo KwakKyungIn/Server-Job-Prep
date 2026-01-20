@@ -8,6 +8,7 @@
 #include "GameRoom.Net.h"
 #include "PersistenceService.h"
 #include "GameItemUidGen.h"
+#include <limits>
 
 static int32 FindEmptySlot(const std::vector<Protocol::ItemInfo>& items, int32 maxSlots)
 {
@@ -71,6 +72,38 @@ static EquipSlot GetEquipSlotFromTemplate(int32 templateId)
 	if (templateId >= 2000 && templateId < 3000) return EquipSlot::Body;
 	if (templateId >= 4000 && templateId < 5000) return EquipSlot::Head;
 	return EquipSlot::None;
+}
+
+// ============================================================
+// Inventory helpers (move / swap / merge)
+// ============================================================
+static Protocol::ItemInfo* FindItemByUid(std::vector<Protocol::ItemInfo>& items, uint64 uid)
+{
+	for (auto& it : items)
+	{
+		if (it.itemuid() == uid)
+			return &it;
+	}
+	return nullptr;
+}
+
+static Protocol::ItemInfo* FindItemBySlot(std::vector<Protocol::ItemInfo>& items, int32 slot)
+{
+	for (auto& it : items)
+	{
+		if (it.slot() == slot)
+			return &it;
+	}
+	return nullptr;
+}
+
+static bool IsStackableTemplate(int32 templateId)
+{
+	const Protocol::ItemTemplateInfo* tpl = DataManager::Instance()->GetItemTemplate(templateId);
+	if (tpl == nullptr)
+		return false;
+	const Protocol::ItemType itemType = static_cast<Protocol::ItemType>(tpl->itemtype());
+	return (itemType == Protocol::ITEM_TYPE_CONSUMABLE);
 }
 
 void GameRoom::HandleUseItem(PlayerSessionRef session, PlayerRef player, Protocol::C_USE_ITEM pkt)
@@ -318,6 +351,161 @@ void GameRoom::HandleEquipItemById(PlayerSessionRef session, uint64 playerId, Pr
 	}
 
 	// TODO: 장비 종류별(무기/방어구/머리) 추가 효과, 외형 동기화, 장비 프리셋 등
+}
+
+// ============================================================
+// Inventory drag & drop (Move / Swap / Merge)
+//  - Move to empty: src.slot = toSlot
+//  - Drop on occupied:
+//      * same template + stackable(consumable) => merge counts into dst, remove src
+//      * otherwise => swap slot index
+// ============================================================
+void GameRoom::HandleInvDragDrop(PlayerSessionRef session, PlayerRef player, Protocol::C_INV_DRAG_DROP pkt)
+{
+	if (!player) return;
+	if (!session) return;
+
+	const uint64 playerId = player->GetPlayerId();
+	if (_players.find(playerId) == _players.end()) return;
+
+	// [Trade] block inventory mutation while trading
+	if (player->ActiveTradeId_ActorOnly() != 0)
+		return;
+
+	const int32 maxSlots = 24;
+	const int32 fromSlot = pkt.fromslot();
+	const int32 toSlot = pkt.toslot();
+	const uint64 itemUid = pkt.itemuid();
+
+	if (itemUid == 0) return;
+	if (fromSlot < 0 || fromSlot >= maxSlots) return;
+	if (toSlot < 0 || toSlot >= maxSlots) return;
+	if (fromSlot == toSlot) return;
+
+	auto& items = player->GetItems();
+
+	Protocol::ItemInfo* src = FindItemByUid(items, itemUid);
+	if (!src) return;
+	// stale / tampered client (slot mismatch)
+	if (src->slot() != fromSlot) return;
+	if (src->isequipped()) return;
+
+	Protocol::ItemInfo* dst = FindItemBySlot(items, toSlot);
+
+	// 1) Move to empty
+	if (dst == nullptr)
+	{
+		src->set_slot(toSlot);
+
+		Persistence::PersistenceService::I().UpdateInventoryItem(
+			playerId,
+			src->itemuid(),
+			src->templateid(),
+			src->slot(),
+			src->count(),
+			src->isequipped(),
+			true
+		);
+
+		Protocol::S_CHANGE_ITEM ch;
+		ch.mutable_item()->CopyFrom(*src);
+		session->Send(ClientPacketHandler::MakeSendBuffer(ch));
+		return;
+	}
+
+	// 2) Drop on occupied
+	if (dst->isequipped())
+		return;
+	if (dst->itemuid() == src->itemuid())
+		return;
+
+	// 2-A) Merge (only stackable templates)
+	if (src->templateid() == dst->templateid() && IsStackableTemplate(src->templateid()))
+	{
+		const int64 merged = static_cast<int64>(dst->count()) + static_cast<int64>(src->count());
+		if (merged > (std::numeric_limits<int32>::max)())
+			return;
+
+		dst->set_count(static_cast<int32>(merged));
+
+		// remove src item
+		const uint64 removedUid = src->itemuid();
+		auto itErase = std::find_if(items.begin(), items.end(),
+			[&](const Protocol::ItemInfo& it) { return it.itemuid() == removedUid; });
+		if (itErase != items.end())
+			items.erase(itErase);
+
+		Persistence::PersistenceService::I().RemoveInventoryItem(playerId, removedUid, true);
+		Persistence::PersistenceService::I().UpdateInventoryItem(
+			playerId,
+			dst->itemuid(),
+			dst->templateid(),
+			dst->slot(),
+			dst->count(),
+			dst->isequipped(),
+			true
+		);
+
+		Protocol::S_REMOVE_ITEM rm;
+		rm.set_itemuid(removedUid);
+		session->Send(ClientPacketHandler::MakeSendBuffer(rm));
+
+		Protocol::S_CHANGE_ITEM ch;
+		ch.mutable_item()->CopyFrom(*dst);
+		session->Send(ClientPacketHandler::MakeSendBuffer(ch));
+		return;
+	}
+
+	// 2-B) Swap slots
+	{
+		const int32 srcSlot = src->slot();
+		const int32 dstSlot = dst->slot();
+		src->set_slot(dstSlot);
+		dst->set_slot(srcSlot);
+
+		Persistence::PersistenceService::I().UpdateInventoryItem(
+			playerId,
+			src->itemuid(),
+			src->templateid(),
+			src->slot(),
+			src->count(),
+			src->isequipped(),
+			true
+		);
+		Persistence::PersistenceService::I().UpdateInventoryItem(
+			playerId,
+			dst->itemuid(),
+			dst->templateid(),
+			dst->slot(),
+			dst->count(),
+			dst->isequipped(),
+			true
+		);
+
+		Protocol::S_CHANGE_ITEM ch1;
+		ch1.mutable_item()->CopyFrom(*src);
+		session->Send(ClientPacketHandler::MakeSendBuffer(ch1));
+
+		Protocol::S_CHANGE_ITEM ch2;
+		ch2.mutable_item()->CopyFrom(*dst);
+		session->Send(ClientPacketHandler::MakeSendBuffer(ch2));
+	}
+}
+
+void GameRoom::HandleInvDragDropById(PlayerSessionRef session, uint64 playerId, Protocol::C_INV_DRAG_DROP pkt)
+{
+	auto itPlayer = _players.find(playerId);
+	if (itPlayer == _players.end())
+		return;
+
+	PlayerRef player = itPlayer->second;
+	if (!player) return;
+
+	// [Trade] block inventory mutation while trading
+	if (player->ActiveTradeId_ActorOnly() != 0)
+		return;
+
+	HandleInvDragDrop(session, player, pkt);
 }
 
 void GameRoom::HandleMonsterDead(std::shared_ptr<Creature> attacker, MonsterRef monster)

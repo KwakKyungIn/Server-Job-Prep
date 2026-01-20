@@ -411,3 +411,8 @@ message S_TRADE_RESULT {
     string msg = 4;
 }
 
+message C_INV_DRAG_DROP {
+  uint64 itemUid = 1;
+  int32  fromSlot = 2;
+  int32  toSlot   = 3;
+}

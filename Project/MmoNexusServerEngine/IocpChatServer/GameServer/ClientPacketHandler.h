@@ -70,6 +70,7 @@ public:
 		PKT_C_TRADE_CANCEL = 1058,
 		PKT_S_TRADE_CANCELLED = 1059,
 		PKT_S_TRADE_RESULT = 1060,
+		PKT_C_INV_DRAG_DROP = 1061,
 	};
 
 	static void Init()
@@ -104,6 +105,7 @@ public:
 		GPacketHandler[PKT_C_TRADE_READY] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::C_TRADE_READY>(Handle_C_TRADE_READY, session, buffer, len); };
 		GPacketHandler[PKT_C_TRADE_CONFIRM] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::C_TRADE_CONFIRM>(Handle_C_TRADE_CONFIRM, session, buffer, len); };
 		GPacketHandler[PKT_C_TRADE_CANCEL] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::C_TRADE_CANCEL>(Handle_C_TRADE_CANCEL, session, buffer, len); };
+		GPacketHandler[PKT_C_INV_DRAG_DROP] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::C_INV_DRAG_DROP>(Handle_C_INV_DRAG_DROP, session, buffer, len); };
 	}
 
 	static bool HandlePacket(PacketSessionRef& session, BYTE* buffer, int32 len)
@@ -176,6 +178,7 @@ public:
 	static bool Handle_C_TRADE_READY(PacketSessionRef& session, Protocol::C_TRADE_READY& pkt);
 	static bool Handle_C_TRADE_CONFIRM(PacketSessionRef& session, Protocol::C_TRADE_CONFIRM& pkt);
 	static bool Handle_C_TRADE_CANCEL(PacketSessionRef& session, Protocol::C_TRADE_CANCEL& pkt);
+	static bool Handle_C_INV_DRAG_DROP(PacketSessionRef& session, Protocol::C_INV_DRAG_DROP& pkt);
 
 private:
 	template<typename PacketType, typename ProcessFunc>

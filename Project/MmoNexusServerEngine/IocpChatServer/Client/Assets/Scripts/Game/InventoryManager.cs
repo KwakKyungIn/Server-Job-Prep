@@ -50,6 +50,13 @@ public class InventoryManager
 
     private void HandleUpdateItem(ItemInfo item)
     {
+        // [MOVE/SWAP SUPPORT]
+        // If the same uid already exists in a different slot, remove the old slot entry first.
+        // (S_CHANGE_ITEM may represent a slot move; server won't send a separate remove.)
+        var existing = _items.FirstOrDefault(x => x.Value != null && x.Value.ItemUid == item.ItemUid);
+        if (existing.Value != null && existing.Key != item.Slot)
+            _items.Remove(existing.Key);
+
         _items[item.Slot] = item;
 
         Debug.Log($"[InventoryManager] Updated Slot {item.Slot} ({item.TemplateId}) equipped={item.IsEquipped}");
@@ -125,12 +132,37 @@ public class InventoryManager
 
     public int GetEmptySlot()
     {
-        for (int i = 0; i < 20; i++)
+        // NOTE: server inventory slots are currently 24.
+        for (int i = 0; i < 24; i++)
         {
             if (!_items.ContainsKey(i))
                 return i;
         }
         return -1;
+    }
+
+    // =========================================================
+    // [Client -> Server] Inventory Drag&Drop (Move/Swap/Merge)
+    // =========================================================
+    public void RequestInvDragDrop(int fromSlot, int toSlot, ulong itemUid)
+    {
+        if (NetworkManager.Instance == null)
+            return;
+        if (NetworkManager.Instance.IsMapChanging)
+            return;
+
+        if (fromSlot < 0 || toSlot < 0 || fromSlot == toSlot)
+            return;
+
+        // Client is NOT authoritative; server validates (uid/slot ownership, equipped, etc.)
+        var pkt = new C_INV_DRAG_DROP
+        {
+            FromSlot = fromSlot,
+            ToSlot = toSlot,
+            ItemUid = itemUid,
+        };
+
+        NetworkManager.Instance.Send(pkt, (ushort)PacketManager.MsgId.C_INV_DRAG_DROP);
     }
 
     // ================= Equipment Helpers =================

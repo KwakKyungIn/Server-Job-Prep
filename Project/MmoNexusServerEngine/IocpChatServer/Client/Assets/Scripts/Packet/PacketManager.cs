@@ -82,6 +82,7 @@ public class PacketManager
 		C_TRADE_CANCEL = 1058,
 		S_TRADE_CANCELLED = 1059,
 		S_TRADE_RESULT = 1060,
+		C_INV_DRAG_DROP = 1061,
 	}
 
 	public void Register()
