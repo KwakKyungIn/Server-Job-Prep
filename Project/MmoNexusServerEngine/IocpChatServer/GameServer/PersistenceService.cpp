@@ -1,8 +1,9 @@
-#include "pch.h"
+ï»¿#include "pch.h"
 #include "PersistenceService.h"
 #include "RedisManager.h"
 #include "RedisKeys.h"
 #include "RedisCodec.h"
+#include <unordered_set>
 
 static constexpr int32 QS_MAX = 12; // 0~11
 namespace
@@ -55,7 +56,7 @@ namespace Persistence
         _redis->HSet(key, "hp", std::to_string(st.hp()));
         _redis->HSet(key, "totalExp", std::to_string(static_cast<long long>(st.totalexp())));
 
-        // Prime´Â dirty ÂïÁö ¾Ê´Â´Ù. È¤½Ã ³²¾ÆÀÖÀ¸¸é Á¦°Å.
+        // Primeï¿½ï¿½ dirty ï¿½ï¿½ï¿½ï¿½ ï¿½Ê´Â´ï¿½. È¤ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½.
         _redis->SRem(KeyDirtyPlayer(), std::to_string(pid));
     }
 
@@ -66,7 +67,7 @@ namespace Persistence
         const std::string invKey = KeyPlayerInv(pid);
         const std::string delKey = KeyPlayerInvDel(pid);
 
-        // ÀüÃ¼ ½º³À¼¦À¸·Î Prime
+        // ï¿½ï¿½Ã¼ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Prime
         _redis->Del(invKey);
 
         for (const auto& it : items)
@@ -77,10 +78,10 @@ namespace Persistence
             _redis->HSet(invKey, field, val);
         }
 
-        // tombstone ÃÊ±âÈ­
+        // tombstone ï¿½Ê±ï¿½È­
         _redis->Del(delKey);
 
-        // Prime´Â dirty Á¦°Å
+        // Primeï¿½ï¿½ dirty ï¿½ï¿½ï¿½ï¿½
         _redis->SRem(KeyDirtyInv(), std::to_string(pid));
     }
 
@@ -151,7 +152,7 @@ namespace Persistence
         if (!_redis->HGetAll(KeyPlayerCore(pid), kv))
             return false;
 
-        // ÇÊ¼ö ÇÊµå ¾øÀ¸¸é ½ÇÆÐ
+        // ï¿½Ê¼ï¿½ ï¿½Êµï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
         if (kv.count("level") == 0 || kv.count("hp") == 0 || kv.count("totalExp") == 0)
             return false;
 
@@ -178,7 +179,7 @@ namespace Persistence
             return false;
 
         std::vector<std::string> dels;
-        _redis->SMembers(KeyPlayerInvDel(pid), dels); // ¾øÀ¸¸é ºó º¤ÅÍ·Î OK
+        _redis->SMembers(KeyPlayerInvDel(pid), dels); // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½Í·ï¿½ OK
 
         out.set_playerid(pid);
         out.clear_items();
@@ -198,7 +199,7 @@ namespace Persistence
             if (!UnpackItem(packed, templateId, slot, count, eq))
                 continue;
 
-            // auto ´ë½Å Å¸ÀÔ ¸í½ÃÇØµµ OK (´õ ¾ÈÀü)
+            // auto ï¿½ï¿½ï¿½ Å¸ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Øµï¿½ OK (ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
             Protocol::ItemInfo* item = out.add_items();
             item->set_itemuid(itemUid);
             item->set_templateid(templateId);
@@ -225,6 +226,9 @@ namespace Persistence
         const std::string key = KeyPlayerQuick(pid);
         _redis->Del(key);
 
+        // [Rule] QuickSlot item uniqueness at load: drop duplicated QS_ITEM(itemUid) entries.
+        std::unordered_set<uint64> seenItemUids;
+
         for (const auto& s : slots)
         {
             const int32 idx = s.slotindex();
@@ -236,6 +240,13 @@ namespace Persistence
 
             if (rt == (int32)Protocol::QS_NONE || rid == 0)
                 continue;
+
+            if (rt == (int32)Protocol::QS_ITEM)
+            {
+                if (seenItemUids.find(rid) != seenItemUids.end())
+                    continue;
+                seenItemUids.insert(rid);
+            }
 
             _redis->HSet(key, std::to_string(idx), PackQuick(rt, rid));
         }
@@ -271,8 +282,8 @@ namespace Persistence
 
         std::unordered_map<std::string, std::string> kv;
 
-        // ÇÙ½É: Å°°¡ ¾ø°Å³ª ºñ¾îµµ "ºó ½º³À¼¦" ÀúÀåÀÌ ÀÇ¹Ì°¡ ÀÖ´Ù (ÀüÃ¼ »èÁ¦)
-        // RedisManager ±¸Çö¿¡ µû¶ó HGetAllÀÌ false¸¦ ÁÙ ¼öµµ ÀÖÀ¸´Ï, false¿©µµ ÁøÇàÇÑ´Ù.
+        // ï¿½Ù½ï¿½: Å°ï¿½ï¿½ ï¿½ï¿½ï¿½Å³ï¿½ ï¿½ï¿½îµµ "ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½" ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ç¹Ì°ï¿½ ï¿½Ö´ï¿½ (ï¿½ï¿½Ã¼ ï¿½ï¿½ï¿½ï¿½)
+        // RedisManager ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ HGetAllï¿½ï¿½ falseï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½, falseï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ñ´ï¿½.
         _redis->HGetAll(KeyPlayerQuick(pid), kv);
 
         out.set_playerid(pid);

@@ -8,6 +8,7 @@
 #include "PersistenceService.h"
 #include "AutoCommitService.h"
 #include "GameItemUidGen.h"
+#include "DataManager.h"
 
 namespace
 {
@@ -537,6 +538,81 @@ bool GameRoom::BuildTradeCommitPlan_ActorOnly(uint64 tradeId, TradeCommitPlan& o
         return false;
     }
 
+    auto isConsumable = [](int32 templateId) -> bool
+        {
+            const auto* t = DataManager::Instance()->GetItemTemplate(templateId);
+            return t && t->itemtype() == Protocol::ITEM_TYPE_CONSUMABLE;
+        };
+
+    auto findBestStack = [](std::vector<Protocol::ItemInfo>& items, int32 templateId) -> Protocol::ItemInfo*
+        {
+            Protocol::ItemInfo* best = nullptr;
+            for (auto& it : items)
+            {
+                if (it.isequipped())
+                    continue;
+                if (it.templateid() != templateId)
+                    continue;
+
+                if (best == nullptr || it.count() > best->count())
+                    best = &it;
+            }
+            return best;
+        };
+
+    auto upsertChange = [](std::vector<Protocol::ItemInfo>& changes, const Protocol::ItemInfo& item)
+        {
+            const uint64 uid = (uint64)item.itemuid();
+            for (auto& c : changes)
+            {
+                if ((uint64)c.itemuid() == uid)
+                {
+                    c = item;
+                    return;
+                }
+            }
+            changes.push_back(item);
+        };
+
+    auto buildUsedSlots = [](const std::vector<Protocol::ItemInfo>& items, int32 maxSlots) -> std::vector<bool>
+        {
+            std::vector<bool> used(maxSlots, false);
+            for (const auto& it : items)
+            {
+                const int32 s = it.slot();
+                if (s >= 0 && s < maxSlots)
+                    used[s] = true;
+            }
+            return used;
+        };
+
+    auto takeEmptySlot = [](std::vector<bool>& used, int32& outSlot) -> bool
+        {
+            for (int32 i = 0; i < static_cast<int32>(used.size()); ++i)
+            {
+                if (!used[i])
+                {
+                    used[i] = true;
+                    outSlot = i;
+                    return true;
+                }
+            }
+            return false;
+        };
+
+    auto eraseByUid = [](std::vector<Protocol::ItemInfo>& items, uint64 uid) -> bool
+        {
+            for (auto it = items.begin(); it != items.end(); ++it)
+            {
+                if (static_cast<uint64>(it->itemuid()) == uid)
+                {
+                    items.erase(it);
+                    return true;
+                }
+            }
+            return false;
+        };
+
     // Validate offers against current memory snapshot.
     for (const auto& kv : ts->offerA)
     {
@@ -566,58 +642,6 @@ bool GameRoom::BuildTradeCommitPlan_ActorOnly(uint64 tradeId, TradeCommitPlan& o
     std::vector<Protocol::ItemInfo> aItems = a->GetItems();
     std::vector<Protocol::ItemInfo> bItems = b->GetItems();
 
-    std::vector<int32> slotsForA;
-    std::vector<int32> slotsForB;
-
-    std::vector<int32> freedSlotsA;
-    std::vector<int32> freedSlotsB;
-    freedSlotsA.reserve(ts->offerA.size());
-    freedSlotsB.reserve(ts->offerB.size());
-
-    // Receiver can reuse slots that will be freed by giving items away (full-stack removals).
-    for (const auto& kv : ts->offerA)
-    {
-        const TradeOfferEntry& e = kv.second;
-        const Protocol::ItemInfo* it = FindItemByUidConst(aItems, e.itemUid);
-        if (it && e.count == it->count())
-            freedSlotsA.push_back(it->slot());
-    }
-
-    for (const auto& kv : ts->offerB)
-    {
-        const TradeOfferEntry& e = kv.second;
-        const Protocol::ItemInfo* it = FindItemByUidConst(bItems, e.itemUid);
-        if (it && e.count == it->count())
-            freedSlotsB.push_back(it->slot());
-    }
-
-    if (!AllocateEmptySlots(aItems, kTradeMaxInventorySlots, static_cast<int32>(ts->offerB.size()), freedSlotsA, slotsForA))
-    {
-        outFail = Protocol::TRADE_FAIL_INVENTORY_FULL;
-        outMsg = "A inventory full";
-        return false;
-    }
-
-    if (!AllocateEmptySlots(bItems, kTradeMaxInventorySlots, static_cast<int32>(ts->offerA.size()), freedSlotsB, slotsForB))
-    {
-        outFail = Protocol::TRADE_FAIL_INVENTORY_FULL;
-        outMsg = "B inventory full";
-        return false;
-    }
-
-    auto eraseByUid = [](std::vector<Protocol::ItemInfo>& items, uint64 uid) -> bool
-        {
-            for (auto it = items.begin(); it != items.end(); ++it)
-            {
-                if (static_cast<uint64>(it->itemuid()) == uid)
-                {
-                    items.erase(it);
-                    return true;
-                }
-            }
-            return false;
-        };
-
     // Apply giver A changes (remove or decrement).
     for (const auto& kv : ts->offerA)
     {
@@ -645,7 +669,7 @@ bool GameRoom::BuildTradeCommitPlan_ActorOnly(uint64 tradeId, TradeCommitPlan& o
         else
         {
             it->set_count(it->count() - e.count);
-            outPlan.notifyChangeA.push_back(*it);
+            upsertChange(outPlan.notifyChangeA, *it);
         }
     }
 
@@ -676,46 +700,81 @@ bool GameRoom::BuildTradeCommitPlan_ActorOnly(uint64 tradeId, TradeCommitPlan& o
         else
         {
             it->set_count(it->count() - e.count);
-            outPlan.notifyChangeB.push_back(*it);
+            upsertChange(outPlan.notifyChangeB, *it);
         }
     }
 
+    // Build used-slot bitmap after giver changes.
+    std::vector<bool> usedA = buildUsedSlots(aItems, kTradeMaxInventorySlots);
+    std::vector<bool> usedB = buildUsedSlots(bItems, kTradeMaxInventorySlots);
+
     // Add incoming items to A (from B's offer).
+    for (const auto& kv : ts->offerB)
     {
-        int idx = 0;
-        for (const auto& kv : ts->offerB)
+        const TradeOfferEntry& e = kv.second;
+
+        if (isConsumable(e.templateId))
         {
-            const TradeOfferEntry& e = kv.second;
-
-            Protocol::ItemInfo newItem;
-            newItem.set_itemuid(GameItemUidGen::Alloc());
-            newItem.set_templateid(e.templateId);
-            newItem.set_count(e.count);
-            newItem.set_slot(slotsForA[idx++]);
-            newItem.set_isequipped(false);
-
-            aItems.push_back(newItem);
-            outPlan.notifyChangeA.push_back(newItem);
+            // ITEM_TYPE_CONSUMABLE: merge into the largest existing stack if present.
+            if (Protocol::ItemInfo* dst = findBestStack(aItems, e.templateId))
+            {
+                dst->set_count(dst->count() + e.count);
+                upsertChange(outPlan.notifyChangeA, *dst);
+                continue;
+            }
         }
+
+        int32 slot = -1;
+        if (!takeEmptySlot(usedA, slot))
+        {
+            outFail = Protocol::TRADE_FAIL_INVENTORY_FULL;
+            outMsg = "A inventory full";
+            return false;
+        }
+
+        Protocol::ItemInfo newItem;
+        newItem.set_itemuid(GameItemUidGen::Alloc());
+        newItem.set_templateid(e.templateId);
+        newItem.set_count(e.count);
+        newItem.set_slot(slot);
+        newItem.set_isequipped(false);
+
+        aItems.push_back(newItem);
+        upsertChange(outPlan.notifyChangeA, newItem);
     }
 
     // Add incoming items to B (from A's offer).
+    for (const auto& kv : ts->offerA)
     {
-        int idx = 0;
-        for (const auto& kv : ts->offerA)
+        const TradeOfferEntry& e = kv.second;
+
+        if (isConsumable(e.templateId))
         {
-            const TradeOfferEntry& e = kv.second;
-
-            Protocol::ItemInfo newItem;
-            newItem.set_itemuid(GameItemUidGen::Alloc());
-            newItem.set_templateid(e.templateId);
-            newItem.set_count(e.count);
-            newItem.set_slot(slotsForB[idx++]);
-            newItem.set_isequipped(false);
-
-            bItems.push_back(newItem);
-            outPlan.notifyChangeB.push_back(newItem);
+            if (Protocol::ItemInfo* dst = findBestStack(bItems, e.templateId))
+            {
+                dst->set_count(dst->count() + e.count);
+                upsertChange(outPlan.notifyChangeB, *dst);
+                continue;
+            }
         }
+
+        int32 slot = -1;
+        if (!takeEmptySlot(usedB, slot))
+        {
+            outFail = Protocol::TRADE_FAIL_INVENTORY_FULL;
+            outMsg = "B inventory full";
+            return false;
+        }
+
+        Protocol::ItemInfo newItem;
+        newItem.set_itemuid(GameItemUidGen::Alloc());
+        newItem.set_templateid(e.templateId);
+        newItem.set_count(e.count);
+        newItem.set_slot(slot);
+        newItem.set_isequipped(false);
+
+        bItems.push_back(newItem);
+        upsertChange(outPlan.notifyChangeB, newItem);
     }
 
     outPlan.finalAItems = std::move(aItems);

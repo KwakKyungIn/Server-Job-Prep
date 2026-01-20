@@ -121,6 +121,9 @@ public class NexusClient : MonoBehaviour
             Debug.Log("[ConnectionDebug] 7. Game Enter Success! Welcome!");
             _isGameEntered = true;
             _chatLog += ">> System: Entered Game! You can move now.\n";
+
+            // Party 상태는 첫 입장 시 새로고침 요청 (UI가 새로고침 전까지 안 뜨던 이슈 대응)
+            PartyApi.RequestStatus();
         }
         else
         {

@@ -64,6 +64,16 @@ bool GameMap::FindPathWaypoints(const Protocol::PositionInfo& start,
     return _navSystem->FindPathWaypoints(start, end, outWaypoints);
 }
 
+bool GameMap::RaycastNav(const Protocol::PositionInfo& start,
+    const Protocol::PositionInfo& end,
+    float& outT)
+{
+    if (_navSystem == nullptr)
+        return false;
+
+    return _navSystem->RaycastNav(start, end, outT);
+}
+
 bool GameMap::HasLineOfSight(const Protocol::PositionInfo& start,
     const Protocol::PositionInfo& end)
 {

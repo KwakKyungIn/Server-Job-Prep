@@ -2,10 +2,11 @@
 #include "ClientPacketHandler.h"
 #include "PlayerSession.h"
 #include "PersistenceService.h"
+#include "Protocol_S2S.pb.h"
 
 bool ClientPacketHandler::Handle_C_HEART_BEAT_REQ(PacketSessionRef& session, Protocol::C_HEART_BEAT_REQ& pkt)
 {
-	return true;
+    return true;
 }
 
 
@@ -48,10 +49,41 @@ bool ClientPacketHandler::Handle_C_SET_QUICKSLOT(PacketSessionRef& session, Prot
 
     ps->Post([pid, idx, rt, refId](PlayerSessionRef self) mutable
         {
-            //  Redis 반영 + dirty
+            // [Rule] QuickSlot item uniqueness: the same itemUid cannot exist in multiple slots.
+            // If user assigns an item to a slot and it already exists elsewhere, we "move" it.
+            if (rt == Protocol::QS_ITEM && refId != 0)
+            {
+                Protocol::S2S_REQ_SAVE_QUICKSLOT snap;
+                if (Persistence::PersistenceService::I().BuildSnapshot_QuickSlot(pid, snap))
+                {
+                    for (const auto& s : snap.slots())
+                    {
+                        if (s.slotindex() == idx)
+                            continue;
+                        if (s.reftype() != Protocol::QS_ITEM)
+                            continue;
+                        if ((uint64)s.refid() != refId)
+                            continue;
+
+                        // Clear the duplicate slot
+                        Persistence::PersistenceService::I().UpdateQuickSlot(pid, s.slotindex(), Protocol::QS_NONE, 0, /*markDirty=*/true);
+
+                        Protocol::S_SET_QUICKSLOT cleared;
+                        cleared.set_success(true);
+                        auto* cs = cleared.mutable_slot();
+                        cs->set_slotindex(s.slotindex());
+                        cs->set_reftype(Protocol::QS_NONE);
+                        cs->set_refid(0);
+
+                        self->Send(ClientPacketHandler::MakeSendBuffer(cleared));
+                    }
+                }
+            }
+
+            // Redis 반영 + dirty
             Persistence::PersistenceService::I().UpdateQuickSlot(pid, idx, rt, refId, /*markDirty=*/true);
 
-            //  Ack (확정 echo)
+            // Ack (확정 echo)
             Protocol::S_SET_QUICKSLOT out;
             out.set_success(true);
 

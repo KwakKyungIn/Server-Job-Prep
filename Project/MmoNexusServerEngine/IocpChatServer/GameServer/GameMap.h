@@ -1,9 +1,9 @@
-#pragma once
+ï»¿#pragma once
 #include "Protocol.pb.h"
 #include "DataManager.h" // MapConfig
 #include "ObjectUtils.h"
 
-class NavSystem; // Forward Declaration (Çì´õ ÀÇÁ¸¼º ÃÖ¼ÒÈ­)
+class NavSystem; // Forward Declaration (ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ö¼ï¿½È­)
 
 class GameMap
 {
@@ -11,18 +11,18 @@ public:
     GameMap();
     ~GameMap();
 
-    // MapConfig ÀüÃ¼¸¦ ¹Þµµ·Ï º¯°æ
+    // MapConfig ï¿½ï¿½Ã¼ï¿½ï¿½ ï¿½Þµï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     bool Init(const MapConfig* config);
 
     // [Collision Check] -> [Move Validation]
-    // ´Ü¼øÈ÷ boolÀÌ ¾Æ´Ï¶ó, º¸Á¤µÈ À§Ä¡¸¦ ¹ÝÈ¯ÇÒ ¼ö ÀÖ¾î¾ß ÇÔ
-    // (Áö±ÝÀº ÀÎÅÍÆäÀÌ½º À¯Áö¸¦ À§ÇØ ±âÁ¸ CanGo¸¦ ¼öÁ¤ÇÏµÇ, ³»ºÎÀûÀ¸·Î NavSystem È£Ãâ)
+    // ï¿½Ü¼ï¿½ï¿½ï¿½ boolï¿½ï¿½ ï¿½Æ´Ï¶ï¿½, ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡ï¿½ï¿½ ï¿½ï¿½È¯ï¿½ï¿½ ï¿½ï¿½ ï¿½Ö¾ï¿½ï¿½ ï¿½ï¿½
+    // (ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ CanGoï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ïµï¿½, ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ NavSystem È£ï¿½ï¿½)
     bool CanGo(const Protocol::PositionInfo& posInfo);
 
-    // [New] Role B: ÀÌµ¿ °ËÁõ & º¸Á¤ API
+    // [New] Role B: ï¿½Ìµï¿½ ï¿½ï¿½ï¿½ï¿½ & ï¿½ï¿½ï¿½ï¿½ API
     bool ValidateMove(const Protocol::PositionInfo& current, const Protocol::PositionInfo& next, Protocol::PositionInfo& outFixed);
 
-    // [New] Role A°¡ ¾µ Connectivity API
+    // [New] Role Aï¿½ï¿½ ï¿½ï¿½ Connectivity API
     uint32 GetConnectivityId(float x, float y, float z);
 
     int32 GetMapId() const { return _mapId; }
@@ -35,6 +35,11 @@ public:
     bool FindPathWaypoints(const Protocol::PositionInfo& start,
         const Protocol::PositionInfo& end,
         std::vector<Vector3>& outWaypoints);
+
+    // [New] NavMesh raycast wrapper (t in [0,1], <1 means hit boundary/wall)
+    bool RaycastNav(const Protocol::PositionInfo& start,
+        const Protocol::PositionInfo& end,
+        float& outT);
 
     bool HasLineOfSight(const Protocol::PositionInfo& start,
         const Protocol::PositionInfo& end);

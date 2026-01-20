@@ -1,16 +1,15 @@
-#include "pch.h"
+ï»¿#include "pch.h"
 #include "GameRoom.h"
 #include "Projectile.h"
 #include "Player.h"
 #include "GameRoom.Net.h"
 #include "ClientPacketHandler.h"
-
-
+#include "GameMap.h"
 #include "DataManager.h"
 #include "ObjectUtils.h"
 #include "Monster.h"
 
-// XZ Æò¸é: ¼±ºÐ-¿ø ±³Â÷ (°¡Àå ÀÌ¸¥ t ¹ÝÈ¯)
+// XZ ï¿½ï¿½ï¿½: ï¿½ï¿½ï¿½ï¿½-ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ï¿½ ï¿½Ì¸ï¿½ t ï¿½ï¿½È¯)
 static bool SegmentCircleHitXZ(
     float x0, float z0,
     float x1, float z1,
@@ -65,7 +64,7 @@ void GameRoom::EnterProjectile(ProjectileRef p)
     p->SetZoneIndex(zoneIndex);
     _grid.GetZone(zoneIndex).projectiles.insert(p);
 
-    // viewers °è»ê(¸ó½ºÅÍ EnterMonster¿Í µ¿ÀÏ)
+    // viewers ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½ EnterMonsterï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
     Vector<Zone*> zones;
     _grid.GetNearbyZones(zoneIndex, EffectiveAoiRadiusCells(), zones);
 
@@ -94,7 +93,7 @@ void GameRoom::EnterProjectile(ProjectileRef p)
             if (plConn != pConn)
                 continue;
 
-            // ¾çÂÊ set Á¤ÇÕ¼º
+            // ï¿½ï¿½ï¿½ï¿½ set ï¿½ï¿½ï¿½Õ¼ï¿½
             if (pl->VisibleProjectiles_ActorOnly().insert(pid).second)
             {
                 viewers.insert(pl->GetPlayerId());
@@ -118,7 +117,7 @@ void GameRoom::LeaveProjectile(uint64 projectileId)
 
     const int32 zoneIndex = p->GetZoneIndex();
 
-    // viewers¿¡°Ô despawn + player visible set Á¤¸®
+    // viewersï¿½ï¿½ï¿½ï¿½ despawn + player visible set ï¿½ï¿½ï¿½ï¿½
     {
         Protocol::S_DESPAWN pkt;
         pkt.add_objectids(projectileId);
@@ -164,7 +163,7 @@ void GameRoom::OnProjectileMoved(ProjectileRef p)
         p->SetZoneIndex(newZone);
     }
 
-    // ---- »õ viewers °è»ê ----
+    // ---- ï¿½ï¿½ viewers ï¿½ï¿½ï¿½ ----
     std::unordered_set<uint64> newViewers;
 
     Vector<Zone*> zones;
@@ -230,7 +229,7 @@ void GameRoom::OnProjectileMoved(ProjectileRef p)
         }
     }
 
-    // ---- move: newViewers ÀüÃ¼ ----
+    // ---- move: newViewers ï¿½ï¿½Ã¼ ----
     {
         Protocol::S_MOVE movePkt;
         movePkt.set_objectid(pid);
@@ -257,7 +256,7 @@ void GameRoom::UpdateProjectiles(uint64 deltaMs)
         ProjectileRef p = kv.second;
         if (!p) continue;
 
-        // ½ºÅ³ µ¥ÀÌÅÍ (damage / stopOnHit / hitRadius / maxHits)
+        // ï¿½ï¿½Å³ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ (damage / stopOnHit / hitRadius / maxHits)
         const Protocol::SkillTemplateInfo* skillData =
             DataManager::Instance()->GetSkillTemplate(p->GetSkillId());
         if (!skillData)
@@ -266,7 +265,7 @@ void GameRoom::UpdateProjectiles(uint64 deltaMs)
             continue;
         }
 
-        // owner Ã£±â (playerId or monster objectId)
+        // owner Ã£ï¿½ï¿½ (playerId or monster objectId)
         std::shared_ptr<Creature> owner = nullptr;
         const uint64 ownerId = p->GetOwnerId();
 
@@ -279,22 +278,44 @@ void GameRoom::UpdateProjectiles(uint64 deltaMs)
                 owner = std::static_pointer_cast<Creature>(itM->second);
         }
 
-        // owner°¡ ¾øÀ¸¸é ÀÇ¹Ì ¾ø´Â Åõ»çÃ¼ ¡æ Á¦°Å
+        // ownerï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ç¹ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ã¼ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
         if (!owner)
         {
             toRemove.push_back(p->GetObjectId());
             continue;
         }
 
-        // old -> new ¼±ºÐ È®º¸
+        // old -> new ï¿½ï¿½ï¿½ï¿½ È®ï¿½ï¿½
         Protocol::PositionInfo oldPos = *p->GetPosInfo();
 
         p->Update(deltaMs);
         Protocol::PositionInfo newPos = *p->GetPosInfo();
 
-        // ===== Ãæµ¹/ÇÇÇØ (PROJECTILE Àü¿ë) =====
         bool shouldDespawn = false;
 
+        // [NavMesh Wall] Clamp segment to navmesh boundary and despawn on wall hit.
+        // No Rigidbody needed on walls; server-side navmesh raycast is authoritative.
+        auto map = GetMap();          // GameMapRef
+        if (map)
+        {
+            float tWall = 1.0f;
+            if (map->RaycastNav(oldPos, newPos, tWall) && tWall < 1.0f)
+            {
+                const float ix = oldPos.x() + (newPos.x() - oldPos.x()) * tWall;
+                const float iy = oldPos.y() + (newPos.y() - oldPos.y()) * tWall;
+                const float iz = oldPos.z() + (newPos.z() - oldPos.z()) * tWall;
+
+                p->GetPosInfo()->set_x(ix);
+                p->GetPosInfo()->set_y(iy);
+                p->GetPosInfo()->set_z(iz);
+                newPos = *p->GetPosInfo();
+
+                shouldDespawn = true;
+            }
+        }
+
+
+        // ===== ï¿½æµ¹/ï¿½ï¿½ï¿½ï¿½ (PROJECTILE ï¿½ï¿½ï¿½ï¿½) =====
         const int32 damage = skillData->damage();
         float hitRadius = p->HitRadius();
         if (hitRadius <= 0.0f)
@@ -306,7 +327,7 @@ void GameRoom::UpdateProjectiles(uint64 deltaMs)
         const bool stopOnHit = p->StopOnHit();
         const int32 maxHits = p->MaxHits();
 
-        // ÈÄº¸ Á¸ ¼öÁý: oldZone + newZone ÁÖº¯ union
+        // ï¿½Äºï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½: oldZone + newZone ï¿½Öºï¿½ union
         const int32 oldZone = _grid.GetZoneIndex(oldPos);
         const int32 newZone = _grid.GetZoneIndex(newPos);
 
@@ -326,7 +347,7 @@ void GameRoom::UpdateProjectiles(uint64 deltaMs)
         const float x1 = newPos.x();
         const float z1 = newPos.z();
 
-        // impact °è»ê¿ë
+        // impact ï¿½ï¿½ï¿½ï¿½
         float lastImpactT = -1.0f;
 
         struct HitCand
@@ -341,8 +362,8 @@ void GameRoom::UpdateProjectiles(uint64 deltaMs)
 
         const bool ownerIsMonster = (owner->GetObjectType() == Protocol::OBJECT_TYPE_MONSTER);
 
-        // connectivity (Åõ»çÃ¼´Â ¡°impact À§Ä¡¡± ±âÁØÀ¸·Îµµ Ã¼Å©ÇÒ °Çµ¥,
-        // 1Â÷´Â newPos ±âÁØ coarse filter·Î ÃæºÐ)
+        // connectivity (ï¿½ï¿½ï¿½ï¿½Ã¼ï¿½ï¿½ ï¿½ï¿½impact ï¿½ï¿½Ä¡ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îµï¿½ Ã¼Å©ï¿½ï¿½ ï¿½Çµï¿½,
+        // 1ï¿½ï¿½ï¿½ï¿½ newPos ï¿½ï¿½ï¿½ï¿½ coarse filterï¿½ï¿½ ï¿½ï¿½ï¿½)
         const uint32 prConn = GetConnectivityId_ActorOnly(newPos);
 
         for (Zone* z : zoneSet)
@@ -403,17 +424,17 @@ void GameRoom::UpdateProjectiles(uint64 deltaMs)
                 if (!h.victim) continue;
                 if (!p->CanHitMore()) break;
 
-                // ½ÇÁ¦ µ¥¹ÌÁö Àû¿ë
+                // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
                 h.victim->OnDamaged(owner, damage);
 
-                // impact pos·Î Åõ»çÃ¼ À§Ä¡ ½º³À(ºñÁÖ¾ó °ú°üÅë ¹æÁö)
+                // impact posï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ã¼ ï¿½ï¿½Ä¡ ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½Ö¾ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
                 const float ix = x0 + (x1 - x0) * h.t;
                 const float iz = z0 + (z1 - z0) * h.t;
                 p->GetPosInfo()->set_x(ix);
                 p->GetPosInfo()->set_z(iz);
                 lastImpactT = h.t;
 
-                // HP ºê·ÎµåÄ³½ºÆ® (impact zone ±âÁØ)
+                // HP ï¿½ï¿½Îµï¿½Ä³ï¿½ï¿½Æ® (impact zone ï¿½ï¿½ï¿½ï¿½)
                 Protocol::S_CHANGE_HP changePkt;
                 changePkt.set_objectid(NetId(h.victim));
                 changePkt.set_attackerid(NetId(owner));
@@ -425,10 +446,10 @@ void GameRoom::UpdateProjectiles(uint64 deltaMs)
                 const int32 impactZone = _grid.GetZoneIndex(*p->GetPosInfo());
                 BroadcastToZone(sb, impactZone);
 
-                // È÷Æ® ±â·Ï
+                // ï¿½ï¿½Æ® ï¿½ï¿½ï¿½
                 p->MarkHit(h.victimNetId);
 
-                // stopOnHit or maxHits µµ´Þ ¡æ despawn
+                // stopOnHit or maxHits ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ despawn
                 if (stopOnHit || p->HitCount() >= maxHits)
                 {
                     shouldDespawn = true;
@@ -437,10 +458,10 @@ void GameRoom::UpdateProjectiles(uint64 deltaMs)
             }
         }
 
-        // ===== ³×Æ®¿öÅ© °»½Å(ÃÖÁ¾ À§Ä¡ ±âÁØ) =====
+        // ===== ï¿½ï¿½Æ®ï¿½ï¿½Å© ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡ ï¿½ï¿½ï¿½ï¿½) =====
         OnProjectileMoved(p);
 
-        // ¸¸·á/È÷Æ®·Î Á¦°Å
+        // ï¿½ï¿½ï¿½ï¿½/ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
         if (shouldDespawn || p->IsExpired())
             toRemove.push_back(p->GetObjectId());
     }
