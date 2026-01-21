@@ -311,8 +311,7 @@ public class ObjectManager : MonoBehaviour
 
     void OnSkill(S_SKILL pkt)
     {
-        if (pkt.ObjectId == MyPlayerId) return;
-
+        // Play attack animation for ALL objects (including my player) only when server accepts (S_SKILL).
         if (_objects.TryGetValue(pkt.ObjectId, out GameObject go) == false || go == null)
             return;
 

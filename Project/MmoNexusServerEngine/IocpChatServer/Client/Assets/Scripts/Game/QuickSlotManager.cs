@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using Google.Protobuf.Collections;
 using Protocol;
@@ -115,7 +115,7 @@ public class QuickSlotManager
 
         if (s.RefType == QuickSlotRefType.QsItem)
         {
-            // TODO: local validation (item Á¸Àç/¼ö·®) + ½ÇÆÐ½Ã UI feedback
+            // TODO: local validation (item existence/count) + UI feedback on failure
             C_USE_ITEM pkt = new C_USE_ITEM { ItemUid = s.RefId };
             NetworkManager.Instance.Send(pkt, (ushort)PacketManager.MsgId.C_USE_ITEM);
             return;
@@ -123,8 +123,17 @@ public class QuickSlotManager
 
         if (s.RefType == QuickSlotRefType.QsSkill)
         {
+            int skillId = (int)s.RefId;
+
+            // Client-side cooldown gate: don't send C_SKILL while cooldown active.
+            if (SkillCooldownManager.Instance != null && SkillCooldownManager.Instance.IsOnCooldown(skillId))
+            {
+                Debug.Log($"[QuickSlot] Skill blocked by cooldown. skillId={skillId} slot={slotIndex}");
+                return;
+            }
+
             C_SKILL pkt = new C_SKILL();
-            pkt.SkillId = (int)s.RefId;
+            pkt.SkillId = skillId;
 
             // optional fields (present in your proto)
             if (myTransform != null)

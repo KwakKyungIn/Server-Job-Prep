@@ -18,8 +18,6 @@ public class MyPlayerController : MonoBehaviour
 
     // [New] 상태 관리용
     bool _isDead = false;
-    bool _isAttacking = false;
-
     // ✅ [ADD] 카메라 기준 이동을 위한 FollowCamera 참조
     public FollowCamera followCam;
 
@@ -134,14 +132,9 @@ public class MyPlayerController : MonoBehaviour
         // ============================================================
         // [ATTACK]
         // ============================================================
-        if (Input.GetKeyDown(KeyCode.Space) && _isAttacking == false)
+        if (Input.GetKeyDown(KeyCode.Space))
         {
-            Debug.Log("⚔️ [Input] Spacebar -> Attack!");
-            _anim?.PlayAttack();
-
-            C_SKILL skillPkt = new C_SKILL();
-            skillPkt.SkillId = 1;
-            NetworkManager.Instance.Send(skillPkt, (ushort)PacketManager.MsgId.C_SKILL);
+            TryCastSkill(1, includeYaw: false);
         }
 
         // ============================================================
@@ -149,19 +142,7 @@ public class MyPlayerController : MonoBehaviour
         // ============================================================
         if (Input.GetKeyDown(KeyCode.Q))
         {
-            Debug.Log("🏹 [Input] Q -> Projectile Skill (skillId=2)");
-
-            // (선택) 내 애니도 바로
-            _anim?.PlayAttack();
-
-            C_SKILL skillPkt = new C_SKILL();
-            skillPkt.SkillId = 2;
-
-            // ✅ 서버 proto에 추가된 필드들 (C# 재생성하면 아래가 그대로 컴파일됨)
-            skillPkt.CastYaw = transform.eulerAngles.y;
-            skillPkt.ClientTimeMs = (uint)(Time.realtimeSinceStartupAsDouble * 1000.0);
-
-            NetworkManager.Instance.Send(skillPkt, (ushort)PacketManager.MsgId.C_SKILL);
+            TryCastSkill(2, includeYaw: true);
         }
 
         // ============================================================
@@ -402,4 +383,30 @@ public class MyPlayerController : MonoBehaviour
         _lastSentMoveState = _curMoveState;
     }
 
+
+
+    // ============================================================
+    // [SKILL CAST] Client-side cooldown gate
+    // - Client should NOT play attack animation or send C_SKILL while cooldown is active.
+    // - Animation is played when S_SKILL arrives (server accepted).
+    // ============================================================
+    void TryCastSkill(int skillId, bool includeYaw)
+    {
+        if (NetworkManager.Instance != null && NetworkManager.Instance.IsMapChanging)
+            return;
+
+        if (SkillCooldownManager.Instance != null && SkillCooldownManager.Instance.IsOnCooldown(skillId))
+        {
+            Debug.Log($"[Skill] Blocked by cooldown. skillId={skillId}");
+            return;
+        }
+
+        C_SKILL pkt = new C_SKILL();
+        pkt.SkillId = skillId;
+        if (includeYaw)
+            pkt.CastYaw = transform.eulerAngles.y;
+        pkt.ClientTimeMs = (uint)(Time.realtimeSinceStartupAsDouble * 1000.0);
+
+        NetworkManager.Instance.Send(pkt, (ushort)PacketManager.MsgId.C_SKILL);
+    }
 }
