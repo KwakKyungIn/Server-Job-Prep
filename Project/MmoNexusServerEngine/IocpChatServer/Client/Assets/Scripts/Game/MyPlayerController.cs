@@ -3,6 +3,7 @@ using Protocol;
 using System.Collections;
 using UnityEngine.AI;
 using UnityEngine.EventSystems;
+
 public class MyPlayerController : MonoBehaviour
 {
     float _speed = 5.0f;
@@ -18,6 +19,7 @@ public class MyPlayerController : MonoBehaviour
 
     // [New] 상태 관리용
     bool _isDead = false;
+
     // ✅ [ADD] 카메라 기준 이동을 위한 FollowCamera 참조
     public FollowCamera followCam;
 
@@ -34,6 +36,10 @@ public class MyPlayerController : MonoBehaviour
     const float MOVE_SEND_HZ = 20f;         // 20Hz (0.05s)
     const float SELF_SNAP_DIST = 0.75f;     // 이 이상 차이면 스냅
     const float SELF_LERP_FACTOR = 0.50f;   // 작게 차이면 절반만 따라가기
+
+    // ✅ NavMesh 높이(계단/경사) 따라가기용
+    // - 너무 멀리서 "휙" 붙으면 0.8~1.2로 낮춰
+    const float NAV_SNAP_RADIUS = 1.5f;
 
     void Start()
     {
@@ -129,6 +135,7 @@ public class MyPlayerController : MonoBehaviour
             }
             _tradeRmbCandidate = false;
         }
+
         // ============================================================
         // [ATTACK]
         // ============================================================
@@ -237,43 +244,81 @@ public class MyPlayerController : MonoBehaviour
         transform.rotation = Quaternion.LookRotation(inputDir);
 
         // ============================================================
-        // [Slide Move] (감속 없음)
+        // [Move] NavMesh height follow + slide (no gravity)
         // ============================================================
+        DoMoveOnNavMesh(inputDir);
+    }
+
+    bool TrySnapToNav(Vector3 pos, out Vector3 snapped)
+    {
+        NavMeshHit hit;
+        if (NavMesh.SamplePosition(pos, out hit, NAV_SNAP_RADIUS, NavMesh.AllAreas))
+        {
+            snapped = hit.position;
+            return true;
+        }
+
+        snapped = pos;
+        return false;
+    }
+
+    void DoMoveOnNavMesh(Vector3 inputDir)
+    {
         Vector3 curPos = transform.position;
 
+        // 1) 현재 위치를 NavMesh 위로 스냅 (떠있거나 살짝 벗어나도 복구)
+        if (TrySnapToNav(curPos, out Vector3 curOnNav))
+            curPos = curOnNav;
+
         Vector3 moveDelta = inputDir * _speed * Time.deltaTime;
-        Vector3 nextPos = curPos + moveDelta;
+        if (moveDelta.sqrMagnitude < 0.0000001f)
+            return;
 
+        Vector3 wantedPos = curPos + moveDelta;
+
+        // 2) 목표 위치를 NavMesh 위로 투영 (여기서 y가 계단/경사를 따라간다)
+        if (!TrySnapToNav(wantedPos, out Vector3 wantedOnNav))
+            return; // NavMesh 밖이면 이동 금지(서버 권위와도 일치)
+
+        // 3) 경계/벽에 막히면 접선 방향으로 슬라이드 (감속 없음)
         NavMeshHit hit;
-        if (NavMesh.Raycast(curPos, nextPos, out hit, NavMesh.AllAreas))
+        if (NavMesh.Raycast(curPos, wantedOnNav, out hit, NavMesh.AllAreas))
         {
-            // ✅ 접선 방향(슬라이딩 방향)
-            Vector3 slideDir = Vector3.ProjectOnPlane(inputDir, hit.normal);
-            slideDir.y = 0f;
+            float totalDist = Vector3.Distance(curPos, wantedOnNav);
+            float traveled = Vector3.Distance(curPos, hit.position);
+            float remainDist = Mathf.Max(0f, totalDist - traveled);
 
-            if (slideDir.sqrMagnitude < 0.0001f)
+            Vector3 along = wantedOnNav - curPos;
+
+            // 경계 접선 방향
+            Vector3 slideDir = Vector3.ProjectOnPlane(along, hit.normal);
+            slideDir.y = 0f; // 수평 슬라이드 후, 다시 NavMesh로 스냅해서 y 복구
+
+            if (slideDir.sqrMagnitude < 0.0001f || remainDist <= 0.0001f)
             {
-                // 정면충돌이면 hit 지점까지만
-                transform.position = hit.position;
+                // 거의 정면 충돌이면 hit 지점까지만
+                if (TrySnapToNav(hit.position, out Vector3 hitOnNav))
+                    transform.position = hitOnNav;
+                else
+                    transform.position = hit.position;
                 return;
             }
 
             slideDir.Normalize();
+            Vector3 slideTarget = hit.position + slideDir * remainDist;
 
-            // ✅ 같은 거리 그대로 옆으로 이동 (감속 X)
-            Vector3 slidePos = curPos + slideDir * moveDelta.magnitude;
-
-            // (선택) NavMesh 스냅
-            NavMeshHit snap;
-            if (NavMesh.SamplePosition(slidePos, out snap, 0.5f, NavMesh.AllAreas))
-                transform.position = snap.position;
+            if (TrySnapToNav(slideTarget, out Vector3 slideOnNav))
+                transform.position = slideOnNav;
+            else if (TrySnapToNav(hit.position, out Vector3 hitOnNav2))
+                transform.position = hitOnNav2;
             else
-                transform.position = slidePos;
+                transform.position = hit.position;
 
             return;
         }
 
-        transform.position = nextPos;
+        // 4) 막힘 없음 => NavMesh 표면 위로 이동
+        transform.position = wantedOnNav;
     }
 
     void TryRequestTradeByRightClick()
@@ -321,10 +366,8 @@ public class MyPlayerController : MonoBehaviour
 
             if (posChanged || stateChanged || yawChanged)
             {
-                // ✅ move_seq: 보내는 순간에만 +1
                 unchecked { _moveSeq++; }
 
-                // ✅ client_time_ms: 단조 증가 ms
                 uint nowMs = (uint)(Time.realtimeSinceStartupAsDouble * 1000.0);
 
                 C_MOVE movePkt = new C_MOVE();
@@ -335,7 +378,6 @@ public class MyPlayerController : MonoBehaviour
                 movePkt.PosInfo.Yaw = curYaw;
                 movePkt.PosInfo.State = _curMoveState;
 
-                // ✅ v2 필드 주입
                 movePkt.MoveSeq = _moveSeq;
                 movePkt.ClientTimeMs = nowMs;
 
@@ -350,27 +392,23 @@ public class MyPlayerController : MonoBehaviour
 
     public void ApplyServerMove(Vector3 serverPos, float serverYaw, MoveState serverState)
     {
-        // 내 클라 예측 위치 vs 서버 권위
+        // ✅ (선택) 서버 권위 pos도 NavMesh 위로 스냅해서 박힘/공중 방지
+        if (TrySnapToNav(serverPos, out Vector3 snapped))
+            serverPos = snapped;
+
         float dist = Vector3.Distance(transform.position, serverPos);
 
         if (dist > SELF_SNAP_DIST)
         {
-            // 큰 차이 = 스냅
             transform.position = serverPos;
         }
         else if (dist > 0.01f)
         {
-            // 작은 차이 = 절반만 따라가기 (간단 스무딩)
             transform.position = Vector3.Lerp(transform.position, serverPos, SELF_LERP_FACTOR);
         }
 
-        // 회전도 권위 반영(간단 스냅)
         transform.rotation = Quaternion.Euler(0f, serverYaw, 0f);
 
-        // (선택) 애니도 서버 state로 맞추고 싶으면
-        // _anim?.SetMoveState(serverState);
-
-        // ✅ 중요: 서버가 텔레포트/보정한 뒤에, 다음 C_MOVE가 “대이동”으로 나가지 않게 기준점 갱신
         _lastSentPos = transform.position;
         _lastSentYaw = serverYaw;
         _lastSentMoveState = serverState;
@@ -383,12 +421,8 @@ public class MyPlayerController : MonoBehaviour
         _lastSentMoveState = _curMoveState;
     }
 
-
-
     // ============================================================
     // [SKILL CAST] Client-side cooldown gate
-    // - Client should NOT play attack animation or send C_SKILL while cooldown is active.
-    // - Animation is played when S_SKILL arrives (server accepted).
     // ============================================================
     void TryCastSkill(int skillId, bool includeYaw)
     {
