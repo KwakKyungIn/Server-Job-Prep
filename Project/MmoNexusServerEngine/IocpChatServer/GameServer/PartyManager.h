@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 class PartyManager
 {
@@ -16,7 +16,7 @@ public:
         uint64 partyId = 0;
         uint64 inviterId = 0;
         uint64 targetId = 0;
-        uint64 expireTick = 0; // GetTickCount64 ±â¹Ý
+        uint64 expireTick = 0; // GetTickCount64 ê¸°ë°˜
     };
 
     static PartyManager& Instance()
@@ -33,7 +33,7 @@ public:
     void   GetMembers(uint64 partyId, Vector<uint64>& outMembers) const;
 
 public:
-    // ===== Ops (½Ç»ç¿ë) =====
+    // ===== Ops (ì‹¤ì‚¬ìš©) =====
     bool Create(uint64 leaderId, uint64& outPartyId);
     bool Invite(uint64 inviterId, uint64 targetId, PendingInvite& outInvite);
     bool AcceptInvite(uint64 targetId, uint64 partyId, bool accept, Party& outPartyAfter);

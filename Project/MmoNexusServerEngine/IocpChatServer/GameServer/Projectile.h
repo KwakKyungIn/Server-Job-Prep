@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include "Creature.h"
 #include "Protocol.pb.h"
 #include <unordered_set>
@@ -54,8 +54,8 @@ public:
         _hitCount = 0;
     }
 
-    // A´Ü°è: ÃÖ¼Ò ÀÌµ¿/¸¸·á¸¸ Á¦°ø(Ãæµ¹/ÇÇÇØ´Â C°¡ È®Àå)
-    bool Update(uint64 deltaMs);   // true¸é pos°¡ º¯Çß´Ù
+    // Aë‹¨ê³„: ìµœì†Œ ì´ë™/ë§Œë£Œë§Œ ì œê³µ(ì¶©ëŒ/í”¼í•´ëŠ” Cê°€ í™•ì¥)
+    bool Update(uint64 deltaMs);   // trueë©´ posê°€ ë³€í–ˆë‹¤
     bool IsExpired() const;
 
 private:

@@ -1,4 +1,4 @@
-#include "pch.h"
+ï»¿#include "pch.h"
 #include "GameRoom.Net.h"
 #include "Player.h"
 #include "PlayerSession.h"
@@ -11,7 +11,7 @@ std::uint64_t NetId(const std::shared_ptr<Creature>& c)
     if (c->GetObjectType() == Protocol::OBJECT_TYPE_PLAYER)
         return static_cast<std::uint64_t>(std::static_pointer_cast<Player>(c)->GetPlayerId());
 
-    return static_cast<std::uint64_t>(c->GetObjectId()); // ¸ó½ºÅÍ/Åõ»çÃ¼ µî
+    return static_cast<std::uint64_t>(c->GetObjectId()); // ëª¬ìŠ¤í„°/íˆ¬ì‚¬ì²´ ë“±
 }
 
 std::shared_ptr<PlayerSession> FindSessionByPlayerId(std::uint64_t playerId)

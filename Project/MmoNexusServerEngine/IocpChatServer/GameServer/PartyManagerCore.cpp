@@ -1,4 +1,4 @@
-#include "pch.h"
+ï»¿#include "pch.h"
 #include "PartyManagerCore.h"
 
 uint64 PartyManagerCore::GetPartyIdByPlayerId(uint64 playerId) const
@@ -39,7 +39,7 @@ bool PartyManagerCore::Create(uint64 leaderId, uint64& outPartyId)
     if (leaderId == 0) return false;
 
     if (_playerToParty.find(leaderId) != _playerToParty.end())
-        return false; // ÀÌ¹Ì ÆÄÆ¼ ÀÖÀ½
+        return false; // ì´ë¯¸ íŒŒí‹° ìžˆìŒ
 
     const uint64 partyId = _nextPartyId++;
     Party p;
@@ -68,21 +68,21 @@ bool PartyManagerCore::Invite(uint64 inviterId, uint64 targetId, PendingInvite& 
         partyId = it->second;
     }
 
-    // ÆÄÆ¼ »óÅÂ È®ÀÎ
+    // íŒŒí‹° ìƒíƒœ í™•ì¸
     auto pit = _parties.find(partyId);
     if (pit == _parties.end()) return false;
 
-    // ENTERING/EXITING Áß ÃÊ´ë ±ÝÁö
+    // ENTERING/EXITING ì¤‘ ì´ˆëŒ€ ê¸ˆì§€
     if (pit->second.inDungeonTransition) return false;
 
-    // ´øÀü(ÀÎ½ºÅÏ½º) ¾È¿¡¼­´Â ÃÊ´ë ±ÝÁö (¸â¹ö½Ê ²¿ÀÓ ¹æÁö)
+    // ë˜ì „(ì¸ìŠ¤í„´ìŠ¤) ì•ˆì—ì„œëŠ” ì´ˆëŒ€ ê¸ˆì§€ (ë©¤ë²„ì‹­ ê¼¬ìž„ ë°©ì§€)
     if (pit->second.instanceId != 0) return false;
 
-    // ´ë»óÀÌ ÀÌ¹Ì ÆÄÆ¼ ÀÖÀ¸¸é ½ÇÆÐ
+    // ëŒ€ìƒì´ ì´ë¯¸ íŒŒí‹° ìžˆìœ¼ë©´ ì‹¤íŒ¨
     if (_playerToParty.find(targetId) != _playerToParty.end())
         return false;
 
-    // ÃÊ´ë Áßº¹ ¹æÁö(Å¸°Ù ±âÁØ 1°³¸¸)
+    // ì´ˆëŒ€ ì¤‘ë³µ ë°©ì§€(íƒ€ê²Ÿ ê¸°ì¤€ 1ê°œë§Œ)
     _pendingByTarget.erase(targetId);
 
     PendingInvite inv;
@@ -123,10 +123,10 @@ bool PartyManagerCore::AcceptInvite(uint64 targetId, uint64 partyId, bool accept
     auto it = _parties.find(partyId);
     if (it == _parties.end()) { _pendingByTarget.erase(pit); return false; }
 
-    //ENTERING/EXITING Áß ÇÕ·ù ±ÝÁö
+    //ENTERING/EXITING ì¤‘ í•©ë¥˜ ê¸ˆì§€
     if (it->second.inDungeonTransition) { _pendingByTarget.erase(pit); return false; }
 
-    // ´øÀü Áß ÇÕ·ù ±ÝÁö
+    // ë˜ì „ ì¤‘ í•©ë¥˜ ê¸ˆì§€
     if (it->second.instanceId != 0) { _pendingByTarget.erase(pit); return false; }
 
     it->second.members.insert(targetId);

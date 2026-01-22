@@ -1,9 +1,9 @@
-#pragma once
+ï»¿#pragma once
 #include "Protocol.pb.h"
 #include <math.h>
-#include <algorithm> // [New] min, max µî ¾ÈÀüÀåÄ¡¿ë
+#include <algorithm> // [New] min, max ë“± ì•ˆì „ì¥ì¹˜ìš©
 
-#define PI 3.14159265f // [New] ¿øÁÖÀ² Á¤ÀÇ
+#define PI 3.14159265f // [New] ì›ì£¼ìœ¨ ì •ì˜
 
 struct Vector3
 {
@@ -12,62 +12,62 @@ struct Vector3
 	Vector3(float _x, float _y, float _z) : x(_x), y(_y), z(_z) {}
 	Vector3(const Protocol::PositionInfo& info) : x(info.x()), y(info.y()), z(info.z()) {}
 
-	// º¤ÅÍ »¬¼À
+	// ë²¡í„° ëº„ì…ˆ
 	Vector3 operator-(const Vector3& other)
 	{
 		return Vector3(x - other.x, y - other.y, z - other.z);
 	}
 
-	// º¤ÅÍ µ¡¼À
+	// ë²¡í„° ë§ì…ˆ
 	Vector3 operator+(const Vector3& other)
 	{
 		return Vector3(x + other.x, y + other.y, z + other.z);
 	}
 
-	// ½ºÄ®¶ó °ö¼À
+	// ìŠ¤ì¹¼ë¼ ê³±ì…ˆ
 	Vector3 operator*(float scalar)
 	{
 		return Vector3(x * scalar, y * scalar, z * scalar);
 	}
 
-	// ±æÀÌ (Magnitude)
+	// ê¸¸ì´ (Magnitude)
 	float Length() { return sqrt(x * x + y * y + z * z); }
 
-	// ±æÀÌ Á¦°ö (ÃÖÀûÈ­¿ë)
+	// ê¸¸ì´ ì œê³± (ìµœì í™”ìš©)
 	float LengthSquared() { return x * x + y * y + z * z; }
 
-	// Á¤±ÔÈ­ (¹æÇâ¸¸ ³²±è)
+	// ì •ê·œí™” (ë°©í–¥ë§Œ ë‚¨ê¹€)
 	void Normalize()
 	{
 		float len = Length();
-		if (len < 0.0001f) return; // 0À¸·Î ³ª´©±â ¹æÁö
+		if (len < 0.0001f) return; // 0ìœ¼ë¡œ ë‚˜ëˆ„ê¸° ë°©ì§€
 		x /= len;
 		y /= len;
 		z /= len;
 	}
 
-	// [New] ³»Àû (Dot Product) - µÎ º¤ÅÍÀÇ ¹æÇâ ÀÏÄ¡µµ °è»ê
+	// [New] ë‚´ì  (Dot Product) - ë‘ ë²¡í„°ì˜ ë°©í–¥ ì¼ì¹˜ë„ ê³„ì‚°
 	float Dot(const Vector3& other) const { return x * other.x + y * other.y + z * other.z; }
 };
 
 class ObjectUtils
 {
 public:
-	// µÎ À§Ä¡ »çÀÌÀÇ °Å¸® Á¦°ö (·çÆ® ¿¬»ê ¾øÀ½ -> ºü¸§)
+	// ë‘ ìœ„ì¹˜ ì‚¬ì´ì˜ ê±°ë¦¬ ì œê³± (ë£¨íŠ¸ ì—°ì‚° ì—†ìŒ -> ë¹ ë¦„)
 	static float DistSqr(const Protocol::PositionInfo& a, const Protocol::PositionInfo& b)
 	{
 		float dx = a.x() - b.x();
-		float dy = a.z() - b.z(); // MMO´Â º¸Åë X, Z Æò¸é ÀÌµ¿
+		float dy = a.z() - b.z(); // MMOëŠ” ë³´í†µ X, Z í‰ë©´ ì´ë™
 		return dx * dx + dy * dy;
 	}
 
-	// µÎ À§Ä¡ »çÀÌÀÇ °Å¸® (·çÆ® ¿¬»ê ÀÖÀ½ -> ´À¸²)
+	// ë‘ ìœ„ì¹˜ ì‚¬ì´ì˜ ê±°ë¦¬ (ë£¨íŠ¸ ì—°ì‚° ìˆìŒ -> ëŠë¦¼)
 	static float Dist(const Protocol::PositionInfo& a, const Protocol::PositionInfo& b)
 	{
 		return sqrt(DistSqr(a, b));
 	}
 
-	// a°¡ b¸¦ ¹Ù¶óº¸´Â ¹æÇâ º¤ÅÍ ¹İÈ¯
+	// aê°€ bë¥¼ ë°”ë¼ë³´ëŠ” ë°©í–¥ ë²¡í„° ë°˜í™˜
 	static Vector3 GetDirection(const Protocol::PositionInfo& from, const Protocol::PositionInfo& to)
 	{
 		Vector3 vFrom(from);
@@ -78,39 +78,39 @@ public:
 	}
 
 	// ==========================================================
-	// [New] Hitbox Logic (±âÁ¸ ÄÚµå ¿µÇâ ¾øÀ½)
+	// [New] Hitbox Logic (ê¸°ì¡´ ì½”ë“œ ì˜í–¥ ì—†ìŒ)
 	// ==========================================================
 
-	// 1. ¿øÇü ÆÇÁ¤ (Circle)
+	// 1. ì›í˜• íŒì • (Circle)
 	static bool CheckCircle(const Protocol::PositionInfo& center, float radius, const Protocol::PositionInfo& target)
 	{
 		float distSqr = DistSqr(center, target);
 		return distSqr <= (radius * radius);
 	}
 
-	// 2. ºÎÃ¤²Ã ÆÇÁ¤ (Fan/Cone)
-	// viewDir: ½Ã¼± ¹æÇâ (Á¤±ÔÈ­ ÇÊ¼ö)
+	// 2. ë¶€ì±„ê¼´ íŒì • (Fan/Cone)
+	// viewDir: ì‹œì„  ë°©í–¥ (ì •ê·œí™” í•„ìˆ˜)
 	static bool CheckFan(const Protocol::PositionInfo& center, const Vector3& viewDir, float range, float angle, const Protocol::PositionInfo& target)
 	{
-		// 1) °Å¸® Ã¼Å©
+		// 1) ê±°ë¦¬ ì²´í¬
 		if (CheckCircle(center, range, target) == false)
 			return false;
 
-		// 2) °¢µµ Ã¼Å© (³»Àû)
+		// 2) ê°ë„ ì²´í¬ (ë‚´ì )
 		Vector3 dirToTarget = GetDirection(center, target);
-		float dot = viewDir.Dot(dirToTarget); // ³»Àû °è»ê
+		float dot = viewDir.Dot(dirToTarget); // ë‚´ì  ê³„ì‚°
 
-		// ºÎÃ¤²Ã °¢µµÀÇ Àı¹İº¸´Ù ³»Àû°ªÀÌ Å©¸é(°¢µµ°¡ ÀÛÀ¸¸é) È÷Æ®
+		// ë¶€ì±„ê¼´ ê°ë„ì˜ ì ˆë°˜ë³´ë‹¤ ë‚´ì ê°’ì´ í¬ë©´(ê°ë„ê°€ ì‘ìœ¼ë©´) íˆíŠ¸
 		float cosTheta = cosf((angle / 2.0f) * (PI / 180.0f));
 
 		return dot >= cosTheta;
 	}
 
-	// [Helper] Yaw(È¸Àü°ª) -> ¹æÇâ º¤ÅÍ º¯È¯
+	// [Helper] Yaw(íšŒì „ê°’) -> ë°©í–¥ ë²¡í„° ë³€í™˜
 	static Vector3 GetVectorFromYaw(float yaw)
 	{
 		float rad = yaw * (PI / 180.0f);
-		return Vector3(sinf(rad), 0, cosf(rad)); // YÃà È¸Àü ±âÁØ (X, Z Æò¸é)
+		return Vector3(sinf(rad), 0, cosf(rad)); // Yì¶• íšŒì „ ê¸°ì¤€ (X, Z í‰ë©´)
 	}
 
 	// ObjectUtils.h

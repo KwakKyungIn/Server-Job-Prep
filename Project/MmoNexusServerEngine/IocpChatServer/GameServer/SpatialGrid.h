@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include "Zone.h"
 
 namespace Protocol
@@ -6,14 +6,14 @@ namespace Protocol
     class PositionInfo;
 }
 
-// ¸Ê ÇÏ³ª¿¡ ´ëÇÑ AOI(9-Grid) °ü¸® Àü´ã
+// ë§µ í•˜ë‚˜ì— ëŒ€í•œ AOI(9-Grid) ê´€ë¦¬ ì „ë‹´
 class SpatialGrid
 {
 public:
     SpatialGrid() = default;
     ~SpatialGrid() = default;
 
-    // min/max´Â GameMap¿¡¼­ ¹Ş¾Æ¿Â °ª ±×´ë·Î ³Ö¾îÁÙ °Å´Ù.
+    // min/maxëŠ” GameMapì—ì„œ ë°›ì•„ì˜¨ ê°’ ê·¸ëŒ€ë¡œ ë„£ì–´ì¤„ ê±°ë‹¤.
     void Init(int32 minX, int32 minY, int32 maxX, int32 maxY, int32 cellSize);
 
     int32 GetZoneIndex(const Protocol::PositionInfo& posInfo) const;
@@ -24,7 +24,7 @@ public:
 
     void GetNearbyZones(int32 zoneIndex, int32 radiusCells, Vector<Zone*>& outZones);
 
-    // Zone Á÷Á¢ Á¢±ÙÀÌ ÇÊ¿äÇÒ ¶§
+    // Zone ì§ì ‘ ì ‘ê·¼ì´ í•„ìš”í•  ë•Œ
     Zone& GetZone(int32 zoneIndex);
     const Zone& GetZone(int32 zoneIndex) const;
 

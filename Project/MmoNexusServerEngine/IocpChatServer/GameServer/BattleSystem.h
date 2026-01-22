@@ -1,10 +1,10 @@
-#pragma once
+ï»¿#pragma once
 class Creature;
 class SpatialGrid;
 struct Zone;
 
 ///////////////////////////////////////////////////////////////////////////////
-// ÀüÅõ °á°ú Å¸ÀÔ
+// ì „íˆ¬ ê²°ê³¼ íƒ€ì…
 ///////////////////////////////////////////////////////////////////////////////
 
 struct HitInfo
@@ -16,12 +16,12 @@ struct HitInfo
 struct SkillResult
 {
     int32        skillId = 0;
-    int32        zoneIndex = -1;  // ºê·ÎµåÄ³½ºÆ® ±âÁØ Á¸
-    Vector<HitInfo> hits;         // ¸ÂÀº ¾Ö ¸ñ·Ï
+    int32        zoneIndex = -1;  // ë¸Œë¡œë“œìºìŠ¤íŠ¸ ê¸°ì¤€ ì¡´
+    Vector<HitInfo> hits;         // ë§ì€ ì•  ëª©ë¡
 };
 
 ///////////////////////////////////////////////////////////////////////////////
-// BattleSystem : "´©±¸¸¦ ¾ó¸¶³ª ¶§¸±Áö"¸¸ °è»êÇÏ´Â ¼ø¼ö ÀüÅõ ¿£Áø
+// BattleSystem : "ëˆ„êµ¬ë¥¼ ì–¼ë§ˆë‚˜ ë•Œë¦´ì§€"ë§Œ ê³„ì‚°í•˜ëŠ” ìˆœìˆ˜ ì „íˆ¬ ì—”ì§„
 ///////////////////////////////////////////////////////////////////////////////
 
 class BattleSystem
@@ -30,10 +30,10 @@ public:
     explicit BattleSystem(SpatialGrid* grid);
     ~BattleSystem() = default;
 
-    // ½ºÅ³ 1¹ø »ç¿ë¿¡ ´ëÇÑ ÀüÅõ ÆÇÁ¤
-    // - attacker : ½ÃÀüÀÚ
-    // - skillId  : »ç¿ëÇÑ ½ºÅ³
-    // - outResult: ´©°¡ ¸Â¾Ò°í, ¾ó¸¶ ¸Â¾Ò´ÂÁö °á°ú
+    // ìŠ¤í‚¬ 1ë²ˆ ì‚¬ìš©ì— ëŒ€í•œ ì „íˆ¬ íŒì •
+    // - attacker : ì‹œì „ì
+    // - skillId  : ì‚¬ìš©í•œ ìŠ¤í‚¬
+    // - outResult: ëˆ„ê°€ ë§ì•˜ê³ , ì–¼ë§ˆ ë§ì•˜ëŠ”ì§€ ê²°ê³¼
     bool ResolveSkill(const std::shared_ptr<Creature>& attacker,
         int32 skillId,
         SkillResult& outResult);
@@ -45,5 +45,5 @@ private:
         Vector<std::shared_ptr<Creature>>& outCandidates);
 
 private:
-    SpatialGrid* _grid = nullptr; // AOI Á¢±Ù¿ë (¼ÒÀ¯ X)
+    SpatialGrid* _grid = nullptr; // AOI ì ‘ê·¼ìš© (ì†Œìœ  X)
 };

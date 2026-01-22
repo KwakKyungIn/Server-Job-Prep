@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include "Protocol.pb.h" 
 
 class Player;
@@ -9,10 +9,10 @@ using PlayerSessionRef = std::shared_ptr<PlayerSession>;
 
 namespace MapChangeUtil
 {
-    // ÅäÅ« »ı¼º
+    // í† í° ìƒì„±
     uint64 MakeMapChangeToken(uint64 playerId, uint64 sessionId);
 
-    // MapChange Begin Àü¼Û + Session FSM Begin
+    // MapChange Begin ì „ì†¡ + Session FSM Begin
     void SendMapChangeBegin(PlayerSessionRef ms,
         uint64 playerId,
         int32 targetChannelId,
@@ -20,12 +20,12 @@ namespace MapChangeUtil
         int64 targetInstanceId,
         const Protocol::PositionInfo& spawn);
 
-    // ¾ÈÀüÇÑ ¿ùµå º¹±Í ÁÂÇ¥ °è»ê(¸®ÅÏ À§Ä¡/¸Ê À¯È¿¼º °Ë»ç)
+    // ì•ˆì „í•œ ì›”ë“œ ë³µê·€ ì¢Œí‘œ ê³„ì‚°(ë¦¬í„´ ìœ„ì¹˜/ë§µ ìœ íš¨ì„± ê²€ì‚¬)
     void MakeSafeReturn(PlayerRef p,
         int32& outMapId,
         int64& outInstId,
         Protocol::PositionInfo& outPos);
 
-    // ´øÀü/°­Á¦ÅğÃâ¿ë: ÇöÀç Room¿¡¼­ ReturnLocation ±â¹İ ¿ùµå·Î MapChangeBegin
+    // ë˜ì „/ê°•ì œí‡´ì¶œìš©: í˜„ì¬ Roomì—ì„œ ReturnLocation ê¸°ë°˜ ì›”ë“œë¡œ MapChangeBegin
     void ForceReturnToWorld(PlayerSessionRef ms);
 }

@@ -1,4 +1,4 @@
-// RoomActor.h
+ï»¿// RoomActor.h
 #pragma once
 #include <functional>
 #include <memory>
@@ -16,7 +16,7 @@ public:
 
     virtual RoomKind GetKind() const = 0;
 
-    // Actor ½ÇÇà(ÀâÅ¥¿¡ ÅÂ¿ì´Â) °øÅë API
+    // Actor ì‹¤í–‰(ì¡íì— íƒœìš°ëŠ”) ê³µí†µ API
     virtual void Push(std::function<void()> fn) = 0;
 };
 

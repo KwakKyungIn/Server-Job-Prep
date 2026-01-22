@@ -1,5 +1,5 @@
-#include "pch.h"
+ï»¿#include "pch.h"
 #include "GameItemUidGen.h"
 
-// fallback °ª(Init ¾È µÆÀ» ¶§ ÀÓ½Ã) 
+// fallback ê°’(Init ì•ˆ ëì„ ë•Œ ì„ì‹œ) 
 std::atomic<uint64_t> GameItemUidGen::_next{ 1000000 };

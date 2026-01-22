@@ -1,6 +1,6 @@
-#pragma once
+Ôªø#pragma once
 
-// forward declarations (∞°∫±∞‘)
+// forward declarations (Í∞ÄÎ≥çÍ≤å)
 class Creature;
 class PlayerSession;
 class SendBuffer;

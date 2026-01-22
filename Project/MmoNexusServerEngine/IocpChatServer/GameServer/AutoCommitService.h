@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include <thread>
 #include <atomic>
 #include <mutex>
@@ -19,20 +19,20 @@ namespace Persistence
 
         static AutoCommitService& I();
 
-        // B°¡ MakeSendBuffer/PacketId ºÙÀÎ ´ÙÀ½¿¡,
-        // ¿©±â send Äİ¹é¸¸ ¿¬°áÇÏ¸é AutoCommitService´Â ¿Ï¼ºµÈ´Ù.
+        // Bê°€ MakeSendBuffer/PacketId ë¶™ì¸ ë‹¤ìŒì—,
+        // ì—¬ê¸° send ì½œë°±ë§Œ ì—°ê²°í•˜ë©´ AutoCommitServiceëŠ” ì™„ì„±ëœë‹¤.
         void Init(RedisManager* redis, SendCoreFn sendCore, SendInvFn sendInv);
 
         void Start();
         void Stop();
 
-        // ·Î±×¾Æ¿ô/Disconnect Áï½Ã ÀúÀå Æ®¸®°Å
+        // ë¡œê·¸ì•„ì›ƒ/Disconnect ì¦‰ì‹œ ì €ì¥ íŠ¸ë¦¬ê±°
         void RequestFlushNow(uint64 pid);
 
-        // ÀÀ´ä(RES_SAVE_*) ¼º°ø/½ÇÆĞ Ã³¸® ³¡³µÀ» ¶§ inflight ÇØÁ¦¿ë
+        // ì‘ë‹µ(RES_SAVE_*) ì„±ê³µ/ì‹¤íŒ¨ ì²˜ë¦¬ ëë‚¬ì„ ë•Œ inflight í•´ì œìš©
         void OnCommitFinished(uint64 pid);
 
-        // (Å×½ºÆ®/µğ¹ö±×) ½º·¹µå ¾øÀÌ 1È¸ Ä¿¹Ô ½Ãµµ
+        // (í…ŒìŠ¤íŠ¸/ë””ë²„ê·¸) ìŠ¤ë ˆë“œ ì—†ì´ 1íšŒ ì»¤ë°‹ ì‹œë„
         void TickOnce();
 
         using SendQsFn = std::function<void(const Protocol::S2S_REQ_SAVE_QUICKSLOT&)>;
@@ -42,7 +42,7 @@ namespace Persistence
     private:
         SendQsFn _sendQs;
 
-        // inflight¸¦ count·Î
+        // inflightë¥¼ countë¡œ
         HashMap<uint64, int32> _inflightCount;
 
 

@@ -1,4 +1,4 @@
-#include "pch.h"
+Ôªø#include "pch.h"
 #include "AutoCommitService.h"
 
 #include "RedisManager.h"
@@ -98,7 +98,7 @@ namespace Persistence
 
             TickCommit_Internal();
 
-            // ¥Ÿ¿Ω tick ∞ªΩ≈
+            // Îã§Ïùå tick Í∞±Ïã†
             nextTick = steady_clock::now() + interval;
         }
     }
@@ -128,7 +128,7 @@ namespace Persistence
 
         for (uint64 pid : targets)
         {
-            // inflight ∞°µÂ
+            // inflight Í∞ÄÎìú
             {
                 std::lock_guard<std::mutex> lock(_mx);
                 if (_inflightCount.count(pid))

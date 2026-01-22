@@ -1,4 +1,4 @@
-#include "pch.h"
+ï»¿#include "pch.h"
 #include "Projectile.h"
 
 static constexpr float kPI = 3.1415926535f;
@@ -54,7 +54,7 @@ bool Projectile::Update(uint64 deltaMs)
     if (deltaMs == 0)
         return false;
 
-    // °úµµÇÑ Á¡ÇÁ ¹æÁö
+    // ê³¼ë„í•œ ì í”„ ë°©ì§€
     if (deltaMs > 100)
         deltaMs = 100;
 
@@ -62,11 +62,11 @@ bool Projectile::Update(uint64 deltaMs)
 
     const float speed = _projInfo.speed();
     if (speed <= 0.0f)
-        return true; // ¿òÁ÷ÀÓ ¾øÁö¸¸(ÀÌ»ó) ¸¸·á Ã¼Å©´Â ÇÏ°Ô true Ã³¸®ÇØµµ µÊ
+        return true; // ì›€ì§ìž„ ì—†ì§€ë§Œ(ì´ìƒ) ë§Œë£Œ ì²´í¬ëŠ” í•˜ê²Œ true ì²˜ë¦¬í•´ë„ ë¨
 
     const float dt = (float)deltaMs / 1000.0f;
 
-    // Unity yaw ±âÁØ: x = sin(yaw), z = cos(yaw)
+    // Unity yaw ê¸°ì¤€: x = sin(yaw), z = cos(yaw)
     const float yawRad = _posInfo->yaw() * kPI / 180.0f;
     const float dirX = std::sinf(yawRad);
     const float dirZ = std::cosf(yawRad);

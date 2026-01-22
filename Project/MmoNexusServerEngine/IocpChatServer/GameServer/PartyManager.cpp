@@ -1,4 +1,4 @@
-#include "pch.h"
+ï»¿#include "pch.h"
 #include "PartyManager.h"
 
 uint64 PartyManager::GetPartyIdByPlayerId(uint64 playerId) const
@@ -45,7 +45,7 @@ bool PartyManager::Create(uint64 leaderId, uint64& outPartyId)
     WRITE_LOCK;
 
     if (_playerToParty.find(leaderId) != _playerToParty.end())
-        return false; // ÀÌ¹Ì ÆÄÆ¼ ÀÖÀ½
+        return false; // ì´ë¯¸ íŒŒí‹° ìžˆìŒ
 
     const uint64 partyId = _nextPartyId++;
     Party p;
@@ -76,18 +76,18 @@ bool PartyManager::Invite(uint64 inviterId, uint64 targetId, PendingInvite& outI
         partyId = it->second;
     }
 
-    // ´ë»óÀÌ ÀÌ¹Ì ÆÄÆ¼ ÀÖÀ¸¸é ½ÇÆÐ
+    // ëŒ€ìƒì´ ì´ë¯¸ íŒŒí‹° ìžˆìœ¼ë©´ ì‹¤íŒ¨
     if (_playerToParty.find(targetId) != _playerToParty.end())
         return false;
 
-    // ÃÊ´ë Áßº¹ ¹æÁö(Å¸°Ù ±âÁØ 1°³¸¸)
+    // ì´ˆëŒ€ ì¤‘ë³µ ë°©ì§€(íƒ€ê²Ÿ ê¸°ì¤€ 1ê°œë§Œ)
     _pendingByTarget.erase(targetId);
 
     PendingInvite inv;
     inv.partyId = partyId;
     inv.inviterId = inviterId;
     inv.targetId = targetId;
-    inv.expireTick = ::GetTickCount64() + 60'000; // 60ÃÊ
+    inv.expireTick = ::GetTickCount64() + 60'000; // 60ì´ˆ
 
     _pendingByTarget[targetId] = inv;
     outInvite = inv;
@@ -108,14 +108,14 @@ bool PartyManager::AcceptInvite(uint64 targetId, uint64 partyId, bool accept, Pa
     if (inv.partyId != partyId) return false;
     if (::GetTickCount64() > inv.expireTick) { _pendingByTarget.erase(pit); return false; }
 
-    // °ÅÀýÀÌ¸é ±×³É »èÁ¦
+    // ê±°ì ˆì´ë©´ ê·¸ëƒ¥ ì‚­ì œ
     if (!accept)
     {
         _pendingByTarget.erase(pit);
         return true;
     }
 
-    // ÀÌ¹Ì ÆÄÆ¼ »ý°åÀ¸¸é ½ÇÆÐ
+    // ì´ë¯¸ íŒŒí‹° ìƒê²¼ìœ¼ë©´ ì‹¤íŒ¨
     if (_playerToParty.find(targetId) != _playerToParty.end())
     {
         _pendingByTarget.erase(pit);
@@ -155,7 +155,7 @@ bool PartyManager::Leave(uint64 playerId, Party& outPartyAfter, bool& outDisband
     it->second.members.erase(playerId);
     _playerToParty.erase(pit);
 
-    // ¸®´õ°¡ ³ª°¡¸é »õ ¸®´õ ¼±Ãâ(ÃÖ¼Ò id)
+    // ë¦¬ë”ê°€ ë‚˜ê°€ë©´ ìƒˆ ë¦¬ë” ì„ ì¶œ(ìµœì†Œ id)
     if (it->second.leaderId == playerId && !it->second.members.empty())
     {
         uint64 newLeader = *it->second.members.begin();
@@ -165,7 +165,7 @@ bool PartyManager::Leave(uint64 playerId, Party& outPartyAfter, bool& outDisband
 
     it->second.version++;
 
-    // ¸â¹ö°¡ 0ÀÌ¸é ÇØ»ê
+    // ë©¤ë²„ê°€ 0ì´ë©´ í•´ì‚°
     if (it->second.members.empty())
     {
         _parties.erase(it);
@@ -192,7 +192,7 @@ bool PartyManager::Kick(uint64 leaderId, uint64 targetId, Party& outPartyAfter)
     auto it = _parties.find(partyId);
     if (it == _parties.end()) return false;
 
-    if (it->second.leaderId != leaderId) return false; // ¸®´õ¸¸ Å±
+    if (it->second.leaderId != leaderId) return false; // ë¦¬ë”ë§Œ í‚¥
     if (it->second.members.find(targetId) == it->second.members.end()) return false;
 
     it->second.members.erase(targetId);
@@ -225,7 +225,7 @@ bool PartyManager::Disband(uint64 leaderId, Party& outDisbandedParty)
 
     outDisbandedParty = it->second;
 
-    // ¿ªÀÎµ¦½º Á¦°Å
+    // ì—­ì¸ë±ìŠ¤ ì œê±°
     for (uint64 id : it->second.members)
     {
         auto p = _playerToParty.find(id);

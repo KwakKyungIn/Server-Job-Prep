@@ -1,23 +1,23 @@
-#pragma once
+ï»¿#pragma once
 #include <atomic>
 #include <cstdint>
 
 class GameItemUidGen
 {
 public:
-    // ¼­¹ö ½ÃÀÛ ½Ã 1È¸ È£Ãâ: DB¿¡¼­ ÀĞÀº nextUid·Î ½Ãµå
+    // ì„œë²„ ì‹œì‘ ì‹œ 1íšŒ í˜¸ì¶œ: DBì—ì„œ ì½ì€ nextUidë¡œ ì‹œë“œ
     static void Init(uint64_t nextUid)
     {
         _next.store(nextUid, std::memory_order_release);
     }
 
-    // ·±Å¸ÀÓ ¹ß±Ş
+    // ëŸ°íƒ€ì„ ë°œê¸‰
     static uint64_t Alloc()
     {
         return _next.fetch_add(1, std::memory_order_relaxed);
     }
 
-    // µğ¹ö±×/·Î±×¿ë
+    // ë””ë²„ê·¸/ë¡œê·¸ìš©
     static uint64_t Peek()
     {
         return _next.load(std::memory_order_acquire);

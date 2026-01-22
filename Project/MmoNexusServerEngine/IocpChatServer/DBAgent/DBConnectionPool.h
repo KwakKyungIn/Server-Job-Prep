@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include "DBConnection.h"
 #include <queue>
 #include <condition_variable>
@@ -9,29 +9,29 @@ public:
     DBConnectionPool() = default;
     ~DBConnectionPool();
 
-    // ÁöÁ¤ÇÑ °³¼ö¸¸Å­ DB ¿¬°áÀ» »ı¼ºÇØ¼­ Ç®¿¡ ³ÖÀ½
+    // ì§€ì •í•œ ê°œìˆ˜ë§Œí¼ DB ì—°ê²°ì„ ìƒì„±í•´ì„œ í’€ì— ë„£ìŒ
     bool Connect(int32 connectionCount, const WCHAR* connectionString);
 
-    // ¸ğµç ¿¬°á°ú ÀÚ¿ø ÇØÁ¦
+    // ëª¨ë“  ì—°ê²°ê³¼ ìì› í•´ì œ
     void Clear();
 
-    // Ç®¿¡¼­ DB ¿¬°á ÇÏ³ª ²¨³»¿È (¾øÀ¸¸é ´ë±â)
+    // í’€ì—ì„œ DB ì—°ê²° í•˜ë‚˜ êº¼ë‚´ì˜´ (ì—†ìœ¼ë©´ ëŒ€ê¸°)
     DBConnection* Pop();
 
-    // »ç¿ëÀÌ ³¡³­ ¿¬°áÀ» Ç®¿¡ ¹İ³³
+    // ì‚¬ìš©ì´ ëë‚œ ì—°ê²°ì„ í’€ì— ë°˜ë‚©
     void Push(DBConnection* connection);
 
 private:
-    // ODBC È¯°æ ÇÚµé
+    // ODBC í™˜ê²½ í•¸ë“¤
     SQLHENV _environment = SQL_NULL_HANDLE;
 
-    // DB ¿¬°áµéÀ» º¸°üÇÏ´Â Å¥
+    // DB ì—°ê²°ë“¤ì„ ë³´ê´€í•˜ëŠ” í
     Queue<DBConnection*> _connections;
 
-    // µ¿±âÈ­ µµ±¸ (¸ÖÆ¼½º·¹µå ¾ÈÀü)
+    // ë™ê¸°í™” ë„êµ¬ (ë©€í‹°ìŠ¤ë ˆë“œ ì•ˆì „)
     std::mutex _mutex;
     std::condition_variable _cv;
 
-    // Ç® Á¾·á ¿©ºÎ ÇÃ·¡±×
+    // í’€ ì¢…ë£Œ ì—¬ë¶€ í”Œë˜ê·¸
     bool _shutdown = false;
 };

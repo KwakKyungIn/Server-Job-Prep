@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include <memory>
 #include "JobQueue.h"
 #include "Job.h"
@@ -33,7 +33,7 @@ public:
             InstanceManagerCore::InstanceInfo closed;
             if (_core.CloseForParty(inst.partyId, closed))
             {
-                // roomÀÌ Á¸ÀçÇÏ¸é closing ¸¶Å· (purge °¡´É)
+                // roomì´ ì¡´ìž¬í•˜ë©´ closing ë§ˆí‚¹ (purge ê°€ëŠ¥)
                 if (GRoomManager)
                 {
                     auto room = GRoomManager->FindRoom(closed.channelId, closed.mapId, closed.instanceId);

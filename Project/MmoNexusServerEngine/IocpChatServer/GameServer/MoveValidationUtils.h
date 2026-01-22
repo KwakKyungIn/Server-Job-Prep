@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include "pch.h"
 #include "Struct.pb.h"
 #include <algorithm>
@@ -73,10 +73,10 @@ namespace MoveValidate
 		outPos.set_x(cur.x() + nx * r.maxDist);
 		outPos.set_z(cur.z() + nz * r.maxDist);
 
-		// y´Â navmesh°¡ Áø½ÇÀÌ¶ó ¿©±â¼± °Çµå¸®Áö ¸»ÀÚ
+		// yëŠ” navmeshê°€ ì§„ì‹¤ì´ë¼ ì—¬ê¸°ì„  ê±´ë“œë¦¬ì§€ ë§ì
 		outPos.set_y(req.y());
 
-		// È¸Àü/»óÅÂ´Â ¿äÃ» À¯Áö (C°¡ ÃÖÁ¾ È®Á¤)
+		// íšŒì „/ìƒíƒœëŠ” ìš”ì²­ ìœ ì§€ (Cê°€ ìµœì¢… í™•ì •)
 		outPos.set_yaw(req.yaw());
 		outPos.set_state(req.state());
 		outPos.set_actionstate(req.actionstate());

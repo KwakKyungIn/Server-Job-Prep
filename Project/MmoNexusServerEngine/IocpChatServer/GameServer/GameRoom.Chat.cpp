@@ -1,4 +1,4 @@
-#include "pch.h"
+ï»¿#include "pch.h"
 #include "GameRoom.h"
 #include "Player.h"
 #include "RoomManager.h"
@@ -6,7 +6,7 @@
 
 void GameRoom::BroadcastChat(const Protocol::S_CHAT_NTF& ntf)
 {
-	// GameRoomÀº JobQueue·Î Á÷·Ä ½ÇÇàµÇ´Â ÀüÁ¦¶ó º°µµ ¶ô ¾øÀÌ °£´Ù.
+	// GameRoomì€ JobQueueë¡œ ì§ë ¬ ì‹¤í–‰ë˜ëŠ” ì „ì œë¼ ë³„ë„ ë½ ì—†ì´ ê°„ë‹¤.
 	for (auto it = _players.begin(); it != _players.end(); ++it)
 	{
 		PlayerRef player = it->second;

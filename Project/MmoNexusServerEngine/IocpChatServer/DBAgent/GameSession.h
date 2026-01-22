@@ -1,15 +1,15 @@
-#include "pch.h"
+ï»¿#include "pch.h"
 #include "DBAgentPacketHandler.h"
 #include "JobQueue.h" // [NEW]
 #include "Job.h"      // [NEW]
 
-// GameServer¿ÍÀÇ ¿¬°áÀ» °ü¸®ÇÏ´Â ¼¼¼Ç
+// GameServerì™€ì˜ ì—°ê²°ì„ ê´€ë¦¬í•˜ëŠ” ì„¸ì…˜
 class GameSession : public PacketSession
 {
 public:
 	GameSession()
 	{
-		// [NEW] ¿£Áø ÀåÂø
+		// [NEW] ì—”ì§„ ì¥ì°©
 		_jobQueue = MakeShared<JobQueue>();
 	}
 	virtual ~GameSession() {}
@@ -19,13 +19,13 @@ public:
 	virtual void OnRecvPacket(BYTE* buffer, int32 len) override;
 	virtual void OnSend(int32 len) override;
 
-	// [NEW] ÆĞÅ¶ ÇÚµé·¯°¡ ÀÏ°¨À» ´øÁú ±¸¸Û
+	// [NEW] íŒ¨í‚· í•¸ë“¤ëŸ¬ê°€ ì¼ê°ì„ ë˜ì§ˆ êµ¬ë©
 	void PushJob(shared_ptr<Job> job)
 	{
 		_jobQueue->Push(job);
 	}
 
 public:
-	// [NEW] ÀÌ ¼¼¼Ç(GameServer)¿¡¼­ ¿À´Â ¿äÃ»À» Ã³¸®ÇÒ Å¥
+	// [NEW] ì´ ì„¸ì…˜(GameServer)ì—ì„œ ì˜¤ëŠ” ìš”ì²­ì„ ì²˜ë¦¬í•  í
 	shared_ptr<JobQueue> _jobQueue;
 };

@@ -1,4 +1,4 @@
-#include "pch.h"
+ï»¿#include "pch.h"
 #include "BattleSystem.h"
 #include "SpatialGrid.h"
 #include "Zone.h"
@@ -22,7 +22,7 @@ bool BattleSystem::ResolveSkill(const std::shared_ptr<Creature>& attacker,
     if (_grid == nullptr || attacker == nullptr)
         return false;
 
-    // 1. ½ºÅ³ µ¥ÀÌÅÍ
+    // 1. ìŠ¤í‚¬ ë°ì´í„°
     const Protocol::SkillTemplateInfo* skillData =
         DataManager::Instance()->GetSkillTemplate(skillId);
     if (skillData == nullptr)
@@ -34,15 +34,15 @@ bool BattleSystem::ResolveSkill(const std::shared_ptr<Creature>& attacker,
 
     bool isMonster = (attacker->GetObjectType() == Protocol::OBJECT_TYPE_MONSTER);
 
-    // 2. ±âÁØ Á¸ °è»ê
+    // 2. ê¸°ì¤€ ì¡´ ê³„ì‚°
     int32 zoneIndex = _grid->GetZoneIndex(*attacker->GetPosInfo());
 
-    // 3. AOI·Î ÈÄº¸ ¼öÁı
+    // 3. AOIë¡œ í›„ë³´ ìˆ˜ì§‘
     Vector<std::shared_ptr<Creature>> candidates;
     if (!CollectCandidates(attacker, isMonster, zoneIndex, candidates))
         return false;
 
-    // 4. Narrow Phase + µ¥¹ÌÁö Àû¿ë
+    // 4. Narrow Phase + ë°ë¯¸ì§€ ì ìš©
     outResult.skillId = skillId;
     outResult.zoneIndex = zoneIndex;
     outResult.hits.clear();
@@ -67,7 +67,7 @@ bool BattleSystem::ResolveSkill(const std::shared_ptr<Creature>& attacker,
         }
         break;
 
-        // TODO: ´Ù¸¥ ½ºÅ³ Å¸ÀÔµé Ãß°¡ (ºÎÃ¤²Ã, ¶óÀÎ µî)
+        // TODO: ë‹¤ë¥¸ ìŠ¤í‚¬ íƒ€ì…ë“¤ ì¶”ê°€ (ë¶€ì±„ê¼´, ë¼ì¸ ë“±)
         default:
             break;
         }
@@ -75,7 +75,7 @@ bool BattleSystem::ResolveSkill(const std::shared_ptr<Creature>& attacker,
         if (!isHit)
             continue;
 
-        // ½ÇÁ¦ µ¥¹ÌÁö Àû¿ë (µµ¸ŞÀÎ)
+        // ì‹¤ì œ ë°ë¯¸ì§€ ì ìš© (ë„ë©”ì¸)
         victim->OnDamaged(attacker, damage);
 
         HitInfo info;
@@ -83,7 +83,7 @@ bool BattleSystem::ResolveSkill(const std::shared_ptr<Creature>& attacker,
         info.damage = damage;
         outResult.hits.push_back(info);
 
-        // ´ÜÀÏ Å¸°Ù ½ºÅ³ÀÌ¸é Ã¹ ¸íÁß ÈÄ Á¾·á
+        // ë‹¨ì¼ íƒ€ê²Ÿ ìŠ¤í‚¬ì´ë©´ ì²« ëª…ì¤‘ í›„ ì¢…ë£Œ
         if (type == Protocol::SKILL_AUTO)
             break;
     }

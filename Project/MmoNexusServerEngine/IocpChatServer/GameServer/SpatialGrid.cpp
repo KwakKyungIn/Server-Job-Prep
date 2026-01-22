@@ -1,7 +1,7 @@
-#include "pch.h"
+ï»¿#include "pch.h"
 #include "SpatialGrid.h"
-//#include "GameMap.h"          // min/max Á¤ÀÇµÈ °÷ (ÇÊ¿ä ¾øÀ¸¸é »©µµ µÊ)
-#include "Protocol.pb.h"      // PositionInfo ½ÇÁ¦ Á¤ÀÇ
+//#include "GameMap.h"          // min/max ì •ì˜ëœ ê³³ (í•„ìš” ì—†ìœ¼ë©´ ë¹¼ë„ ë¨)
+#include "Protocol.pb.h"      // PositionInfo ì‹¤ì œ ì •ì˜
 
 void SpatialGrid::Init(int32 minX, int32 minY, int32 maxX, int32 maxY, int32 cellSize)
 {
@@ -24,9 +24,9 @@ void SpatialGrid::Init(int32 minX, int32 minY, int32 maxX, int32 maxY, int32 cel
 int32 SpatialGrid::GetZoneIndex(const Protocol::PositionInfo& posInfo) const
 {
     int32 x = static_cast<int32>(posInfo.x());
-    int32 y = static_cast<int32>(posInfo.z()); // Unity (x, z) ¡æ ¼­¹ö (x, y)
+    int32 y = static_cast<int32>(posInfo.z()); // Unity (x, z) â†’ ì„œë²„ (x, y)
 
-    // ¸Ê ¹üÀ§ Clamp
+    // ë§µ ë²”ìœ„ Clamp
     if (x < _minX) x = _minX;
     if (x >= _maxX) x = _maxX - 1;
     if (y < _minY) y = _minY;

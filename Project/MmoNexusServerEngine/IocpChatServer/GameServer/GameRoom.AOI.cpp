@@ -1,4 +1,4 @@
-#include "pch.h"
+ï»¿#include "pch.h"
 #include "GameRoom.h"
 #include "Player.h"
 #include "PlayerSession.h"
@@ -12,7 +12,7 @@ void GameRoom::SendEnterSpawns(PlayerSessionRef session, PlayerRef player)
 
 	const int32 zoneIndex = player->GetZoneIndex();
 
-	// 1) ÁÖº¯ ÇÃ·¹ÀÌ¾îµé¿¡°Ô "³ª µîÀå" ºê·ÎµåÄ³½ºÆ®
+	// 1) ì£¼ë³€ í”Œë ˆì´ì–´ë“¤ì—ê²Œ "ë‚˜ ë“±ì¥" ë¸Œë¡œë“œìºìŠ¤íŠ¸
 	{
 		Protocol::S_SPAWN spawnPkt;
 		Protocol::PlayerInfo* pInfo = spawnPkt.add_players();
@@ -32,7 +32,7 @@ void GameRoom::SendEnterSpawns(PlayerSessionRef session, PlayerRef player)
 		}
 	}
 
-	// 2) ³ª¿¡°Ô ÁÖº¯ Á¤º¸ ½ºÆù
+	// 2) ë‚˜ì—ê²Œ ì£¼ë³€ ì •ë³´ ìŠ¤í°
 	{
 		Vector<Zone*> nearbyZones;
 		_grid.GetNearbyZones(zoneIndex, nearbyZones);

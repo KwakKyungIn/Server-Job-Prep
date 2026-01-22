@@ -1,52 +1,52 @@
-#pragma once
+ï»¿#pragma once
 #include <sql.h>
 #include <sqlext.h>
 
 class DBConnection
 {
 public:
-	// DB ¿¬°á ½Ãµµ (È¯°æ ÇÚµé°ú ¿¬°á ¹®ÀÚ¿­ ÇÊ¿ä)
+	// DB ì—°ê²° ì‹œë„ (í™˜ê²½ í•¸ë“¤ê³¼ ì—°ê²° ë¬¸ìì—´ í•„ìš”)
 	bool Connect(SQLHENV henv, const WCHAR* connectionString);
 
-	// ¿¬°á/statement Á¤¸®
+	// ì—°ê²°/statement ì •ë¦¬
 	void Clear();
 
-	// Äõ¸® ÁØºñ (PreparedStatement ¿ë)
+	// ì¿¼ë¦¬ ì¤€ë¹„ (PreparedStatement ìš©)
 	bool Prepare(const WCHAR* query);
 
-	// ÁØºñµÈ Äõ¸® ½ÇÇà
+	// ì¤€ë¹„ëœ ì¿¼ë¦¬ ì‹¤í–‰
 	bool Execute();
 
-	// Äõ¸® Á÷Á¢ ½ÇÇà (Prepare ¾øÀÌ ¹Ù·Î)
+	// ì¿¼ë¦¬ ì§ì ‘ ì‹¤í–‰ (Prepare ì—†ì´ ë°”ë¡œ)
 	bool Execute(const WCHAR* query);
 
-	// °á°ú¼Â¿¡¼­ ´ÙÀ½ Çà ºÒ·¯¿À±â
+	// ê²°ê³¼ì…‹ì—ì„œ ë‹¤ìŒ í–‰ ë¶ˆëŸ¬ì˜¤ê¸°
 	bool Fetch();
 
-	// ½ÇÇàµÈ Äõ¸®ÀÇ °á°ú Çà °³¼ö È®ÀÎ
+	// ì‹¤í–‰ëœ ì¿¼ë¦¬ì˜ ê²°ê³¼ í–‰ ê°œìˆ˜ í™•ì¸
 	int32 GetRowCount();
 
-	// statement »óÅÂ ÃÊ±âÈ­ (Ä¿¼­ ´İ±â, ¹ÙÀÎµù ÇØÁ¦)
+	// statement ìƒíƒœ ì´ˆê¸°í™” (ì»¤ì„œ ë‹«ê¸°, ë°”ì¸ë”© í•´ì œ)
 	void Unbind();
 
 public:
-	// Äõ¸® ÆÄ¶ó¹ÌÅÍ ¹ÙÀÎµù (INSERT, UPDATE µî¿¡ »ç¿ë)
-	// index´Â Ãâ·Â ÆÄ¶ó¹ÌÅÍ ±æÀÌ¸¦ ´ãÀ» ¼ö ÀÖÀ½ (±âº»°ª nullptr)
+	// ì¿¼ë¦¬ íŒŒë¼ë¯¸í„° ë°”ì¸ë”© (INSERT, UPDATE ë“±ì— ì‚¬ìš©)
+	// indexëŠ” ì¶œë ¥ íŒŒë¼ë¯¸í„° ê¸¸ì´ë¥¼ ë‹´ì„ ìˆ˜ ìˆìŒ (ê¸°ë³¸ê°’ nullptr)
 	bool BindParam(SQLUSMALLINT paramIndex, SQLSMALLINT cType, SQLSMALLINT sqlType,
 		SQLULEN len, SQLPOINTER ptr, SQLLEN* index = nullptr);
 
-	// °á°ú ÄÃ·³À» C++ º¯¼ö¿¡ ¸ÅÇÎ
-	// index´Â ½ÇÁ¦ ±æÀÌ¸¦ ´ãÀ» ¼ö ÀÖÀ½ (±âº»°ª nullptr)
+	// ê²°ê³¼ ì»¬ëŸ¼ì„ C++ ë³€ìˆ˜ì— ë§¤í•‘
+	// indexëŠ” ì‹¤ì œ ê¸¸ì´ë¥¼ ë‹´ì„ ìˆ˜ ìˆìŒ (ê¸°ë³¸ê°’ nullptr)
 	bool BindCol(SQLUSMALLINT columnIndex, SQLSMALLINT cType,
 		SQLULEN len, SQLPOINTER value, SQLLEN* index = nullptr);
 
-	// SQL ½ÇÇà ½Ã ¹ß»ıÇÑ ¿¡·¯ Ãâ·Â
+	// SQL ì‹¤í–‰ ì‹œ ë°œìƒí•œ ì—ëŸ¬ ì¶œë ¥
 	void HandleError(SQLRETURN ret);
 
 private:
-	// DB ¿¬°á ÇÚµé
+	// DB ì—°ê²° í•¸ë“¤
 	SQLHDBC _connection = SQL_NULL_HANDLE;
 
-	// Statement ÇÚµé (Prepare/Execute/Fetch ÀüºÎ ¿©±â¿¡)
+	// Statement í•¸ë“¤ (Prepare/Execute/Fetch ì „ë¶€ ì—¬ê¸°ì—)
 	SQLHSTMT _statement = SQL_NULL_HANDLE;
 };

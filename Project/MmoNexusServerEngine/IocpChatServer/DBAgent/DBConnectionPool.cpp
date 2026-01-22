@@ -1,11 +1,11 @@
-#include "pch.h"
+ï»¿#include "pch.h"
 #include "DBConnectionPool.h"
 #include <iostream>
 #include <chrono>
 
 DBConnectionPool::~DBConnectionPool()
 {
-    // °´Ã¼ ÇØÁ¦ ½Ã Ç® Á¤¸®
+    // ê°ì²´ í•´ì œ ì‹œ í’€ ì •ë¦¬
     Clear();
 }
 
@@ -13,14 +13,14 @@ bool DBConnectionPool::Connect(int32 connectionCount, const WCHAR* connectionStr
 {
     std::unique_lock<std::mutex> lock(_mutex);
 
-    // ODBC È¯°æ ÇÚµé »ı¼º
+    // ODBC í™˜ê²½ í•¸ë“¤ ìƒì„±
     if (::SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, &_environment) != SQL_SUCCESS)
     {
         std::wcout << L"SQLAllocHandle(SQL_HANDLE_ENV) failed." << std::endl;
         return false;
     }
 
-    // ODBC ¹öÀü 3.0À¸·Î ¼³Á¤
+    // ODBC ë²„ì „ 3.0ìœ¼ë¡œ ì„¤ì •
     if (::SQLSetEnvAttr(_environment, SQL_ATTR_ODBC_VERSION,
         reinterpret_cast<SQLPOINTER>(SQL_OV_ODBC3), 0) != SQL_SUCCESS)
     {
@@ -28,7 +28,7 @@ bool DBConnectionPool::Connect(int32 connectionCount, const WCHAR* connectionStr
         return false;
     }
 
-    // ÁöÁ¤µÈ °³¼ö¸¸Å­ DB ¿¬°á »ı¼º ÈÄ Ç®¿¡ ÀúÀå
+    // ì§€ì •ëœ ê°œìˆ˜ë§Œí¼ DB ì—°ê²° ìƒì„± í›„ í’€ì— ì €ì¥
     for (int32 i = 0; i < connectionCount; i++)
     {
         DBConnection* connection = xnew<DBConnection>();
@@ -50,10 +50,10 @@ void DBConnectionPool::Clear()
     std::unique_lock<std::mutex> lock(_mutex);
     _shutdown = true;
 
-    // ´ë±â ÁßÀÎ Pop ½º·¹µå ±ú¿ì±â
+    // ëŒ€ê¸° ì¤‘ì¸ Pop ìŠ¤ë ˆë“œ ê¹¨ìš°ê¸°
     _cv.notify_all();
 
-    // Ç®¿¡ ³²Àº ¿¬°á ¸ğµÎ »èÁ¦
+    // í’€ì— ë‚¨ì€ ì—°ê²° ëª¨ë‘ ì‚­ì œ
     while (!_connections.empty())
     {
         DBConnection* conn = _connections.front();
@@ -61,7 +61,7 @@ void DBConnectionPool::Clear()
         xdelete(conn);
     }
 
-    // È¯°æ ÇÚµé ÇØÁ¦
+    // í™˜ê²½ í•¸ë“¤ í•´ì œ
     if (_environment != SQL_NULL_HANDLE)
     {
         ::SQLFreeHandle(SQL_HANDLE_ENV, _environment);
@@ -72,22 +72,22 @@ void DBConnectionPool::Clear()
 
 DBConnection* DBConnectionPool::Pop()
 {
-    // ´ë±â ½Ã°£ ÃøÁ¤ ½ÃÀÛ
+    // ëŒ€ê¸° ì‹œê°„ ì¸¡ì • ì‹œì‘
     auto t0 = std::chrono::steady_clock::now();
 
     std::unique_lock<std::mutex> lock(_mutex);
 
-    // ¿¬°áÀÌ »ı±â°Å³ª Á¾·áµÉ ¶§±îÁö ´ë±â
+    // ì—°ê²°ì´ ìƒê¸°ê±°ë‚˜ ì¢…ë£Œë  ë•Œê¹Œì§€ ëŒ€ê¸°
     _cv.wait(lock, [this] { return !_connections.empty() || _shutdown; });
 
     if (_shutdown)
         return nullptr;
 
-    // »ç¿ë °¡´ÉÇÑ ¿¬°á ÇÏ³ª ²¨³»±â
+    // ì‚¬ìš© ê°€ëŠ¥í•œ ì—°ê²° í•˜ë‚˜ êº¼ë‚´ê¸°
     DBConnection* connection = _connections.front();
     _connections.pop();
 
-    // ´ë±â ½Ã°£ °è»ê ¹× ¸ŞÆ®¸¯ ±â·Ï
+    // ëŒ€ê¸° ì‹œê°„ ê³„ì‚° ë° ë©”íŠ¸ë¦­ ê¸°ë¡
     auto waitMs = std::chrono::duration_cast<std::chrono::milliseconds>(
         std::chrono::steady_clock::now() - t0).count();
 
@@ -99,11 +99,11 @@ void DBConnectionPool::Push(DBConnection* connection)
     {
         std::unique_lock<std::mutex> lock(_mutex);
 
-        // »ç¿ëÇÑ ¿¬°áÀ» ´Ù½Ã Ç®¿¡ ¹İ³³
+        // ì‚¬ìš©í•œ ì—°ê²°ì„ ë‹¤ì‹œ í’€ì— ë°˜ë‚©
         _connections.push(connection);
 
     }
 
-    // ´ë±â ÁßÀÎ Pop ½º·¹µå ±ú¿ì±â
+    // ëŒ€ê¸° ì¤‘ì¸ Pop ìŠ¤ë ˆë“œ ê¹¨ìš°ê¸°
     _cv.notify_one();
 }

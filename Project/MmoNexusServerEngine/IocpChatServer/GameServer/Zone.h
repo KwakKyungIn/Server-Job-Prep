@@ -1,4 +1,4 @@
-// GameContents/AOI/Zone.h
+ï»¿// GameContents/AOI/Zone.h
 #pragma once
 #include "pch.h"
 #include "Types.h"
@@ -12,7 +12,7 @@ using PlayerRef = std::shared_ptr<Player>;
 using MonsterRef = std::shared_ptr<Monster>;
 using ProjectileRef = std::shared_ptr<Projectile>;
 
-// ÇÏ³ªÀÇ ¼¿(Zone)¿¡ µé¾îÀÖ´Â °´Ã¼µé
+// í•˜ë‚˜ì˜ ì…€(Zone)ì— ë“¤ì–´ìˆëŠ” ê°ì²´ë“¤
 struct Zone
 {
     Set<PlayerRef>  players;

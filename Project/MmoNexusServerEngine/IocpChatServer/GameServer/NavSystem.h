@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include "DetourNavMesh.h"
 #include "DetourNavMeshQuery.h"
 #include "Protocol.pb.h"
@@ -22,13 +22,13 @@ public:
         const Protocol::PositionInfo& end,
         Vector<Vector3>& outWaypoints);
 
-    // outT: 1.0ÀÌ¸é Á÷¼± Åë°ú, 0~1ÀÌ¸é Áß°£¿¡ ¸·Èû
+    // outT: 1.0ì´ë©´ ì§ì„  í†µê³¼, 0~1ì´ë©´ ì¤‘ê°„ì— ë§‰í˜
     bool RaycastNav(const Protocol::PositionInfo& start,
         const Protocol::PositionInfo& end,
         float& outT);
 
 private:
-    // [Delete] void ComputeConnectivity(); -> »èÁ¦ÇÔ
+    // [Delete] void ComputeConnectivity(); -> ì‚­ì œí•¨
     dtPolyRef FindNearestPoly(const float* center, const float* extents, float* nearestPt = nullptr);
 
 private:
@@ -37,7 +37,7 @@ private:
 
     Map<dtPolyRef, uint32> _polyGroups;
 
-    // [New] ¸â¹ö º¯¼ö·Î °ü¸® (¸Ê¸¶´Ù µ¶¸³ÀûÀÎ ID Ä«¿îÆ®)
+    // [New] ë©¤ë²„ ë³€ìˆ˜ë¡œ ê´€ë¦¬ (ë§µë§ˆë‹¤ ë…ë¦½ì ì¸ ID ì¹´ìš´íŠ¸)
     uint32 _nextGroupId = 1;
 
     float _polyPickExt[3] = { 2.0f, 4.0f, 2.0f };

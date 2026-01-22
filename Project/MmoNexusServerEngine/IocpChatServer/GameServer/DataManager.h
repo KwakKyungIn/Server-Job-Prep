@@ -1,4 +1,4 @@
-// ===============================
+ï»¿// ===============================
 // DataManager.h (FINAL)
 // ===============================
 #pragma once
@@ -13,7 +13,7 @@ enum class MapType : uint8
 	Dungeon,
 };
 
-// ±¸Á¶Ã¼¸¸ º¯°æ, ³ª¸ÓÁö´Â ±×´ë·Î
+// êµ¬ì¡°ì²´ë§Œ ë³€ê²½, ë‚˜ë¨¸ì§€ëŠ” ê·¸ëŒ€ë¡œ
 struct MapConfig
 {
 	int32 mapId = 1;
@@ -21,9 +21,9 @@ struct MapConfig
 	int32 sizeY = 100;
 
 	// [AOI & Zone]
-	int32 zoneSize = 64;       // Grid Cell Size¿Í µ¿ÀÏÇÏ°Ô ¸ÂÃß´Â °Ô Á¤¼®
-	int32 aoiCellSize = 64;    // (New) AOI °è»ê¿ë
-	float interestRadius = 150.f; // (New) ½Ã¾ß °Å¸®
+	int32 zoneSize = 64;       // Grid Cell Sizeì™€ ë™ì¼í•˜ê²Œ ë§ì¶”ëŠ” ê²Œ ì •ì„
+	int32 aoiCellSize = 64;    // (New) AOI ê³„ì‚°ìš©
+	float interestRadius = 150.f; // (New) ì‹œì•¼ ê±°ë¦¬
 
 	// [Spawn]
 	float spawnX = 50.f;
@@ -31,7 +31,7 @@ struct MapConfig
 	float spawnZ = 50.f;
 
 	// [Path]
-	std::string navMeshPath;   // (New) .bin ÆÄÀÏ °æ·Î
+	std::string navMeshPath;   // (New) .bin íŒŒì¼ ê²½ë¡œ
 
 	MapType type = MapType::World;
 };
@@ -39,42 +39,42 @@ struct MapConfig
 class DataManager
 {
 public:
-	// [Singleton] ¾îµğ¼­µç Á¢±Ù °¡´ÉÇÏ°Ô
+	// [Singleton] ì–´ë””ì„œë“  ì ‘ê·¼ ê°€ëŠ¥í•˜ê²Œ
 	static DataManager* Instance()
 	{
 		static DataManager instance;
 		return &instance;
 	}
 
-	// [Load] ÆĞÅ¶À» ¹Ş¾Æ¼­ ¸Ş¸ğ¸®¿¡ ÀúÀå
+	// [Load] íŒ¨í‚·ì„ ë°›ì•„ì„œ ë©”ëª¨ë¦¬ì— ì €ì¥
 	void LoadFromPacket(const Protocol::S2S_RES_LOAD_GAME_DATA& pkt);
 
 	// Map Registry
 	bool IsValidMapId(int32 mapId) const;
-	int32 GetDefaultMapId() const { return 1; } // (±âÁ¸ À¯Áö)
+	int32 GetDefaultMapId() const { return 1; } // (ê¸°ì¡´ ìœ ì§€)
 	const MapConfig* GetMapConfig(int32 mapId) const;
 
-	// [NEW] JSON ±â¹İ MapConfig ·Îµå
+	// [NEW] JSON ê¸°ë°˜ MapConfig ë¡œë“œ
 	bool LoadMapConfigsFromJson(const std::string& path);
 
-	// [NEW] ¿ùµå/´øÀü ±¸ºĞ¿ë
+	// [NEW] ì›”ë“œ/ë˜ì „ êµ¬ë¶„ìš©
 	int32 GetDefaultWorldMapId() const { return _defaultWorldMapId; }
 	bool IsDungeonMapId(int32 mapId) const;
 	bool IsWorldMapId(int32 mapId) const;
 
-	// [Getter] µ¥ÀÌÅÍ Á¶È¸ (¾øÀ¸¸é nullptr ¹İÈ¯)
+	// [Getter] ë°ì´í„° ì¡°íšŒ (ì—†ìœ¼ë©´ nullptr ë°˜í™˜)
 	const Protocol::StatTemplateInfo* GetStatTemplate(int32 level);
 	const Protocol::ItemTemplateInfo* GetItemTemplate(int32 templateId);
 	const Protocol::SkillTemplateInfo* GetSkillTemplate(int32 skillId);
 
 private:
-	DataManager();                // »ı¼º ½Ã ¸Ê µî·Ï
-	void InitMapRegistry();       // fallback¿ë(±âÁ¸ À¯Áö)
+	DataManager();                // ìƒì„± ì‹œ ë§µ ë“±ë¡
+	void InitMapRegistry();       // fallbackìš©(ê¸°ì¡´ ìœ ì§€)
 
 private:
-	int32 _defaultWorldMapId = 1; // JSON ·Îµå ½Ã °»½Å
+	int32 _defaultWorldMapId = 1; // JSON ë¡œë“œ ì‹œ ê°±ì‹ 
 
-	// ºü¸¥ °Ë»öÀ» À§ÇÑ Map (Key: ID, Value: Data)
+	// ë¹ ë¥¸ ê²€ìƒ‰ì„ ìœ„í•œ Map (Key: ID, Value: Data)
 	Map<int32, Protocol::StatTemplateInfo> _statTemplates;
 	Map<int32, Protocol::ItemTemplateInfo> _itemTemplates;
 	Map<int32, Protocol::SkillTemplateInfo> _skillTemplates;

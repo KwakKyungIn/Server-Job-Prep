@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include "Session.h"
 #include "JobQueue.h" // [NEW]
 #include "Job.h"  
@@ -8,7 +8,7 @@ class ChatSession : public PacketSession
 public:
 	ChatSession()
 	{
-		// [NEW] ¿£Áø ÀåÂø
+		// [NEW] ì—”ì§„ ì¥ì°©
 		_jobQueue = MakeShared<JobQueue>();
 	}
 	virtual ~ChatSession() {}
@@ -24,6 +24,6 @@ public:
 	}
 
 public:
-	// [NEW] ÀÌ ¼¼¼Ç(GameServer)¿¡¼­ ¿À´Â ¿äÃ»À» Ã³¸®ÇÒ Å¥
+	// [NEW] ì´ ì„¸ì…˜(GameServer)ì—ì„œ ì˜¤ëŠ” ìš”ì²­ì„ ì²˜ë¦¬í•  í
 	shared_ptr<JobQueue> _jobQueue;
 };
