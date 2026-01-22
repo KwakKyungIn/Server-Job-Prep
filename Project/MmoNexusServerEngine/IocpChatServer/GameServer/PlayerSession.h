@@ -118,7 +118,7 @@ public:
     void Post(F&& fn)
     {
         auto self = static_pointer_cast<PlayerSession>(shared_from_this());
-        _jobQueue->Push(MakeShared<Job>([self, fn = std::forward<F>(fn)]() mutable
+        _jobQueue->Push(ObjectPool<Job>::MakeShared([self, fn = std::forward<F>(fn)]() mutable
             {
                 fn(self);
             }));

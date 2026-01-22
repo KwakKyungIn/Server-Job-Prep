@@ -81,7 +81,8 @@ void GameRoom::HandleSkill(std::shared_ptr<Creature> attacker, int32 skillId, fl
             ownerId = attacker->GetObjectId();
 
         // 5) 생성 + 룸 등록
-        ProjectileRef p = MakeShared<Projectile>();
+        // Projectile는 프레임 단위로 생성/파괴가 반복될 수 있어 ObjectPool로 풀링한다.
+        ProjectileRef p = ObjectPool<Projectile>::MakeShared();
         p->Init(ownerId, skillId, startPos, speed, lifeMs, range);
         p->SetCombatParams(hitRadius, stopOnHit, maxHits);
 

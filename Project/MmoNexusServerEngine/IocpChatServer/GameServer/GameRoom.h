@@ -43,7 +43,7 @@ public:
     virtual void Push(std::function<void()> fn) override
     {
         // GameRoom�� JobQueue�� ���� ����
-        _jobQueue->Push(MakeShared<Job>([fn = std::move(fn)]() mutable { fn(); }));
+        _jobQueue->Push(ObjectPool<Job>::MakeShared([fn = std::move(fn)]() mutable { fn(); }));
     }
 
 
@@ -57,14 +57,14 @@ public:
     template<typename F>
     void PushJob(F&& job)
     {
-        _jobQueue->Push(MakeShared<Job>(std::forward<F>(job)));
+        _jobQueue->Push(ObjectPool<Job>::MakeShared(std::forward<F>(job)));
     }
 
     // 2. [Member Function] ���ڰ� 2�� �̻��� ���
     template<typename F, typename A, typename... Args>
     void PushJob(F func, A&& arg, Args&&... args)
     {
-        _jobQueue->Push(MakeShared<Job>(shared_from_this(), func,
+        _jobQueue->Push(ObjectPool<Job>::MakeShared(shared_from_this(), func,
             std::forward<A>(arg), std::forward<Args>(args)...));
     }
 

@@ -1,10 +1,10 @@
-// LobbyRoom.h
+ï»¿// LobbyRoom.h
 #pragma once
 #include "RoomActor.h"
 #include "JobQueue.h"
 #include "Job.h"
 #include "Protocol.pb.h"
-#include "ClientPacketHandler.h"  // ÀÎº¥ µ¿±âÈ­ º¸³»·Á¸é ÇÊ¿ä
+#include "ClientPacketHandler.h"  // ï¿½Îºï¿½ ï¿½ï¿½ï¿½ï¿½È­ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê¿ï¿½
 #include "S2SPacketHandler.h"
 #include <unordered_map>
 #include <memory>
@@ -29,7 +29,7 @@ public:
 
     virtual void Push(std::function<void()> fn) override
     {
-        _jobQueue->Push(MakeShared<Job>([fn = std::move(fn)]() mutable { fn(); }));
+        _jobQueue->Push(ObjectPool<Job>::MakeShared([fn = std::move(fn)]() mutable { fn(); }));
     }
 
 public:
@@ -37,20 +37,20 @@ public:
     int32 GetChannelId() const { return _channelId; }
 
     // =========================================================
-    // Step2 ÇÙ½É API
-    // - EnterGame ½ÃÁ¡: Player »ý¼º/¼ÒÀ¯ (SessionÀº PlayerRef ¼ÒÀ¯ X)
-    // - DB ÀÀ´ä ½ÃÁ¡: Lobby°¡ µ¥ÀÌÅÍ Èí¼ö
+    // Step2 ï¿½Ù½ï¿½ API
+    // - EnterGame ï¿½ï¿½ï¿½ï¿½: Player ï¿½ï¿½ï¿½ï¿½/ï¿½ï¿½ï¿½ï¿½ (Sessionï¿½ï¿½ PlayerRef ï¿½ï¿½ï¿½ï¿½ X)
+    // - DB ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½: Lobbyï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     // =========================================================
     void EnterGame(PlayerSessionRef ps, uint64 playerId, int32 channelId, int32 mapId, const Protocol::PositionInfo& spawn);
     void OnItemsLoaded(uint64 playerId, const Protocol::S2S_RES_ITEMS_LOAD& pkt);
     void OnStatLoaded(uint64 playerId, const Protocol::S2S_RES_LOAD_PLAYER_DATA& pkt);
     void TryEnterWorldIfReady(uint64 playerId); // Actor thread only
-    // Transfer ´Ü°è(³×°¡ Step4¿¡¼­ ºÙÀÏ ¶§ ÆíÇÏ°Ô)
+    // Transfer ï¿½Ü°ï¿½(ï¿½×°ï¿½ Step4ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½Ï°ï¿½)
     bool      IsReady(uint64 playerId) const;      // Actor thread only
     PlayerRef DetachIfReady(uint64 playerId);      // Actor thread only
 
 public:
-    // Lobby´Â "º¸°ü/ÀÌµ¿"¸¸ ÇÑ´Ù. AOI/ÀüÅõ/¾ÆÀÌÅÛ »ç¿ë °°Àº ·ÎÁ÷ ±ÝÁö.
+    // Lobbyï¿½ï¿½ "ï¿½ï¿½ï¿½ï¿½/ï¿½Ìµï¿½"ï¿½ï¿½ ï¿½Ñ´ï¿½. AOI/ï¿½ï¿½ï¿½ï¿½/ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½.
     void Adopt(PlayerRef player, bool isTransfer = false);
     PlayerRef Detach(uint64 playerId);
     PlayerRef Find(uint64 playerId) const;
@@ -72,7 +72,7 @@ private:
     int32 _channelId = 1;
     std::shared_ptr<JobQueue> _jobQueue;
 
-    // Actor thread¿¡¼­¸¸ Á¢±Ù(¿ÜºÎ´Â Push·Î¸¸ È£Ãâ)
+    // Actor threadï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½(ï¿½ÜºÎ´ï¿½ Pushï¿½Î¸ï¿½ È£ï¿½ï¿½)
     HashMap<uint64, Pending> _players;
 };
 

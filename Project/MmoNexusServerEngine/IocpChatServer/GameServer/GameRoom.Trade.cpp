@@ -48,19 +48,19 @@ namespace
         outSlots.clear();
         outSlots.reserve(static_cast<size_t>(needed));
 
-        Vector<bool> used(maxSlots, false);
+        Vector<uint8> used(maxSlots, 0);
         for (const auto& it : items)
         {
             const int32 s = it.slot();
             if (0 <= s && s < maxSlots)
-                used[s] = true;
+                used[s] = 1;
         }
 
         // Slots that will be freed by a full-stack removal can be reused for incoming items.
         for (int32 s : freedSlots)
         {
             if (0 <= s && s < maxSlots)
-                used[s] = false;
+                used[s] = 0;
         }
 
         for (int32 n = 0; n < needed; ++n)
@@ -70,7 +70,7 @@ namespace
             {
                 if (!used[s])
                 {
-                    used[s] = true;
+                    used[s] = 1;
                     found = s;
                     break;
                 }
@@ -574,25 +574,25 @@ bool GameRoom::BuildTradeCommitPlan_ActorOnly(uint64 tradeId, TradeCommitPlan& o
             changes.push_back(item);
         };
 
-    auto buildUsedSlots = [](const Vector<Protocol::ItemInfo>& items, int32 maxSlots) -> Vector<bool>
+    auto buildUsedSlots = [](const Vector<Protocol::ItemInfo>& items, int32 maxSlots) -> Vector<uint8>
         {
-            Vector<bool> used(maxSlots, false);
+            Vector<uint8> used(maxSlots, 0);
             for (const auto& it : items)
             {
                 const int32 s = it.slot();
                 if (s >= 0 && s < maxSlots)
-                    used[s] = true;
+                    used[s] = 1;
             }
             return used;
         };
 
-    auto takeEmptySlot = [](Vector<bool>& used, int32& outSlot) -> bool
+    auto takeEmptySlot = [](Vector<uint8>& used, int32& outSlot) -> bool
         {
             for (int32 i = 0; i < static_cast<int32>(used.size()); ++i)
             {
                 if (!used[i])
                 {
-                    used[i] = true;
+                    used[i] = 1;
                     outSlot = i;
                     return true;
                 }
@@ -705,8 +705,8 @@ bool GameRoom::BuildTradeCommitPlan_ActorOnly(uint64 tradeId, TradeCommitPlan& o
     }
 
     // Build used-slot bitmap after giver changes.
-    Vector<bool> usedA = buildUsedSlots(aItems, kTradeMaxInventorySlots);
-    Vector<bool> usedB = buildUsedSlots(bItems, kTradeMaxInventorySlots);
+    Vector<uint8> usedA = buildUsedSlots(aItems, kTradeMaxInventorySlots);
+    Vector<uint8> usedB = buildUsedSlots(bItems, kTradeMaxInventorySlots);
 
     // Add incoming items to A (from B's offer).
     for (const auto& kv : ts->offerB)

@@ -12,14 +12,14 @@
 
 static int32 FindEmptySlot(const Vector<Protocol::ItemInfo>& items, int32 maxSlots)
 {
-	Vector<bool> used(maxSlots, false);
+	Vector<uint8> used(maxSlots, 0);
 	for (const auto& it : items)
 	{
 		if (it.slot() >= 0 && it.slot() < maxSlots)
-			used[it.slot()] = true;
+			used[it.slot()] = 1;
 	}
 	for (int32 i = 0; i < maxSlots; i++)
-		if (used[i] == false)
+		if (used[i] == 0)
 			return i;
 	return -1;
 }
