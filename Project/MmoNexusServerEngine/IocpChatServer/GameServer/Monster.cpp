@@ -32,7 +32,7 @@ void Monster::Init(int32 templateId)
 	stat->set_hp(10);
 	stat->set_attack(10);
 	stat->set_defense(0);
-	stat->set_speed(1.0f); // [Check] 초당 이동 거리 (단위를 잘 맞춰야 함. 너무 느리면 안 움직이는 것처럼 보임)
+	stat->set_speed(1); // [Check] 초당 이동 거리 (단위를 잘 맞춰야 함. 너무 느리면 안 움직이는 것처럼 보임)
 
 	_monsterInfo.set_name("Slime_King");
 }
