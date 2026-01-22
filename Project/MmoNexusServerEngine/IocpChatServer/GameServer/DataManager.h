@@ -75,9 +75,9 @@ private:
 	int32 _defaultWorldMapId = 1; // JSON 로드 시 갱신
 
 	// 빠른 검색을 위한 Map (Key: ID, Value: Data)
-	std::map<int32, Protocol::StatTemplateInfo> _statTemplates;
-	std::map<int32, Protocol::ItemTemplateInfo> _itemTemplates;
-	std::map<int32, Protocol::SkillTemplateInfo> _skillTemplates;
+	Map<int32, Protocol::StatTemplateInfo> _statTemplates;
+	Map<int32, Protocol::ItemTemplateInfo> _itemTemplates;
+	Map<int32, Protocol::SkillTemplateInfo> _skillTemplates;
 
-	std::map<int32, MapConfig> _mapConfigs;
+	Map<int32, MapConfig> _mapConfigs;
 };

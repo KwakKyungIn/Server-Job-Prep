@@ -34,7 +34,7 @@ public:
     // ===============================
     bool FindPathWaypoints(const Protocol::PositionInfo& start,
         const Protocol::PositionInfo& end,
-        std::vector<Vector3>& outWaypoints);
+        Vector<Vector3>& outWaypoints);
 
     // [New] NavMesh raycast wrapper (t in [0,1], <1 means hit boundary/wall)
     bool RaycastNav(const Protocol::PositionInfo& start,

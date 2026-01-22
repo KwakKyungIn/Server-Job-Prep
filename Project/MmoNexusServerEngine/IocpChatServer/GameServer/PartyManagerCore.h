@@ -16,7 +16,7 @@ public:
         uint64 partyId = 0;
         uint64 leaderId = 0;
         uint32 version = 0;
-        std::unordered_set<uint64> members;
+        HashSet<uint64> members;
 
            //  던전 메타
         bool inDungeonTransition = false;     // ENTERING/EXITING 동안 true
@@ -37,7 +37,7 @@ public:
     uint64 GetPartyIdByPlayerId(uint64 playerId) const;
     bool   IsMember(uint64 partyId, uint64 playerId) const;
     Party  GetSnapshot(uint64 partyId) const;
-    void   GetMembers(uint64 partyId, std::vector<uint64>& outMembers) const;
+    void   GetMembers(uint64 partyId, Vector<uint64>& outMembers) const;
 
     //  던전 상태 조회
     bool GetDungeonInfo(uint64 partyId, int64& outInstanceId, DungeonState& outState, bool& outTransition) const;
@@ -61,9 +61,9 @@ public:
 private:
     uint64 _nextPartyId = 1;
 
-    std::unordered_map<uint64, Party> _parties;                 // partyId -> Party
-    std::unordered_map<uint64, uint64> _playerToParty;          // playerId -> partyId
-    std::unordered_map<uint64, PendingInvite> _pendingByTarget; // targetId -> invite
+    HashMap<uint64, Party> _parties;                 // partyId -> Party
+    HashMap<uint64, uint64> _playerToParty;          // playerId -> partyId
+    HashMap<uint64, PendingInvite> _pendingByTarget; // targetId -> invite
 
-    std::unordered_set<uint64> _forceReturn;
+    HashSet<uint64> _forceReturn;
 };

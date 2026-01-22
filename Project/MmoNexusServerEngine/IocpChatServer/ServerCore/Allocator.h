@@ -40,22 +40,41 @@ template<typename T>
 class StlAllocator
 {
 public:
-	using value_type = T;
+    using value_type = T;
 
-	StlAllocator() {}
-	template<typename Other>
-	StlAllocator(const StlAllocator<Other>&) {}
+    // "이 Allocator는 항상 동일"이라고 STL에 알려줌 (중요)
+    using is_always_equal = std::true_type;
 
-	// 요소 개수 × sizeof(T) 만큼 메모리 확보
-	T* allocate(size_t count)
-	{
-		const int32 size = static_cast<int32>(count * sizeof(T));
-		return static_cast<T*>(PoolAllocator::Alloc(size));
-	}
+    // swap/move/copy 시 allocator 전파 허용 (권장)
+    using propagate_on_container_swap = std::true_type;
+    using propagate_on_container_move_assignment = std::true_type;
+    using propagate_on_container_copy_assignment = std::true_type;
 
-	// 확보한 메모리 해제
-	void deallocate(T* ptr, size_t count)
-	{
-		PoolAllocator::Release(ptr);
-	}
+    StlAllocator() noexcept = default;
+    template<typename Other>
+    StlAllocator(const StlAllocator<Other>&) noexcept {}
+
+    T* allocate(size_t count)
+    {
+        const int32 size = static_cast<int32>(count * sizeof(T));
+        return static_cast<T*>(PoolAllocator::Alloc(size));
+    }
+
+    void deallocate(T* ptr, size_t /*count*/) noexcept
+    {
+        PoolAllocator::Release(ptr);
+    }
 };
+
+// 핵심: allocator equality 제공 (swap에서 필요)
+template<typename T, typename U>
+constexpr bool operator==(const StlAllocator<T>&, const StlAllocator<U>&) noexcept
+{
+    return true; // 글로벌 풀(GMemory) 쓰는 구조면 항상 같다고 보는 게 정답
+}
+
+template<typename T, typename U>
+constexpr bool operator!=(const StlAllocator<T>&, const StlAllocator<U>&) noexcept
+{
+    return false;
+}

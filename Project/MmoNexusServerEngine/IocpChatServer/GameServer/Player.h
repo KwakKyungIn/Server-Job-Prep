@@ -72,12 +72,12 @@ public:
 
 public:
 	// ===== AOI v2 (Room thread ONLY) =====
-	std::unordered_set<uint64>& VisiblePlayers_ActorOnly() { return _visiblePlayers; }
-	std::unordered_set<uint64>& VisibleMonsters_ActorOnly() { return _visibleMonsters; }
+	HashSet<uint64>& VisiblePlayers_ActorOnly() { return _visiblePlayers; }
+	HashSet<uint64>& VisibleMonsters_ActorOnly() { return _visibleMonsters; }
 
 	//  [NEW] Projectile visible set
-	std::unordered_set<uint64>& VisibleProjectiles_ActorOnly() { return _visibleProjectiles; }
-	const std::unordered_set<uint64>& VisibleProjectiles_ActorOnly() const { return _visibleProjectiles; }
+	HashSet<uint64>& VisibleProjectiles_ActorOnly() { return _visibleProjectiles; }
+	const HashSet<uint64>& VisibleProjectiles_ActorOnly() const { return _visibleProjectiles; }
 
 	const Protocol::PositionInfo& LastAoiPos_ActorOnly() const { return _lastAoiPos; }
 	void SetLastAoiPos_ActorOnly(const Protocol::PositionInfo& p) { _lastAoiPos = p; }
@@ -99,7 +99,7 @@ public:
 		}
 	}
 
-	std::vector<Protocol::ItemInfo>& GetItems() { return _items; }
+	Vector<Protocol::ItemInfo>& GetItems() { return _items; }
 
 	// [Trade] (Room thread ONLY)
 	uint64 ActiveTradeId_ActorOnly() const { return _activeTradeId; }
@@ -140,7 +140,7 @@ public:
 protected:
 	// [Core Data] Player 고유 데이터
 	Protocol::PlayerInfo	_playerInfo;
-	std::vector<Protocol::ItemInfo> _items;
+	Vector<Protocol::ItemInfo> _items;
 	uint64 _activeTradeId = 0;
 
 	// [References]
@@ -165,9 +165,9 @@ protected:
 
 private:
 	// visible set (ids)
-	std::unordered_set<uint64> _visiblePlayers;
-	std::unordered_set<uint64> _visibleMonsters; // monster objectId
-	std::unordered_set<uint64> _visibleProjectiles;
+	HashSet<uint64> _visiblePlayers;
+	HashSet<uint64> _visibleMonsters; // monster objectId
+	HashSet<uint64> _visibleProjectiles;
 	// lazy update state
 	Protocol::PositionInfo _lastAoiPos;
 	uint64 _lastAoiTickMs = 0;

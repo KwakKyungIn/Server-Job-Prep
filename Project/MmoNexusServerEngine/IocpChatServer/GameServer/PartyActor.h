@@ -29,7 +29,7 @@ public:
 private:
     PartyActor()
     {
-        _queue = std::make_shared<JobQueue>();
+        _queue = MakeShared<JobQueue>();
     }
 
 private:

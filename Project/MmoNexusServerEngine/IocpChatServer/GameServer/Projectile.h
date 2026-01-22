@@ -19,8 +19,8 @@ public:
     uint64 GetOwnerId() const { return _projInfo.ownerid(); }
     int32  GetSkillId()  const { return _projInfo.skillid(); }
 
-    std::unordered_set<uint64>& Viewers_ActorOnly() { return _viewers; }
-    const std::unordered_set<uint64>& Viewers_ActorOnly() const { return _viewers; }
+    HashSet<uint64>& Viewers_ActorOnly() { return _viewers; }
+    const HashSet<uint64>& Viewers_ActorOnly() const { return _viewers; }
 
     // ===== [C] Combat Params (runtime only) =====
     void SetCombatParams(float hitRadius, bool stopOnHit, int32 maxHits)
@@ -60,7 +60,7 @@ public:
 
 private:
     Protocol::ProjectileInfo _projInfo;
-    std::unordered_set<uint64> _viewers;
+    HashSet<uint64> _viewers;
 
     uint64 _elapsedMs = 0;
     float  _traveled = 0.0f;
@@ -71,5 +71,5 @@ private:
     bool  _stopOnHit = true;
     int32 _maxHits = 1;
     int32 _hitCount = 0;
-    std::unordered_set<uint64> _hitVictims;
+    HashSet<uint64> _hitVictims;
 };

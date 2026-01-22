@@ -19,7 +19,7 @@ namespace
         return g_tradeIdGen.fetch_add(1);
     }
 
-    Protocol::ItemInfo* FindItemByUid(std::vector<Protocol::ItemInfo>& items, uint64 uid)
+    Protocol::ItemInfo* FindItemByUid(Vector<Protocol::ItemInfo>& items, uint64 uid)
     {
         for (auto& it : items)
         {
@@ -29,7 +29,7 @@ namespace
         return nullptr;
     }
 
-    const Protocol::ItemInfo* FindItemByUidConst(const std::vector<Protocol::ItemInfo>& items, uint64 uid)
+    const Protocol::ItemInfo* FindItemByUidConst(const Vector<Protocol::ItemInfo>& items, uint64 uid)
     {
         for (const auto& it : items)
         {
@@ -39,16 +39,16 @@ namespace
         return nullptr;
     }
 
-    bool AllocateEmptySlots(const std::vector<Protocol::ItemInfo>& items,
+    bool AllocateEmptySlots(const Vector<Protocol::ItemInfo>& items,
         int32 maxSlots,
         int32 needed,
-        const std::vector<int32>& freedSlots,
-        std::vector<int32>& outSlots)
+        const Vector<int32>& freedSlots,
+        Vector<int32>& outSlots)
     {
         outSlots.clear();
         outSlots.reserve(static_cast<size_t>(needed));
 
-        std::vector<bool> used(maxSlots, false);
+        Vector<bool> used(maxSlots, false);
         for (const auto& it : items)
         {
             const int32 s = it.slot();
@@ -497,7 +497,7 @@ void GameRoom::CancelTrade_ActorOnly(uint64 tradeId, Protocol::TradeCancelReason
 
 void GameRoom::UpdateTrades_ActorOnly(uint64 nowMs)
 {
-    std::vector<uint64> toCancel;
+    Vector<uint64> toCancel;
     toCancel.reserve(8);
 
     for (const auto& kv : _trades)
@@ -544,7 +544,7 @@ bool GameRoom::BuildTradeCommitPlan_ActorOnly(uint64 tradeId, TradeCommitPlan& o
             return t && t->itemtype() == Protocol::ITEM_TYPE_CONSUMABLE;
         };
 
-    auto findBestStack = [](std::vector<Protocol::ItemInfo>& items, int32 templateId) -> Protocol::ItemInfo*
+    auto findBestStack = [](Vector<Protocol::ItemInfo>& items, int32 templateId) -> Protocol::ItemInfo*
         {
             Protocol::ItemInfo* best = nullptr;
             for (auto& it : items)
@@ -560,7 +560,7 @@ bool GameRoom::BuildTradeCommitPlan_ActorOnly(uint64 tradeId, TradeCommitPlan& o
             return best;
         };
 
-    auto upsertChange = [](std::vector<Protocol::ItemInfo>& changes, const Protocol::ItemInfo& item)
+    auto upsertChange = [](Vector<Protocol::ItemInfo>& changes, const Protocol::ItemInfo& item)
         {
             const uint64 uid = (uint64)item.itemuid();
             for (auto& c : changes)
@@ -574,9 +574,9 @@ bool GameRoom::BuildTradeCommitPlan_ActorOnly(uint64 tradeId, TradeCommitPlan& o
             changes.push_back(item);
         };
 
-    auto buildUsedSlots = [](const std::vector<Protocol::ItemInfo>& items, int32 maxSlots) -> std::vector<bool>
+    auto buildUsedSlots = [](const Vector<Protocol::ItemInfo>& items, int32 maxSlots) -> Vector<bool>
         {
-            std::vector<bool> used(maxSlots, false);
+            Vector<bool> used(maxSlots, false);
             for (const auto& it : items)
             {
                 const int32 s = it.slot();
@@ -586,7 +586,7 @@ bool GameRoom::BuildTradeCommitPlan_ActorOnly(uint64 tradeId, TradeCommitPlan& o
             return used;
         };
 
-    auto takeEmptySlot = [](std::vector<bool>& used, int32& outSlot) -> bool
+    auto takeEmptySlot = [](Vector<bool>& used, int32& outSlot) -> bool
         {
             for (int32 i = 0; i < static_cast<int32>(used.size()); ++i)
             {
@@ -600,7 +600,7 @@ bool GameRoom::BuildTradeCommitPlan_ActorOnly(uint64 tradeId, TradeCommitPlan& o
             return false;
         };
 
-    auto eraseByUid = [](std::vector<Protocol::ItemInfo>& items, uint64 uid) -> bool
+    auto eraseByUid = [](Vector<Protocol::ItemInfo>& items, uint64 uid) -> bool
         {
             for (auto it = items.begin(); it != items.end(); ++it)
             {
@@ -639,8 +639,8 @@ bool GameRoom::BuildTradeCommitPlan_ActorOnly(uint64 tradeId, TradeCommitPlan& o
     }
 
     // Work on temporary snapshots; memory is applied only after DBAgent success.
-    std::vector<Protocol::ItemInfo> aItems = a->GetItems();
-    std::vector<Protocol::ItemInfo> bItems = b->GetItems();
+    Vector<Protocol::ItemInfo> aItems = a->GetItems();
+    Vector<Protocol::ItemInfo> bItems = b->GetItems();
 
     // Apply giver A changes (remove or decrement).
     for (const auto& kv : ts->offerA)
@@ -705,8 +705,8 @@ bool GameRoom::BuildTradeCommitPlan_ActorOnly(uint64 tradeId, TradeCommitPlan& o
     }
 
     // Build used-slot bitmap after giver changes.
-    std::vector<bool> usedA = buildUsedSlots(aItems, kTradeMaxInventorySlots);
-    std::vector<bool> usedB = buildUsedSlots(bItems, kTradeMaxInventorySlots);
+    Vector<bool> usedA = buildUsedSlots(aItems, kTradeMaxInventorySlots);
+    Vector<bool> usedB = buildUsedSlots(bItems, kTradeMaxInventorySlots);
 
     // Add incoming items to A (from B's offer).
     for (const auto& kv : ts->offerB)

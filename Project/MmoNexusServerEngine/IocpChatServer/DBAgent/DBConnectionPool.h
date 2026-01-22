@@ -26,7 +26,7 @@ private:
     SQLHENV _environment = SQL_NULL_HANDLE;
 
     // DB 연결들을 보관하는 큐
-    std::queue<DBConnection*> _connections;
+    Queue<DBConnection*> _connections;
 
     // 동기화 도구 (멀티스레드 안전)
     std::mutex _mutex;

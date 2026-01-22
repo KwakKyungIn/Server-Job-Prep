@@ -31,7 +31,7 @@ bool InstanceManagerCore::GetInstanceById(int64 instanceId, InstanceInfo& out) c
 
 
 bool InstanceManagerCore::CreateOrGetForParty(uint64 partyId, int32 channelId, int32 mapId,
-    const std::vector<uint64>& members, InstanceInfo& out)
+    const Vector<uint64>& members, InstanceInfo& out)
 {
     out = InstanceInfo{};
     if (partyId == 0) return false;
@@ -139,7 +139,7 @@ bool InstanceManagerCore::OnMemberOffline(uint64 playerId, InstanceInfo& outClos
     return true;
 }
 
-void InstanceManagerCore::CollectExpired(uint64 nowMs, std::vector<InstanceInfo>& outToClose) const
+void InstanceManagerCore::CollectExpired(uint64 nowMs, Vector<InstanceInfo>& outToClose) const
 {
     outToClose.clear();
 

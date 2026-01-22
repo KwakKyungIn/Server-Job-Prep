@@ -12,7 +12,7 @@ public:
         int32 channelId = 0;
         int32 mapId = 0;
         uint64 partyId = 0;
-        std::unordered_set<uint64> members;
+        HashSet<uint64> members;
         uint64 createdTick = 0;
         uint64 lastActiveTick = 0;
         bool closing = false;
@@ -24,7 +24,7 @@ public:
     bool GetInstanceById(int64 instanceId, InstanceInfo& out) const;
 
     bool CreateOrGetForParty(uint64 partyId, int32 channelId, int32 mapId,
-        const std::vector<uint64>& members, InstanceInfo& out);
+        const Vector<uint64>& members, InstanceInfo& out);
 
     //  party 해산/전원 leave 시 호출
     bool CloseForParty(uint64 partyId, InstanceInfo& outClosed);
@@ -36,7 +36,7 @@ public:
     bool OnMemberOffline(uint64 playerId, InstanceInfo& outClosedIfEmpty);
 
     //  30분 타임아웃: 만료 인스턴스들을 outToClose로 뽑아준다
-    void CollectExpired(uint64 nowMs, std::vector<InstanceInfo>& outToClose) const;
+    void CollectExpired(uint64 nowMs, Vector<InstanceInfo>& outToClose) const;
 
     static constexpr uint64 kInstanceTimeoutMs = 30ull * 60ull * 1000ull; // 30분
 
@@ -49,7 +49,7 @@ private:
     //  “재사용 방지”: 시간(ms)<<16 | seq
     uint16_t _seq = 0;
 
-    std::unordered_map<uint64, int64> _partyToInstance;   // partyId -> instanceId
-    std::unordered_map<int64, InstanceInfo> _instances;   // instanceId -> info
-    std::unordered_map<uint64, int64> _playerToInstance;  // playerId -> instanceId
+    HashMap<uint64, int64> _partyToInstance;   // partyId -> instanceId
+    HashMap<int64, InstanceInfo> _instances;   // instanceId -> info
+    HashMap<uint64, int64> _playerToInstance;  // playerId -> instanceId
 };

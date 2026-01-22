@@ -57,7 +57,7 @@ protected:
     std::weak_ptr<RoomActor> _room;
     int32 _zoneIndex = -1;
 
-    std::map<int32, uint64> _cooldowns;
+    Map<int32, uint64> _cooldowns;
 
 private:
     static std::atomic<uint64> s_idGenerator;

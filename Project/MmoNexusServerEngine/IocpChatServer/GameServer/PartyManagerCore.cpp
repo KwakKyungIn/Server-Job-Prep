@@ -21,7 +21,7 @@ PartyManagerCore::Party PartyManagerCore::GetSnapshot(uint64 partyId) const
     return it->second;
 }
 
-void PartyManagerCore::GetMembers(uint64 partyId, std::vector<uint64>& outMembers) const
+void PartyManagerCore::GetMembers(uint64 partyId, Vector<uint64>& outMembers) const
 {
     outMembers.clear();
 

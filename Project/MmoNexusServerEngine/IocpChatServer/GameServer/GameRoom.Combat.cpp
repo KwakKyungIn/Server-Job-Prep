@@ -81,7 +81,7 @@ void GameRoom::HandleSkill(std::shared_ptr<Creature> attacker, int32 skillId, fl
             ownerId = attacker->GetObjectId();
 
         // 5) 생성 + 룸 등록
-        ProjectileRef p = std::make_shared<Projectile>();
+        ProjectileRef p = MakeShared<Projectile>();
         p->Init(ownerId, skillId, startPos, speed, lifeMs, range);
         p->SetCombatParams(hitRadius, stopOnHit, maxHits);
 

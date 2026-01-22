@@ -20,7 +20,7 @@ public:
     // ===============================
     bool FindPathWaypoints(const Protocol::PositionInfo& start,
         const Protocol::PositionInfo& end,
-        std::vector<Vector3>& outWaypoints);
+        Vector<Vector3>& outWaypoints);
 
     // outT: 1.0이면 직선 통과, 0~1이면 중간에 막힘
     bool RaycastNav(const Protocol::PositionInfo& start,
@@ -35,7 +35,7 @@ private:
     class dtNavMesh* _navMesh = nullptr;
     class dtNavMeshQuery* _navQuery = nullptr;
 
-    std::map<dtPolyRef, uint32> _polyGroups;
+    Map<dtPolyRef, uint32> _polyGroups;
 
     // [New] 멤버 변수로 관리 (맵마다 독립적인 ID 카운트)
     uint32 _nextGroupId = 1;

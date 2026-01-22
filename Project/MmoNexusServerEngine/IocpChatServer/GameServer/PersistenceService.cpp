@@ -227,7 +227,7 @@ namespace Persistence
         _redis->Del(key);
 
         // [Rule] QuickSlot item uniqueness at load: drop duplicated QS_ITEM(itemUid) entries.
-        std::unordered_set<uint64> seenItemUids;
+        HashSet<uint64> seenItemUids;
 
         for (const auto& s : slots)
         {

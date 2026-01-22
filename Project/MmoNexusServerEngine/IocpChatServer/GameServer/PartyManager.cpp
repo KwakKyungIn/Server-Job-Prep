@@ -24,7 +24,7 @@ PartyManager::Party PartyManager::GetSnapshot(uint64 partyId) const
     return it->second;
 }
 
-void PartyManager::GetMembers(uint64 partyId, std::vector<uint64>& outMembers) const
+void PartyManager::GetMembers(uint64 partyId, Vector<uint64>& outMembers) const
 {
     outMembers.clear();
     READ_LOCK;

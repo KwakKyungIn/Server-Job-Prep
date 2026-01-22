@@ -141,7 +141,7 @@ bool ClientPacketHandler::Handle_C_DUNGEON_ENTER_REQ(PacketSessionRef& session, 
 								return;
 							}
 
-							std::vector<uint64> members;
+							Vector<uint64> members;
 							core.GetMembers(partyId, members);
 
 							InstanceActor::Instance().Push([partyId, members, channelId, dungeonMapId, spawn, requesterId]()
@@ -362,7 +362,7 @@ bool ClientPacketHandler::Handle_C_DUNGEON_EXIT_REQ(PacketSessionRef& session, P
 								return;
 							}
 
-							std::vector<uint64> members;
+							Vector<uint64> members;
 							core.GetMembers(partyId, members);
 
 							InstanceActor::Instance().Push([partyId, members, requesterId]()

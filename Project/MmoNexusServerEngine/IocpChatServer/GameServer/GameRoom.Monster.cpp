@@ -178,7 +178,7 @@ void GameRoom::OnMonsterMoved(MonsterRef monster)
 
 	// 3) Expensive: (너 기존 코드 그대로) newViewers 계산 + spawn/despawn diff
 	// ---- 새 viewers 계산 ----
-	std::unordered_set<uint64> newViewers;
+	HashSet<uint64> newViewers;
 
 	Vector<Zone*> zones;
 	_grid.GetNearbyZones(monster->GetZoneIndex(), EffectiveAoiRadiusCells(), zones);

@@ -10,9 +10,9 @@
 #include "GameItemUidGen.h"
 #include <limits>
 
-static int32 FindEmptySlot(const std::vector<Protocol::ItemInfo>& items, int32 maxSlots)
+static int32 FindEmptySlot(const Vector<Protocol::ItemInfo>& items, int32 maxSlots)
 {
-	std::vector<bool> used(maxSlots, false);
+	Vector<bool> used(maxSlots, false);
 	for (const auto& it : items)
 	{
 		if (it.slot() >= 0 && it.slot() < maxSlots)
@@ -77,7 +77,7 @@ static EquipSlot GetEquipSlotFromTemplate(int32 templateId)
 // ============================================================
 // Inventory helpers (move / swap / merge)
 // ============================================================
-static Protocol::ItemInfo* FindItemByUid(std::vector<Protocol::ItemInfo>& items, uint64 uid)
+static Protocol::ItemInfo* FindItemByUid(Vector<Protocol::ItemInfo>& items, uint64 uid)
 {
 	for (auto& it : items)
 	{
@@ -87,7 +87,7 @@ static Protocol::ItemInfo* FindItemByUid(std::vector<Protocol::ItemInfo>& items,
 	return nullptr;
 }
 
-static Protocol::ItemInfo* FindItemBySlot(std::vector<Protocol::ItemInfo>& items, int32 slot)
+static Protocol::ItemInfo* FindItemBySlot(Vector<Protocol::ItemInfo>& items, int32 slot)
 {
 	for (auto& it : items)
 	{

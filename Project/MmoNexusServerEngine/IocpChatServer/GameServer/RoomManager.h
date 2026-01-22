@@ -32,12 +32,12 @@ public:
 
 private:
     USE_LOCK;
-    std::map<RoomKey, std::shared_ptr<GameRoom>> _rooms;
+    Map<RoomKey, std::shared_ptr<GameRoom>> _rooms;
 
     void PurgeInstanceRooms(uint64 nowMs);
 
     //  channelId -> lobby
-    std::unordered_map<int32, std::shared_ptr<LobbyRoom>> _lobbies;
+    HashMap<int32, std::shared_ptr<LobbyRoom>> _lobbies;
 
 };
 

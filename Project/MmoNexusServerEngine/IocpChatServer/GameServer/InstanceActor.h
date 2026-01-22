@@ -25,7 +25,7 @@ public:
     void TickTimeout()
     {
         const uint64 now = ::GetTickCount64();
-        std::vector<InstanceManagerCore::InstanceInfo> expired;
+        Vector<InstanceManagerCore::InstanceInfo> expired;
         _core.CollectExpired(now, expired);
 
         for (auto& inst : expired)
@@ -49,7 +49,7 @@ public:
 private:
     InstanceActor()
     {
-        _queue = std::make_shared<JobQueue>();
+        _queue = MakeShared<JobQueue>();
     }
 
 private:

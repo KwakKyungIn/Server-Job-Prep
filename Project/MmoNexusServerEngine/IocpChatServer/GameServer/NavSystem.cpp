@@ -311,7 +311,7 @@ uint32 NavSystem::GetConnectivityId(float x, float y, float z)
 	// [Fix] static 변수 제거 -> 멤버 변수 _nextGroupId 사용 (멀티스레드/멀티맵 안전)
 	uint32 newGroupId = _nextGroupId++;
 
-	std::queue<dtPolyRef> q;
+	Queue<dtPolyRef> q;
 	q.push(startRef);
 	_polyGroups[startRef] = newGroupId;
 
@@ -380,12 +380,12 @@ bool NavSystem::RaycastNav(const Protocol::PositionInfo& start,
 	return dtStatusSucceed(status);
 }
 
-static void CompressWaypoints(std::vector<Vector3>& pts, float minDist)
+static void CompressWaypoints(Vector<Vector3>& pts, float minDist)
 {
 	if (pts.size() <= 1) return;
 
 	const float minDistSqr = minDist * minDist;
-	std::vector<Vector3> out;
+	Vector<Vector3> out;
 	out.reserve(pts.size());
 
 	out.push_back(pts[0]);
@@ -411,7 +411,7 @@ static void CompressWaypoints(std::vector<Vector3>& pts, float minDist)
 
 bool NavSystem::FindPathWaypoints(const Protocol::PositionInfo& start,
 	const Protocol::PositionInfo& end,
-	std::vector<Vector3>& outWaypoints)
+	Vector<Vector3>& outWaypoints)
 {
 	outWaypoints.clear();
 	if (_navQuery == nullptr)

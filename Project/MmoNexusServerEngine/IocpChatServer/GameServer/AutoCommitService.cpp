@@ -108,7 +108,7 @@ namespace Persistence
     {
         if (!_redis) return;
 
-        std::unordered_set<uint64> targets;
+        HashSet<uint64> targets;
 
         // dirty:player
         { std::vector<std::string> pids; if (_redis->SMembers(KeyDirtyPlayer(), pids)) for (auto& s : pids) { uint64 pid = 0; if (ParsePid(s, pid)) targets.insert(pid); } }

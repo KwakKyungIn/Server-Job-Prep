@@ -73,6 +73,6 @@ private:
     std::shared_ptr<JobQueue> _jobQueue;
 
     // Actor thread에서만 접근(외부는 Push로만 호출)
-    std::unordered_map<uint64, Pending> _players;
+    HashMap<uint64, Pending> _players;
 };
 

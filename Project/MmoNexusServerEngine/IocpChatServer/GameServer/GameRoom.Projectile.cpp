@@ -164,7 +164,7 @@ void GameRoom::OnProjectileMoved(ProjectileRef p)
     }
 
     // ---- �� viewers ��� ----
-    std::unordered_set<uint64> newViewers;
+    HashSet<uint64> newViewers;
 
     Vector<Zone*> zones;
     _grid.GetNearbyZones(p->GetZoneIndex(), EffectiveAoiRadiusCells(), zones);
@@ -337,7 +337,7 @@ void GameRoom::UpdateProjectiles(uint64 deltaMs)
         if (newZone != oldZone)
             _grid.GetNearbyZones(newZone, EffectiveAoiRadiusCells(), zonesB);
 
-        std::unordered_set<Zone*> zoneSet;
+        HashSet<Zone*> zoneSet;
         zoneSet.reserve(zonesA.size() + zonesB.size());
         for (Zone* z : zonesA) if (z) zoneSet.insert(z);
         for (Zone* z : zonesB) if (z) zoneSet.insert(z);
@@ -357,7 +357,7 @@ void GameRoom::UpdateProjectiles(uint64 deltaMs)
             float t = 0.0f;
         };
 
-        std::vector<HitCand> hits;
+        Vector<HitCand> hits;
         hits.reserve(8);
 
         const bool ownerIsMonster = (owner->GetObjectType() == Protocol::OBJECT_TYPE_MONSTER);

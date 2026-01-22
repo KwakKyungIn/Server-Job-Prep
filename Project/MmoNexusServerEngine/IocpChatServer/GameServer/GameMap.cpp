@@ -4,7 +4,7 @@
 
 GameMap::GameMap()
 {
-    _navSystem = std::make_shared<NavSystem>();
+    _navSystem = MakeShared<NavSystem>();
 }
 
 GameMap::~GameMap()
@@ -58,7 +58,7 @@ uint32 GameMap::GetConnectivityId(float x, float y, float z)
 
 bool GameMap::FindPathWaypoints(const Protocol::PositionInfo& start,
     const Protocol::PositionInfo& end,
-    std::vector<Vector3>& outWaypoints)
+    Vector<Vector3>& outWaypoints)
 {
     if (!_navSystem) return false;
     return _navSystem->FindPathWaypoints(start, end, outWaypoints);

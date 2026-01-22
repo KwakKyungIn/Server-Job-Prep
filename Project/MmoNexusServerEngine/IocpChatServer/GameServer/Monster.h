@@ -17,8 +17,8 @@ public:
 
 	Protocol::MonsterInfo* GetMonsterInfo() { return &_monsterInfo; }
 
-	std::unordered_set<uint64>& Viewers_ActorOnly() { return _viewers; }
-	const std::unordered_set<uint64>& Viewers_ActorOnly() const { return _viewers; }
+	HashSet<uint64>& Viewers_ActorOnly() { return _viewers; }
+	const HashSet<uint64>& Viewers_ActorOnly() const { return _viewers; }
 
 	uint64 GetLastAoiExpensiveMs() const { return _lastAoiExpensiveMs; }
 	void   SetLastAoiExpensiveMs(uint64 v) { _lastAoiExpensiveMs = v; }
@@ -73,7 +73,7 @@ private:
 	Protocol::PositionInfo _spawnPos;
 
 	// path-follow
-	std::vector<Vector3> _path;
+	Vector<Vector3> _path;
 	int _pathIndex = 0;
 	uint64 _lastRepathMs = 0;
 
@@ -88,7 +88,7 @@ private:
 	float  _waypointArriveDist = 0.6f;
 	float  _stuckEps = 0.02f;       // 2cm
 
-	std::unordered_set<uint64> _viewers;
+	HashSet<uint64> _viewers;
 
 	uint64 _lastAttackMs = 0;
 

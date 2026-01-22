@@ -43,7 +43,7 @@ namespace Persistence
         SendQsFn _sendQs;
 
         // inflight¸¦ count·Î
-        std::unordered_map<uint64, int32> _inflightCount;
+        HashMap<uint64, int32> _inflightCount;
 
 
     private:
@@ -65,7 +65,7 @@ namespace Persistence
         std::mutex _mx;
         std::condition_variable _cv;
 
-        std::unordered_set<uint64> _flushNow;
-        std::unordered_set<uint64> _inflight;
+        HashSet<uint64> _flushNow;
+        HashSet<uint64> _inflight;
     };
 }

@@ -41,7 +41,7 @@ int main()
 	DBAgentPacketHandler::Init();
 
 	// 2. DBConnectionPool 생성 및 연결
-	GDBConnectionPool = new DBConnectionPool();
+	GDBConnectionPool = xnew<DBConnectionPool>();
 	ASSERT_CRASH(GDBConnectionPool->Connect(
 		16,
 		GServerConfig.DBConnectionString.c_str()
@@ -130,8 +130,8 @@ int main()
 	gameService->CloseService();
 	loginService->CloseService(); // [ADD]
 	//chatService->CloseService();
-	delete GDBConnectionPool;
+	xdelete(GDBConnectionPool);
 
-	std::cout << "👋 [DBAgent] Bye!" << std::endl;
+		std::cout << "[DBAgent] Bye!" << std::endl;
 	return 0;
 }

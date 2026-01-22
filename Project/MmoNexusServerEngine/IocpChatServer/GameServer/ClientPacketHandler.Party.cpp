@@ -107,7 +107,7 @@ bool ClientPacketHandler::Handle_C_PARTY_CHAT_REQ(PacketSessionRef& session, Pro
 			const uint64 partyId = core.GetPartyIdByPlayerId(senderId);
 			if (partyId == 0) return;
 
-			std::vector<uint64> members;
+			Vector<uint64> members;
 			core.GetMembers(partyId, members);
 
 			for (uint64 memberId : members)
@@ -546,7 +546,7 @@ bool ClientPacketHandler::Handle_C_PARTY_DISBAND_REQ(PacketSessionRef& session, 
 			//  disband 전에 멤버/던전정보 확보(없어지기 전에)
 			const PartyManagerCore::Party before = core.GetSnapshot(partyId);
 
-			std::vector<uint64> members;
+			Vector<uint64> members;
 			members.reserve(before.members.size());
 			for (uint64 id : before.members) members.push_back(id);
 
@@ -622,7 +622,7 @@ struct PartyStatusCollector
 	uint32 version = 0;
 
 	int32 remaining = 0;                 // "응답 받아야 하는 세션 수"
-	std::vector<PartyStatusItem> items;  // 요청자 세션 actor thread에서만 push
+	Vector<PartyStatusItem> items;  // 요청자 세션 actor thread에서만 push
 };
 
 
@@ -669,7 +669,7 @@ bool ClientPacketHandler::Handle_C_PARTY_STATUS_REQ(PacketSessionRef& session, P
 			const PartyManagerCore::Party snap = core.GetSnapshot(partyId);
 			const uint32 version = snap.version;
 
-			std::vector<uint64> memberIds;
+			Vector<uint64> memberIds;
 			memberIds.reserve(snap.members.size());
 			for (uint64 id : snap.members)
 				memberIds.push_back(id);
@@ -683,7 +683,7 @@ bool ClientPacketHandler::Handle_C_PARTY_STATUS_REQ(PacketSessionRef& session, P
 						PlayerSessionRef session;
 					};
 
-					std::vector<Target> targets;
+					Vector<Target> targets;
 					targets.reserve(memberIds.size());
 
 					for (uint64 id : memberIds)

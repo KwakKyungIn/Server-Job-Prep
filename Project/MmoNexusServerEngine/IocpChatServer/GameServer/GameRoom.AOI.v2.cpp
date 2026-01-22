@@ -67,7 +67,7 @@ void GameRoom::SendSpawnBatchedToMe(PlayerSessionRef session,
 
     //  스냅샷 모드면 "패킷 리스트"를 먼저 만들고,
     //    첫 패킷 begin=true, 마지막 패킷 end=true로 마감한다.
-    std::vector<Protocol::S_SPAWN> pkts;
+    Vector<Protocol::S_SPAWN> pkts;
     pkts.reserve(
         (spawnPlayers.size() + _batchSpawnPlayers - 1) / _batchSpawnPlayers +
         (spawnMonsters.size() + _batchSpawnMonsters - 1) / _batchSpawnMonsters +
@@ -183,9 +183,9 @@ void GameRoom::UpdateAOI(PlayerSessionRef session, PlayerRef me, bool forceFullS
     _grid.GetNearbyZones(me->GetZoneIndex(), EffectiveAoiRadiusCells(), candZones);
 
     // 새 가시집합 계산
-    std::unordered_set<uint64> newVisPlayers;
-    std::unordered_set<uint64> newVisMonsters;
-    std::unordered_set<uint64> newVisProjectiles;
+    HashSet<uint64> newVisPlayers;
+    HashSet<uint64> newVisMonsters;
+    HashSet<uint64> newVisProjectiles;
 
     for (const PlayerRef& other : candPlayers)
     {
@@ -365,7 +365,7 @@ void GameRoom::UpdateAOI(PlayerSessionRef session, PlayerRef me, bool forceFullS
     {
         //  스냅샷 모드: players/monsters/projectiles를 "한 스트림"으로 begin/end 마감
         const uint32 snapId = me->NextSnapshotSeq_ActorOnly();
-        std::vector<Protocol::S_SPAWN> pkts;
+        Vector<Protocol::S_SPAWN> pkts;
 
         // ---- players batching ----
         for (int32 i = 0; i < (int32)toSpawnP.size(); )

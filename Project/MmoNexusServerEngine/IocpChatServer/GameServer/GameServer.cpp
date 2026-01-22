@@ -202,7 +202,7 @@ int main()
 
 	IocpCoreRef core = MakeShared<IocpCore>();
 
-	GameSessionManager::GSessionManager = new GameSessionManager();
+	GameSessionManager::GSessionManager = xnew<GameSessionManager>();
 
 
 	ClientServiceRef dbService = MakeShared<ClientService>(
@@ -328,7 +328,7 @@ int main()
 
 	GThreadManager->Join();
 
-	delete GameSessionManager::GSessionManager;
+	xdelete(GameSessionManager::GSessionManager);
 	GameSessionManager::GSessionManager = nullptr;
 
 

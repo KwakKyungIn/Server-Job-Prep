@@ -247,16 +247,16 @@ private:
     struct TradeCommitPlan
     {
         // Final snapshots for DBAgent (atomic SQL transaction)
-        std::vector<Protocol::ItemInfo> finalAItems;
-        std::vector<uint64> deletedAItemUids;
-        std::vector<Protocol::ItemInfo> finalBItems;
-        std::vector<uint64> deletedBItemUids;
+        Vector<Protocol::ItemInfo> finalAItems;
+        Vector<uint64> deletedAItemUids;
+        Vector<Protocol::ItemInfo> finalBItems;
+        Vector<uint64> deletedBItemUids;
 
         // Client notifications (applied after DB success)
-        std::vector<Protocol::ItemInfo> notifyChangeA;
-        std::vector<uint64> notifyRemoveA;
-        std::vector<Protocol::ItemInfo> notifyChangeB;
-        std::vector<uint64> notifyRemoveB;
+        Vector<Protocol::ItemInfo> notifyChangeA;
+        Vector<uint64> notifyRemoveA;
+        Vector<Protocol::ItemInfo> notifyChangeB;
+        Vector<uint64> notifyRemoveB;
     };
 
     struct TradeSession
@@ -265,8 +265,8 @@ private:
         uint64 playerAId = 0;
         uint64 playerBId = 0;
 
-        std::unordered_map<uint64, TradeOfferEntry> offerA; // itemUid -> entry
-        std::unordered_map<uint64, TradeOfferEntry> offerB;
+        HashMap<uint64, TradeOfferEntry> offerA; // itemUid -> entry
+        HashMap<uint64, TradeOfferEntry> offerB;
 
         bool readyA = false;
         bool readyB = false;
@@ -298,8 +298,8 @@ private:
     static constexpr int32 kTradeMaxInventorySlots = 24;
     static constexpr uint64 kTradeTimeoutMs = 60'000;
 
-    std::unordered_map<uint64, TradeSession> _trades;
-    std::unordered_map<uint64, uint64> _tradeByPlayer;
+    HashMap<uint64, TradeSession> _trades;
+    HashMap<uint64, uint64> _tradeByPlayer;
 
     Map<uint64, ProjectileRef> _projectiles;
     uint64 _lastUpdateMs = 0;

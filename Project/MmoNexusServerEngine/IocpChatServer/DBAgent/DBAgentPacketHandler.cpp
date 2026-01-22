@@ -45,7 +45,7 @@ bool DBAgentPacketHandler::Handle_S2S_REQ_LOGIN(PacketSessionRef& session, Proto
 				conn->Unbind();
 
 				// [Step 2] 입력 데이터 준비 (UTF-8 string -> WCHAR 변환)
-				std::wstring wbName;
+				WString wbName;
 				wbName.assign(pkt.name().begin(), pkt.name().end());
 
 				SQLLEN nameLen = SQL_NTS; // Null Terminated String
@@ -218,7 +218,7 @@ bool DBAgentPacketHandler::Handle_S2S_REQ_LOAD_GAME_DATA(PacketSessionRef& sessi
 							statData->set_speed(speed);
 							statData->set_totalexp(totalExp);
 						}
-						std::cout << "📘 [DB] Loaded Stat Templates: " << resPkt.stats_size() << std::endl;
+						std::cout << "[DB] Loaded Stat Templates: " << resPkt.stats_size() << std::endl;
 					}
 				}
 			}
@@ -247,9 +247,10 @@ bool DBAgentPacketHandler::Handle_S2S_REQ_LOAD_GAME_DATA(PacketSessionRef& sessi
 						{
 							auto* itemData = resPkt.add_items();
 							itemData->set_templateid(templateId);
-							std::wstring ws(nameBuffer);
-							std::string s(ws.begin(), ws.end());
-							itemData->set_name(s);
+							WString ws(nameBuffer);
+								String s(ws.begin(), ws.end());
+								// Protobuf string 필드는 std::string/const char* 기반이므로 경계에서만 변환한다.
+								itemData->set_name(s.c_str());
 							itemData->set_itemtype(itemType);
 							itemData->set_attackbonus(atkBonus);
 							itemData->set_defensebonus(defBonus);
@@ -311,9 +312,10 @@ bool DBAgentPacketHandler::Handle_S2S_REQ_LOAD_GAME_DATA(PacketSessionRef& sessi
 							auto* skillData = resPkt.add_skills();
 							skillData->set_skillid(skillId);
 
-							std::wstring ws(nameBuffer);
-							std::string s(ws.begin(), ws.end());
-							skillData->set_name(s);
+							WString ws(nameBuffer);
+								String s(ws.begin(), ws.end());
+								// Protobuf string 필드는 std::string/const char* 기반이므로 경계에서만 변환한다.
+								skillData->set_name(s.c_str());
 
 							skillData->set_cooldown(cooldown);
 							skillData->set_damage(damage);
@@ -332,7 +334,7 @@ bool DBAgentPacketHandler::Handle_S2S_REQ_LOAD_GAME_DATA(PacketSessionRef& sessi
 							skillData->set_maxhits(maxHits);
 						}
 
-						std::cout << "🔥 [DB] Loaded Skill Templates: " << resPkt.skills_size() << std::endl;
+							std::cout << "[DB] Loaded Skill Templates: " << resPkt.skills_size() << std::endl;
 					}
 				}
 			}
@@ -409,7 +411,7 @@ bool DBAgentPacketHandler::Handle_S2S_REQ_LOAD_PLAYER_DATA(PacketSessionRef& ses
 			gameSession->Send(sendBuffer);
 
 			if (resPkt.success())
-				std::cout << "👤 [DB] Loaded Player Data (Lv." << resPkt.statinfo().level() << ") ID: " << pkt.playerid() << std::endl;
+				std::cout << "[DB] Loaded Player Data (Lv." << resPkt.statinfo().level() << ") ID: " << pkt.playerid() << std::endl;
 		}));
 
 	return true;
