@@ -12,13 +12,13 @@ void GameRoom::HandleSkill(std::shared_ptr<Creature> attacker, int32 skillId, fl
     if (attacker == nullptr)
         return;
 
-    (void)clientTimeMs;
+    (void)clientTimeMs; // 나중에 쿨타임 검증용으로 쓸 예정
 
-    // 방 검증
+    // 방 검증: 공격자가 현재 이 방에 있는지 확인 (비정상 패킷 방어)
     if (attacker->GetRoom().get() != this)
         return;
 
-    // 스킬 데이터
+    // 데이터 매니저에서 스킬 정보 조회
     const Protocol::SkillTemplateInfo* skillData = DataManager::Instance()->GetSkillTemplate(skillId);
     if (skillData == nullptr)
         return;
@@ -26,11 +26,12 @@ void GameRoom::HandleSkill(std::shared_ptr<Creature> attacker, int32 skillId, fl
     const Protocol::SkillType type = skillData->skilltype();
 
     // =========================================================
-    //  [C] PROJECTILE: 즉시 데미지 금지 -> Projectile 생성
+    //  [PROJECTILE 스킬 처리]
+    //  즉시 데미지를 입히지 않고, 투사체 오브젝트를 생성해서 날려보냄
     // =========================================================
     if (type == Protocol::SKILL_PROJECTILE)
     {
-        // 1) 모션 브로드캐스트
+        // 1. 스킬 사용 모션부터 주변에 브로드캐스트 (선딜레이 표현)
         const int32 zoneIndex = _grid.GetZoneIndex(*attacker->GetPosInfo());
         {
             Protocol::S_SKILL skillPkt;
@@ -42,46 +43,45 @@ void GameRoom::HandleSkill(std::shared_ptr<Creature> attacker, int32 skillId, fl
             BroadcastToZone(skillBuffer, zoneIndex);
         }
 
-        // 2) Projectile 파라미터 (Data 기반)
+        // 2. 투사체 속성 설정 (속도, 수명, 히트 반경 등)
         float speed = skillData->projectilespeed();
         uint32 lifeMs = (uint32)skillData->projectilelifems();
 
         float hitRadius = skillData->hitradius();
         if (hitRadius <= 0.0f)
-            hitRadius = skillData->radius(); // fallback
+            hitRadius = skillData->radius(); // 데이터 없으면 기본 반경 사용
 
-        bool stopOnHit = skillData->stoponhit();
+        bool stopOnHit = skillData->stoponhit(); // 관통 여부
         int32 maxHits = skillData->maxhits();
         if (maxHits <= 0) maxHits = 1;
 
-        // travel range 정책 (일단 skillData.range 재사용)
+        // 사거리 계산: 데이터에 없으면 속도 * 시간으로 계산
         float range = skillData->range();
         if (range <= 0.0f && lifeMs > 0 && speed > 0.0f)
             range = speed * ((float)lifeMs / 1000.0f);
 
-        // 방어: life/range 둘 다 0이면 “무한” 방지
+        // 안전장치: 데이터 미스나 해킹으로 인한 무한 투사체 방지
         if (lifeMs == 0 && range <= 0.0f)
-            lifeMs = 800; // 기본 0.8s
+            lifeMs = 800; // 기본 0.8초
 
-        // 3) 시작 포지션/방향
+        // 3. 투사체 시작 위치 및 방향 설정
         Protocol::PositionInfo startPos = *attacker->GetPosInfo();
 
-        // 플레이어는 client castYaw를 권위 입력으로 사용
+        // 플레이어는 클라가 바라보는 방향(castYaw)을 믿어줌 (조작감 때문)
         if (attacker->GetObjectType() == Protocol::OBJECT_TYPE_PLAYER)
             startPos.set_yaw(castYaw);
 
-        // 몬스터는 서버 pos.yaw가 권위
-        // (castYaw는 무시해도 됨)
+        // 몬스터는 서버 AI가 정한 방향이 권위(Authority)를 가짐
 
-        // 4) ownerId 규칙: playerId / monster objectId
+        // 4. 소유자 ID 설정 (킬 판정이나 경험치 분배용)
         uint64 ownerId = 0;
         if (attacker->GetObjectType() == Protocol::OBJECT_TYPE_PLAYER)
             ownerId = std::static_pointer_cast<Player>(attacker)->GetPlayerId();
         else
             ownerId = attacker->GetObjectId();
 
-        // 5) 생성 + 룸 등록
-        // Projectile는 프레임 단위로 생성/파괴가 반복될 수 있어 ObjectPool로 풀링한다.
+        // 5. 투사체 생성 및 방에 입장 시키기
+        // 빈번하게 생성/삭제되므로 ObjectPool 사용
         ProjectileRef p = ObjectPool<Projectile>::MakeShared();
         p->Init(ownerId, skillId, startPos, speed, lifeMs, range);
         p->SetCombatParams(hitRadius, stopOnHit, maxHits);
@@ -91,16 +91,18 @@ void GameRoom::HandleSkill(std::shared_ptr<Creature> attacker, int32 skillId, fl
     }
 
     // =========================================================
-    // 기존: 즉시 판정 스킬 (AUTO 등)
+    //  [INSTANT / AUTO 스킬 처리]
+    //  투사체가 아닌 즉발형 공격 (평타, 타겟팅 스킬 등)
     // =========================================================
     if (_battle == nullptr)
         return;
 
     SkillResult result;
+    // BattleManager에게 판정 위임 (명중, 크리티컬, 데미지 계산)
     if (_battle->ResolveSkill(attacker, skillId, result) == false)
         return;
 
-    // 스킬 모션 브로드캐스트
+    // 1. 스킬 모션 패킷 전송
     {
         Protocol::S_SKILL skillPkt;
         skillPkt.set_objectid(NetId(attacker));
@@ -111,7 +113,7 @@ void GameRoom::HandleSkill(std::shared_ptr<Creature> attacker, int32 skillId, fl
         BroadcastToZone(skillBuffer, result.zoneIndex);
     }
 
-    // 피격 결과 브로드캐스트 (HP 변경)
+    // 2. 피격 결과(HP 감소) 패킷 전송
     for (const HitInfo& hit : result.hits)
     {
         auto victim = hit.target;
@@ -128,15 +130,14 @@ void GameRoom::HandleSkill(std::shared_ptr<Creature> attacker, int32 skillId, fl
     }
 }
 
-//  기존 버전 유지 (다른 호출부 안 깨지게)
-//    내부적으로 NEW 버전으로 포워딩
+// 하위 호환성을 위한 오버로딩 (기존 코드 깨짐 방지)
 void GameRoom::HandleSkill(std::shared_ptr<Creature> attacker, int32 skillId)
 {
     HandleSkill(attacker, skillId, /*castYaw=*/0.f, /*clientTimeMs=*/0);
 }
 
 
-//  NEW: 확장 버전
+// 패킷 핸들러에서 호출하는 진입점
 void GameRoom::HandleSkillById(PlayerSessionRef session, uint64 playerId, int32 skillId, float castYaw, uint32 clientTimeMs)
 {
     auto it = _players.find(playerId);
@@ -146,11 +147,12 @@ void GameRoom::HandleSkillById(PlayerSessionRef session, uint64 playerId, int32 
     PlayerRef player = it->second;
     if (!player) return;
 
+    // Creature 타입으로 캐스팅해서 공용 로직 태움
     std::shared_ptr<Creature> attacker = std::static_pointer_cast<Creature>(player);
     HandleSkill(attacker, skillId, castYaw, clientTimeMs);
 }
 
-//  기존 버전 유지 (기존 호출부 안 깨지게)
+// 하위 호환성 유지
 void GameRoom::HandleSkillById(PlayerSessionRef session, uint64 playerId, int32 skillId)
 {
     HandleSkillById(session, playerId, skillId, /*castYaw=*/0.f, /*clientTimeMs=*/0);

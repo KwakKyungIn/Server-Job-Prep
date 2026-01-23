@@ -9,6 +9,7 @@
 #include "PartyManagerCore.h"
 #include "ClientPacketHandler.MapChangeUtil.h"
 
+// 파티 정보를 클라이언트에게 보낼 패킷 형태로 변환하는 헬퍼 함수
 static Protocol::S_PARTY_INFO_NTF MakePartyInfoNtf(const PartyManagerCore::Party& p)
 {
 	Protocol::S_PARTY_INFO_NTF ntf;
@@ -21,6 +22,7 @@ static Protocol::S_PARTY_INFO_NTF MakePartyInfoNtf(const PartyManagerCore::Party
 	return ntf;
 }
 
+// 파티가 없는 상태(초기화)를 알리는 패킷 생성
 static Protocol::S_PARTY_INFO_NTF MakeNoPartyInfoNtf()
 {
 	Protocol::S_PARTY_INFO_NTF ntf;
@@ -31,7 +33,9 @@ static Protocol::S_PARTY_INFO_NTF MakeNoPartyInfoNtf()
 	return ntf;
 }
 
-//  어디서 호출해도 안전: 조회는 PartyActor에서, 전송은 세션 Post로
+// 특정 대상에게 파티 정보를 전송하는 유틸리티
+// 어느 스레드에서 호출해도 안전하도록 PartyActor에게 작업을 위임하는 방식으로 구현함
+// 조회는 PartyActor 스레드에서, 전송은 Session 스레드에서 수행하여 락을 최소화했다
 static void SendPartyInfoTo(PlayerSessionRef target, uint64 partyId)
 {
 	if (!target) return;
@@ -51,6 +55,7 @@ static void SendPartyInfoTo(PlayerSessionRef target, uint64 partyId)
 				info = (snap.partyId == 0) ? MakeNoPartyInfoNtf() : MakePartyInfoNtf(snap);
 			}
 
+			// 패킷 생성은 PartyActor에서 했지만, 실제 send는 세션의 컨텍스트로 넘겨서 처리
 			target->Post([info](PlayerSessionRef self) mutable
 				{
 					self->Send(ClientPacketHandler::MakeSendBuffer(info));
@@ -58,7 +63,8 @@ static void SendPartyInfoTo(PlayerSessionRef target, uint64 partyId)
 		});
 }
 
-//  어디서 호출해도 안전: 조회는 PartyActor에서, 전송은 각 세션 Post로
+// 파티원 전원에게 최신 파티 정보를 브로드캐스팅하는 함수
+// 파티 상태가 변할 때마다(가입, 탈퇴 등) 호출되어 클라이언트와 싱크를 맞춘다
 static void BroadcastPartyInfo(uint64 partyId)
 {
 	if (partyId == 0) return;
@@ -71,6 +77,7 @@ static void BroadcastPartyInfo(uint64 partyId)
 
 			Protocol::S_PARTY_INFO_NTF info = MakePartyInfoNtf(snap);
 
+			// 멤버 목록을 순회하며 접속 중인 세션을 찾아 패킷을 보낸다
 			for (uint64 id : snap.members)
 			{
 				auto s = GameSessionManager::GSessionManager->FindByPlayerId(id);
@@ -84,6 +91,8 @@ static void BroadcastPartyInfo(uint64 partyId)
 		});
 }
 
+// 파티 채팅 요청 핸들러
+// 파티원들은 각자 다른 맵(다른 스레드)에 있을 수 있으므로, PartyActor가 중계소 역할을 한다
 bool ClientPacketHandler::Handle_C_PARTY_CHAT_REQ(PacketSessionRef& session, Protocol::C_PARTY_CHAT_REQ& pkt)
 {
 	PlayerSessionRef ps = static_pointer_cast<PlayerSession>(session);
@@ -91,31 +100,34 @@ bool ClientPacketHandler::Handle_C_PARTY_CHAT_REQ(PacketSessionRef& session, Pro
 
 	const std::string msg = pkt.message();
 
-	//  Session은 PlayerRef 금지. ID만.
+	// Session에서는 Player 객체에 직접 접근하지 않고 ID만 가져온다 (댕글링 포인터 방지)
 	const uint64 senderId = ps->GetPlayerId_AnyThread();
 	if (senderId == 0) return true;
 
-	//  Option A: GameSessionManager 캐시에서 이름 조회
+	// 보낸 사람 이름은 세션 매니저 캐시에서 빠르게 조회
 	std::string senderName = GameSessionManager::GSessionManager->GetPlayerName(senderId);
 	if (senderName.empty())
-		senderName = "Unknown"; // (원하면 std::to_string(senderId)로)
+		senderName = "Unknown";
 
+	// PartyActor에게 메시지 전파 작업을 맡김
 	PartyActor::Instance().Push([senderId, senderName, msg]()
 		{
 			auto& core = PartyActor::Instance().Core();
 
+			// 보낸 사람이 실제로 파티에 속해있는지 검증
 			const uint64 partyId = core.GetPartyIdByPlayerId(senderId);
 			if (partyId == 0) return;
 
 			Vector<uint64> members;
 			core.GetMembers(partyId, members);
 
+			// 모든 파티원에게 메시지 전송
 			for (uint64 memberId : members)
 			{
 				auto target = GameSessionManager::GSessionManager->FindByPlayerId(memberId);
 				if (!target) continue;
 
-				//  전송은 "대상 세션 Actor"에서만
+				// 전송은 반드시 대상 세션의 Actor 컨텍스트 안에서 이루어져야 안전함
 				target->Post([partyId, senderId, senderName, msg](PlayerSessionRef self) mutable
 					{
 						Protocol::S_PARTY_CHAT_NTF ntf;
@@ -132,7 +144,7 @@ bool ClientPacketHandler::Handle_C_PARTY_CHAT_REQ(PacketSessionRef& session, Pro
 	return true;
 }
 
-
+// 파티 생성 요청 핸들러
 bool ClientPacketHandler::Handle_C_PARTY_CREATE_REQ(PacketSessionRef& session, Protocol::C_PARTY_CREATE_REQ& pkt)
 {
 	PlayerSessionRef ps = static_pointer_cast<PlayerSession>(session);
@@ -148,6 +160,7 @@ bool ClientPacketHandler::Handle_C_PARTY_CREATE_REQ(PacketSessionRef& session, P
 		{
 			auto& core = PartyActor::Instance().Core();
 
+			// 이미 파티에 속해있다면 생성 실패 처리
 			if (core.GetPartyIdByPlayerId(leaderId) != 0)
 			{
 				ps->Post([](PlayerSessionRef self)
@@ -161,10 +174,12 @@ bool ClientPacketHandler::Handle_C_PARTY_CREATE_REQ(PacketSessionRef& session, P
 				return;
 			}
 
+			// 파티 생성 로직 수행
 			uint64 partyId = 0;
 			const bool ok = core.Create(leaderId, partyId);
 			const uint32 version = ok ? core.GetSnapshot(partyId).version : 0;
 
+			// 결과 전송
 			ps->Post([ok, partyId, version](PlayerSessionRef self)
 				{
 					Protocol::S_PARTY_RESULT res;
@@ -176,6 +191,7 @@ bool ClientPacketHandler::Handle_C_PARTY_CREATE_REQ(PacketSessionRef& session, P
 					self->Send(ClientPacketHandler::MakeSendBuffer(res));
 				});
 
+			// 성공했다면 파티 정보 갱신 (UI 업데이트용)
 			if (ok)
 				BroadcastPartyInfo(partyId);
 		});
@@ -183,6 +199,7 @@ bool ClientPacketHandler::Handle_C_PARTY_CREATE_REQ(PacketSessionRef& session, P
 	return true;
 }
 
+// 파티 초대 요청 핸들러
 bool ClientPacketHandler::Handle_C_PARTY_INVITE_REQ(PacketSessionRef& session, Protocol::C_PARTY_INVITE_REQ& pkt)
 {
 	PlayerSessionRef ps = static_pointer_cast<PlayerSession>(session);
@@ -196,10 +213,10 @@ bool ClientPacketHandler::Handle_C_PARTY_INVITE_REQ(PacketSessionRef& session, P
 
 	const uint64 targetId = pkt.targetplayerid();
 
-	//  inviterName: Option A 캐시
 	std::string inviterName = GameSessionManager::GSessionManager->GetPlayerName(inviterId);
 	if (inviterName.empty()) inviterName = "Unknown";
 
+	// 자기 자신 초대 방지
 	if (targetId == 0 || targetId == inviterId)
 	{
 		ps->Post([](PlayerSessionRef self)
@@ -213,6 +230,7 @@ bool ClientPacketHandler::Handle_C_PARTY_INVITE_REQ(PacketSessionRef& session, P
 		return true;
 	}
 
+	// 대상이 오프라인이면 실패
 	auto targetSession = GameSessionManager::GSessionManager->FindByPlayerId(targetId);
 	if (!targetSession)
 	{
@@ -227,6 +245,7 @@ bool ClientPacketHandler::Handle_C_PARTY_INVITE_REQ(PacketSessionRef& session, P
 		return true;
 	}
 
+	// 실제 초대 로직은 PartyActor에서 순차적으로 처리
 	PartyActor::Instance().Push([ps, targetSession, inviterId, inviterName, targetId]()
 		{
 			auto& core = PartyActor::Instance().Core();
@@ -245,16 +264,17 @@ bool ClientPacketHandler::Handle_C_PARTY_INVITE_REQ(PacketSessionRef& session, P
 				return;
 			}
 
+			// 보류 중인 초대 목록에 추가 (타임아웃 등은 Core에서 관리)
 			PartyManagerCore::PendingInvite inv;
 			const bool ok = core.Invite(inviterId, targetId, inv);
 
-			// version은 party가 살아있을 때만
 			uint32 version = 0;
 			{
 				auto snap = core.GetSnapshot(partyId);
 				version = (snap.partyId != 0) ? snap.version : 0;
 			}
 
+			// 초대자에게 결과 알림
 			ps->Post([ok, partyId, version](PlayerSessionRef self)
 				{
 					Protocol::S_PARTY_RESULT res;
@@ -268,6 +288,7 @@ bool ClientPacketHandler::Handle_C_PARTY_INVITE_REQ(PacketSessionRef& session, P
 
 			if (!ok) return;
 
+			// 초대받은 사람에게 알림 팝업 전송
 			targetSession->Post([partyId, inviterId, inviterName](PlayerSessionRef self) mutable
 				{
 					Protocol::S_PARTY_INVITE_NTF ntf;
@@ -281,6 +302,7 @@ bool ClientPacketHandler::Handle_C_PARTY_INVITE_REQ(PacketSessionRef& session, P
 	return true;
 }
 
+// 파티 초대 수락/거절 핸들러
 bool ClientPacketHandler::Handle_C_PARTY_INVITE_ACCEPT_REQ(PacketSessionRef& session, Protocol::C_PARTY_INVITE_ACCEPT_REQ& pkt)
 {
 	PlayerSessionRef ps = static_pointer_cast<PlayerSession>(session);
@@ -297,11 +319,13 @@ bool ClientPacketHandler::Handle_C_PARTY_INVITE_ACCEPT_REQ(PacketSessionRef& ses
 			auto& core = PartyActor::Instance().Core();
 
 			PartyManagerCore::Party after;
+			// 수락 시 멤버 추가 처리, 거절 시 펜딩 목록에서 제거
 			const bool ok = core.AcceptInvite(targetId, partyId, accept, after);
 
 			const uint64 afterPartyId = after.partyId;
 			const uint32 version = afterPartyId ? after.version : 0;
 
+			// 응답 패킷 전송
 			ps->Post([ok, partyId, accept, version](PlayerSessionRef self)
 				{
 					Protocol::S_PARTY_RESULT res;
@@ -317,13 +341,14 @@ bool ClientPacketHandler::Handle_C_PARTY_INVITE_ACCEPT_REQ(PacketSessionRef& ses
 
 			if (!ok) return;
 
+			// 수락해서 파티원이 되었다면 전체 멤버에게 갱신 알림
 			if (accept && afterPartyId != 0)
 			{
 				BroadcastPartyInfo(afterPartyId);
 				return;
 			}
 
-			// reject면 내 파티정보 갱신(보통 0)
+			// 거절했다면 본인의 파티 UI를 초기화 (혹시 잔상이 남았을 경우 대비)
 			if (!accept)
 			{
 				const uint64 curPartyId = core.GetPartyIdByPlayerId(targetId);
@@ -334,6 +359,8 @@ bool ClientPacketHandler::Handle_C_PARTY_INVITE_ACCEPT_REQ(PacketSessionRef& ses
 	return true;
 }
 
+// 파티 탈퇴 요청 핸들러
+// 단순 탈퇴뿐만 아니라 던전 인스턴스 처리까지 포함된 중요 로직
 bool ClientPacketHandler::Handle_C_PARTY_LEAVE_REQ(PacketSessionRef& session, Protocol::C_PARTY_LEAVE_REQ& pkt)
 {
 	PlayerSessionRef ps = static_pointer_cast<PlayerSession>(session);
@@ -350,6 +377,7 @@ bool ClientPacketHandler::Handle_C_PARTY_LEAVE_REQ(PacketSessionRef& session, Pr
 			const uint64 partyId = core.GetPartyIdByPlayerId(pid);
 			if (partyId == 0)
 			{
+				// 파티가 없는데 탈퇴하려는 경우 예외 처리
 				ps->Post([](PlayerSessionRef self)
 					{
 						Protocol::S_PARTY_RESULT res;
@@ -366,10 +394,11 @@ bool ClientPacketHandler::Handle_C_PARTY_LEAVE_REQ(PacketSessionRef& session, Pr
 			const PartyManagerCore::Party before = core.GetSnapshot(partyId);
 			const bool wasInDungeon = (before.instanceId != 0);
 
-			//  Leave + 던전이면 Instance eject/close/roomClosing 처리까지
+			// 던전 진행 중에 탈퇴하면 인스턴스에서도 나가야 함
+			// PartyActor 내부에서 InstanceActor와 통신하여 적절한 정리를 수행한다
 			PartyActor::Instance().LeaveAndHandleInstance(pid);
 
-			//  성공 판정: 매핑 제거됐으면 OK
+			// 매핑이 제거되었는지 확인하여 성공 여부 판단
 			const bool ok = (core.GetPartyIdByPlayerId(pid) == 0);
 
 			uint32 version = 0;
@@ -391,15 +420,15 @@ bool ClientPacketHandler::Handle_C_PARTY_LEAVE_REQ(PacketSessionRef& session, Pr
 
 			if (!ok) return;
 
-			// 떠난 사람: 파티 없음
+			// 떠난 사람은 파티 정보 초기화
 			SendPartyInfoTo(ps, 0);
 
-			// 남은 파티원 갱신(파티가 아직 존재하면)
+			// 남은 파티원들에게 멤버 변경 알림
 			PartyManagerCore::Party afterSnap = core.GetSnapshot(partyId);
 			if (afterSnap.partyId != 0)
 				BroadcastPartyInfo(partyId);
 
-			//  던전 내 Leave면 즉시 강제 복귀
+			// 던전에서 탈퇴했다면 강제로 마을로 귀환시킴
 			if (wasInDungeon)
 				MapChangeUtil::ForceReturnToWorld(ps);
 		});
@@ -407,6 +436,7 @@ bool ClientPacketHandler::Handle_C_PARTY_LEAVE_REQ(PacketSessionRef& session, Pr
 	return true;
 }
 
+// 파티장 강퇴(Kick) 요청 핸들러
 bool ClientPacketHandler::Handle_C_PARTY_KICK_REQ(PacketSessionRef& session, Protocol::C_PARTY_KICK_REQ& pkt)
 {
 	PlayerSessionRef ps = static_pointer_cast<PlayerSession>(session);
@@ -418,7 +448,6 @@ bool ClientPacketHandler::Handle_C_PARTY_KICK_REQ(PacketSessionRef& session, Pro
 
 	const uint64 targetId = pkt.targetplayerid();
 
-	// 빠른 컷(세션 스레드 안전)
 	if (targetId == 0 || targetId == leaderId)
 	{
 		ps->Post([](PlayerSessionRef self)
@@ -455,10 +484,10 @@ bool ClientPacketHandler::Handle_C_PARTY_KICK_REQ(PacketSessionRef& session, Pro
 
 			const bool wasMember = core.IsMember(partyId, targetId);
 
-			//  Kick + (던전이면) 인스턴스 eject/close/roomClosing 처리까지
+			// 강퇴 역시 던전 인스턴스 처리가 필요함
+			// Kick 함수 내부에서 권한 검사 및 인스턴스 정리 로직이 돈다
 			PartyActor::Instance().KickAndHandleInstance(leaderId, targetId);
 
-			//  성공 판정
 			const bool isMemberNow = core.IsMember(partyId, targetId);
 			const bool ok = (wasMember && !isMemberNow);
 
@@ -468,6 +497,7 @@ bool ClientPacketHandler::Handle_C_PARTY_KICK_REQ(PacketSessionRef& session, Pro
 				version = (afterSnap.partyId != 0) ? afterSnap.version : 0;
 			}
 
+			// 리더에게 결과 전송
 			ps->Post([ok, partyId, version](PlayerSessionRef self)
 				{
 					Protocol::S_PARTY_RESULT res;
@@ -482,12 +512,12 @@ bool ClientPacketHandler::Handle_C_PARTY_KICK_REQ(PacketSessionRef& session, Pro
 
 			if (!ok) return;
 
-			// 남은 파티원 갱신(파티가 아직 존재하면)
+			// 남은 멤버들에게 알림
 			PartyManagerCore::Party afterSnap = core.GetSnapshot(partyId);
 			if (afterSnap.partyId != 0)
 				BroadcastPartyInfo(partyId);
 
-			// 킥당한 사람: 파티 없음
+			// 강퇴당한 사람에게 알림 (접속 중이라면)
 			auto kicked = GameSessionManager::GSessionManager->FindByPlayerId(targetId);
 			if (kicked)
 			{
@@ -498,7 +528,7 @@ bool ClientPacketHandler::Handle_C_PARTY_KICK_REQ(PacketSessionRef& session, Pro
 					});
 			}
 
-			//  던전 내 Kick이면 즉시 강제 복귀
+			// 던전에서 강퇴당했으면 강제 귀환 처리
 			if (wasInDungeon)
 			{
 				if (kicked)
@@ -507,7 +537,7 @@ bool ClientPacketHandler::Handle_C_PARTY_KICK_REQ(PacketSessionRef& session, Pro
 				}
 				else
 				{
-					// 오프라인이면 "재접속 시 강제 복귀" 플래그
+					// 오프라인 상태라면 DB나 플래그에 표시해서 다음에 접속할 때 마을로 보내야 함
 					core.MarkForceReturn(targetId);
 				}
 			}
@@ -516,6 +546,7 @@ bool ClientPacketHandler::Handle_C_PARTY_KICK_REQ(PacketSessionRef& session, Pro
 	return true;
 }
 
+// 파티 해산 요청 핸들러
 bool ClientPacketHandler::Handle_C_PARTY_DISBAND_REQ(PacketSessionRef& session, Protocol::C_PARTY_DISBAND_REQ& pkt)
 {
 	PlayerSessionRef ps = static_pointer_cast<PlayerSession>(session);
@@ -543,7 +574,7 @@ bool ClientPacketHandler::Handle_C_PARTY_DISBAND_REQ(PacketSessionRef& session, 
 				return;
 			}
 
-			//  disband 전에 멤버/던전정보 확보(없어지기 전에)
+			// 해산하면 파티 정보가 날아가므로 미리 멤버 목록 백업
 			const PartyManagerCore::Party before = core.GetSnapshot(partyId);
 
 			Vector<uint64> members;
@@ -552,10 +583,10 @@ bool ClientPacketHandler::Handle_C_PARTY_DISBAND_REQ(PacketSessionRef& session, 
 
 			const bool wasInDungeon = (before.instanceId != 0);
 
-			//  Disband + (던전이면) 인스턴스 Close/RoomClosing 처리
+			// 해산 및 인스턴스 종료 처리
+			// 던전 인스턴스도 함께 닫히도록 유도한다
 			PartyActor::Instance().DisbandAndHandleInstance(leaderId);
 
-			//  성공 판정: leader가 파티에서 빠졌으면 성공
 			const bool ok = (core.GetPartyIdByPlayerId(leaderId) == 0);
 
 			ps->Post([ok, partyId](PlayerSessionRef self)
@@ -572,7 +603,7 @@ bool ClientPacketHandler::Handle_C_PARTY_DISBAND_REQ(PacketSessionRef& session, 
 
 			if (!ok) return;
 
-			// 전원에게 "파티 없음" + (던전이면) 강제 복귀(or 오프라인 플래그)
+			// 전원에게 파티 해제 알림 및 던전 강제 귀환 수행
 			for (uint64 id : members)
 			{
 				auto ms = GameSessionManager::GSessionManager->FindByPlayerId(id);
@@ -590,7 +621,7 @@ bool ClientPacketHandler::Handle_C_PARTY_DISBAND_REQ(PacketSessionRef& session, 
 				else
 				{
 					if (wasInDungeon)
-						core.MarkForceReturn(id); // 오프라인이면 재접속 강제복귀
+						core.MarkForceReturn(id);
 				}
 			}
 		});
@@ -599,7 +630,7 @@ bool ClientPacketHandler::Handle_C_PARTY_DISBAND_REQ(PacketSessionRef& session, 
 }
 
 
-//helper
+// 파티원들의 상태 정보를 수집하기 위한 임시 구조체
 struct PartyStatusItem
 {
 	uint64 playerId = 0;
@@ -616,28 +647,33 @@ struct PartyStatusItem
 	Protocol::PositionInfo pos;
 };
 
+// Fan-out / Fan-in 패턴을 구현하기 위한 수집기 객체
+// 여러 스레드(각 파티원의 RoomActor)에서 응답이 올 때마다 카운트를 줄이고
+// 마지막 응답이 오면 결과를 취합해서 보낸다.
 struct PartyStatusCollector
 {
 	uint64 partyId = 0;
 	uint32 version = 0;
 
-	int32 remaining = 0;                 // "응답 받아야 하는 세션 수"
-	Vector<PartyStatusItem> items;  // 요청자 세션 actor thread에서만 push
+	int32 remaining = 0;                 // 응답 대기 중인 파티원 수
+	Vector<PartyStatusItem> items;       // 수집된 정보 (경합 방지를 위해 요청자 세션 스레드에서만 접근)
 };
 
 
+// 파티원 상태 조회 핸들러 (HP, 위치 등 실시간 정보)
+// 플레이어 정보는 각 RoomActor 스레드에 흩어져 있으므로, 이를 안전하게 긁어모으는 것이 핵심
 bool ClientPacketHandler::Handle_C_PARTY_STATUS_REQ(PacketSessionRef& session, Protocol::C_PARTY_STATUS_REQ& pkt)
 {
 	PlayerSessionRef ps = static_pointer_cast<PlayerSession>(session);
 	if (!ps) return true;
 
-	// 네트워크 스레드 빠른 컷
 	if (ps->IsMapChanging())
 		return true;
 
 	const uint64 myId = ps->GetPlayerId_AnyThread();
 	if (myId == 0)
 	{
+		// 플레이어 ID가 없으면 빈 정보 리턴 (방어 코드)
 		ps->Post([](PlayerSessionRef self)
 			{
 				Protocol::S_PARTY_STATUS_NTF ntf;
@@ -648,7 +684,7 @@ bool ClientPacketHandler::Handle_C_PARTY_STATUS_REQ(PacketSessionRef& session, P
 		return true;
 	}
 
-	// 파티 스냅샷은 PartyActor에서만
+	// 1단계: PartyActor에서 파티 멤버 목록 스냅샷을 가져옴
 	PartyActor::Instance().Push([ps, myId]()
 		{
 			auto& core = PartyActor::Instance().Core();
@@ -674,7 +710,8 @@ bool ClientPacketHandler::Handle_C_PARTY_STATUS_REQ(PacketSessionRef& session, P
 			for (uint64 id : snap.members)
 				memberIds.push_back(id);
 
-			// fan-out은 "요청자 세션 Actor"에서
+			// 2단계: 요청자의 세션 Actor로 돌아와서 Fan-out 준비
+			// 여기서부터 분산된 요청을 시작한다
 			ps->Post([partyId, version, memberIds = std::move(memberIds)](PlayerSessionRef requester) mutable
 				{
 					struct Target
@@ -686,6 +723,7 @@ bool ClientPacketHandler::Handle_C_PARTY_STATUS_REQ(PacketSessionRef& session, P
 					Vector<Target> targets;
 					targets.reserve(memberIds.size());
 
+					// 접속 중인 멤버들의 세션을 찾는다
 					for (uint64 id : memberIds)
 					{
 						auto ms = GameSessionManager::GSessionManager->FindByPlayerId(id);
@@ -693,13 +731,13 @@ bool ClientPacketHandler::Handle_C_PARTY_STATUS_REQ(PacketSessionRef& session, P
 							targets.push_back(Target{ id, ms });
 					}
 
+					// 수집기(Collector) 생성 - shared_ptr로 생명주기 관리
 					auto collector = MakeShared<PartyStatusCollector>();
 					collector->partyId = partyId;
 					collector->version = version;
 					collector->remaining = static_cast<int32>(targets.size());
 					collector->items.reserve(targets.size());
 
-					// 온라인 대상이 0명이면 빈 리스트로 응답
 					if (collector->remaining == 0)
 					{
 						Protocol::S_PARTY_STATUS_NTF ntf;
@@ -709,7 +747,7 @@ bool ClientPacketHandler::Handle_C_PARTY_STATUS_REQ(PacketSessionRef& session, P
 						return;
 					}
 
-					// 각 멤버 세션에게 "내 currentRoom에서 내 상태 뽑아서 보내" 요청
+					// 3단계: 각 멤버의 세션으로 "너네 방(RoomActor)에 가서 상태 좀 읽어와" 요청 전송
 					for (const Target& t : targets)
 					{
 						const uint64 memberId = t.playerId;
@@ -717,14 +755,16 @@ bool ClientPacketHandler::Handle_C_PARTY_STATUS_REQ(PacketSessionRef& session, P
 
 						memberSession->Post([requester, collector, memberId](PlayerSessionRef ms)
 							{
-								// 멤버 세션 Actor에서 room 확인 (PostRoom 쓰면 room 없을 때 remaining이 안 줄어듦)
+								// 맵 이동 중이면 정보를 읽을 수 없으므로 스킵 처리
 								if (ms->IsMapChanging())
 								{
+									// 스킵하더라도 collector 카운트는 줄여줘야 함 (안 그러면 무한 대기)
 									requester->Post([collector](PlayerSessionRef req) mutable
 										{
 											collector->remaining--;
 											if (collector->remaining == 0)
 											{
+												// 마지막 응답이면 결과 전송 (아래 로직과 중복되지만 안전을 위해)
 												Protocol::S_PARTY_STATUS_NTF ntf;
 												ntf.set_partyid(collector->partyId);
 												ntf.set_version(collector->version);
@@ -750,7 +790,7 @@ bool ClientPacketHandler::Handle_C_PARTY_STATUS_REQ(PacketSessionRef& session, P
 								RoomActorRef room = ms->GetCurrentRoom_ActorOnly();
 								if (!room || room->GetKind() != RoomKind::Game)
 								{
-									// room 없음/로비 등 -> 응답 1개 완료 처리만
+									// 방이 없거나 로비면 정보 수집 불가 -> 빈 응답 처리
 									requester->Post([collector](PlayerSessionRef req) mutable
 										{
 											collector->remaining--;
@@ -809,13 +849,13 @@ bool ClientPacketHandler::Handle_C_PARTY_STATUS_REQ(PacketSessionRef& session, P
 									return;
 								}
 
-								//  Player 상태는 GameRoom actor thread에서만 읽는다
+								// 4단계: 실제 Player 객체가 사는 GameRoom 스레드로 진입
+								// 여기서만 Player의 HP, 위치 등을 안전하게 읽을 수 있음 (Lock Free 보장)
 								gr->PushJob([gr, requester, collector, memberId]()
 									{
 										PartyStatusItem item;
 										bool has = false;
 
-										//  아래 FindPlayer_ActorOnly는 GameRoom에 추가해줘야 함(아래에 패치 있음)
 										PlayerRef mp = gr->FindPlayer_ActorOnly(memberId);
 										if (mp)
 										{
@@ -838,13 +878,16 @@ bool ClientPacketHandler::Handle_C_PARTY_STATUS_REQ(PacketSessionRef& session, P
 												item.pos.CopyFrom(*pi);
 										}
 
-										// 결과 합치기/remaining 감소는 요청자 세션 Actor에서만
+										// 5단계: 수집된 정보를 들고 다시 요청자의 세션 Actor로 복귀
+										// Fan-in: 여기서 결과를 하나씩 취합한다
 										requester->Post([collector, has, item = std::move(item)](PlayerSessionRef req) mutable
 											{
 												if (has)
 													collector->items.push_back(std::move(item));
 
 												collector->remaining--;
+
+												// 모든 파티원의 응답이 도착했으면 최종 패킷 전송
 												if (collector->remaining == 0)
 												{
 													Protocol::S_PARTY_STATUS_NTF ntf;

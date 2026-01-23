@@ -2,7 +2,7 @@
 #include "LoginSession.h"
 #include "S2SPacketHandler.h"
 
-// [GIGACHAD] 전역 변수 (필요하면 GameServer.cpp 등에서 extern으로 씀)
+// GameServer 어디서든 로그인 서버와의 연결 상태를 확인하거나 패킷을 보낼 수 있게 전역으로 둠
 shared_ptr<LoginSession> G_LoginSession = nullptr;
 
 void LoginSession::OnConnected()
@@ -10,8 +10,8 @@ void LoginSession::OnConnected()
 	G_LoginSession = static_pointer_cast<LoginSession>(shared_from_this());
 	std::cout << " [GameServer] Connected To LoginServer!" << std::endl;
 
-	// [TODO] 연결되자마자 "나 1채널이고, IP는 뭐고, 포트는 7777이야"라고 신고해야 함.
-	// 그래야 LoginServer가 유저한테 "1채널로 가세요"라고 알려줄 수 있음.
+	// 연결 성공 시점에 우리 서버(GameServer)의 정보를 LoginServer에 등록해야 함
+	// 그래야 유저가 로그인했을 때 부하가 적은 채널로 안내해줄 수 있음
 }
 
 void LoginSession::OnDisconnected()
@@ -25,7 +25,8 @@ void LoginSession::OnDisconnected()
 void LoginSession::OnRecvPacket(BYTE* buffer, int32 len)
 {
 	PacketSessionRef session = GetPacketSessionRef();
-	// LoginServer에서 오는 패킷 처리 (S2S 핸들러 공용 사용)
+	// 서버 간 통신(S2S) 패킷은 별도의 핸들러에서 처리함
+	// 클라이언트 패킷과 섞이지 않게 구조를 분리했음
 	S2SPacketHandler::HandlePacket(session, buffer, len);
 }
 

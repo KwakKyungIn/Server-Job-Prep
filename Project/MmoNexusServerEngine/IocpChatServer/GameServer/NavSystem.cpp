@@ -5,7 +5,7 @@
 #include <set>
 #include <iostream>
 
-// [Fix 1] Detour 필수 헤더 명시적 포함
+// Detour 라이브러리 사용을 위한 헤더
 #include "DetourNavMesh.h"
 #include "DetourNavMeshQuery.h"
 #include "DetourCommon.h" 
@@ -22,17 +22,18 @@
 
 NavSystem::NavSystem()
 {
+	// Detour NavMesh 객체 및 쿼리 객체 할당
 	_navMesh = dtAllocNavMesh();
 	_navQuery = dtAllocNavMeshQuery();
 
-	// [Fix] 검색 범위 설정 (이게 없으면 발밑을 못 찾음)
-	// (x=2m, y=4m, z=2m) 범위 내의 NavMesh를 찾는다.
-	// y를 높게 잡는 이유는 언덕, 계단, 혹은 클라/서버 간 미세한 높이 오차를 커버하기 위함이다.
+	// NavMesh 폴리곤을 찾을 때 사용할 검색 범위 설정
+	// x, z는 평면 범위, y는 높이 범위
+	// 서버랑 클라 간 미세한 좌표 오차나 경사로를 커버하기 위해 y값을 4.0으로 좀 크게 잡음
 	_polyPickExt[0] = 2.0f;
 	_polyPickExt[1] = 4.0f;
 	_polyPickExt[2] = 2.0f;
 
-	// [Init Filter] 필터 초기화
+	// 기본 필터 설정 (모든 플래그 포함, 제외 없음)
 	_filter.setIncludeFlags(0xffff);
 	_filter.setExcludeFlags(0);
 }
@@ -43,13 +44,14 @@ NavSystem::~NavSystem()
 	dtFreeNavMesh(_navMesh);
 }
 
-// [GigaChad Header] RecastDemo가 쓰는 비공식 헤더 정의
+// RecastDemo 툴에서 사용하는 커스텀 헤더 구조체
+// 파일 앞부분의 매직 넘버랑 버전 등을 확인하기 위함
 struct NavMeshSetHeader
 {
 	int magic;
 	int version;
 	int numTiles;
-	dtNavMeshParams params; // Detour 표준 파라미터 포함
+	dtNavMeshParams params; // Detour 네비메쉬 설정 파라미터
 };
 
 struct NavMeshTileHeader
@@ -69,17 +71,17 @@ bool NavSystem::Load(const std::string& path)
 		return false;
 	}
 
-	// 1. 매직 넘버 확인 (Byte 단위 비교)
+	// 파일 앞 4바이트 읽어서 포맷 확인
 	char magicBuf[4];
 	file.read(magicBuf, 4);
 
-	// 파일 커서 원복
+	// 확인했으니 커서는 다시 처음으로 돌려둠
 	file.seekg(0, std::ios::beg);
 
-	// [Logic Fix] int 변환 없이 문자 그대로 비교 (TESM)
+	// 매직 넘버가 TESM인지 확인 (RecastDemo MSET 포맷)
 	bool isMset = (magicBuf[0] == 'T' && magicBuf[1] == 'E' && magicBuf[2] == 'S' && magicBuf[3] == 'M');
 
-	// [Case 1] MSET 포맷 (RecastDemo 전용) -> 포장 뜯기
+	// Case 1: MSET 포맷인 경우 (타일 여러 개가 묶여있는 구조)
 	if (isMset)
 	{
 		std::cout << " [Info] Detected 'MSET' format (TESM). Unpacking..." << std::endl;
@@ -93,7 +95,7 @@ bool NavSystem::Load(const std::string& path)
 			return false;
 		}
 
-		// 1. NavMesh를 'Params'로 초기화
+		// 헤더에 있는 파라미터로 NavMesh 초기화
 		dtStatus status = _navMesh->init(&header.params);
 		if (dtStatusFailed(status))
 		{
@@ -101,7 +103,7 @@ bool NavSystem::Load(const std::string& path)
 			return false;
 		}
 
-		// 2. 타일 루프 돌면서 추가
+		// 타일 개수만큼 루프 돌면서 데이터 로드 및 추가
 		std::cout << " [Info] Loading " << header.numTiles << " tiles..." << std::endl;
 
 		for (int i = 0; i < header.numTiles; ++i)
@@ -115,7 +117,7 @@ bool NavSystem::Load(const std::string& path)
 				break;
 			}
 
-			// 타일 데이터 할당
+			// 타일 데이터 담을 메모리 할당
 			unsigned char* data = (unsigned char*)dtAlloc(tileHeader.dataSize, DT_ALLOC_PERM);
 			if (!data)
 			{
@@ -125,8 +127,8 @@ bool NavSystem::Load(const std::string& path)
 
 			file.read((char*)data, tileHeader.dataSize);
 
-			// 타일 추가 (소유권은 NavMesh로 넘어감 -> DT_TILE_FREE_DATA)
-			// 주의: Solo Mesh라도 MSET 포맷 안에 있으면 addTile로 넣어야 함
+			// 읽어온 타일 데이터를 NavMesh에 추가
+			// DT_TILE_FREE_DATA 플래그를 주면 NavMesh가 나중에 알아서 메모리 해제함
 			status = _navMesh->addTile(data, tileHeader.dataSize, DT_TILE_FREE_DATA, 0, nullptr);
 
 			if (dtStatusFailed(status))
@@ -137,7 +139,7 @@ bool NavSystem::Load(const std::string& path)
 			}
 		}
 	}
-	// [Case 2] Raw Detour 포맷 (DNAV) -> 기존 방식
+	// Case 2: 일반 Detour Raw 포맷인 경우 (단일 블록)
 	else
 	{
 		std::cout << " [Info] Detected Raw Detour format (Single Block)." << std::endl;
@@ -161,7 +163,7 @@ bool NavSystem::Load(const std::string& path)
 		}
 	}
 
-	// 3. Query 초기화 (공통)
+	// NavMeshQuery 초기화 (최대 노드 수 2048)
 	dtStatus status = _navQuery->init(_navMesh, 2048);
 	if (dtStatusFailed(status))
 	{
@@ -169,7 +171,7 @@ bool NavSystem::Load(const std::string& path)
 		return false;
 	}
 
-	// 그룹 초기화
+	// 폴리곤 그룹 캐시 초기화
 	_polyGroups.clear();
 	_nextGroupId = 1;
 
@@ -184,6 +186,7 @@ bool NavSystem::ValidateMove(const Protocol::PositionInfo& current,
 	float startPos[3] = { current.x(), current.y(), current.z() };
 	float endPos[3] = { target.x(),  target.y(),  target.z() };
 
+	// 시작점이 네비메쉬 위에 있는지 확인
 	dtPolyRef startRef = FindNearestPoly(startPos, _polyPickExt);
 	if (!startRef)
 	{
@@ -196,11 +199,14 @@ bool NavSystem::ValidateMove(const Protocol::PositionInfo& current,
 	dtPolyRef path[32];
 	int pathCount = 0;
 
+	// 시작점에서 목표점까지 레이캐스트 발사
 	_navQuery->raycast(startRef, startPos, endPos, &_filter, &t, hitNormal, path, &pathCount, 32);
 
+	// t >= 1.0f이면 중간에 막히는 곳 없이 끝까지 갈 수 있다는 뜻
 	if (t >= 1.0f)
 	{
 		float finalY = endPos[1];
+		// 도착점의 높이를 네비메쉬 높이로 보정
 		if (ResolvePoint(endPos[0], endPos[1], endPos[2], finalY))
 		{
 			outAdjusted.set_x(endPos[0]);
@@ -218,18 +224,21 @@ bool NavSystem::ValidateMove(const Protocol::PositionInfo& current,
 	}
 	else
 	{
+		// 중간에 벽에 부딪힌 경우
 		float hitPos[3];
-		dtVlerp(hitPos, startPos, endPos, t);
+		dtVlerp(hitPos, startPos, endPos, t); // 부딪힌 지점 좌표 계산
 
 		float slidePos[3];
 		dtPolyRef visited[16];
 		int nVisited = 0;
 
+		// 벽에 막혔을 때 멈추지 않고 표면을 따라 미끄러지도록 처리 (Sliding)
 		dtStatus status = _navQuery->moveAlongSurface(
 			startRef, startPos, endPos, &_filter,
 			slidePos, visited, &nVisited, 16);
 
 		float slideY = slidePos[1];
+		// 슬라이딩 성공 시 해당 위치로 보정
 		if (dtStatusSucceed(status) && nVisited > 0 &&
 			ResolvePoint(slidePos[0], slidePos[1], slidePos[2], slideY))
 		{
@@ -242,6 +251,7 @@ bool NavSystem::ValidateMove(const Protocol::PositionInfo& current,
 			return true;
 		}
 
+		// 슬라이딩 실패 시 그냥 부딪힌 지점으로 스냅
 		float hitY = hitPos[1];
 		if (ResolvePoint(hitPos[0], hitPos[1], hitPos[2], hitY))
 		{
@@ -254,6 +264,7 @@ bool NavSystem::ValidateMove(const Protocol::PositionInfo& current,
 			return true;
 		}
 
+		// 다 실패하면 그냥 시작 위치로 롤백
 		outAdjusted.set_x(startPos[0]);
 		outAdjusted.set_y(startPos[1]);
 		outAdjusted.set_z(startPos[2]);
@@ -268,6 +279,7 @@ dtPolyRef NavSystem::FindNearestPoly(const float* center, const float* extents, 
 {
 	dtPolyRef ref = 0;
 	float pt[3];
+	// 지정된 범위 내에서 가장 가까운 폴리곤 검색
 	_navQuery->findNearestPoly(center, extents, &_filter, &ref, pt);
 
 	if (nearestPt && ref)
@@ -285,30 +297,30 @@ bool NavSystem::ResolvePoint(float x, float y, float z, float& outY)
 
 	if (ref)
 	{
-		outY = result[1];
+		outY = result[1]; // 네비메쉬 상의 높이값(Y) 반환
 		return true;
 	}
 	return false;
 }
 
-// [GigaChad Solution] Lazy Flood Fill
-// getTile 접근 없이, 필요한 폴리곤 그룹만 그때그때 묶어서 캐싱한다.
+// Lazy Flood Fill 구현
+// 맵 전체를 미리 계산하지 않고, 요청이 들어왔을 때 해당 구역만 탐색해서 ID를 부여함
+// 성능 최적화를 위해 캐싱(polyGroups) 사용
 uint32 NavSystem::GetConnectivityId(float x, float y, float z)
 {
 	float pos[3] = { x, y, z };
 	dtPolyRef startRef = FindNearestPoly(pos, _polyPickExt);
 
-	if (startRef == 0) return 0; // NavMesh 위가 아님
+	if (startRef == 0) return 0; // 네비메쉬 위가 아님
 
-	// 1. 캐시 확인
+	// 1. 이미 계산된 폴리곤이면 캐시된 ID 반환
 	auto it = _polyGroups.find(startRef);
 	if (it != _polyGroups.end())
 	{
 		return it->second;
 	}
 
-	// 2. Lazy Flood Fill
-	// [Fix] static 변수 제거 -> 멤버 변수 _nextGroupId 사용 (멀티스레드/멀티맵 안전)
+	// 2. 처음 방문하는 곳이면 BFS(Flood Fill) 돌려서 연결된 모든 폴리곤을 같은 그룹으로 묶음
 	uint32 newGroupId = _nextGroupId++;
 
 	Queue<dtPolyRef> q;
@@ -326,12 +338,14 @@ uint32 NavSystem::GetConnectivityId(float x, float y, float z)
 
 		if (!currTile || !currPoly) continue;
 
+		// 인접한 폴리곤들을 순회
 		unsigned int linkIdx = currPoly->firstLink;
 		while (linkIdx != DT_NULL_LINK)
 		{
 			const dtLink& link = currTile->links[linkIdx];
 			if (link.ref != 0)
 			{
+				// 아직 방문 안 한 폴리곤이면 큐에 넣고 그룹 ID 할당
 				if (_polyGroups.find(link.ref) == _polyGroups.end())
 				{
 					_polyGroups[link.ref] = newGroupId;
@@ -365,9 +379,11 @@ bool NavSystem::RaycastNav(const Protocol::PositionInfo& start,
 	dtPolyRef path[32];
 	int pathCount = 0;
 
+	// 시야 검사(Line of Sight)와 비슷함
+	// 경로상에 장애물이 있는지 확인
 	dtStatus status = _navQuery->raycast(
 		startRef,
-		startNearest,   //  시작점 nearest로 오차 흡수
+		startNearest,   // 시작점을 네비메쉬 위로 보정한 좌표 사용
 		endPos,
 		&_filter,
 		&outT,
@@ -380,6 +396,7 @@ bool NavSystem::RaycastNav(const Protocol::PositionInfo& start,
 	return dtStatusSucceed(status);
 }
 
+// 너무 가까운 웨이포인트들은 하나로 합쳐서 최적화
 static void CompressWaypoints(Vector<Vector3>& pts, float minDist)
 {
 	if (pts.size() <= 1) return;
@@ -398,11 +415,12 @@ static void CompressWaypoints(Vector<Vector3>& pts, float minDist)
 		const float dz = b.z - a.z;
 		const float d2 = dx * dx + dy * dy + dz * dz;
 
+		// 최소 거리 이상일 때만 추가
 		if (d2 >= minDistSqr)
 			out.push_back(b);
 	}
 
-	//  마지막은 end 유지
+	// 도착점은 중요하니까 무조건 유지
 	if (!out.empty())
 		out.back() = pts.back();
 
@@ -417,6 +435,7 @@ bool NavSystem::FindPathWaypoints(const Protocol::PositionInfo& start,
 	if (_navQuery == nullptr)
 		return false;
 
+	// 시작점과 끝점이 거의 같으면 그냥 끝점 하나 넣고 리턴
 	{
 		const float dx = end.x() - start.x();
 		const float dy = end.y() - start.y();
@@ -434,13 +453,15 @@ bool NavSystem::FindPathWaypoints(const Protocol::PositionInfo& start,
 	float startNearest[3];
 	float endNearest[3];
 
+	// 시작/끝 위치가 네비메쉬 위의 어디에 있는지 찾음
 	dtPolyRef startRef = FindNearestPoly(startPos, _polyPickExt, startNearest);
 	dtPolyRef endRef = FindNearestPoly(endPos, _polyPickExt, endNearest);
 
 	if (!startRef || !endRef)
 		return false;
 
-	// ===== 1) findPath (poly corridor) =====
+	// 1단계: 폴리곤 경로 찾기 (findPath)
+	// 시작 폴리곤부터 끝 폴리곤까지 연결된 폴리곤들의 리스트를 구함
 	static constexpr int MAX_POLYS = 256;
 	dtPolyRef polys[MAX_POLYS];
 	int polyCount = 0;
@@ -456,7 +477,8 @@ bool NavSystem::FindPathWaypoints(const Protocol::PositionInfo& start,
 	if (dtStatusFailed(status) || polyCount <= 0)
 		return false;
 
-	// ===== 2) findStraightPath (waypoints) =====
+	// 2단계: 스트레이트 패스 구하기 (findStraightPath)
+	// 폴리곤 리스트 내부를 통과하는 실제 꺾이는 지점(Waypoints)들을 추출
 	static constexpr int MAX_STRAIGHT = 64;
 	float straightPath[3 * MAX_STRAIGHT];
 	unsigned char straightFlags[MAX_STRAIGHT];
@@ -481,12 +503,13 @@ bool NavSystem::FindPathWaypoints(const Protocol::PositionInfo& start,
 
 	outWaypoints.reserve(straightCount);
 
+	// 구해진 경로점들의 높이 값을 보정해서 리스트에 담음
 	for (int i = 0; i < straightCount; ++i)
 	{
 		const float* p = &straightPath[i * 3];
 		float y = p[1];
 
-		//  높이 안정화 (polyHeight 우선)
+		// 해당 경로점이 속한 폴리곤의 정확한 높이 값을 가져오려고 시도
 		if (straightPolys[i] != 0)
 		{
 			float h = 0.0f;
@@ -509,7 +532,8 @@ bool NavSystem::FindPathWaypoints(const Protocol::PositionInfo& start,
 		outWaypoints.emplace_back(p[0], y, p[2]);
 	}
 
-	//  떨림/불필요한 점 방지 (5cm)
+	// 3단계: 경로 압축
+	// 너무 자잘하게 찍힌 포인트들은 제거해서 데이터 전송량 줄임 (5cm 기준)
 	CompressWaypoints(outWaypoints, 0.05f);
 
 	return true;

@@ -9,10 +9,10 @@ using PlayerSessionRef = std::shared_ptr<PlayerSession>;
 
 namespace MapChangeUtil
 {
-    // 토큰 생성
+    // 이동 검증을 위한 일회성 고유 토큰 생성
     uint64 MakeMapChangeToken(uint64 playerId, uint64 sessionId);
 
-    // MapChange Begin 전송 + Session FSM Begin
+    // MapChange Begin 패킷을 구성하여 전송하고 세션의 상태를 변경함
     void SendMapChangeBegin(PlayerSessionRef ms,
         uint64 playerId,
         int32 targetChannelId,
@@ -20,12 +20,12 @@ namespace MapChangeUtil
         int64 targetInstanceId,
         const Protocol::PositionInfo& spawn);
 
-    // 안전한 월드 복귀 좌표 계산(리턴 위치/맵 유효성 검사)
+    // 귀환 위치가 유효한지 검사하고 이상하면 기본 맵으로 보정해주는 안전장치
     void MakeSafeReturn(PlayerRef p,
         int32& outMapId,
         int64& outInstId,
         Protocol::PositionInfo& outPos);
 
-    // 던전/강제퇴출용: 현재 Room에서 ReturnLocation 기반 월드로 MapChangeBegin
+    // 던전 종료 시 호출되어 플레이어를 저장된 위치로 강제 복귀시키는 함수
     void ForceReturnToWorld(PlayerSessionRef ms);
 }

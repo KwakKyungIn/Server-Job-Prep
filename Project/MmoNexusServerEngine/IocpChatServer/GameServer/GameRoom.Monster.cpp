@@ -7,7 +7,8 @@
 
 void GameRoom::Update()
 {
-	//  deltaMs 계산(투사체만 사용해도 됨)
+	// 현재 시간 체크해서 델타타임 계산
+	// 서버 프레임 튀는 거 방지하려고 최대 100ms로 제한 둠
 	const uint64 now = ::GetTickCount64();
 	if (_lastUpdateMs == 0)
 		_lastUpdateMs = now;
@@ -16,14 +17,14 @@ void GameRoom::Update()
 	if (deltaMs > 100) deltaMs = 100;
 	_lastUpdateMs = now;
 
-	// 몬스터 AI
+	// 방에 있는 모든 몬스터 AI 업데이트 돌림
 	for (auto& item : _monsters)
 		item.second->Update(now, deltaMs);
 
-	//  Projectile tick
+	// 투사체 이동 처리
 	UpdateProjectiles(deltaMs);
 
-	//  Trade timeout tick
+	// 거래 타임아웃 같은 거 체크
 	UpdateTrades_ActorOnly(now);
 }
 
@@ -31,17 +32,21 @@ void GameRoom::EnterMonster(MonsterRef monster)
 {
 	if (!monster) return;
 	const uint64 mid = monster->GetObjectId();
+
+	// 중복 입장 체크
 	if (_monsters.find(mid) != _monsters.end())
 		return;
 
+	// 방 몬스터 목록에 추가하고 방 포인터 세팅
 	_monsters.insert({ mid, monster });
 	monster->SetRoom(shared_from_this());
 
+	// Grid 시스템에 몬스터 등록. 어느 Zone에 있는지 기록함
 	int32 zoneIndex = _grid.GetZoneIndex(*monster->GetPosInfo());
 	monster->SetZoneIndex(zoneIndex);
 	_grid.GetZone(zoneIndex).monsters.insert(monster);
 
-	// v2: 주변 플레이어 중 "필터 통과한 애들"에게만 spawn
+	// AOI 처리: 주변 Zone들을 긁어와서 시야 범위 내 플레이어 찾기
 	Vector<Zone*> zones;
 	_grid.GetNearbyZones(zoneIndex, EffectiveAoiRadiusCells(), zones);
 
@@ -50,11 +55,12 @@ void GameRoom::EnterMonster(MonsterRef monster)
 	*mInfo = *monster->GetMonsterInfo();
 	SendBufferRef sb = ClientPacketHandler::MakeSendBuffer(spawnPkt);
 
+	// 이 몬스터를 보고 있는 플레이어 목록 초기화
 	auto& viewers = monster->Viewers_ActorOnly();
 	viewers.clear();
 
 	const auto& mp = *monster->GetPosInfo();
-	const uint32 mConn = GetConnectivityId_ActorOnly(mp);
+	const uint32 mConn = GetConnectivityId_ActorOnly(mp); // 벽 너머에 있는 애들은 제외하려고 ID 확인
 
 	for (Zone* z : zones)
 	{
@@ -62,23 +68,25 @@ void GameRoom::EnterMonster(MonsterRef monster)
 		{
 			if (!p) continue;
 
+			// 거리 체크해서 시야 밖이면 패스
 			const auto& pp = *p->GetPosInfo();
 			if (!PassDistance2D(mp, pp, _interestRadius))
 				continue;
 
+			// 벽으로 막혀있는지 확인 (Connectivity)
 			const uint32 pConn = GetConnectivityId_ActorOnly(pp);
 			if (pConn != mConn)
 				continue;
 
-			// 서버 상태 동기화: 양쪽 set 갱신
+			// 플레이어의 시야 목록에도 이 몬스터 추가 (서버 동기화)
 			if (p->VisibleMonsters_ActorOnly().insert(mid).second)
 			{
 				viewers.insert(p->GetPlayerId());
-				SendToPlayer(p->GetPlayerId(), sb);
+				SendToPlayer(p->GetPlayerId(), sb); // 클라한테 스폰 패킷 전송
 			}
 			else
 			{
-				// 이미 보던 상태면 viewers만 보정
+				// 이미 보고 있었으면 목록 관리만 함
 				viewers.insert(p->GetPlayerId());
 			}
 		}
@@ -95,26 +103,25 @@ void GameRoom::LeaveMonster(uint64 objectId)
 
 	const int32 zoneIndex = m->GetZoneIndex();
 
-	// v2: 이 몬스터를 보던 플레이어들에게만 despawn
+	// 이 몬스터를 보고 있던 플레이어들에게만 디스폰 패킷 보냄
 	{
 		Protocol::S_DESPAWN pkt;
 		pkt.add_objectids(objectId);
 		SendBufferRef sb = ClientPacketHandler::MakeSendBuffer(pkt);
 
-		// viewers 순회하면서 플레이어 visibleMonsters에서도 제거
 		auto& viewers = m->Viewers_ActorOnly();
 		for (uint64 pid : viewers)
 		{
 			PlayerRef p = FindPlayer_ActorOnly(pid);
 			if (p)
-				p->VisibleMonsters_ActorOnly().erase(objectId);
+				p->VisibleMonsters_ActorOnly().erase(objectId); // 플레이어 시야 목록에서 삭제
 
 			SendToPlayer(pid, sb);
 		}
 		viewers.clear();
 	}
 
-	// grid / map remove
+	// Grid 시스템에서 몬스터 제거
 	int32 totalZones = _grid.GetGridSizeX() * _grid.GetGridSizeY();
 	if (zoneIndex >= 0 && zoneIndex < totalZones)
 		_grid.GetZone(zoneIndex).monsters.erase(m);
@@ -134,7 +141,7 @@ void GameRoom::OnMonsterMoved(MonsterRef monster)
 	int32 newZoneIndex = _grid.GetZoneIndex(*monster->GetPosInfo());
 	const bool zoneChanged = (newZoneIndex != oldZoneIndex);
 
-	// 0) zone membership은 항상 최신
+	// Zone이 바뀌었으면 Grid 정보 갱신 (이건 즉시 해야 함)
 	if (zoneChanged)
 	{
 		int32 totalZones = _grid.GetGridSizeX() * _grid.GetGridSizeY();
@@ -145,7 +152,8 @@ void GameRoom::OnMonsterMoved(MonsterRef monster)
 		monster->SetZoneIndex(newZoneIndex);
 	}
 
-	// 1)  Cheap: 기존 viewers에게 MOVE만
+	// 1단계: Cheap Update - 일단 보고 있던 사람들한테 이동 패킷만 쏨
+	// 시야 목록 갱신은 비용이 비싸니까 매번 안 함
 	{
 		Protocol::S_MOVE movePkt;
 		movePkt.set_objectid(mid);
@@ -157,7 +165,8 @@ void GameRoom::OnMonsterMoved(MonsterRef monster)
 			SendToPlayer(pid, sb);
 	}
 
-	// 2)  Expensive 트리거 판단
+	// 2단계: Expensive Update 트리거 체크
+	// 많이 움직였거나 시간이 좀 지났을 때만 시야 목록 새로 계산함 (Lazy Update)
 	float lastX, lastZ;
 	monster->GetLastAoiExpensivePos(lastX, lastZ);
 
@@ -168,16 +177,18 @@ void GameRoom::OnMonsterMoved(MonsterRef monster)
 	const uint64 lastMs = monster->GetLastAoiExpensiveMs();
 
 	const bool needExpensive =
-		zoneChanged ||
+		zoneChanged || // 존 바뀌면 무조건 해야 함
 		(lastMs == 0) ||
-		(now - lastMs >= _lazyUpdateTickMs) ||
-		(moved >= _lazyUpdateDist);
+		(now - lastMs >= _lazyUpdateTickMs) || // 시간 지남
+		(moved >= _lazyUpdateDist); // 많이 움직임
 
 	if (!needExpensive)
 		return;
 
-	// 3) Expensive: (너 기존 코드 그대로) newViewers 계산 + spawn/despawn diff
-	// ---- 새 viewers 계산 ----
+	// 3단계: Expensive Update 수행
+	// 새로 보여야 할 플레이어(New)랑 이제 안 보여야 할 플레이어(Old) 계산해서 처리
+
+	// 새 Viewers 목록 계산
 	HashSet<uint64> newViewers;
 
 	Vector<Zone*> zones;
@@ -206,7 +217,7 @@ void GameRoom::OnMonsterMoved(MonsterRef monster)
 
 	auto& oldViewers = monster->Viewers_ActorOnly();
 
-	// ---- despawn: old - new ----
+	// Despawn 처리: 예전엔 봤는데 이제 못 보는 애들 (Old - New)
 	{
 		Protocol::S_DESPAWN pkt;
 		pkt.add_objectids(mid);
@@ -223,7 +234,7 @@ void GameRoom::OnMonsterMoved(MonsterRef monster)
 		}
 	}
 
-	// ---- spawn: new - old ----
+	// Spawn 처리: 새로 보게 된 애들 (New - Old)
 	{
 		Protocol::S_SPAWN pkt;
 		auto* mInfo = pkt.add_monsters();
@@ -241,23 +252,25 @@ void GameRoom::OnMonsterMoved(MonsterRef monster)
 		}
 	}
 
+	// 갱신된 목록으로 교체하고 타임스탬프 찍음
 	oldViewers = std::move(newViewers);
 
 	monster->SetLastAoiExpensiveMs(now);
 	monster->SetLastAoiExpensivePos(monster->GetPosInfo()->x(), monster->GetPosInfo()->z());
 }
 
+// 범위 내 가장 가까운 플레이어 찾는 유틸 함수 (어그로 로직용)
 PlayerRef GameRoom::FindNearestPlayer(Protocol::PositionInfo* pos, float range)
 {
 	if (!pos) return nullptr;
 
-	// [CHANGED] AOI: 그리드에 직접 문의
+	// 전체 검색하면 느리니까 Grid 이용해서 주변 Zone만 뒤짐
 	const int32 zoneIndex = _grid.GetZoneIndex(*pos);
 
 	Vector<Zone*> zones;
 	_grid.GetNearbyZones(zoneIndex, EffectiveAoiRadiusCells(), zones);
 
-	//  Connectivity 필터 (벽 너머 타겟 금지)
+	// 벽 너머에 있는 플레이어는 타겟팅 안 되게 막음
 	const uint32 myConn = GetConnectivityId_ActorOnly(*pos);
 
 	PlayerRef target = nullptr;
@@ -269,21 +282,21 @@ PlayerRef GameRoom::FindNearestPlayer(Protocol::PositionInfo* pos, float range)
 		for (const PlayerRef& player : zone->players)
 		{
 			if (!player) continue;
-			if (player->GetStatInfo() && player->GetStatInfo()->hp() <= 0) continue;
+			if (player->GetStatInfo() && player->GetStatInfo()->hp() <= 0) continue; // 죽은 애는 무시
 
 			const auto& pp = *player->GetPosInfo();
 
-			//  Range 컷 (성능 + 정확도)
+			// 거리 계산 (제곱으로 비교해서 sqrt 연산 줄임)
 			const float dx = pp.x() - pos->x();
 			const float dz = pp.z() - pos->z();
 			const float distSqr = dx * dx + dz * dz;
 			if (distSqr > rangeSqr)
 				continue;
 
-			//  Connectivity 컷
 			if (GetConnectivityId_ActorOnly(pp) != myConn)
 				continue;
 
+			// 더 가까운 애 찾았으면 갱신
 			if (distSqr < minDistSqr)
 			{
 				minDistSqr = distSqr;
@@ -294,4 +307,3 @@ PlayerRef GameRoom::FindNearestPlayer(Protocol::PositionInfo* pos, float range)
 
 	return target;
 }
-

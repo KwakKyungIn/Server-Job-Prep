@@ -8,23 +8,25 @@
 #include "PartyActor.h"
 #include "Projectile.h"
 
-
+// 플레이어를 방 자료구조에 실제로 등록하는 내부 함수
+// (일반 입장, 맵 이동 입장 공통 사용)
 bool GameRoom::EnterRegister(PlayerSessionRef session, PlayerRef player)
 {
 	printf("1번 여기가 문제임\n");
 	if (player == nullptr) return false;
 
+	// 방이 닫히는 중이면 입장 불가
 	if (IsClosing())
 		return false;
 
 	player->SetInstanceId(_instanceId);
 
-
-	// 이미 들어와 있으면 실패 (중복 Enter 방지)
+	// 중복 입장 체크 (이미 방에 존재하면 거부)
 	if (_players.find(player->GetPlayerId()) != _players.end())
 		return false;
 
-	// 1) 룸 소속 설정
+	// 1. 룸 소속 설정 및 세션 연결
+	// Player 객체에 현재 방 정보를 세팅해줘야 이동/전투 가능
 	player->SetRoom(shared_from_this());
 
 	auto room = shared_from_this();
@@ -33,19 +35,21 @@ bool GameRoom::EnterRegister(PlayerSessionRef session, PlayerRef player)
 			ps->SetCurrentRoom(room);
 		});
 
+	// 플레이어 목록(Map)에 추가
 	_players.insert({ player->GetPlayerId(), player });
 
 
-	// playerCount 증가 + emptySince 리셋
+	// 2. 동시성 제어 및 방 수명 관리
+	// 플레이어 수 증가 (Atomic 연산으로 Thread-Safe 하게)
 	_playerCount.fetch_add(1, std::memory_order_acq_rel);
-	_emptySinceMs.store(0, std::memory_order_release);
+	_emptySinceMs.store(0, std::memory_order_release); // 방이 비어있는 시간 초기화
 
-
-
-	// 2) AOI Zone 계산 및 등록
+	// 3. Grid / AOI 시스템 등록 [중요]
+	// 좌표 기반으로 현재 Zone Index 계산
 	int32 zoneIndex = _grid.GetZoneIndex(*player->GetPosInfo());
 	player->SetZoneIndex(zoneIndex);
 
+	// 해당 Zone에 플레이어 포인터 등록 (이때부터 다른 유저 눈에 보일 후보가 됨)
 	Zone& enterZone = _grid.GetZone(zoneIndex);
 	enterZone.players.insert(player);
 
@@ -58,41 +62,42 @@ bool GameRoom::EnterRegister(PlayerSessionRef session, PlayerRef player)
 	return true;
 }
 
+// [일반 입장] 로그인 후 로비에서 게임 진입 시 호출
 void GameRoom::Enter(PlayerSessionRef session, PlayerRef player)
 {
 	if (!session || !player)
 		return;
 
+	// 자료구조 등록 시도
 	if (EnterRegister(session, player) == false)
 		return;
 
 
 	if (player == nullptr) return;
 
-	// 1) 응답 먼저
+	// 1. 입장 성공 패킷 전송 (클라이언트 로딩 해제용)
 	Protocol::S_ENTER_GAME enterPkt;
 	enterPkt.set_success(true);
 	enterPkt.mutable_myplayer()->CopyFrom(*player->GetPlayerInfo());
-	// NOTE: 네 proto에 mapid가 실제로 있으면 유지, 없으면 이 줄 삭제
 	// enterPkt.set_mapid(_mapId);
 
 	session->Send(ClientPacketHandler::MakeSendBuffer(enterPkt));
 
-	// 2) 스폰 전송은 그 다음
+	// 2. AOI 업데이트 및 주변 스폰 전송
+	// forceFullSnapshot=true: 처음 들어왔으니 주변 모든 객체 정보를 한 번에 받아야 함
 	UpdateAOI(session, player, true /*forceFullSnapshot*/);
 
 	printf(" [Enter-Login] Player %llu\n", player->GetPlayerId());
 }
 
-// [맵 이동 입장]
-// [맵 이동 입장]
+// [맵 이동 입장] 던전 진입이나 텔레포트 시 호출
 void GameRoom::EnterMapChange(PlayerSessionRef session, PlayerRef player)
 {
 	printf("2번 여기가 문제임\n");
 	if (!session || !player)
 		return;
 
-	//  EnterRegister 실패하면 MapChange 상태를 반드시 풀어줘야 한다.
+	// 등록 실패하면 맵 이동 상태(MapChanging)를 반드시 풀어줘야 락이 안 걸림
 	if (EnterRegister(session, player) == false)
 	{
 		session->Post([](PlayerSessionRef ps)
@@ -104,7 +109,8 @@ void GameRoom::EnterMapChange(PlayerSessionRef session, PlayerRef player)
 
 	const uint64 playerId = player->GetPlayerId();
 
-	// 1) END 응답 먼저
+	// 1. S_MAP_CHANGE_END 전송 (Handshaking 완료)
+	// 클라이언트가 보낸 토큰을 다시 돌려줘서 위변조 검증
 	Protocol::S_MAP_CHANGE_END endPkt;
 	endPkt.set_token(session->GetMapChangeToken());
 	endPkt.set_mapid(_mapId);
@@ -114,13 +120,12 @@ void GameRoom::EnterMapChange(PlayerSessionRef session, PlayerRef player)
 
 	session->Send(ClientPacketHandler::MakeSendBuffer(endPkt));
 
-	//  여기서 EndMapChange 하면 안 됨 (중복/조기해제/레이스)
-	// session->EndMapChange();
-
-	// 2) 스폰은 그 다음
+	// 2. 스폰 패킷 전송 (내 주변 몹/유저 정보)
+	// 맵 로딩이 끝난 직후이므로 풀 스냅샷 전송
 	UpdateAOI(session, player, true /*forceFullSnapshot*/);
 
-	// 3) 파티 정보 재전송
+	// 3. 파티 정보 재전송
+	// 맵 이동 시 파티 UI가 갱신되어야 하므로 파티 액터에게 정보 요청
 	PartyActor::Instance().Push([session, playerId]()
 		{
 			auto& core = PartyActor::Instance().Core();
@@ -151,11 +156,13 @@ void GameRoom::EnterMapChange(PlayerSessionRef session, PlayerRef player)
 		playerId, _mapId, (long long)_instanceId, endPkt.token(), endPkt.targetchannelid());
 }
 
+// [퇴장 처리] 로그아웃 혹은 맵 이동으로 방을 떠날 때
 void GameRoom::Leave(PlayerSessionRef session, PlayerRef player)
 {
 	if (!session || !player) return;
 
-	// [Trade] disconnect/leave -> force cancel
+	// [Trade] 거래 중이었다면 강제 취소 처리
+	// 그냥 나가면 아이템이 증발하거나 복사될 수 있으므로 예외 처리 필수
 	const uint64 tradeId = player->ActiveTradeId_ActorOnly();
 	if (tradeId != 0)
 	{
@@ -166,7 +173,9 @@ void GameRoom::Leave(PlayerSessionRef session, PlayerRef player)
 	auto itMe = _players.find(meId);
 	if (itMe == _players.end()) return;
 
-	// 1) 내가 보던 플레이어들에게 "나 despawn" + 상대 set에서 나 제거
+	// 1. 주변 시야 정리 (Despawn 전파)
+	// 나를 보고 있던 유저들에게 "나 사라짐" 패킷을 보내고, 
+	// 그들의 Visible List에서 나를 지워야 함 (Zombie 객체 방지)
 	{
 		Protocol::S_DESPAWN pkt;
 		pkt.add_objectids(meId);
@@ -182,7 +191,7 @@ void GameRoom::Leave(PlayerSessionRef session, PlayerRef player)
 		}
 		visP.clear();
 
-		//  [추가] 내가 보던 몬스터들의 viewers에서 나 제거
+		// 몬스터 어그로 목록에서도 제거
 		auto& visM = player->VisibleMonsters_ActorOnly();
 		for (uint64 mid : visM)
 		{
@@ -192,6 +201,7 @@ void GameRoom::Leave(PlayerSessionRef session, PlayerRef player)
 		}
 		visM.clear();
 
+		// 투사체 뷰어 목록에서도 제거
 		auto& visPr = player->VisibleProjectiles_ActorOnly();
 		for (uint64 prid : visPr)
 		{
@@ -202,19 +212,21 @@ void GameRoom::Leave(PlayerSessionRef session, PlayerRef player)
 		visPr.clear();
 	}
 
-	// 2) grid에서 제거
+	// 2. Grid 시스템에서 제거
 	int32 zoneIndex = player->GetZoneIndex();
 	int32 totalZones = _grid.GetGridSizeX() * _grid.GetGridSizeY();
 	if (zoneIndex >= 0 && zoneIndex < totalZones)
 		_grid.GetZone(zoneIndex).players.erase(player);
 
-	// 3) 맵에서 제거
+	// 3. 방 자료구조에서 최종 제거
 	_players.erase(meId);
 	player->SetRoom(nullptr);
 
+	// 세션에서도 현재 방 정보 해제
 	auto room = shared_from_this();
 	session->Post([room](PlayerSessionRef ps) { ps->ClearCurrentRoom(room); });
 
+	// 플레이어 수 감소 및 방이 비었는지 체크
 	const int32 after = _playerCount.fetch_sub(1, std::memory_order_acq_rel) - 1;
 	if (after == 0)
 		_emptySinceMs.store(::GetTickCount64(), std::memory_order_release);
@@ -228,7 +240,7 @@ void GameRoom::LeaveById(PlayerSessionRef session, uint64 playerId)
 
 	PlayerRef player = it->second;
 
-	// 기존 Leave 로직 재사용(지금 단계에선 이게 제일 빠름)
+	// 공통 Leave 로직 재사용
 	Leave(session, player);
 }
 

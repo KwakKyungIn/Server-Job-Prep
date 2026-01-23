@@ -10,12 +10,15 @@
 
 extern shared_ptr<PacketSession> G_DBSession;
 
+// 로그인 후 게임 진입을 요청하는 핵심 핸들러
+// 레디스 인증, 세션 바인딩, DB 로딩 요청 등 초기화 작업을 여기서 수행함
 bool ClientPacketHandler::Handle_C_ENTER_GAME(PacketSessionRef& session, Protocol::C_ENTER_GAME& pkt)
 {
 	PlayerSessionRef ps = static_pointer_cast<PlayerSession>(session);
 	if (!ps) return false;
 
-	// 1) Redis 토큰 검증 (Blocking이지만 일단 유지)
+	// 레디스에 저장된 토큰을 검증해서 유효한 접속인지 확인
+	// 보안상 중요한 부분이므로 토큰이 없으면 연결 끊음
 	std::string token = pkt.token();
 	std::string value = GRedisManager->Get(token);
 
@@ -34,7 +37,8 @@ bool ClientPacketHandler::Handle_C_ENTER_GAME(PacketSessionRef& session, Protoco
 	int32 mapId = pkt.mapid();
 	DataManager* dm = DataManager::Instance();
 
-	//  ENTER_GAME은 "월드맵만" 허용. 던전맵 요청이면 기본 월드맵으로 교정
+	// 게임 진입은 기본적으로 월드맵으로만 허용한다
+	// 던전이나 잘못된 맵 ID가 들어오면 기본 맵으로 강제 보정함
 	if (!dm)
 	{
 		mapId = 1;
@@ -44,7 +48,7 @@ bool ClientPacketHandler::Handle_C_ENTER_GAME(PacketSessionRef& session, Protoco
 		if (!dm->IsValidMapId(mapId) || !dm->IsWorldMapId(mapId))
 			mapId = dm->GetDefaultWorldMapId();
 
-		// 방어: cfg가 없으면 기본 월드맵으로 한번 더 교정
+		// 방어 코드: 맵 설정 파일이 없어도 기본 맵으로 보냄
 		if (dm->GetMapConfig(mapId) == nullptr)
 			mapId = dm->GetDefaultWorldMapId();
 	}
@@ -52,23 +56,24 @@ bool ClientPacketHandler::Handle_C_ENTER_GAME(PacketSessionRef& session, Protoco
 	const MapConfig* cfg = (dm ? dm->GetMapConfig(mapId) : nullptr);
 
 
-	// 2) spawn 계산까지 끝났다는 전제: cfg 기반 spawn 만들었지?
+	// 입장할 위치 좌표 설정
 	Protocol::PositionInfo spawn;
 	spawn.set_x(cfg ? cfg->spawnX : 50.f);
 	spawn.set_y(cfg ? cfg->spawnY : 0.f);
 	spawn.set_z(cfg ? cfg->spawnZ : 50.f);
 
-	// 3) 이제부터는 Session이 Player를 들지 않는다.
-	//    Session Actor에서: playerId 바인딩 + 로비에 “Player 생성/소유” 위임 + DB 요청
+	// 여기서부터는 세션 액터의 컨텍스트로 전환
+	// 세션에 플레이어 ID를 묶고, 로비 룸을 찾아 플레이어 객체 생성을 위임함
 	ps->Post([playerId, channelId, mapId, spawn](PlayerSessionRef ps) mutable
 		{
 			GameSessionManager::GSessionManager->BindPlayerId(ps, playerId);
 			ps->SetPlayerId_ActorOnly(playerId);
 
-			//  [A 핵심] pending enter 컨텍스트 먼저 박아라 (DB 응답 라우팅 키)
+			// DB 응답이 왔을 때 어떤 채널/맵으로 가야 할지 알기 위해 미리 저장해둠
+			// 이 정보가 없으면 DB 로딩 후 미아가 될 수 있음
 			ps->SetPendingEnter_ActorOnly(channelId, mapId, /*instanceId=*/0);
 
-			//  [A 핵심] GLobbyRoom 제거 → 채널별 Lobby로 고정
+			// 채널별로 존재하는 로비 룸에 입장 요청을 보냄
 			if (GRoomManager)
 			{
 				auto lobby = GRoomManager->GetOrCreateLobby(channelId);
@@ -81,7 +86,7 @@ bool ClientPacketHandler::Handle_C_ENTER_GAME(PacketSessionRef& session, Protoco
 				}
 			}
 
-			// DB 요청 (pending 세팅 이후에 보내는 게 안전)
+			// 플레이어 데이터 로딩을 위해 DB 서버로 비동기 요청 전송
 			if (G_DBSession)
 			{
 				Protocol::S2S_REQ_LOAD_PLAYER_DATA reqStat;
@@ -105,6 +110,7 @@ bool ClientPacketHandler::Handle_C_ENTER_GAME(PacketSessionRef& session, Protoco
 	return true;
 }
 
+// 로그인 패킷은 별도 인증 서버를 타거나 다른 방식을 써서 여기선 처리 안 함
 bool ClientPacketHandler::Handle_C_LOGIN(PacketSessionRef& session, Protocol::C_LOGIN& pkt)
 {
 	return false;

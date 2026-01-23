@@ -5,6 +5,9 @@
 class PlayerSession;
 using PlayerSessionRef = std::shared_ptr<PlayerSession>;
 
+// 전체 접속 중인 플레이어 세션을 관리하는 싱글톤 클래스
+// 네트워크 ID(SessionId)와 게임 로직 ID(PlayerId) 두 가지 키로
+// 세션을 빠르게(O(1)) 찾을 수 있도록 이중 맵 구조를 사용함
 class GameSessionManager
 {
 public:
@@ -29,11 +32,12 @@ public:
 private:
     USE_LOCK;
 
-    HashMap<uint64, PlayerSessionRef> _bySessionId;   // sessionId -> session
-    HashMap<uint64, PlayerSessionRef> _byPlayerId;    // playerId  -> session
+    HashMap<uint64, PlayerSessionRef> _bySessionId;   // SessionId를 키로 세션 관리 (네트워크 처리용)
+    HashMap<uint64, PlayerSessionRef> _byPlayerId;    // PlayerId를 키로 세션 관리 (게임 로직용)
 
-    //  핵심: 우회 접근 막기용 역인덱스
-    HashMap<uint64, uint64> _playerIdBySessionId;     // sessionId -> playerId
+    // 핵심: 세션 종료 시 Player 객체 없이도 ID를 역추적하기 위한 맵
+    // 이걸 안 쓰면 Disconnect 시점에 PlayerId를 알 방법이 없어서 맵 정리가 안 됨
+    HashMap<uint64, uint64> _playerIdBySessionId;     // SessionId -> PlayerId 매핑
 
-    HashMap<uint64, std::string> _nameByPlayerId;     // playerId -> name
+    HashMap<uint64, std::string> _nameByPlayerId;     // 닉네임 캐싱 (채팅/파티용)
 };

@@ -8,21 +8,24 @@
 #include "GameRoom.Net.h"
 #include "MoveValidationUtils.h"
 #include <cmath>
-#include <iostream> // 로그용 헤더 (없으면 추가)
-#include <iomanip>  // 소수점 예쁘게 찍기용
+#include <iostream> 
+#include <iomanip>  
 
+// 좌표값이 유효한 숫자인지 체크 (NaN, Inf 방지)
 static bool IsFinitePos(const Protocol::PositionInfo& p)
 {
     return std::isfinite(p.x()) && std::isfinite(p.y()) &&
         std::isfinite(p.z()) && std::isfinite(p.yaw());
 }
 
+// 좌표값이 터무니없이 큰지 체크 (핵 방지 및 버그 방지)
 static bool IsCrazyPos(const Protocol::PositionInfo& p)
 {
-    constexpr float kMaxAbs = 100000.0f; // 안전장치 (프로젝트에 맞게 조절 가능)
+    constexpr float kMaxAbs = 100000.0f; // 맵 밖으로 튕겨나가는 거 방지용 리미트
     return (std::fabs(p.x()) > kMaxAbs) || (std::fabs(p.y()) > kMaxAbs) || (std::fabs(p.z()) > kMaxAbs);
 }
 
+// 클라이언트 이동 패킷(C_MOVE) 처리 메인 함수
 void GameRoom::HandleMove(PlayerSessionRef session, PlayerRef player, Protocol::C_MOVE pkt)
 {
     if (!session || !player) return;
@@ -30,7 +33,8 @@ void GameRoom::HandleMove(PlayerSessionRef session, PlayerRef player, Protocol::
     const uint64 playerId = player->GetPlayerId();
     if (_players.find(playerId) == _players.end()) return;
 
-    // ===== Step0) 입력 정상성 =====
+    // Step 0: 입력 데이터 정상성 검사
+    // 이상한 좌표 들어오면 로그 찍고 무시함
     const auto& reqRaw = pkt.posinfo();
     if (!IsFinitePos(reqRaw) || IsCrazyPos(reqRaw))
     {
@@ -44,12 +48,12 @@ void GameRoom::HandleMove(PlayerSessionRef session, PlayerRef player, Protocol::
         return;
     }
 
-    // 현재 권위 위치
+    // 현재 서버가 알고 있는 플레이어 위치 (Server Authority)
     const Protocol::PositionInfo cur = *player->GetPosInfo();
     if (!IsFinitePos(cur))
         return;
 
-    // ===== Step1) seq/time 검증 + dt 계산 =====
+    // Step 1: 패킷 순서 및 시간 검증 (스피드핵 방지)
     const uint32 seq = pkt.move_seq();
     const uint32 tms = pkt.client_time_ms();
 
@@ -58,11 +62,12 @@ void GameRoom::HandleMove(PlayerSessionRef session, PlayerRef player, Protocol::
     if (hasStamp)
     {
         const uint32 lastSeq = player->LastMoveSeq_ActorOnly();
+        // UDP처럼 패킷이 뒤집혀서 올 수 있으니 이전 시퀀스 패킷은 버림
         if (!MoveValidate::IsSeqNewer(seq, lastSeq))
         {
             if (seq == lastSeq)
             {
-                // duplicate: 조용히 무시
+                // 중복 패킷은 조용히 무시
                 return;
             }
 
@@ -72,31 +77,33 @@ void GameRoom::HandleMove(PlayerSessionRef session, PlayerRef player, Protocol::
         }
     }
 
+    // 지난번 이동 패킷과의 시간 차이(dt) 계산
     const float dtSec = MoveValidate::ComputeDtSec(
         tms,
         player->LastClientTimeMs_ActorOnly(),
         0.02f, 0.25f, hasStamp);
 
-    // speed 소스
+    // 플레이어 이동 속도 가져오기
     float speed = 0.f;
     if (auto* st = player->GetStatInfo())
         speed = static_cast<float>(st->speed());
 
-    // ===== Speed clamp (기본 정책) =====
+    // 스피드핵 체크: 이론상 갈 수 있는 거리보다 더 많이 갔으면 보정(Clamp)함
     Protocol::PositionInfo reqClamped;
     const auto speedRes = MoveValidate::CheckSpeed2D(
         cur, reqRaw, dtSec, speed, 0.30f, reqClamped);
 
     if (speedRes.policy == MoveValidate::SpeedPolicy::CLAMPED)
     {
+        // 핵 의심되면 로그 남김
         std::cout << " [SPEED_EXCEEDED_CLAMP] ID: " << playerId
             << " reqDist=" << speedRes.reqDist2D
             << " maxDist=" << speedRes.maxDist
             << " dt=" << speedRes.dtSec << std::endl;
     }
-    // else: SPEED_OK 로그는 너무 시끄러우면 생략해도 됨.
 
-    // ===== Step2~5) Nav Validate (B 제공) =====
+    // Step 2~5: NavMesh 검증 (지형지물 통과 방지)
+    // 서버에서 길찾기 돌려서 갈 수 있는 곳인지 최종 확인
     Protocol::PositionInfo fixed;
     if (!_map || _map->ValidateMove(cur, reqClamped, fixed) == false)
     {
@@ -104,16 +111,16 @@ void GameRoom::HandleMove(PlayerSessionRef session, PlayerRef player, Protocol::
         return;
     }
 
-    // 서버 권위 결과에 상태/회전/액션 붙여주기 (Nav는 x/y/z 중심)
+    // NavMesh 검증된 위치에다가 상태 정보(State, Action, Yaw) 덮어씌움
     fixed.set_state(reqClamped.state());
     fixed.set_actionstate(reqClamped.actionstate());
     fixed.set_yaw(reqClamped.yaw());
 
-    // ===== Step6) 반영 + zone/AOI + 브로드캐스트 =====
+    // Step 6: 실제 위치 반영 및 Zone 갱신
     const int32 oldZoneIndex = player->GetZoneIndex();
     const int32 newZoneIndex = _grid.GetZoneIndex(fixed);
 
-    // (안전장치) 그리드 밖이면 드랍
+    // 안전장치
     if (newZoneIndex < 0)
         return;
 
@@ -121,6 +128,7 @@ void GameRoom::HandleMove(PlayerSessionRef session, PlayerRef player, Protocol::
 
     const bool zoneChanged = (oldZoneIndex != newZoneIndex);
 
+    // Zone이 바뀌었으면 플레이어를 해당 Zone 리스트로 옮겨줌 (Grid 시스템 갱신)
     if (zoneChanged)
     {
         Zone& oldZone = _grid.GetZone(oldZoneIndex);
@@ -130,10 +138,11 @@ void GameRoom::HandleMove(PlayerSessionRef session, PlayerRef player, Protocol::
         player->SetZoneIndex(newZoneIndex);
     }
 
+    // 시야 처리(AOI) 업데이트가 필요한지 체크
     if (ShouldUpdateAOI(player, zoneChanged))
         UpdateAOI(session, player, false);
 
-    // MOVE는 "내 visiblePlayers"에게만 전송
+    // 이동 패킷 브로드캐스팅: 내 주변에 있는(나를 보고 있는) 플레이어들에게만 전송
     Protocol::S_MOVE movePkt;
     movePkt.set_objectid(playerId);
     *movePkt.mutable_posinfo() = fixed;
@@ -146,16 +155,16 @@ void GameRoom::HandleMove(PlayerSessionRef session, PlayerRef player, Protocol::
         SendToPlayer(vid, sb);
     }
 
-    // ===== 마지막에 MoveStamp 갱신 (Room thread ONLY) =====
+    // 마지막으로 검증 완료된 정보를 타임스탬프와 함께 저장 (다음 이동 검증 때 씀)
     player->SetMoveStamp_ActorOnly(seq, tms, fixed, ::GetTickCount64());
 }
 
 
 void GameRoom::HandleMoveById(PlayerSessionRef session, uint64 playerId, Protocol::C_MOVE pkt)
 {
-	auto it = _players.find(playerId);
-	if (it == _players.end())
-		return;
+    auto it = _players.find(playerId);
+    if (it == _players.end())
+        return;
 
-	HandleMove(session, it->second, pkt); // 기존 로직 재사용
+    HandleMove(session, it->second, pkt); // 기존 로직 재활용
 }

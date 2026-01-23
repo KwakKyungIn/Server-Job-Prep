@@ -12,6 +12,7 @@
 
 namespace
 {
+    // 거래 ID 발급기. 여러 스레드에서 접근할 수도 있으니 atomic으로 선언함
     std::atomic<uint64> g_tradeIdGen{ 1 };
 
     uint64 AllocTradeId()
@@ -19,6 +20,7 @@ namespace
         return g_tradeIdGen.fetch_add(1);
     }
 
+    // UID로 아이템 찾는 헬퍼 함수
     Protocol::ItemInfo* FindItemByUid(Vector<Protocol::ItemInfo>& items, uint64 uid)
     {
         for (auto& it : items)
@@ -39,6 +41,9 @@ namespace
         return nullptr;
     }
 
+    // 인벤토리 빈 슬롯 계산 함수 (거래 로직의 핵심)
+    // 단순히 빈 칸만 세는 게 아니라, 거래로 인해 빠져나갈 아이템의 슬롯까지 고려해서 계산해야 함
+    // A가 B에게 아이템 3개를 주고 2개를 받는 상황이라면, 현재 인벤이 꽉 차 있어도 거래가 가능해야 하기 때문
     bool AllocateEmptySlots(const Vector<Protocol::ItemInfo>& items,
         int32 maxSlots,
         int32 needed,
@@ -48,6 +53,7 @@ namespace
         outSlots.clear();
         outSlots.reserve(static_cast<size_t>(needed));
 
+        // 현재 사용 중인 슬롯 마킹
         Vector<uint8> used(maxSlots, 0);
         for (const auto& it : items)
         {
@@ -56,13 +62,14 @@ namespace
                 used[s] = 1;
         }
 
-        // Slots that will be freed by a full-stack removal can be reused for incoming items.
+        // 이번 거래로 사라질 아이템들의 슬롯은 재사용 가능하므로 빈 것으로 처리
         for (int32 s : freedSlots)
         {
             if (0 <= s && s < maxSlots)
                 used[s] = 0;
         }
 
+        // 필요한 만큼 빈 슬롯 확보
         for (int32 n = 0; n < needed; ++n)
         {
             int32 found = -1;
@@ -76,6 +83,7 @@ namespace
                 }
             }
 
+            // 공간 부족하면 실패
             if (found < 0)
                 return false;
 
@@ -85,6 +93,7 @@ namespace
         return true;
     }
 
+    // 거래 결과 패킷 전송 헬퍼
     void SendTradeResult(uint64 playerId, uint64 tradeId, bool success, Protocol::TradeFailCode failCode, const std::string& msg)
     {
         Protocol::S_TRADE_RESULT res;
@@ -95,6 +104,7 @@ namespace
         SendToPlayer(playerId, ClientPacketHandler::MakeSendBuffer(res));
     }
 
+    // 거래 취소 알림 헬퍼
     void SendTradeCancelled(uint64 playerId, uint64 tradeId, Protocol::TradeCancelReason reason)
     {
         Protocol::S_TRADE_CANCELLED ntf;
@@ -105,7 +115,7 @@ namespace
 }
 
 
-
+// 메모리에 있는 거래 세션 찾기
 GameRoom::TradeSession* GameRoom::FindTrade_ActorOnly(uint64 tradeId)
 {
     auto it = _trades.find(tradeId);
@@ -113,6 +123,7 @@ GameRoom::TradeSession* GameRoom::FindTrade_ActorOnly(uint64 tradeId)
     return &it->second;
 }
 
+// 플레이어 ID로 현재 진행 중인 거래 찾기
 GameRoom::TradeSession* GameRoom::FindTradeByPlayer_ActorOnly(uint64 playerId)
 {
     auto it = _tradeByPlayer.find(playerId);
@@ -120,9 +131,12 @@ GameRoom::TradeSession* GameRoom::FindTradeByPlayer_ActorOnly(uint64 playerId)
     return FindTrade_ActorOnly(it->second);
 }
 
+// 1. 거래 요청 (Handshake 시작)
 void GameRoom::HandleTradeReqById(PlayerSessionRef session, uint64 fromPlayerId, uint64 targetPlayerId)
 {
     if (!session) return;
+
+    // 자기 자신한테 거래 걸거나 타겟 ID가 이상하면 거부
     if (fromPlayerId == 0 || targetPlayerId == 0 || fromPlayerId == targetPlayerId)
     {
         SendTradeResult(fromPlayerId, 0, false, Protocol::TRADE_FAIL_INVALID_TARGET, "invalid target");
@@ -138,6 +152,7 @@ void GameRoom::HandleTradeReqById(PlayerSessionRef session, uint64 fromPlayerId,
         return;
     }
 
+    // 상대방이 맵 이동 중이면 상태가 불안정하므로 거래 불가
     if (auto toSession = to->GetSession())
     {
         if (toSession->IsMapChanging())
@@ -147,13 +162,14 @@ void GameRoom::HandleTradeReqById(PlayerSessionRef session, uint64 fromPlayerId,
         }
     }
 
-
+    // 이미 다른 사람이랑 거래 중인지 확인
     if (from->ActiveTradeId_ActorOnly() != 0 || to->ActiveTradeId_ActorOnly() != 0)
     {
         SendTradeResult(fromPlayerId, 0, false, Protocol::TRADE_FAIL_ALREADY_TRADING, "already trading");
         return;
     }
 
+    // 거리가 너무 멀면 거래 불가 (원격 거래 핵 방지)
     if (!PassDistance2D(*from->GetPosInfo(), *to->GetPosInfo(), 250.f))
     {
         SendTradeResult(fromPlayerId, 0, false, Protocol::TRADE_FAIL_DISTANCE_TOO_FAR, "too far");
@@ -163,11 +179,12 @@ void GameRoom::HandleTradeReqById(PlayerSessionRef session, uint64 fromPlayerId,
     const uint64 nowMs = ::GetTickCount64();
     const uint64 tradeId = AllocTradeId();
 
+    // 거래 세션 생성 및 초기화
     TradeSession ts;
     ts.tradeId = tradeId;
     ts.playerAId = fromPlayerId;
     ts.playerBId = targetPlayerId;
-    ts.state = TradeState::Invited;
+    ts.state = TradeState::Invited; // 초대 단계
     ts.createdAtMs = nowMs;
     ts.lastTouchedMs = nowMs;
 
@@ -178,12 +195,14 @@ void GameRoom::HandleTradeReqById(PlayerSessionRef session, uint64 fromPlayerId,
     from->SetActiveTradeId_ActorOnly(tradeId);
     to->SetActiveTradeId_ActorOnly(tradeId);
 
+    // 상대방에게 초대 패킷 전송
     Protocol::S_TRADE_INVITE invite;
     invite.set_fromplayerid(fromPlayerId);
     invite.set_fromname(from->GetName());
     SendToPlayer(targetPlayerId, ClientPacketHandler::MakeSendBuffer(invite));
 }
 
+// 2. 거래 수락/거절 처리
 void GameRoom::HandleTradeInviteRespById(PlayerSessionRef session, uint64 responderId, bool accept)
 {
     if (!session) return;
@@ -194,6 +213,7 @@ void GameRoom::HandleTradeInviteRespById(PlayerSessionRef session, uint64 respon
     if (!ts)
         return;
 
+    // 상태 체크: 초대 상태여야만 응답 가능
     if (ts->state != TradeState::Invited)
         return;
 
@@ -203,7 +223,7 @@ void GameRoom::HandleTradeInviteRespById(PlayerSessionRef session, uint64 respon
     const uint64 aId = ts->playerAId;
     const uint64 bId = ts->playerBId;
 
-
+    // 요청받은 사람(B)이 아닌데 응답이 오면 무시
     if (responderId != bId)
         return;
 
@@ -221,10 +241,12 @@ void GameRoom::HandleTradeInviteRespById(PlayerSessionRef session, uint64 respon
         return;
     }
 
+    // 수락했으므로 실제 거래창 오픈 상태로 전환
     ts->state = TradeState::Active;
     ts->readyA = ts->readyB = false;
     ts->confirmA = ts->confirmB = false;
 
+    // 양쪽 클라에 거래창 열라고 패킷 보냄
     Protocol::S_TRADE_START stA;
     stA.set_tradeid(ts->tradeId);
     stA.set_peerid(bId);
@@ -241,6 +263,7 @@ void GameRoom::HandleTradeInviteRespById(PlayerSessionRef session, uint64 respon
     SendReadyState_ActorOnly(ts->tradeId);
 }
 
+// 3. 물품 등록/수정
 void GameRoom::HandleTradeOfferSetById(PlayerSessionRef session, uint64 playerId, Protocol::C_TRADE_OFFER_SET pkt)
 {
     if (!session) return;
@@ -253,6 +276,7 @@ void GameRoom::HandleTradeOfferSetById(PlayerSessionRef session, uint64 playerId
         return;
     }
 
+    // 거래 중일 때만 물건 올릴 수 있음 (잠금 상태면 수정 불가)
     if (ts->state != TradeState::Active)
     {
         SendTradeResult(playerId, tradeId, false, Protocol::TRADE_FAIL_INVALID_STATE, "invalid state");
@@ -274,12 +298,14 @@ void GameRoom::HandleTradeOfferSetById(PlayerSessionRef session, uint64 playerId
 
     auto& offer = (playerId == ts->playerAId) ? ts->offerA : ts->offerB;
 
+    // 개수 0 이하면 목록에서 제거
     if (count <= 0)
     {
         offer.erase(itemUid);
     }
     else
     {
+        // 실제로 인벤토리에 그 아이템이 있는지 검증 (클라이언트는 믿지 않는다)
         Protocol::ItemInfo* it = FindItemByUid(p->GetItems(), itemUid);
         if (!it)
         {
@@ -287,18 +313,21 @@ void GameRoom::HandleTradeOfferSetById(PlayerSessionRef session, uint64 playerId
             return;
         }
 
+        // 장착 중인 아이템은 거래 불가
         if (it->isequipped())
         {
             SendTradeResult(playerId, tradeId, false, Protocol::TRADE_FAIL_INVALID_ITEM, "equipped item");
             return;
         }
 
+        // 가진 개수보다 많이 올리면 거절
         if (count > it->count())
         {
             SendTradeResult(playerId, tradeId, false, Protocol::TRADE_FAIL_INVALID_ITEM, "not enough count");
             return;
         }
 
+        // Offer 목록에 임시 등록
         TradeOfferEntry e;
         e.itemUid = itemUid;
         e.templateId = it->templateid();
@@ -306,13 +335,16 @@ void GameRoom::HandleTradeOfferSetById(PlayerSessionRef session, uint64 playerId
         offer[itemUid] = e;
     }
 
+    // 물품이 변경되었으니 준비/확인 상태는 모두 초기화 (사기 방지)
     ts->readyA = ts->readyB = false;
     ts->confirmA = ts->confirmB = false;
 
+    // 변경된 오퍼 내용을 양쪽에 전송
     SendOfferUpdate_ActorOnly(tradeId, playerId);
     SendReadyState_ActorOnly(tradeId);
 }
 
+// 4. 준비(Ready) 단계
 void GameRoom::HandleTradeReadyById(PlayerSessionRef session, uint64 playerId, Protocol::C_TRADE_READY pkt)
 {
     if (!session) return;
@@ -343,6 +375,7 @@ void GameRoom::HandleTradeReadyById(PlayerSessionRef session, uint64 playerId, P
     else
         return;
 
+    // 준비 취소하면 최종 확인도 같이 풀림
     if (!ready)
     {
         if (playerId == ts->playerAId) ts->confirmA = false;
@@ -351,6 +384,7 @@ void GameRoom::HandleTradeReadyById(PlayerSessionRef session, uint64 playerId, P
 
     SendReadyState_ActorOnly(tradeId);
 
+    // 둘 다 준비 완료되면 '잠금(Locked)' 상태로 전환 -> 이제 물품 수정 불가
     if (ts->readyA && ts->readyB)
     {
         ts->state = TradeState::Locked;
@@ -362,6 +396,7 @@ void GameRoom::HandleTradeReadyById(PlayerSessionRef session, uint64 playerId, P
     }
 }
 
+// 5. 최종 확인(Confirm) 단계
 void GameRoom::HandleTradeConfirmById(PlayerSessionRef session, uint64 playerId, Protocol::C_TRADE_CONFIRM pkt)
 {
     if (!session) return;
@@ -374,6 +409,7 @@ void GameRoom::HandleTradeConfirmById(PlayerSessionRef session, uint64 playerId,
         return;
     }
 
+    // Locked 상태여야만 Confirm 가능
     if (ts->state != TradeState::Locked)
     {
         SendTradeResult(playerId, tradeId, false, Protocol::TRADE_FAIL_INVALID_STATE, "invalid state");
@@ -390,22 +426,25 @@ void GameRoom::HandleTradeConfirmById(PlayerSessionRef session, uint64 playerId,
     else
         return;
 
+    // 둘 다 최종 확인을 눌렀다 -> 트랜잭션 시작
     if (ts->confirmA && ts->confirmB)
     {
-        ts->state = TradeState::Committing;
+        ts->state = TradeState::Committing; // 커밋 중 상태로 변경 (취소 불가)
 
         Protocol::TradeFailCode failCode = Protocol::TRADE_FAIL_INTERNAL;
         std::string msg;
 
-        // Phase 2: DBAgent atomic commit (single SQL transaction for A/B)
+        // DB로 넘기기 전에 메모리 상에서 먼저 검증 및 계획 수립 (Phase 1)
         if (!StartTradeCommitPhase2_ActorOnly(tradeId, failCode, msg))
         {
+            // 계획 수립 실패하면 즉시 롤백
             CancelTrade_ActorOnly(tradeId, Protocol::TRADE_CANCEL_INTERNAL, failCode, msg);
             return;
         }
     }
 }
 
+// 거래 취소 요청
 void GameRoom::HandleTradeCancelById(PlayerSessionRef session, uint64 playerId, Protocol::C_TRADE_CANCEL pkt)
 {
     if (!session) return;
@@ -418,7 +457,8 @@ void GameRoom::HandleTradeCancelById(PlayerSessionRef session, uint64 playerId, 
     if (playerId != ts->playerAId && playerId != ts->playerBId)
         return;
 
-    // Once DBAgent commit is in flight, do not allow user-driven cancellation.
+    // 이미 커밋(DB 저장) 중이면 취소 불가능. 
+    // 여기서 취소해버리면 DB는 성공했는데 메모리는 롤백되는 대참사 발생함.
     if (ts->state == TradeState::Committing)
         return;
 
@@ -463,12 +503,13 @@ void GameRoom::SendReadyState_ActorOnly(uint64 tradeId)
     SendToPlayer(ts->playerBId, ClientPacketHandler::MakeSendBuffer(ntf));
 }
 
+// 거래 강제 종료 및 정리
 void GameRoom::CancelTrade_ActorOnly(uint64 tradeId, Protocol::TradeCancelReason reason, Protocol::TradeFailCode failCode, const std::string& msg)
 {
     TradeSession* ts = FindTrade_ActorOnly(tradeId);
     if (!ts) return;
 
-    // Do not cancel a commit-in-flight trade unless it's an internal cancellation (e.g., DBAgent failure).
+    // 커밋 중일 때는 내부적인 실패(DB 에러 등)를 제외하곤 취소 불가
     if (ts->state == TradeState::Committing && reason != Protocol::TRADE_CANCEL_INTERNAL)
         return;
 
@@ -504,6 +545,7 @@ void GameRoom::UpdateTrades_ActorOnly(uint64 nowMs)
     {
         const TradeSession& ts = kv.second;
 
+        // 커밋 중인 건 타임아웃 체크 안 함 (DB 응답 기다려야 함)
         if (ts.state == TradeState::Committing)
             continue;
 
@@ -517,6 +559,9 @@ void GameRoom::UpdateTrades_ActorOnly(uint64 nowMs)
     }
 }
 
+// [핵심 로직] 거래 확정 전 메모리 시뮬레이션 (Phase 1)
+// DB에 보내기 전에 이 거래가 진짜 가능한지, 인벤토리는 충분한지, 아이템 합치기는 되는지 미리 계산해봄
+// 성공하면 DB에 보낼 '계획서(Plan)'를 생성함
 bool GameRoom::BuildTradeCommitPlan_ActorOnly(uint64 tradeId, TradeCommitPlan& outPlan, Protocol::TradeFailCode& outFail, std::string& outMsg)
 {
     outPlan = TradeCommitPlan{};
@@ -538,12 +583,14 @@ bool GameRoom::BuildTradeCommitPlan_ActorOnly(uint64 tradeId, TradeCommitPlan& o
         return false;
     }
 
+    // 소모품인지 확인 (스택 가능 여부)
     auto isConsumable = [](int32 templateId) -> bool
         {
             const auto* t = DataManager::Instance()->GetItemTemplate(templateId);
             return t && t->itemtype() == Protocol::ITEM_TYPE_CONSUMABLE;
         };
 
+    // 합칠 수 있는 아이템 스택 찾기 (슬롯 절약)
     auto findBestStack = [](Vector<Protocol::ItemInfo>& items, int32 templateId) -> Protocol::ItemInfo*
         {
             Protocol::ItemInfo* best = nullptr;
@@ -560,6 +607,7 @@ bool GameRoom::BuildTradeCommitPlan_ActorOnly(uint64 tradeId, TradeCommitPlan& o
             return best;
         };
 
+    // 변경사항 기록 헬퍼
     auto upsertChange = [](Vector<Protocol::ItemInfo>& changes, const Protocol::ItemInfo& item)
         {
             const uint64 uid = (uint64)item.itemuid();
@@ -574,6 +622,7 @@ bool GameRoom::BuildTradeCommitPlan_ActorOnly(uint64 tradeId, TradeCommitPlan& o
             changes.push_back(item);
         };
 
+    // 사용 중인 슬롯 비트맵 생성
     auto buildUsedSlots = [](const Vector<Protocol::ItemInfo>& items, int32 maxSlots) -> Vector<uint8>
         {
             Vector<uint8> used(maxSlots, 0);
@@ -586,6 +635,7 @@ bool GameRoom::BuildTradeCommitPlan_ActorOnly(uint64 tradeId, TradeCommitPlan& o
             return used;
         };
 
+    // 빈 슬롯 찾기
     auto takeEmptySlot = [](Vector<uint8>& used, int32& outSlot) -> bool
         {
             for (int32 i = 0; i < static_cast<int32>(used.size()); ++i)
@@ -600,6 +650,7 @@ bool GameRoom::BuildTradeCommitPlan_ActorOnly(uint64 tradeId, TradeCommitPlan& o
             return false;
         };
 
+    // 임시 컨테이너에서 아이템 제거
     auto eraseByUid = [](Vector<Protocol::ItemInfo>& items, uint64 uid) -> bool
         {
             for (auto it = items.begin(); it != items.end(); ++it)
@@ -613,7 +664,7 @@ bool GameRoom::BuildTradeCommitPlan_ActorOnly(uint64 tradeId, TradeCommitPlan& o
             return false;
         };
 
-    // Validate offers against current memory snapshot.
+    // 1단계: 제공하려는 아이템이 진짜 있는지 최종 검증
     for (const auto& kv : ts->offerA)
     {
         const TradeOfferEntry& e = kv.second;
@@ -638,11 +689,12 @@ bool GameRoom::BuildTradeCommitPlan_ActorOnly(uint64 tradeId, TradeCommitPlan& o
         }
     }
 
-    // Work on temporary snapshots; memory is applied only after DBAgent success.
+    // 실제 인벤토리를 건드리지 않고, 복사본(Snapshot)을 떠서 시뮬레이션 진행
     Vector<Protocol::ItemInfo> aItems = a->GetItems();
     Vector<Protocol::ItemInfo> bItems = b->GetItems();
 
-    // Apply giver A changes (remove or decrement).
+    // 2단계: 주는 쪽(Giver) 처리 - 아이템 삭제 혹은 개수 차감
+    // A의 물건 처리
     for (const auto& kv : ts->offerA)
     {
         const TradeOfferEntry& e = kv.second;
@@ -656,6 +708,7 @@ bool GameRoom::BuildTradeCommitPlan_ActorOnly(uint64 tradeId, TradeCommitPlan& o
 
         if (e.count == it->count())
         {
+            // 전부 주면 삭제 목록에 추가
             outPlan.deletedAItemUids.push_back(e.itemUid);
             outPlan.notifyRemoveA.push_back(e.itemUid);
 
@@ -668,12 +721,13 @@ bool GameRoom::BuildTradeCommitPlan_ActorOnly(uint64 tradeId, TradeCommitPlan& o
         }
         else
         {
+            // 일부만 주면 개수만 깜
             it->set_count(it->count() - e.count);
             upsertChange(outPlan.notifyChangeA, *it);
         }
     }
 
-    // Apply giver B changes (remove or decrement).
+    // B의 물건 처리
     for (const auto& kv : ts->offerB)
     {
         const TradeOfferEntry& e = kv.second;
@@ -704,18 +758,19 @@ bool GameRoom::BuildTradeCommitPlan_ActorOnly(uint64 tradeId, TradeCommitPlan& o
         }
     }
 
-    // Build used-slot bitmap after giver changes.
+    // 3단계: 받는 쪽(Receiver) 처리 - 아이템 추가
+    // 여기서 중요한 건, 위에서 아이템을 삭제하면서 생긴 '빈 슬롯'을 재활용할 수 있어야 한다는 점
     Vector<uint8> usedA = buildUsedSlots(aItems, kTradeMaxInventorySlots);
     Vector<uint8> usedB = buildUsedSlots(bItems, kTradeMaxInventorySlots);
 
-    // Add incoming items to A (from B's offer).
+    // B가 준 물건을 A가 받음
     for (const auto& kv : ts->offerB)
     {
         const TradeOfferEntry& e = kv.second;
 
         if (isConsumable(e.templateId))
         {
-            // ITEM_TYPE_CONSUMABLE: merge into the largest existing stack if present.
+            // 소모품이면 기존 스택에 합치기 시도
             if (Protocol::ItemInfo* dst = findBestStack(aItems, e.templateId))
             {
                 dst->set_count(dst->count() + e.count);
@@ -724,6 +779,7 @@ bool GameRoom::BuildTradeCommitPlan_ActorOnly(uint64 tradeId, TradeCommitPlan& o
             }
         }
 
+        // 새 슬롯 할당
         int32 slot = -1;
         if (!takeEmptySlot(usedA, slot))
         {
@@ -732,6 +788,7 @@ bool GameRoom::BuildTradeCommitPlan_ActorOnly(uint64 tradeId, TradeCommitPlan& o
             return false;
         }
 
+        // 새 아이템 생성 (UID도 새로 발급)
         Protocol::ItemInfo newItem;
         newItem.set_itemuid(GameItemUidGen::Alloc());
         newItem.set_templateid(e.templateId);
@@ -743,7 +800,7 @@ bool GameRoom::BuildTradeCommitPlan_ActorOnly(uint64 tradeId, TradeCommitPlan& o
         upsertChange(outPlan.notifyChangeA, newItem);
     }
 
-    // Add incoming items to B (from A's offer).
+    // A가 준 물건을 B가 받음
     for (const auto& kv : ts->offerA)
     {
         const TradeOfferEntry& e = kv.second;
@@ -777,6 +834,7 @@ bool GameRoom::BuildTradeCommitPlan_ActorOnly(uint64 tradeId, TradeCommitPlan& o
         upsertChange(outPlan.notifyChangeB, newItem);
     }
 
+    // 계획 성공. 최종 결과물 저장
     outPlan.finalAItems = std::move(aItems);
     outPlan.finalBItems = std::move(bItems);
 
@@ -785,6 +843,7 @@ bool GameRoom::BuildTradeCommitPlan_ActorOnly(uint64 tradeId, TradeCommitPlan& o
     return true;
 }
 
+// [핵심 로직] 거래 커밋 Phase 2 (DB 전송)
 bool GameRoom::StartTradeCommitPhase2_ActorOnly(uint64 tradeId, Protocol::TradeFailCode& outFail, std::string& outMsg)
 {
     TradeSession* ts = FindTrade_ActorOnly(tradeId);
@@ -795,6 +854,7 @@ bool GameRoom::StartTradeCommitPhase2_ActorOnly(uint64 tradeId, Protocol::TradeF
         return false;
     }
 
+    // 이미 진행 중인지 확인
     if (ts->commitPlan)
     {
         outFail = Protocol::TRADE_FAIL_INVALID_STATE;
@@ -802,13 +862,16 @@ bool GameRoom::StartTradeCommitPhase2_ActorOnly(uint64 tradeId, Protocol::TradeF
         return false;
     }
 
+    // 위에서 만든 Phase 1 시뮬레이션 돌림
     TradeCommitPlan plan;
     if (!BuildTradeCommitPlan_ActorOnly(tradeId, plan, outFail, outMsg))
         return false;
 
+    // 계획을 세션에 저장해두고 (나중에 결과 오면 적용해야 하니까)
     ts->commitPlan = std::make_unique<TradeCommitPlan>(std::move(plan));
 
-    // Build S2S request.
+    // DBAgent에게 "이대로 DB에 한 방에(Transaction) 처리해줘"라고 요청
+    // S2S(Server-to-Server) 패킷 생성
     Protocol::S2S_REQ_TRADE_COMMIT req;
     req.set_tradeid(tradeId);
     req.set_channelid(GetChannelId());
@@ -817,6 +880,8 @@ bool GameRoom::StartTradeCommitPhase2_ActorOnly(uint64 tradeId, Protocol::TradeF
     req.set_playeraid(ts->playerAId);
     req.set_playerbid(ts->playerBId);
 
+    // 변경될 최종 아이템 목록과 삭제될 아이템 목록을 전부 보냄
+    // DBAgent는 이걸 받아서 SQL Transaction 안에서 싹 다 처리하거나, 실패하면 하나도 처리 안 함
     for (const auto& it : ts->commitPlan->finalAItems)
         *req.add_finalaitems() = it;
     for (uint64 uid : ts->commitPlan->deletedAItemUids)
@@ -827,7 +892,7 @@ bool GameRoom::StartTradeCommitPhase2_ActorOnly(uint64 tradeId, Protocol::TradeF
     for (uint64 uid : ts->commitPlan->deletedBItemUids)
         req.add_deletedbitemuids(uid);
 
-    // Optional request id (useful for stale response filtering).
+    // 요청 ID 발급 (응답 매칭용)
     static std::atomic<uint64> s_tradeCommitReqGen{ 1 };
     ts->commitRequestId = s_tradeCommitReqGen.fetch_add(1);
     req.set_requestid(ts->commitRequestId);
@@ -842,17 +907,20 @@ bool GameRoom::StartTradeCommitPhase2_ActorOnly(uint64 tradeId, Protocol::TradeF
         return false;
     }
 
-    // Note: S2SPacketHandler is auto-generated from Protocol_S2S.proto.
+    // 전송
     G_DBSession->Send(S2SPacketHandler::MakeSendBuffer(req));
     return true;
 }
 
+// DB 스레드에서 결과를 받아서 다시 GameRoom 스레드로 넘겨주는 브릿지 함수
 void GameRoom::OnTradeCommitResult(Protocol::S2S_RES_TRADE_COMMIT pkt)
 {
-    // This is called on GameRoom actor thread.
     OnTradeCommitResult_ActorOnly(pkt);
 }
 
+// [핵심 로직] 거래 커밋 결과 처리
+// DB에서 "성공했어"라고 하면 메모리에 반영하고 클라에 알림
+// "실패했어"라고 하면 메모리 건드리지 않고 거래 취소 처리
 void GameRoom::OnTradeCommitResult_ActorOnly(const Protocol::S2S_RES_TRADE_COMMIT& pkt)
 {
     const uint64 tradeId = pkt.tradeid();
@@ -860,9 +928,11 @@ void GameRoom::OnTradeCommitResult_ActorOnly(const Protocol::S2S_RES_TRADE_COMMI
     if (!ts)
         return;
 
+    // 상태 검증
     if (ts->state != TradeState::Committing)
         return;
 
+    // 요청 ID 검증 (혹시나 타임아웃 되어서 재요청했거나 옛날 응답일까봐)
     if (ts->commitRequestId != 0 && pkt.requestid() != 0 && pkt.requestid() != ts->commitRequestId)
         return; // stale response
 
@@ -872,6 +942,7 @@ void GameRoom::OnTradeCommitResult_ActorOnly(const Protocol::S2S_RES_TRADE_COMMI
         return;
     }
 
+    // DB 트랜잭션 실패 시 처리 (롤백)
     if (!pkt.success())
     {
         Protocol::TradeFailCode fail = pkt.failcode();
@@ -881,6 +952,7 @@ void GameRoom::OnTradeCommitResult_ActorOnly(const Protocol::S2S_RES_TRADE_COMMI
         return;
     }
 
+    // === 여기서부터는 성공 처리 ===
     PlayerRef a = FindPlayer_ActorOnly(ts->playerAId);
     PlayerRef b = FindPlayer_ActorOnly(ts->playerBId);
     if (!a || !b)
@@ -891,11 +963,12 @@ void GameRoom::OnTradeCommitResult_ActorOnly(const Protocol::S2S_RES_TRADE_COMMI
 
     const TradeCommitPlan& plan = *ts->commitPlan;
 
-    // Apply memory snapshots.
+    // 1. 메모리 반영: 아까 시뮬레이션해둔 결과를 진짜 플레이어 데이터에 덮어씌움
     a->GetItems() = plan.finalAItems;
     b->GetItems() = plan.finalBItems;
 
-    // Sync Redis (no extra autocommit flush).
+    // 2. Redis 캐시 동기화: RDBMS는 업데이트됐으니 Redis도 맞춰줌
+    // markDirty=false로 하는 이유는 이미 DB에는 들어갔으니까 또 DB 저장 큐에 넣을 필요가 없어서임
     for (uint64 uid : plan.deletedAItemUids)
         Persistence::PersistenceService::I().RemoveInventoryItem(a->GetPlayerId(), uid, /*markDirty=*/false);
     for (const auto& it : plan.finalAItems)
@@ -908,7 +981,7 @@ void GameRoom::OnTradeCommitResult_ActorOnly(const Protocol::S2S_RES_TRADE_COMMI
         Persistence::PersistenceService::I().UpdateInventoryItem(b->GetPlayerId(), static_cast<uint64>(it.itemuid()), it.templateid(), it.slot(), it.count(), it.isequipped(), /*markDirty=*/false);
     Persistence::PersistenceService::I().ClearDirtyOnCommitSuccess(b->GetPlayerId(), /*coreOk=*/false, /*invOk=*/true, /*qsOk=*/false);
 
-    // Notify clients (inventory delta).
+    // 3. 클라이언트 알림: 아이템 사라지고 생긴 거 패킷으로 쏴줌 (델타 업데이트)
     for (uint64 uid : plan.notifyRemoveA)
     {
         Protocol::S_REMOVE_ITEM rm;
@@ -935,9 +1008,11 @@ void GameRoom::OnTradeCommitResult_ActorOnly(const Protocol::S2S_RES_TRADE_COMMI
         SendToPlayer(b->GetPlayerId(), ClientPacketHandler::MakeSendBuffer(ch));
     }
 
+    // 최종 성공 메세지 전송
     SendTradeResult(ts->playerAId, tradeId, true, Protocol::TRADE_FAIL_NONE, "");
     SendTradeResult(ts->playerBId, tradeId, true, Protocol::TRADE_FAIL_NONE, "");
 
+    // 세션 정리
     _tradeByPlayer.erase(ts->playerAId);
     _tradeByPlayer.erase(ts->playerBId);
 
