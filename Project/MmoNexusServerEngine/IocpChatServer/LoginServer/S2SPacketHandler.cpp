@@ -51,6 +51,16 @@ bool S2SPacketHandler::Handle_S2S_RES_LOGIN(PacketSessionRef& session, Protocol:
 			printf("🔑 [Redis] Token Saved: %s -> ID: %llu\n", token.c_str(), rawId);
 		}
 
+		// [NEW] 토큰에 대응하는 플레이어 이름도 캐싱
+		{
+			const std::string& loginName = clientSession->GetLoginName();
+			if (!loginName.empty())
+			{
+				const std::string nameKey = "token:name:" + token;
+				GRedisManager->Set(nameKey, loginName, 300);
+			}
+		}
+
 		resPkt.set_success(true);
 		resPkt.set_token(token);
 
@@ -103,4 +113,7 @@ bool S2SPacketHandler::Handle_S2S_RES_HEART_BEAT(PacketSessionRef&, Protocol::S2
 bool S2SPacketHandler::Handle_S2S_RES_SAVE_PLAYER_CORE(PacketSessionRef&, Protocol::S2S_RES_SAVE_PLAYER_CORE&) { return true; }
 bool S2SPacketHandler::Handle_S2S_RES_SAVE_INVENTORY(PacketSessionRef&, Protocol::S2S_RES_SAVE_INVENTORY&) { return true; }
 bool S2SPacketHandler::Handle_S2S_RES_ITEM_CREATE(PacketSessionRef&, Protocol::S2S_RES_ITEM_CREATE&) { return true; }
-
+bool S2SPacketHandler::Handle_S2S_RES_GAME_ITEM_UID_SEED(PacketSessionRef& session, Protocol::S2S_RES_GAME_ITEM_UID_SEED& pkt) { return true; }
+bool S2SPacketHandler::Handle_S2S_RES_QUICKSLOT_LOAD(PacketSessionRef& session, Protocol::S2S_RES_QUICKSLOT_LOAD& pkt) { return true; }
+bool S2SPacketHandler::Handle_S2S_RES_SAVE_QUICKSLOT(PacketSessionRef& session, Protocol::S2S_RES_SAVE_QUICKSLOT& pkt) { return true; }
+bool S2SPacketHandler::Handle_S2S_RES_TRADE_COMMIT(PacketSessionRef& session, Protocol::S2S_RES_TRADE_COMMIT& pkt) { return true; }

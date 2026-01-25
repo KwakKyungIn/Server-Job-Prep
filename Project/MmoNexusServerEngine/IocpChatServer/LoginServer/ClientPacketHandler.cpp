@@ -25,6 +25,9 @@ bool ClientPacketHandler::Handle_C_LOGIN(PacketSessionRef& session, Protocol::C_
 	if (pkt.userid().empty())
 		return false;
 
+	// 2-1. 로그인 이름 저장 (DB 응답에서 토큰 캐시에 쓰기 위함)
+	clientSession->SetLoginName(pkt.userid());
+
 	// 3. DBAgent 연결 확인
 	if (GDBAgentSession == nullptr)
 	{
@@ -66,3 +69,13 @@ bool ClientPacketHandler::Handle_C_PARTY_DISBAND_REQ(PacketSessionRef& session, 
 bool ClientPacketHandler::Handle_C_PARTY_STATUS_REQ(PacketSessionRef& session, Protocol::C_PARTY_STATUS_REQ& pkt) { return false; }
 bool ClientPacketHandler:: Handle_C_DUNGEON_ENTER_REQ(PacketSessionRef& session, Protocol::C_DUNGEON_ENTER_REQ& pkt) { return false; }
 bool ClientPacketHandler:: Handle_C_DUNGEON_EXIT_REQ(PacketSessionRef& session, Protocol::C_DUNGEON_EXIT_REQ& pkt) { return false; }
+bool ClientPacketHandler::Handle_C_SET_QUICKSLOT(PacketSessionRef& session, Protocol::C_SET_QUICKSLOT& pkt) { return false; }
+bool ClientPacketHandler::Handle_C_TRADE_REQ(PacketSessionRef& session, Protocol::C_TRADE_REQ& pkt) { return false; }
+bool ClientPacketHandler::Handle_C_TRADE_INVITE_RESP(PacketSessionRef& session, Protocol::C_TRADE_INVITE_RESP& pkt) { return false; }
+bool ClientPacketHandler::Handle_C_TRADE_OFFER_SET(PacketSessionRef& session, Protocol::C_TRADE_OFFER_SET& pkt) { return false; }
+bool ClientPacketHandler::Handle_C_TRADE_READY(PacketSessionRef& session, Protocol::C_TRADE_READY& pkt) { return false; }
+bool ClientPacketHandler::Handle_C_TRADE_CONFIRM(PacketSessionRef& session, Protocol::C_TRADE_CONFIRM& pkt) { return false; }
+bool ClientPacketHandler::Handle_C_TRADE_CANCEL(PacketSessionRef& session, Protocol::C_TRADE_CANCEL& pkt) { return false; }
+bool ClientPacketHandler::Handle_C_INV_DRAG_DROP(PacketSessionRef& session, Protocol::C_INV_DRAG_DROP& pkt) { return false; }
+bool ClientPacketHandler:: Handle_C_CHANNEL_CHANGE_REQ(PacketSessionRef& session, Protocol::C_CHANNEL_CHANGE_REQ& pkt) { return false; }
+

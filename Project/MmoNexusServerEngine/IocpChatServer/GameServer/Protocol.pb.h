@@ -6002,8 +6002,23 @@ class C_PARTY_INVITE_REQ final :
   // accessors -------------------------------------------------------
 
   enum : int {
+    kTargetPlayerNameFieldNumber = 2,
     kTargetPlayerIdFieldNumber = 1,
   };
+  // string targetPlayerName = 2;
+  void clear_targetplayername();
+  const std::string& targetplayername() const;
+  template <typename ArgT0 = const std::string&, typename... ArgT>
+  void set_targetplayername(ArgT0&& arg0, ArgT... args);
+  std::string* mutable_targetplayername();
+  PROTOBUF_NODISCARD std::string* release_targetplayername();
+  void set_allocated_targetplayername(std::string* targetplayername);
+  private:
+  const std::string& _internal_targetplayername() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_targetplayername(const std::string& value);
+  std::string* _internal_mutable_targetplayername();
+  public:
+
   // uint64 targetPlayerId = 1;
   void clear_targetplayerid();
   uint64_t targetplayerid() const;
@@ -6021,6 +6036,7 @@ class C_PARTY_INVITE_REQ final :
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   struct Impl_ {
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr targetplayername_;
     uint64_t targetplayerid_;
     mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   };
@@ -13528,6 +13544,56 @@ inline void C_PARTY_INVITE_REQ::_internal_set_targetplayerid(uint64_t value) {
 inline void C_PARTY_INVITE_REQ::set_targetplayerid(uint64_t value) {
   _internal_set_targetplayerid(value);
   // @@protoc_insertion_point(field_set:Protocol.C_PARTY_INVITE_REQ.targetPlayerId)
+}
+
+// string targetPlayerName = 2;
+inline void C_PARTY_INVITE_REQ::clear_targetplayername() {
+  _impl_.targetplayername_.ClearToEmpty();
+}
+inline const std::string& C_PARTY_INVITE_REQ::targetplayername() const {
+  // @@protoc_insertion_point(field_get:Protocol.C_PARTY_INVITE_REQ.targetPlayerName)
+  return _internal_targetplayername();
+}
+template <typename ArgT0, typename... ArgT>
+inline PROTOBUF_ALWAYS_INLINE
+void C_PARTY_INVITE_REQ::set_targetplayername(ArgT0&& arg0, ArgT... args) {
+ 
+ _impl_.targetplayername_.Set(static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
+  // @@protoc_insertion_point(field_set:Protocol.C_PARTY_INVITE_REQ.targetPlayerName)
+}
+inline std::string* C_PARTY_INVITE_REQ::mutable_targetplayername() {
+  std::string* _s = _internal_mutable_targetplayername();
+  // @@protoc_insertion_point(field_mutable:Protocol.C_PARTY_INVITE_REQ.targetPlayerName)
+  return _s;
+}
+inline const std::string& C_PARTY_INVITE_REQ::_internal_targetplayername() const {
+  return _impl_.targetplayername_.Get();
+}
+inline void C_PARTY_INVITE_REQ::_internal_set_targetplayername(const std::string& value) {
+  
+  _impl_.targetplayername_.Set(value, GetArenaForAllocation());
+}
+inline std::string* C_PARTY_INVITE_REQ::_internal_mutable_targetplayername() {
+  
+  return _impl_.targetplayername_.Mutable(GetArenaForAllocation());
+}
+inline std::string* C_PARTY_INVITE_REQ::release_targetplayername() {
+  // @@protoc_insertion_point(field_release:Protocol.C_PARTY_INVITE_REQ.targetPlayerName)
+  return _impl_.targetplayername_.Release();
+}
+inline void C_PARTY_INVITE_REQ::set_allocated_targetplayername(std::string* targetplayername) {
+  if (targetplayername != nullptr) {
+    
+  } else {
+    
+  }
+  _impl_.targetplayername_.SetAllocated(targetplayername, GetArenaForAllocation());
+#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (_impl_.targetplayername_.IsDefault()) {
+    _impl_.targetplayername_.Set("", GetArenaForAllocation());
+  }
+#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  // @@protoc_insertion_point(field_set_allocated:Protocol.C_PARTY_INVITE_REQ.targetPlayerName)
 }
 
 // -------------------------------------------------------------------

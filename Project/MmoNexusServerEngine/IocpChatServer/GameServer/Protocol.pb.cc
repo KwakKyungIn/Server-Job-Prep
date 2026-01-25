@@ -495,7 +495,8 @@ struct C_PARTY_CREATE_REQDefaultTypeInternal {
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 C_PARTY_CREATE_REQDefaultTypeInternal _C_PARTY_CREATE_REQ_default_instance_;
 PROTOBUF_CONSTEXPR C_PARTY_INVITE_REQ::C_PARTY_INVITE_REQ(
     ::_pbi::ConstantInitialized): _impl_{
-    /*decltype(_impl_.targetplayerid_)*/uint64_t{0u}
+    /*decltype(_impl_.targetplayername_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}
+  , /*decltype(_impl_.targetplayerid_)*/uint64_t{0u}
   , /*decltype(_impl_._cached_size_)*/{}} {}
 struct C_PARTY_INVITE_REQDefaultTypeInternal {
   PROTOBUF_CONSTEXPR C_PARTY_INVITE_REQDefaultTypeInternal()
@@ -1218,6 +1219,7 @@ const uint32_t TableStruct_Protocol_2eproto::offsets[] PROTOBUF_SECTION_VARIABLE
   ~0u,  // no _weak_field_map_
   ~0u,  // no _inlined_string_donated_
   PROTOBUF_FIELD_OFFSET(::Protocol::C_PARTY_INVITE_REQ, _impl_.targetplayerid_),
+  PROTOBUF_FIELD_OFFSET(::Protocol::C_PARTY_INVITE_REQ, _impl_.targetplayername_),
   ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(::Protocol::C_PARTY_INVITE_ACCEPT_REQ, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -1503,36 +1505,36 @@ static const ::_pbi::MigrationSchema schemas[] PROTOBUF_SECTION_VARIABLE(protode
   { 256, -1, -1, sizeof(::Protocol::S_PARTY_INFO_NTF)},
   { 267, -1, -1, sizeof(::Protocol::C_PARTY_CREATE_REQ)},
   { 274, -1, -1, sizeof(::Protocol::C_PARTY_INVITE_REQ)},
-  { 281, -1, -1, sizeof(::Protocol::C_PARTY_INVITE_ACCEPT_REQ)},
-  { 289, -1, -1, sizeof(::Protocol::C_PARTY_LEAVE_REQ)},
-  { 295, -1, -1, sizeof(::Protocol::C_PARTY_KICK_REQ)},
-  { 302, -1, -1, sizeof(::Protocol::C_PARTY_DISBAND_REQ)},
-  { 308, -1, -1, sizeof(::Protocol::S_PARTY_RESULT)},
-  { 319, -1, -1, sizeof(::Protocol::S_PARTY_INVITE_NTF)},
-  { 328, -1, -1, sizeof(::Protocol::PartyMemberStatus)},
-  { 343, -1, -1, sizeof(::Protocol::C_PARTY_STATUS_REQ)},
-  { 349, -1, -1, sizeof(::Protocol::S_PARTY_STATUS_NTF)},
-  { 358, -1, -1, sizeof(::Protocol::C_DUNGEON_ENTER_REQ)},
-  { 365, -1, -1, sizeof(::Protocol::S_DUNGEON_ENTER_RES)},
-  { 375, -1, -1, sizeof(::Protocol::C_DUNGEON_EXIT_REQ)},
-  { 381, -1, -1, sizeof(::Protocol::S_DUNGEON_EXIT_RES)},
-  { 391, -1, -1, sizeof(::Protocol::S_QUICKSLOT_LIST)},
-  { 398, -1, -1, sizeof(::Protocol::C_SET_QUICKSLOT)},
-  { 407, -1, -1, sizeof(::Protocol::S_SET_QUICKSLOT)},
-  { 415, -1, -1, sizeof(::Protocol::C_TRADE_REQ)},
-  { 422, -1, -1, sizeof(::Protocol::S_TRADE_INVITE)},
-  { 430, -1, -1, sizeof(::Protocol::C_TRADE_INVITE_RESP)},
-  { 437, -1, -1, sizeof(::Protocol::S_TRADE_START)},
-  { 446, -1, -1, sizeof(::Protocol::C_TRADE_OFFER_SET)},
-  { 455, -1, -1, sizeof(::Protocol::S_TRADE_OFFER_UPDATE)},
-  { 464, -1, -1, sizeof(::Protocol::C_TRADE_READY)},
-  { 472, -1, -1, sizeof(::Protocol::S_TRADE_READY_STATE)},
-  { 481, -1, -1, sizeof(::Protocol::S_TRADE_LOCKED)},
-  { 488, -1, -1, sizeof(::Protocol::C_TRADE_CONFIRM)},
-  { 495, -1, -1, sizeof(::Protocol::C_TRADE_CANCEL)},
-  { 503, -1, -1, sizeof(::Protocol::S_TRADE_CANCELLED)},
-  { 511, -1, -1, sizeof(::Protocol::S_TRADE_RESULT)},
-  { 521, -1, -1, sizeof(::Protocol::C_INV_DRAG_DROP)},
+  { 282, -1, -1, sizeof(::Protocol::C_PARTY_INVITE_ACCEPT_REQ)},
+  { 290, -1, -1, sizeof(::Protocol::C_PARTY_LEAVE_REQ)},
+  { 296, -1, -1, sizeof(::Protocol::C_PARTY_KICK_REQ)},
+  { 303, -1, -1, sizeof(::Protocol::C_PARTY_DISBAND_REQ)},
+  { 309, -1, -1, sizeof(::Protocol::S_PARTY_RESULT)},
+  { 320, -1, -1, sizeof(::Protocol::S_PARTY_INVITE_NTF)},
+  { 329, -1, -1, sizeof(::Protocol::PartyMemberStatus)},
+  { 344, -1, -1, sizeof(::Protocol::C_PARTY_STATUS_REQ)},
+  { 350, -1, -1, sizeof(::Protocol::S_PARTY_STATUS_NTF)},
+  { 359, -1, -1, sizeof(::Protocol::C_DUNGEON_ENTER_REQ)},
+  { 366, -1, -1, sizeof(::Protocol::S_DUNGEON_ENTER_RES)},
+  { 376, -1, -1, sizeof(::Protocol::C_DUNGEON_EXIT_REQ)},
+  { 382, -1, -1, sizeof(::Protocol::S_DUNGEON_EXIT_RES)},
+  { 392, -1, -1, sizeof(::Protocol::S_QUICKSLOT_LIST)},
+  { 399, -1, -1, sizeof(::Protocol::C_SET_QUICKSLOT)},
+  { 408, -1, -1, sizeof(::Protocol::S_SET_QUICKSLOT)},
+  { 416, -1, -1, sizeof(::Protocol::C_TRADE_REQ)},
+  { 423, -1, -1, sizeof(::Protocol::S_TRADE_INVITE)},
+  { 431, -1, -1, sizeof(::Protocol::C_TRADE_INVITE_RESP)},
+  { 438, -1, -1, sizeof(::Protocol::S_TRADE_START)},
+  { 447, -1, -1, sizeof(::Protocol::C_TRADE_OFFER_SET)},
+  { 456, -1, -1, sizeof(::Protocol::S_TRADE_OFFER_UPDATE)},
+  { 465, -1, -1, sizeof(::Protocol::C_TRADE_READY)},
+  { 473, -1, -1, sizeof(::Protocol::S_TRADE_READY_STATE)},
+  { 482, -1, -1, sizeof(::Protocol::S_TRADE_LOCKED)},
+  { 489, -1, -1, sizeof(::Protocol::C_TRADE_CONFIRM)},
+  { 496, -1, -1, sizeof(::Protocol::C_TRADE_CANCEL)},
+  { 504, -1, -1, sizeof(::Protocol::S_TRADE_CANCELLED)},
+  { 512, -1, -1, sizeof(::Protocol::S_TRADE_RESULT)},
+  { 522, -1, -1, sizeof(::Protocol::C_INV_DRAG_DROP)},
 };
 
 static const ::_pb::Message* const file_default_instances[] = {
@@ -1658,69 +1660,70 @@ const char descriptor_table_protodef_Protocol_2eproto[] PROTOBUF_SECTION_VARIABL
   "Y_INFO_NTF\022\020\n\010hasParty\030\001 \001(\010\022\017\n\007partyId\030"
   "\002 \001(\004\022\020\n\010leaderId\030\003 \001(\004\022\021\n\tmemberIds\030\004 \003"
   "(\004\022\017\n\007version\030\005 \001(\r\",\n\022C_PARTY_CREATE_RE"
-  "Q\022\026\n\016targetPlayerId\030\001 \001(\004\",\n\022C_PARTY_INV"
-  "ITE_REQ\022\026\n\016targetPlayerId\030\001 \001(\004\"<\n\031C_PAR"
-  "TY_INVITE_ACCEPT_REQ\022\017\n\007partyId\030\001 \001(\004\022\016\n"
-  "\006accept\030\002 \001(\010\"\023\n\021C_PARTY_LEAVE_REQ\"*\n\020C_"
-  "PARTY_KICK_REQ\022\026\n\016targetPlayerId\030\001 \001(\004\"\025"
-  "\n\023C_PARTY_DISBAND_REQ\"_\n\016S_PARTY_RESULT\022"
-  "\n\n\002op\030\001 \001(\005\022\017\n\007success\030\002 \001(\010\022\016\n\006reason\030\003"
-  " \001(\005\022\017\n\007partyId\030\004 \001(\004\022\017\n\007version\030\005 \001(\r\"M"
-  "\n\022S_PARTY_INVITE_NTF\022\017\n\007partyId\030\001 \001(\004\022\021\n"
-  "\tinviterId\030\002 \001(\004\022\023\n\013inviterName\030\003 \001(\t\"\272\001"
-  "\n\021PartyMemberStatus\022\020\n\010playerId\030\001 \001(\004\022\020\n"
-  "\010objectId\030\002 \001(\004\022\014\n\004name\030\003 \001(\t\022\r\n\005level\030\004"
-  " \001(\005\022\n\n\002hp\030\005 \001(\005\022\r\n\005maxHp\030\006 \001(\005\022\r\n\005mapId"
-  "\030\007 \001(\005\022\021\n\tchannelId\030\010 \001(\005\022\'\n\007posInfo\030\t \001"
-  "(\0132\026.Protocol.PositionInfo\"\024\n\022C_PARTY_ST"
-  "ATUS_REQ\"d\n\022S_PARTY_STATUS_NTF\022\017\n\007partyI"
-  "d\030\001 \001(\004\022\017\n\007version\030\002 \001(\r\022,\n\007members\030\003 \003("
-  "\0132\033.Protocol.PartyMemberStatus\"+\n\023C_DUNG"
-  "EON_ENTER_REQ\022\024\n\014dungeonMapId\030\001 \001(\005\"\202\001\n\023"
-  "S_DUNGEON_ENTER_RES\022\017\n\007success\030\001 \001(\010\022\024\n\014"
-  "dungeonMapId\030\002 \001(\005\022\022\n\ninstanceid\030\003 \001(\003\0220"
-  "\n\006reason\030\004 \001(\0162 .Protocol.DungeonEnterFa"
-  "ilReason\"\024\n\022C_DUNGEON_EXIT_REQ\"\205\001\n\022S_DUN"
-  "GEON_EXIT_RES\022\017\n\007success\030\001 \001(\010\022\023\n\013return"
-  "MapId\030\002 \001(\005\022\030\n\020returnInstanceid\030\003 \001(\003\022/\n"
-  "\006reason\030\004 \001(\0162\037.Protocol.DungeonExitFail"
-  "Reason\":\n\020S_QUICKSLOT_LIST\022&\n\005slots\030\001 \003("
-  "\0132\027.Protocol.QuickSlotInfo\"`\n\017C_SET_QUIC"
-  "KSLOT\022\021\n\tslotIndex\030\001 \001(\005\022+\n\007refType\030\002 \001("
-  "\0162\032.Protocol.QuickSlotRefType\022\r\n\005refId\030\003"
-  " \001(\004\"I\n\017S_SET_QUICKSLOT\022\017\n\007success\030\001 \001(\010"
-  "\022%\n\004slot\030\002 \001(\0132\027.Protocol.QuickSlotInfo\""
-  "%\n\013C_TRADE_REQ\022\026\n\016targetPlayerId\030\001 \001(\004\"8"
-  "\n\016S_TRADE_INVITE\022\024\n\014fromPlayerId\030\001 \001(\004\022\020"
-  "\n\010fromName\030\002 \001(\t\"%\n\023C_TRADE_INVITE_RESP\022"
-  "\016\n\006accept\030\001 \001(\010\"B\n\rS_TRADE_START\022\017\n\007trad"
-  "eId\030\001 \001(\004\022\016\n\006peerId\030\002 \001(\004\022\020\n\010peerName\030\003 "
-  "\001(\t\"D\n\021C_TRADE_OFFER_SET\022\017\n\007tradeId\030\001 \001("
-  "\004\022\017\n\007itemUid\030\002 \001(\004\022\r\n\005count\030\003 \001(\005\"e\n\024S_T"
-  "RADE_OFFER_UPDATE\022\017\n\007tradeId\030\001 \001(\004\022\023\n\013wh"
-  "oPlayerId\030\002 \001(\004\022\'\n\005items\030\003 \003(\0132\030.Protoco"
-  "l.TradeOfferItem\"/\n\rC_TRADE_READY\022\017\n\007tra"
-  "deId\030\001 \001(\004\022\r\n\005ready\030\002 \001(\010\"F\n\023S_TRADE_REA"
-  "DY_STATE\022\017\n\007tradeId\030\001 \001(\004\022\016\n\006aReady\030\002 \001("
-  "\010\022\016\n\006bReady\030\003 \001(\010\"!\n\016S_TRADE_LOCKED\022\017\n\007t"
-  "radeId\030\001 \001(\004\"\"\n\017C_TRADE_CONFIRM\022\017\n\007trade"
-  "Id\030\001 \001(\004\"N\n\016C_TRADE_CANCEL\022\017\n\007tradeId\030\001 "
-  "\001(\004\022+\n\006reason\030\002 \001(\0162\033.Protocol.TradeCanc"
-  "elReason\"Q\n\021S_TRADE_CANCELLED\022\017\n\007tradeId"
-  "\030\001 \001(\004\022+\n\006reason\030\002 \001(\0162\033.Protocol.TradeC"
-  "ancelReason\"j\n\016S_TRADE_RESULT\022\017\n\007tradeId"
-  "\030\001 \001(\004\022\017\n\007success\030\002 \001(\010\022)\n\010failCode\030\003 \001("
-  "\0162\027.Protocol.TradeFailCode\022\013\n\003msg\030\004 \001(\t\""
-  "D\n\017C_INV_DRAG_DROP\022\017\n\007itemUid\030\001 \001(\004\022\020\n\010f"
-  "romSlot\030\002 \001(\005\022\016\n\006toSlot\030\003 \001(\005*\230\001\n\026Dungeo"
-  "nEnterFailReason\022\024\n\020DUNGEON_ENTER_OK\020\000\022#"
-  "\n\037DUNGEON_ENTER_FAIL_NOT_IN_PARTY\020\001\022\"\n\036D"
-  "UNGEON_ENTER_FAIL_INVALID_MAP\020\002\022\037\n\033DUNGE"
-  "ON_ENTER_FAIL_INTERNAL\020\003*\226\001\n\025DungeonExit"
-  "FailReason\022\023\n\017DUNGEON_EXIT_OK\020\000\022$\n DUNGE"
-  "ON_EXIT_FAIL_NOT_IN_DUNGEON\020\001\022\"\n\036DUNGEON"
-  "_EXIT_FAIL_NOT_IN_PARTY\020\002\022\036\n\032DUNGEON_EXI"
-  "T_FAIL_INTERNAL\020\003b\006proto3"
+  "Q\022\026\n\016targetPlayerId\030\001 \001(\004\"F\n\022C_PARTY_INV"
+  "ITE_REQ\022\026\n\016targetPlayerId\030\001 \001(\004\022\030\n\020targe"
+  "tPlayerName\030\002 \001(\t\"<\n\031C_PARTY_INVITE_ACCE"
+  "PT_REQ\022\017\n\007partyId\030\001 \001(\004\022\016\n\006accept\030\002 \001(\010\""
+  "\023\n\021C_PARTY_LEAVE_REQ\"*\n\020C_PARTY_KICK_REQ"
+  "\022\026\n\016targetPlayerId\030\001 \001(\004\"\025\n\023C_PARTY_DISB"
+  "AND_REQ\"_\n\016S_PARTY_RESULT\022\n\n\002op\030\001 \001(\005\022\017\n"
+  "\007success\030\002 \001(\010\022\016\n\006reason\030\003 \001(\005\022\017\n\007partyI"
+  "d\030\004 \001(\004\022\017\n\007version\030\005 \001(\r\"M\n\022S_PARTY_INVI"
+  "TE_NTF\022\017\n\007partyId\030\001 \001(\004\022\021\n\tinviterId\030\002 \001"
+  "(\004\022\023\n\013inviterName\030\003 \001(\t\"\272\001\n\021PartyMemberS"
+  "tatus\022\020\n\010playerId\030\001 \001(\004\022\020\n\010objectId\030\002 \001("
+  "\004\022\014\n\004name\030\003 \001(\t\022\r\n\005level\030\004 \001(\005\022\n\n\002hp\030\005 \001"
+  "(\005\022\r\n\005maxHp\030\006 \001(\005\022\r\n\005mapId\030\007 \001(\005\022\021\n\tchan"
+  "nelId\030\010 \001(\005\022\'\n\007posInfo\030\t \001(\0132\026.Protocol."
+  "PositionInfo\"\024\n\022C_PARTY_STATUS_REQ\"d\n\022S_"
+  "PARTY_STATUS_NTF\022\017\n\007partyId\030\001 \001(\004\022\017\n\007ver"
+  "sion\030\002 \001(\r\022,\n\007members\030\003 \003(\0132\033.Protocol.P"
+  "artyMemberStatus\"+\n\023C_DUNGEON_ENTER_REQ\022"
+  "\024\n\014dungeonMapId\030\001 \001(\005\"\202\001\n\023S_DUNGEON_ENTE"
+  "R_RES\022\017\n\007success\030\001 \001(\010\022\024\n\014dungeonMapId\030\002"
+  " \001(\005\022\022\n\ninstanceid\030\003 \001(\003\0220\n\006reason\030\004 \001(\016"
+  "2 .Protocol.DungeonEnterFailReason\"\024\n\022C_"
+  "DUNGEON_EXIT_REQ\"\205\001\n\022S_DUNGEON_EXIT_RES\022"
+  "\017\n\007success\030\001 \001(\010\022\023\n\013returnMapId\030\002 \001(\005\022\030\n"
+  "\020returnInstanceid\030\003 \001(\003\022/\n\006reason\030\004 \001(\0162"
+  "\037.Protocol.DungeonExitFailReason\":\n\020S_QU"
+  "ICKSLOT_LIST\022&\n\005slots\030\001 \003(\0132\027.Protocol.Q"
+  "uickSlotInfo\"`\n\017C_SET_QUICKSLOT\022\021\n\tslotI"
+  "ndex\030\001 \001(\005\022+\n\007refType\030\002 \001(\0162\032.Protocol.Q"
+  "uickSlotRefType\022\r\n\005refId\030\003 \001(\004\"I\n\017S_SET_"
+  "QUICKSLOT\022\017\n\007success\030\001 \001(\010\022%\n\004slot\030\002 \001(\013"
+  "2\027.Protocol.QuickSlotInfo\"%\n\013C_TRADE_REQ"
+  "\022\026\n\016targetPlayerId\030\001 \001(\004\"8\n\016S_TRADE_INVI"
+  "TE\022\024\n\014fromPlayerId\030\001 \001(\004\022\020\n\010fromName\030\002 \001"
+  "(\t\"%\n\023C_TRADE_INVITE_RESP\022\016\n\006accept\030\001 \001("
+  "\010\"B\n\rS_TRADE_START\022\017\n\007tradeId\030\001 \001(\004\022\016\n\006p"
+  "eerId\030\002 \001(\004\022\020\n\010peerName\030\003 \001(\t\"D\n\021C_TRADE"
+  "_OFFER_SET\022\017\n\007tradeId\030\001 \001(\004\022\017\n\007itemUid\030\002"
+  " \001(\004\022\r\n\005count\030\003 \001(\005\"e\n\024S_TRADE_OFFER_UPD"
+  "ATE\022\017\n\007tradeId\030\001 \001(\004\022\023\n\013whoPlayerId\030\002 \001("
+  "\004\022\'\n\005items\030\003 \003(\0132\030.Protocol.TradeOfferIt"
+  "em\"/\n\rC_TRADE_READY\022\017\n\007tradeId\030\001 \001(\004\022\r\n\005"
+  "ready\030\002 \001(\010\"F\n\023S_TRADE_READY_STATE\022\017\n\007tr"
+  "adeId\030\001 \001(\004\022\016\n\006aReady\030\002 \001(\010\022\016\n\006bReady\030\003 "
+  "\001(\010\"!\n\016S_TRADE_LOCKED\022\017\n\007tradeId\030\001 \001(\004\"\""
+  "\n\017C_TRADE_CONFIRM\022\017\n\007tradeId\030\001 \001(\004\"N\n\016C_"
+  "TRADE_CANCEL\022\017\n\007tradeId\030\001 \001(\004\022+\n\006reason\030"
+  "\002 \001(\0162\033.Protocol.TradeCancelReason\"Q\n\021S_"
+  "TRADE_CANCELLED\022\017\n\007tradeId\030\001 \001(\004\022+\n\006reas"
+  "on\030\002 \001(\0162\033.Protocol.TradeCancelReason\"j\n"
+  "\016S_TRADE_RESULT\022\017\n\007tradeId\030\001 \001(\004\022\017\n\007succ"
+  "ess\030\002 \001(\010\022)\n\010failCode\030\003 \001(\0162\027.Protocol.T"
+  "radeFailCode\022\013\n\003msg\030\004 \001(\t\"D\n\017C_INV_DRAG_"
+  "DROP\022\017\n\007itemUid\030\001 \001(\004\022\020\n\010fromSlot\030\002 \001(\005\022"
+  "\016\n\006toSlot\030\003 \001(\005*\230\001\n\026DungeonEnterFailReas"
+  "on\022\024\n\020DUNGEON_ENTER_OK\020\000\022#\n\037DUNGEON_ENTE"
+  "R_FAIL_NOT_IN_PARTY\020\001\022\"\n\036DUNGEON_ENTER_F"
+  "AIL_INVALID_MAP\020\002\022\037\n\033DUNGEON_ENTER_FAIL_"
+  "INTERNAL\020\003*\226\001\n\025DungeonExitFailReason\022\023\n\017"
+  "DUNGEON_EXIT_OK\020\000\022$\n DUNGEON_EXIT_FAIL_N"
+  "OT_IN_DUNGEON\020\001\022\"\n\036DUNGEON_EXIT_FAIL_NOT"
+  "_IN_PARTY\020\002\022\036\n\032DUNGEON_EXIT_FAIL_INTERNA"
+  "L\020\003b\006proto3"
   ;
 static const ::_pbi::DescriptorTable* const descriptor_table_Protocol_2eproto_deps[2] = {
   &::descriptor_table_Enum_2eproto,
@@ -1728,7 +1731,7 @@ static const ::_pbi::DescriptorTable* const descriptor_table_Protocol_2eproto_de
 };
 static ::_pbi::once_flag descriptor_table_Protocol_2eproto_once;
 const ::_pbi::DescriptorTable descriptor_table_Protocol_2eproto = {
-    false, false, 4705, descriptor_table_protodef_Protocol_2eproto,
+    false, false, 4731, descriptor_table_protodef_Protocol_2eproto,
     "Protocol.proto",
     &descriptor_table_Protocol_2eproto_once, descriptor_table_Protocol_2eproto_deps, 2, 64,
     schemas, file_default_instances, TableStruct_Protocol_2eproto::offsets,
@@ -9176,10 +9179,19 @@ C_PARTY_INVITE_REQ::C_PARTY_INVITE_REQ(const C_PARTY_INVITE_REQ& from)
   : ::PROTOBUF_NAMESPACE_ID::Message() {
   C_PARTY_INVITE_REQ* const _this = this; (void)_this;
   new (&_impl_) Impl_{
-      decltype(_impl_.targetplayerid_){}
+      decltype(_impl_.targetplayername_){}
+    , decltype(_impl_.targetplayerid_){}
     , /*decltype(_impl_._cached_size_)*/{}};
 
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  _impl_.targetplayername_.InitDefault();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+    _impl_.targetplayername_.Set("", GetArenaForAllocation());
+  #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (!from._internal_targetplayername().empty()) {
+    _this->_impl_.targetplayername_.Set(from._internal_targetplayername(), 
+      _this->GetArenaForAllocation());
+  }
   _this->_impl_.targetplayerid_ = from._impl_.targetplayerid_;
   // @@protoc_insertion_point(copy_constructor:Protocol.C_PARTY_INVITE_REQ)
 }
@@ -9189,9 +9201,14 @@ inline void C_PARTY_INVITE_REQ::SharedCtor(
   (void)arena;
   (void)is_message_owned;
   new (&_impl_) Impl_{
-      decltype(_impl_.targetplayerid_){uint64_t{0u}}
+      decltype(_impl_.targetplayername_){}
+    , decltype(_impl_.targetplayerid_){uint64_t{0u}}
     , /*decltype(_impl_._cached_size_)*/{}
   };
+  _impl_.targetplayername_.InitDefault();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+    _impl_.targetplayername_.Set("", GetArenaForAllocation());
+  #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
 }
 
 C_PARTY_INVITE_REQ::~C_PARTY_INVITE_REQ() {
@@ -9205,6 +9222,7 @@ C_PARTY_INVITE_REQ::~C_PARTY_INVITE_REQ() {
 
 inline void C_PARTY_INVITE_REQ::SharedDtor() {
   GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
+  _impl_.targetplayername_.Destroy();
 }
 
 void C_PARTY_INVITE_REQ::SetCachedSize(int size) const {
@@ -9217,6 +9235,7 @@ void C_PARTY_INVITE_REQ::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
+  _impl_.targetplayername_.ClearToEmpty();
   _impl_.targetplayerid_ = uint64_t{0u};
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
@@ -9232,6 +9251,16 @@ const char* C_PARTY_INVITE_REQ::_InternalParse(const char* ptr, ::_pbi::ParseCon
         if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 8)) {
           _impl_.targetplayerid_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
+        } else
+          goto handle_unusual;
+        continue;
+      // string targetPlayerName = 2;
+      case 2:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 18)) {
+          auto str = _internal_mutable_targetplayername();
+          ptr = ::_pbi::InlineGreedyStringParser(str, ptr, ctx);
+          CHK_(ptr);
+          CHK_(::_pbi::VerifyUTF8(str, "Protocol.C_PARTY_INVITE_REQ.targetPlayerName"));
         } else
           goto handle_unusual;
         continue;
@@ -9270,6 +9299,16 @@ uint8_t* C_PARTY_INVITE_REQ::_InternalSerialize(
     target = ::_pbi::WireFormatLite::WriteUInt64ToArray(1, this->_internal_targetplayerid(), target);
   }
 
+  // string targetPlayerName = 2;
+  if (!this->_internal_targetplayername().empty()) {
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+      this->_internal_targetplayername().data(), static_cast<int>(this->_internal_targetplayername().length()),
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
+      "Protocol.C_PARTY_INVITE_REQ.targetPlayerName");
+    target = stream->WriteStringMaybeAliased(
+        2, this->_internal_targetplayername(), target);
+  }
+
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
     target = ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance), target, stream);
@@ -9285,6 +9324,13 @@ size_t C_PARTY_INVITE_REQ::ByteSizeLong() const {
   uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
+
+  // string targetPlayerName = 2;
+  if (!this->_internal_targetplayername().empty()) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+        this->_internal_targetplayername());
+  }
 
   // uint64 targetPlayerId = 1;
   if (this->_internal_targetplayerid() != 0) {
@@ -9309,6 +9355,9 @@ void C_PARTY_INVITE_REQ::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, con
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
+  if (!from._internal_targetplayername().empty()) {
+    _this->_internal_set_targetplayername(from._internal_targetplayername());
+  }
   if (from._internal_targetplayerid() != 0) {
     _this->_internal_set_targetplayerid(from._internal_targetplayerid());
   }
@@ -9328,7 +9377,13 @@ bool C_PARTY_INVITE_REQ::IsInitialized() const {
 
 void C_PARTY_INVITE_REQ::InternalSwap(C_PARTY_INVITE_REQ* other) {
   using std::swap;
+  auto* lhs_arena = GetArenaForAllocation();
+  auto* rhs_arena = other->GetArenaForAllocation();
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::InternalSwap(
+      &_impl_.targetplayername_, lhs_arena,
+      &other->_impl_.targetplayername_, rhs_arena
+  );
   swap(_impl_.targetplayerid_, other->_impl_.targetplayerid_);
 }
 

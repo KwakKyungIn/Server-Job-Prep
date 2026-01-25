@@ -2,6 +2,7 @@
 #include "JobQueue.h"
 #include "Job.h"
 #include "Session.h"
+#include <string>
 
 class ClientSession : public PacketSession
 {
@@ -23,5 +24,11 @@ public:
 	}
 
 public:
+	void SetLoginName(const std::string& name) { _loginName = name; }
+	const std::string& GetLoginName() const { return _loginName; }
+	void ClearLoginName() { _loginName.clear(); }
+
+public:
 	shared_ptr<JobQueue> _jobQueue;
+	std::string _loginName;
 };
