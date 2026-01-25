@@ -41,7 +41,13 @@ void GameSessionManager::Remove(PlayerSessionRef session)
         if (playerId != 0)
         {
             _byPlayerId.erase(playerId);
-            _nameByPlayerId.erase(playerId); // 이름 캐시도 정리
+            auto nameIt = _nameByPlayerId.find(playerId);
+            if (nameIt != _nameByPlayerId.end())
+            {
+                const std::string name = nameIt->second;
+                _nameByPlayerId.erase(nameIt); // 이름 캐시도 정리
+                RebuildNameIndex_Locked(name);
+            }
         }
     }
 }
@@ -92,7 +98,13 @@ void GameSessionManager::UnbindPlayerId(uint64 playerId)
 
         _byPlayerId.erase(it);
     }
-    _nameByPlayerId.erase(playerId);
+    auto nameIt = _nameByPlayerId.find(playerId);
+    if (nameIt != _nameByPlayerId.end())
+    {
+        const std::string name = nameIt->second;
+        _nameByPlayerId.erase(nameIt);
+        RebuildNameIndex_Locked(name);
+    }
 }
 
 // 네트워크용: SessionID로 세션 찾기
@@ -142,7 +154,27 @@ void GameSessionManager::SetPlayerName(uint64 playerId, const std::string& name)
     if (playerId == 0) return;
 
     WRITE_LOCK;
+    std::string prev;
+    auto it = _nameByPlayerId.find(playerId);
+    if (it != _nameByPlayerId.end())
+        prev = it->second;
+
+    if (name.empty())
+    {
+        if (it != _nameByPlayerId.end())
+            _nameByPlayerId.erase(it);
+
+        if (!prev.empty())
+            RebuildNameIndex_Locked(prev);
+        return;
+    }
+
     _nameByPlayerId[playerId] = name;
+
+    if (!prev.empty() && prev != name)
+        RebuildNameIndex_Locked(prev);
+
+    RebuildNameIndex_Locked(name);
 }
 
 std::string GameSessionManager::GetPlayerName(uint64 playerId)
@@ -152,4 +184,61 @@ std::string GameSessionManager::GetPlayerName(uint64 playerId)
     if (it == _nameByPlayerId.end())
         return std::string();
     return it->second;
+}
+
+bool GameSessionManager::TryGetPlayerIdByName(const std::string& name, uint64& outPlayerId, bool& ambiguous)
+{
+    outPlayerId = 0;
+    ambiguous = false;
+
+    if (name.empty())
+        return false;
+
+    READ_LOCK;
+    if (_ambiguousNames.find(name) != _ambiguousNames.end())
+    {
+        ambiguous = true;
+        return false;
+    }
+
+    auto it = _playerIdByName.find(name);
+    if (it == _playerIdByName.end())
+        return false;
+
+    outPlayerId = it->second;
+    return true;
+}
+
+void GameSessionManager::RebuildNameIndex_Locked(const std::string& name)
+{
+    if (name.empty()) return;
+
+    uint64 foundId = 0;
+    int count = 0;
+
+    for (auto& kv : _nameByPlayerId)
+    {
+        if (kv.second == name)
+        {
+            count++;
+            foundId = kv.first;
+            if (count > 1) break;
+        }
+    }
+
+    if (count == 0)
+    {
+        _playerIdByName.erase(name);
+        _ambiguousNames.erase(name);
+    }
+    else if (count == 1)
+    {
+        _playerIdByName[name] = foundId;
+        _ambiguousNames.erase(name);
+    }
+    else
+    {
+        _playerIdByName.erase(name);
+        _ambiguousNames.insert(name);
+    }
 }

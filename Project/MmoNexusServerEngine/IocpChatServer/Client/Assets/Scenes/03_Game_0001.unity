@@ -7675,6 +7675,7 @@ MonoBehaviour:
   inventoryPanel: {fileID: 1855886419}
   partyPanel: {fileID: 1958268734}
   chatInput: {fileID: 1308737185}
+  partyInviteInput: {fileID: 716624096}
 --- !u!1 &471435579
 GameObject:
   m_ObjectHideFlags: 0

@@ -37,7 +37,7 @@ public class UI_PartyMemberRow : MonoBehaviour
         _playerId = m.PlayerId;
 
         if (nameText != null)
-            nameText.text = string.IsNullOrEmpty(m.Name) ? $"[{m.PlayerId}]" : $"{m.Name} ({m.PlayerId})";
+            nameText.text = string.IsNullOrEmpty(m.Name) ? $"[{m.PlayerId}]" : m.Name;
 
         if (levelText != null)
             levelText.text = $"Lv{m.Level}";

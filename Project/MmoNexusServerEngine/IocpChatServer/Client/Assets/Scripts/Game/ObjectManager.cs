@@ -54,6 +54,7 @@ public class ObjectManager : MonoBehaviour
         PacketHandler.OnMapChangeEnd -= OnMapChangeEnd;
     }
 
+
     void TryAdoptMyPlayer()
     {
         var my = GameObject.FindWithTag("MyPlayer");

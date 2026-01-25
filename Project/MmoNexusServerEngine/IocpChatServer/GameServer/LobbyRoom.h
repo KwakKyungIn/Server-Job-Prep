@@ -8,6 +8,7 @@
 #include <unordered_map>
 #include <memory>
 #include <functional>
+#include <string>
 
 // forward declaration으로 컴파일 속도 최적화
 class Player;
@@ -46,7 +47,7 @@ public:
     // - OnXXXLoaded: DB/Redis에서 데이터 가져온 후 콜백 처리
     // - TryEnterWorldIfReady: 모든 데이터가 준비되면 실제 게임방으로 이관
     // =========================================================
-    void EnterGame(PlayerSessionRef ps, uint64 playerId, int32 channelId, int32 mapId, const Protocol::PositionInfo& spawn);
+    void EnterGame(PlayerSessionRef ps, uint64 playerId, int32 channelId, int32 mapId, const Protocol::PositionInfo& spawn, const std::string& playerName);
     void OnItemsLoaded(uint64 playerId, const Protocol::S2S_RES_ITEMS_LOAD& pkt);
     void OnStatLoaded(uint64 playerId, const Protocol::S2S_RES_LOAD_PLAYER_DATA& pkt);
     void TryEnterWorldIfReady(uint64 playerId); // Actor thread 전용

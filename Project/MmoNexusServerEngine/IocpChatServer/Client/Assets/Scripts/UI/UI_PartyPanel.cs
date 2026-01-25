@@ -39,6 +39,9 @@ public class UI_PartyPanel : MonoBehaviour
         PartyClient.Instance.OnPartyChanged += Refresh;
         PartyClient.Instance.OnPartyResult += _ => Refresh();
 
+        if (inviteTargetIdInput != null && inviteTargetIdInput.placeholder is TMP_Text placeholder)
+            placeholder.text = "플레이어 ID 또는 이름";
+
         Refresh();
     }
 
@@ -73,13 +76,20 @@ public class UI_PartyPanel : MonoBehaviour
     void OnInviteClicked()
     {
         if (inviteTargetIdInput == null) return;
-        if (!ulong.TryParse(inviteTargetIdInput.text, out ulong targetId))
+        string raw = inviteTargetIdInput.text != null ? inviteTargetIdInput.text.Trim() : "";
+        if (string.IsNullOrEmpty(raw))
         {
-            Debug.LogWarning("[PartyUI] Invalid target id");
+            Debug.LogWarning("[PartyUI] Invite target is empty");
             return;
         }
 
-        PartyApi.Invite(targetId);
+        if (ulong.TryParse(raw, out ulong targetId))
+        {
+            PartyApi.Invite(targetId);
+            return;
+        }
+
+        PartyApi.InviteByName(raw);
     }
 
     void Refresh()

@@ -5,6 +5,7 @@
 #include "S2SPacketHandler.h"
 #include "RoomManager.h"
 #include "PersistenceService.h"
+#include "GameSessionManager.h"
 
 // 퀵슬롯 최대 개수 제한 (프로토콜 및 DB 스키마와 일치시켜야 함)
 static constexpr int32 QS_MAX = 12; // 0~11
@@ -12,7 +13,7 @@ static constexpr int32 QS_MAX = 12; // 0~11
 // [비동기 진입 진입점]
 // 클라이언트가 최초 접속하거나 캐릭터를 선택했을 때 호출됨
 // 여기서 바로 인게임으로 보내지 않고, 필요한 데이터를 DB에서 다 긁어올 때까지 Lobby에서 대기시킴
-void LobbyRoom::EnterGame(PlayerSessionRef ps, uint64 playerId, int32 channelId, int32 mapId, const Protocol::PositionInfo& spawn)
+void LobbyRoom::EnterGame(PlayerSessionRef ps, uint64 playerId, int32 channelId, int32 mapId, const Protocol::PositionInfo& spawn, const std::string& playerName)
 {
     if (!ps) return;
     if (playerId == 0) return;
@@ -42,6 +43,13 @@ void LobbyRoom::EnterGame(PlayerSessionRef ps, uint64 playerId, int32 channelId,
     }
 
 
+    // 이름 결정: Redis에서 못 가져왔으면 기존 이름이나 기본값으로 보정
+    std::string finalName = playerName;
+    if (finalName.empty() && slot.player)
+        finalName = slot.player->GetName();
+    if (finalName.empty())
+        finalName = "Player_" + std::to_string(playerId);
+
     // 슬롯 상태에 따라 객체 생성 분기
     // 1. 아예 처음 들어온 경우 -> Player 객체 새로 생성
     // 2. 재접속이나 로딩 중 재요청 -> 기존 객체 재활용 (메모리 파편화 방지)
@@ -51,7 +59,7 @@ void LobbyRoom::EnterGame(PlayerSessionRef ps, uint64 playerId, int32 channelId,
 
         Protocol::PlayerInfo info;
         info.set_playerid(playerId);
-        info.set_name("Player_" + std::to_string(playerId));
+        info.set_name(finalName);
         info.mutable_posinfo()->CopyFrom(spawn);
 
         p->Init(info);
@@ -68,9 +76,16 @@ void LobbyRoom::EnterGame(PlayerSessionRef ps, uint64 playerId, int32 channelId,
         p->SetChannelId(channelId);
         p->SetMapId(mapId);
         p->SetInstanceId(0);
+        if (!finalName.empty())
+            p->GetPlayerInfo()->set_name(finalName);
+
         p->GetPlayerInfo()->mutable_posinfo()->CopyFrom(spawn);
         p->SetSession(ps);
     }
+
+    // 파티/채팅 등에서 사용할 이름 캐싱
+    if (!finalName.empty() && GameSessionManager::GSessionManager)
+        GameSessionManager::GSessionManager->SetPlayerName(playerId, finalName);
 
     // DB 로딩 상태 플래그 초기화 (Race Condition 방지의 핵심)
     // 이 플래그들이 전부 true가 되어야만 실제 월드로 진입 가능함

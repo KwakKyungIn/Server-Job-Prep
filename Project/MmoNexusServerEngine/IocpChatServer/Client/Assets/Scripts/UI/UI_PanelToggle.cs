@@ -8,6 +8,7 @@ public class UI_PanelToggle : MonoBehaviour
 
     // (선택) 채팅 입력 중엔 토글 안 되게
     public TMP_InputField chatInput;
+    public TMP_InputField partyInviteInput;
 
     void Start()
     {
@@ -18,6 +19,9 @@ public class UI_PanelToggle : MonoBehaviour
     void Update()
     {
         if (chatInput != null && chatInput.isFocused)
+            return;
+
+        if (partyInviteInput != null && partyInviteInput.isFocused)
             return;
 
         if (Input.GetKeyDown(KeyCode.I))

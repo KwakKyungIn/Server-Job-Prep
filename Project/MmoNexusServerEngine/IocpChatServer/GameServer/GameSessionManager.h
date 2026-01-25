@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "Lock.h"
+#include <string>
 #include <unordered_map>
 
 class PlayerSession;
@@ -28,6 +29,7 @@ public:
 
     void SetPlayerName(uint64 playerId, const std::string& name);
     std::string GetPlayerName(uint64 playerId);
+    bool TryGetPlayerIdByName(const std::string& name, uint64& outPlayerId, bool& ambiguous);
 
 private:
     USE_LOCK;
@@ -40,4 +42,8 @@ private:
     HashMap<uint64, uint64> _playerIdBySessionId;     // SessionId -> PlayerId 매핑
 
     HashMap<uint64, std::string> _nameByPlayerId;     // 닉네임 캐싱 (채팅/파티용)
+    HashMap<std::string, uint64> _playerIdByName;     // 이름 -> PlayerId (중복이면 비움)
+    HashSet<std::string> _ambiguousNames;             // 중복 이름
+
+    void RebuildNameIndex_Locked(const std::string& name);
 };

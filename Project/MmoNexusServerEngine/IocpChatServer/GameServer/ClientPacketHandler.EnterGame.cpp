@@ -30,6 +30,7 @@ bool ClientPacketHandler::Handle_C_ENTER_GAME(PacketSessionRef& session, Protoco
 	}
 
 	uint64 playerId = std::stoull(value);
+	std::string playerName = GRedisManager->Get("token:name:" + token);
 
 	int32 channelId = pkt.channelid();
 	if (channelId <= 0) channelId = 1;
@@ -64,7 +65,7 @@ bool ClientPacketHandler::Handle_C_ENTER_GAME(PacketSessionRef& session, Protoco
 
 	// 여기서부터는 세션 액터의 컨텍스트로 전환
 	// 세션에 플레이어 ID를 묶고, 로비 룸을 찾아 플레이어 객체 생성을 위임함
-	ps->Post([playerId, channelId, mapId, spawn](PlayerSessionRef ps) mutable
+	ps->Post([playerId, channelId, mapId, spawn, playerName](PlayerSessionRef ps) mutable
 		{
 			GameSessionManager::GSessionManager->BindPlayerId(ps, playerId);
 			ps->SetPlayerId_ActorOnly(playerId);
@@ -79,9 +80,9 @@ bool ClientPacketHandler::Handle_C_ENTER_GAME(PacketSessionRef& session, Protoco
 				auto lobby = GRoomManager->GetOrCreateLobby(channelId);
 				if (lobby)
 				{
-					lobby->Push([ps, playerId, channelId, mapId, spawn, lobby]() mutable
+					lobby->Push([ps, playerId, channelId, mapId, spawn, playerName, lobby]() mutable
 						{
-							lobby->EnterGame(ps, playerId, channelId, mapId, spawn);
+							lobby->EnterGame(ps, playerId, channelId, mapId, spawn, playerName);
 						});
 				}
 			}

@@ -219,7 +219,8 @@ message C_PARTY_CREATE_REQ {
 }
 
 message C_PARTY_INVITE_REQ {
-    uint64 targetPlayerId = 1;
+    uint64 targetPlayerId = 1;   // if 0, use targetPlayerName
+    string targetPlayerName = 2; // optional: invite by name (online only)
 }
 
 message C_PARTY_INVITE_ACCEPT_REQ {

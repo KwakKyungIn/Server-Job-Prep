@@ -1,4 +1,5 @@
-﻿using Protocol;
+﻿using UnityEngine;
+using Protocol;
 
 public static class PartyApi
 {
@@ -11,6 +12,23 @@ public static class PartyApi
     public static void Invite(ulong targetPlayerId)
     {
         var pkt = new C_PARTY_INVITE_REQ { TargetPlayerId = targetPlayerId };
+        NetworkManager.Instance.Send(pkt, (ushort)PacketManager.MsgId.C_PARTY_INVITE_REQ);
+    }
+
+    public static void InviteByName(string targetName)
+    {
+        if (string.IsNullOrWhiteSpace(targetName))
+        {
+            Debug.LogWarning("[Party] InviteByName failed: empty name");
+            return;
+        }
+
+        var pkt = new C_PARTY_INVITE_REQ
+        {
+            TargetPlayerId = 0,
+            TargetPlayerName = targetName.Trim()
+        };
+
         NetworkManager.Instance.Send(pkt, (ushort)PacketManager.MsgId.C_PARTY_INVITE_REQ);
     }
 

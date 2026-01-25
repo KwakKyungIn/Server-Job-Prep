@@ -211,12 +211,36 @@ bool ClientPacketHandler::Handle_C_PARTY_INVITE_REQ(PacketSessionRef& session, P
 	const uint64 inviterId = ps->GetPlayerId_AnyThread();
 	if (inviterId == 0) return true;
 
-	const uint64 targetId = pkt.targetplayerid();
+	uint64 targetId = pkt.targetplayerid();
+	std::string targetName = pkt.targetplayername();
 
 	std::string inviterName = GameSessionManager::GSessionManager->GetPlayerName(inviterId);
 	if (inviterName.empty()) inviterName = "Unknown";
 
-	// 자기 자신 초대 방지
+	// 이름으로 초대하는 경우, 서버에서 온라인 유저를 탐색
+	if (targetId == 0 && !targetName.empty())
+	{
+		bool ambiguous = false;
+		uint64 resolvedId = 0;
+		const bool ok = GameSessionManager::GSessionManager->TryGetPlayerIdByName(targetName, resolvedId, ambiguous);
+		(void)ambiguous;
+		if (!ok || resolvedId == 0)
+		{
+			ps->Post([](PlayerSessionRef self)
+				{
+					Protocol::S_PARTY_RESULT res;
+					res.set_op(Protocol::PARTY_OP_INVITE);
+					res.set_success(false);
+					res.set_reason(Protocol::PARTY_REASON_NO_TARGET);
+					self->Send(ClientPacketHandler::MakeSendBuffer(res));
+				});
+			return true;
+		}
+
+		targetId = resolvedId;
+	}
+
+	// 대상이 없거나 자기 자신 초대 방지
 	if (targetId == 0 || targetId == inviterId)
 	{
 		ps->Post([](PlayerSessionRef self)

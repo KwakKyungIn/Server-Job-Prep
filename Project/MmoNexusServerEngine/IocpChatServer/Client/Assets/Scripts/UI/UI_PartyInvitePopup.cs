@@ -39,7 +39,10 @@ public class UI_PartyInvitePopup : MonoBehaviour
         _partyId = pkt.PartyId;
 
         if (msgText != null)
-            msgText.text = $"{pkt.InviterName}({pkt.InviterId}) invited you!\nPartyId={pkt.PartyId}";
+        {
+            string name = string.IsNullOrEmpty(pkt.InviterName) ? pkt.InviterId.ToString() : pkt.InviterName;
+            msgText.text = $"{name} invited you!\nPartyId={pkt.PartyId}";
+        }
 
         if (root != null) root.SetActive(true);
     }
