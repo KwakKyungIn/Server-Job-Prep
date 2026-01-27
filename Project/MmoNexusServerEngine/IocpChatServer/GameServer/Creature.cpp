@@ -17,7 +17,6 @@ Creature::Creature(Protocol::ObjectType type) : _objectType(type)
     // 2. 타입 정보를 ID 자체에 비트 연산으로 포함시킴
     // 상위 8비트에 ObjectType을 넣고, 하위 비트에 일련번호를 넣는 방식
     // 이렇게 하면 ID만 봐도 이게 플레이어인지 몬스터인지 바로 알 수 있어서 유용하다
-    // 예: OBJECT_TYPE_PLAYER(1) << 56 -> 0x01
     _objectId = ((uint64)_objectType << 56) | id;
 }
 

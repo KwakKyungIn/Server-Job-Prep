@@ -68,7 +68,7 @@ void GameRoom::SendEnterSpawns(PlayerSessionRef session, PlayerRef player)
 void GameRoom::BroadcastToZone(SendBufferRef sendBuffer, int32 zoneIndex, uint64 exceptId)
 {
 	Vector<Zone*> nearbyZones;
-	_grid.GetNearbyZones(zoneIndex, nearbyZones);   // [CHANGED]
+	_grid.GetNearbyZones(zoneIndex, nearbyZones); 
 
 	for (Zone* zone : nearbyZones)
 	{
