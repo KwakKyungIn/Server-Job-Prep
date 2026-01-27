@@ -419,7 +419,6 @@ bool DBAgentPacketHandler::Handle_S2S_REQ_LOAD_PLAYER_DATA(PacketSessionRef& ses
 
 bool DBAgentPacketHandler::Handle_S2S_REQ_HEART_BEAT(PacketSessionRef& session, Protocol::S2S_REQ_HEART_BEAT& pkt)
 {
-	// std::cout << "DB->-> PONG" << std::endl;
 	Protocol::S2S_RES_HEART_BEAT resPkt;
 	auto sendBuffer = DBAgentPacketHandler::MakeSendBuffer(resPkt);
 	session->Send(sendBuffer);

@@ -78,29 +78,33 @@ void Service::ReleaseSession(SessionRef session)
 void Service::CheckHeartbeat()
 {
 	uint64 now = ::GetTickCount64();
+	Vector<SessionRef> timeoutSessions;
 
-	WRITE_LOCK;
-	for (auto it = _sessions.begin(); it != _sessions.end(); )
 	{
-		SessionRef session = *it;
-
-		uint64 lastRecv = session->GetLastRecvTime();
-
-		if (lastRecv != 0 && (now - lastRecv > 30000))
+		WRITE_LOCK;
+		for (auto it = _sessions.begin(); it != _sessions.end(); )
 		{
-			std::cout << "Heartbeat Timeout!" << std::endl;
+			SessionRef session = *it;
+
+			uint64 lastRecv = session->GetLastRecvTime();
+
+			if (lastRecv != 0 && (now - lastRecv > 30000))
+			{
+				std::cout << "Heartbeat Timeout!" << std::endl;
+				timeoutSessions.push_back(session);
+			}
+
+			if (session->IsConnected())
+				session->Ping();
+			++it;
+		}
+	}
+
+	// Disconnect는 락 밖에서 처리 (ReleaseSession과의 충돌 방지)
+	for (const auto& session : timeoutSessions)
+	{
+		if (session)
 			session->Disconnect(L"Heartbeat Timeout");
-		}
-
-		if (session->IsConnected() == false)
-		{
-			it = _sessions.erase(it);
-			_sessionCount--;
-			continue;
-		}
-
-		session->Ping();
-		++it;
 	}
 }
 

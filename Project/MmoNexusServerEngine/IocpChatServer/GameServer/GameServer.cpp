@@ -332,6 +332,10 @@ int main()
 		{
 			lastHeartbeatTick = now;
 			// 필요한 경우 서비스별 Health Check 수행
+			dbService->CheckHeartbeat();
+			loginService->CheckHeartbeat();
+			// gameService는 플레이어 클라용 (필요 시만 활성화)
+			//gameService->CheckHeartbeat();
 		}
 	}
 

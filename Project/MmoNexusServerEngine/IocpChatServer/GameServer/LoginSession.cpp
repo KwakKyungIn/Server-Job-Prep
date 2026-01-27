@@ -33,3 +33,11 @@ void LoginSession::OnRecvPacket(BYTE* buffer, int32 len)
 void LoginSession::OnSend(int32 len)
 {
 }
+
+void LoginSession::Ping()
+{
+	// LoginServer로 S2S 하트비트 요청
+	Protocol::S2S_REQ_HEART_BEAT pkt;
+	auto sendBuffer = S2SPacketHandler::MakeSendBuffer(pkt);
+	Send(sendBuffer);
+}

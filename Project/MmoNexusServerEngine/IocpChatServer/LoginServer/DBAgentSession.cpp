@@ -24,3 +24,11 @@ void DBAgentSession::OnSend(int32 len)
 {
 	// 전송 완료 로그 등 필요 시 작성
 }
+
+void DBAgentSession::Ping()
+{
+	// DBAgent로 S2S 하트비트 요청
+	Protocol::S2S_REQ_HEART_BEAT pkt;
+	auto sendBuffer = S2SPacketHandler::MakeSendBuffer(pkt);
+	Send(sendBuffer);
+}

@@ -118,8 +118,8 @@ int main()
 		std::this_thread::sleep_for(std::chrono::seconds(3));
 
 		// 두 서비스 모두 체크
-		//gameService->CheckHeartbeat();
-		//loginService->CheckHeartbeat();
+		gameService->CheckHeartbeat();
+		loginService->CheckHeartbeat();
 	}
 
 	// 5. 대기 및 종료

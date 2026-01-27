@@ -125,12 +125,16 @@ int main()
 			});
 	}
 
+	// [ADD] 로직(글로벌 큐) 처리 스레드
+	GThreadManager->Launch([=]() {
+		ThreadManager::DoGlobalQueueWork();
+		});
+
 	// 5. 메인 루프
 	uint64 lastHeartbeatTick = 0;
 
 	while (GIsRunning)
 	{
-		ThreadManager::DoGlobalQueueWork();
 		std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
 		uint64 now = ::GetTickCount64();
@@ -138,8 +142,10 @@ int main()
 		{
 			lastHeartbeatTick = now;
 			// 하트비트 체크
-			 //clientService->CheckHeartbeat(); 
-			 //dbService->CheckHeartbeat(); 
+			// clientService는 플레이어 클라용 (필요 시만 활성화)
+			//clientService->CheckHeartbeat(); 
+			dbService->CheckHeartbeat();
+			gameServerService->CheckHeartbeat();
 		}
 	}
 
