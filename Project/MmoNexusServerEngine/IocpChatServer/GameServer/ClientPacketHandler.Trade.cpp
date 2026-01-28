@@ -102,6 +102,34 @@ bool ClientPacketHandler::Handle_C_TRADE_OFFER_SET(PacketSessionRef& session, Pr
     return true;
 }
 
+// 거래 골드 제안 핸들러
+bool ClientPacketHandler::Handle_C_TRADE_GOLD_SET(PacketSessionRef& session, Protocol::C_TRADE_GOLD_SET& pkt)
+{
+    PlayerSessionRef ps = static_pointer_cast<PlayerSession>(session);
+    if (!ps) return false;
+
+    if (ps->IsMapChanging()) return true;
+
+    const uint64 playerId = ps->GetPlayerId_AnyThread();
+    if (playerId == 0) return true;
+
+    ps->PostRoom([playerId, pkt](PlayerSessionRef self, RoomActorRef room) mutable
+        {
+            if (!room) return;
+            if (!self) return;
+            if (self->IsMapChanging()) return;
+            if (room->GetKind() != RoomKind::Game) return;
+
+            auto gr = static_pointer_cast<GameRoom>(room);
+            gr->Push([gr, self, playerId, pkt]() mutable
+                {
+                    gr->HandleTradeGoldSetById(self, playerId, pkt);
+                });
+        });
+
+    return true;
+}
+
 // 거래 준비 완료(Lock) 핸들러
 // 양쪽 다 Ready를 박으면 거래 확정 단계로 넘어간다
 bool ClientPacketHandler::Handle_C_TRADE_READY(PacketSessionRef& session, Protocol::C_TRADE_READY& pkt)

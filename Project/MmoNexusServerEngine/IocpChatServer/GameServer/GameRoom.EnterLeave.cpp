@@ -79,6 +79,7 @@ void GameRoom::Enter(PlayerSessionRef session, PlayerRef player)
 	Protocol::S_ENTER_GAME enterPkt;
 	enterPkt.set_success(true);
 	enterPkt.mutable_myplayer()->CopyFrom(*player->GetPlayerInfo());
+	enterPkt.set_gold(player->GetGold());
 	// enterPkt.set_mapid(_mapId);
 
 	session->Send(ClientPacketHandler::MakeSendBuffer(enterPkt));

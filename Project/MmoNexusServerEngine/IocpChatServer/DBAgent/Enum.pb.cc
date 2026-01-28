@@ -71,18 +71,19 @@ const char descriptor_table_protodef_Enum_2eproto[] PROTOBUF_SECTION_VARIABLE(pr
   "_BY_SELF\020\001\022\031\n\025TRADE_CANCEL_DECLINED\020\002\022\033\n"
   "\027TRADE_CANCEL_DISCONNECT\020\003\022\033\n\027TRADE_CANC"
   "EL_MAP_CHANGE\020\004\022\030\n\024TRADE_CANCEL_TIMEOUT\020"
-  "\005\022\031\n\025TRADE_CANCEL_INTERNAL\020\006*\220\002\n\rTradeFa"
+  "\005\022\031\n\025TRADE_CANCEL_INTERNAL\020\006*\260\002\n\rTradeFa"
   "ilCode\022\023\n\017TRADE_FAIL_NONE\020\000\022\035\n\031TRADE_FAI"
   "L_INVALID_TARGET\020\001\022\036\n\032TRADE_FAIL_ALREADY"
   "_TRADING\020\002\022\037\n\033TRADE_FAIL_DISTANCE_TOO_FA"
   "R\020\003\022\034\n\030TRADE_FAIL_INVALID_STATE\020\004\022\033\n\027TRA"
   "DE_FAIL_INVALID_ITEM\020\005\022\035\n\031TRADE_FAIL_INV"
   "ENTORY_FULL\020\006\022\027\n\023TRADE_FAIL_INTERNAL\020\007\022\027"
-  "\n\023TRADE_FAIL_REJECTED\020\010b\006proto3"
+  "\n\023TRADE_FAIL_REJECTED\020\010\022\036\n\032TRADE_FAIL_NO"
+  "T_ENOUGH_GOLD\020\tb\006proto3"
   ;
 static ::_pbi::once_flag descriptor_table_Enum_2eproto_once;
 const ::_pbi::DescriptorTable descriptor_table_Enum_2eproto = {
-    false, false, 1991, descriptor_table_protodef_Enum_2eproto,
+    false, false, 2023, descriptor_table_protodef_Enum_2eproto,
     "Enum.proto",
     &descriptor_table_Enum_2eproto_once, nullptr, 0, 0,
     schemas, file_default_instances, TableStruct_Enum_2eproto::offsets,
@@ -348,6 +349,7 @@ bool TradeFailCode_IsValid(int value) {
     case 6:
     case 7:
     case 8:
+    case 9:
       return true;
     default:
       return false;

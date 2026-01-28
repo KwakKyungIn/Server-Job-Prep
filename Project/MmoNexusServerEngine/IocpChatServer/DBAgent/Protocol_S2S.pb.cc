@@ -69,6 +69,7 @@ PROTOBUF_CONSTEXPR S2S_RES_LOAD_PLAYER_DATA::S2S_RES_LOAD_PLAYER_DATA(
     /*decltype(_impl_.statinfo_)*/nullptr
   , /*decltype(_impl_.playerid_)*/uint64_t{0u}
   , /*decltype(_impl_.gamesessionid_)*/uint64_t{0u}
+  , /*decltype(_impl_.gold_)*/int64_t{0}
   , /*decltype(_impl_.success_)*/false
   , /*decltype(_impl_._cached_size_)*/{}} {}
 struct S2S_RES_LOAD_PLAYER_DATADefaultTypeInternal {
@@ -165,6 +166,7 @@ PROTOBUF_CONSTEXPR S2S_REQ_SAVE_PLAYER_CORE::S2S_REQ_SAVE_PLAYER_CORE(
   , /*decltype(_impl_.level_)*/0
   , /*decltype(_impl_.hp_)*/0
   , /*decltype(_impl_.totalexp_)*/int64_t{0}
+  , /*decltype(_impl_.gold_)*/int64_t{0}
   , /*decltype(_impl_._cached_size_)*/{}} {}
 struct S2S_REQ_SAVE_PLAYER_COREDefaultTypeInternal {
   PROTOBUF_CONSTEXPR S2S_REQ_SAVE_PLAYER_COREDefaultTypeInternal()
@@ -355,6 +357,8 @@ PROTOBUF_CONSTEXPR S2S_REQ_TRADE_COMMIT::S2S_REQ_TRADE_COMMIT(
   , /*decltype(_impl_.playeraid_)*/uint64_t{0u}
   , /*decltype(_impl_.playerbid_)*/uint64_t{0u}
   , /*decltype(_impl_.requestid_)*/uint64_t{0u}
+  , /*decltype(_impl_.finalgolda_)*/int64_t{0}
+  , /*decltype(_impl_.finalgoldb_)*/int64_t{0}
   , /*decltype(_impl_._cached_size_)*/{}} {}
 struct S2S_REQ_TRADE_COMMITDefaultTypeInternal {
   PROTOBUF_CONSTEXPR S2S_REQ_TRADE_COMMITDefaultTypeInternal()
@@ -425,6 +429,7 @@ const uint32_t TableStruct_Protocol_5fS2S_2eproto::offsets[] PROTOBUF_SECTION_VA
   PROTOBUF_FIELD_OFFSET(::Protocol::S2S_RES_LOAD_PLAYER_DATA, _impl_.playerid_),
   PROTOBUF_FIELD_OFFSET(::Protocol::S2S_RES_LOAD_PLAYER_DATA, _impl_.statinfo_),
   PROTOBUF_FIELD_OFFSET(::Protocol::S2S_RES_LOAD_PLAYER_DATA, _impl_.gamesessionid_),
+  PROTOBUF_FIELD_OFFSET(::Protocol::S2S_RES_LOAD_PLAYER_DATA, _impl_.gold_),
   ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(::Protocol::S2S_REQ_ITEMS_LOAD, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -481,6 +486,7 @@ const uint32_t TableStruct_Protocol_5fS2S_2eproto::offsets[] PROTOBUF_SECTION_VA
   PROTOBUF_FIELD_OFFSET(::Protocol::S2S_REQ_SAVE_PLAYER_CORE, _impl_.level_),
   PROTOBUF_FIELD_OFFSET(::Protocol::S2S_REQ_SAVE_PLAYER_CORE, _impl_.hp_),
   PROTOBUF_FIELD_OFFSET(::Protocol::S2S_REQ_SAVE_PLAYER_CORE, _impl_.totalexp_),
+  PROTOBUF_FIELD_OFFSET(::Protocol::S2S_REQ_SAVE_PLAYER_CORE, _impl_.gold_),
   ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(::Protocol::S2S_RES_SAVE_PLAYER_CORE, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -597,6 +603,8 @@ const uint32_t TableStruct_Protocol_5fS2S_2eproto::offsets[] PROTOBUF_SECTION_VA
   PROTOBUF_FIELD_OFFSET(::Protocol::S2S_REQ_TRADE_COMMIT, _impl_.finalbitems_),
   PROTOBUF_FIELD_OFFSET(::Protocol::S2S_REQ_TRADE_COMMIT, _impl_.deletedbitemuids_),
   PROTOBUF_FIELD_OFFSET(::Protocol::S2S_REQ_TRADE_COMMIT, _impl_.requestid_),
+  PROTOBUF_FIELD_OFFSET(::Protocol::S2S_REQ_TRADE_COMMIT, _impl_.finalgolda_),
+  PROTOBUF_FIELD_OFFSET(::Protocol::S2S_REQ_TRADE_COMMIT, _impl_.finalgoldb_),
   ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(::Protocol::S2S_RES_TRADE_COMMIT, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -616,26 +624,26 @@ static const ::_pbi::MigrationSchema schemas[] PROTOBUF_SECTION_VARIABLE(protode
   { 8, -1, -1, sizeof(::Protocol::S2S_RES_LOGIN)},
   { 17, -1, -1, sizeof(::Protocol::S2S_REQ_LOAD_PLAYER_DATA)},
   { 25, -1, -1, sizeof(::Protocol::S2S_RES_LOAD_PLAYER_DATA)},
-  { 35, -1, -1, sizeof(::Protocol::S2S_REQ_ITEMS_LOAD)},
-  { 43, -1, -1, sizeof(::Protocol::S2S_RES_ITEMS_LOAD)},
-  { 53, -1, -1, sizeof(::Protocol::S2S_REQ_LOAD_GAME_DATA)},
-  { 59, -1, -1, sizeof(::Protocol::S2S_RES_LOAD_GAME_DATA)},
-  { 69, -1, -1, sizeof(::Protocol::S2S_RES_HEART_BEAT)},
-  { 75, -1, -1, sizeof(::Protocol::S2S_REQ_HEART_BEAT)},
-  { 81, -1, -1, sizeof(::Protocol::S2S_REQ_SAVE_PLAYER_CORE)},
-  { 91, -1, -1, sizeof(::Protocol::S2S_RES_SAVE_PLAYER_CORE)},
-  { 99, -1, -1, sizeof(::Protocol::S2S_REQ_SAVE_INVENTORY)},
-  { 108, -1, -1, sizeof(::Protocol::S2S_RES_SAVE_INVENTORY)},
-  { 116, -1, -1, sizeof(::Protocol::S2S_REQ_ITEM_CREATE)},
-  { 128, -1, -1, sizeof(::Protocol::S2S_RES_ITEM_CREATE)},
-  { 142, -1, -1, sizeof(::Protocol::S2S_REQ_GAME_ITEM_UID_SEED)},
-  { 148, -1, -1, sizeof(::Protocol::S2S_RES_GAME_ITEM_UID_SEED)},
-  { 156, -1, -1, sizeof(::Protocol::S2S_REQ_QUICKSLOT_LOAD)},
-  { 164, -1, -1, sizeof(::Protocol::S2S_RES_QUICKSLOT_LOAD)},
-  { 174, -1, -1, sizeof(::Protocol::S2S_REQ_SAVE_QUICKSLOT)},
-  { 182, -1, -1, sizeof(::Protocol::S2S_RES_SAVE_QUICKSLOT)},
-  { 190, -1, -1, sizeof(::Protocol::S2S_REQ_TRADE_COMMIT)},
-  { 207, -1, -1, sizeof(::Protocol::S2S_RES_TRADE_COMMIT)},
+  { 36, -1, -1, sizeof(::Protocol::S2S_REQ_ITEMS_LOAD)},
+  { 44, -1, -1, sizeof(::Protocol::S2S_RES_ITEMS_LOAD)},
+  { 54, -1, -1, sizeof(::Protocol::S2S_REQ_LOAD_GAME_DATA)},
+  { 60, -1, -1, sizeof(::Protocol::S2S_RES_LOAD_GAME_DATA)},
+  { 70, -1, -1, sizeof(::Protocol::S2S_RES_HEART_BEAT)},
+  { 76, -1, -1, sizeof(::Protocol::S2S_REQ_HEART_BEAT)},
+  { 82, -1, -1, sizeof(::Protocol::S2S_REQ_SAVE_PLAYER_CORE)},
+  { 93, -1, -1, sizeof(::Protocol::S2S_RES_SAVE_PLAYER_CORE)},
+  { 101, -1, -1, sizeof(::Protocol::S2S_REQ_SAVE_INVENTORY)},
+  { 110, -1, -1, sizeof(::Protocol::S2S_RES_SAVE_INVENTORY)},
+  { 118, -1, -1, sizeof(::Protocol::S2S_REQ_ITEM_CREATE)},
+  { 130, -1, -1, sizeof(::Protocol::S2S_RES_ITEM_CREATE)},
+  { 144, -1, -1, sizeof(::Protocol::S2S_REQ_GAME_ITEM_UID_SEED)},
+  { 150, -1, -1, sizeof(::Protocol::S2S_RES_GAME_ITEM_UID_SEED)},
+  { 158, -1, -1, sizeof(::Protocol::S2S_REQ_QUICKSLOT_LOAD)},
+  { 166, -1, -1, sizeof(::Protocol::S2S_RES_QUICKSLOT_LOAD)},
+  { 176, -1, -1, sizeof(::Protocol::S2S_REQ_SAVE_QUICKSLOT)},
+  { 184, -1, -1, sizeof(::Protocol::S2S_RES_SAVE_QUICKSLOT)},
+  { 192, -1, -1, sizeof(::Protocol::S2S_REQ_TRADE_COMMIT)},
+  { 211, -1, -1, sizeof(::Protocol::S2S_RES_TRADE_COMMIT)},
 };
 
 static const ::_pb::Message* const file_default_instances[] = {
@@ -672,59 +680,60 @@ const char descriptor_table_protodef_Protocol_5fS2S_2eproto[] PROTOBUF_SECTION_V
   "RES_LOGIN\022\017\n\007success\030\001 \001(\010\022\020\n\010playerId\030\002"
   " \001(\004\022\027\n\017playerSessionId\030\003 \001(\004\"C\n\030S2S_REQ"
   "_LOAD_PLAYER_DATA\022\020\n\010playerId\030\001 \001(\004\022\025\n\rg"
-  "ameSessionId\030\002 \001(\004\"z\n\030S2S_RES_LOAD_PLAYE"
-  "R_DATA\022\017\n\007success\030\001 \001(\010\022\020\n\010playerId\030\002 \001("
-  "\004\022$\n\010statInfo\030\003 \001(\0132\022.Protocol.StatInfo\022"
-  "\025\n\rgameSessionId\030\004 \001(\004\"=\n\022S2S_REQ_ITEMS_"
-  "LOAD\022\020\n\010playerId\030\001 \001(\004\022\025\n\rgameSessionId\030"
-  "\002 \001(\004\"q\n\022S2S_RES_ITEMS_LOAD\022\020\n\010playerId\030"
-  "\001 \001(\004\022\017\n\007success\030\002 \001(\010\022!\n\005items\030\003 \003(\0132\022."
-  "Protocol.ItemInfo\022\025\n\rgameSessionId\030\004 \001(\004"
-  "\"\030\n\026S2S_REQ_LOAD_GAME_DATA\"\254\001\n\026S2S_RES_L"
-  "OAD_GAME_DATA\022\017\n\007success\030\001 \001(\010\022)\n\005stats\030"
-  "\002 \003(\0132\032.Protocol.StatTemplateInfo\022)\n\005ite"
-  "ms\030\003 \003(\0132\032.Protocol.ItemTemplateInfo\022+\n\006"
-  "skills\030\004 \003(\0132\033.Protocol.SkillTemplateInf"
-  "o\"\024\n\022S2S_RES_HEART_BEAT\"\024\n\022S2S_REQ_HEART"
-  "_BEAT\"Y\n\030S2S_REQ_SAVE_PLAYER_CORE\022\020\n\010pla"
-  "yerId\030\001 \001(\004\022\r\n\005level\030\002 \001(\005\022\n\n\002hp\030\003 \001(\005\022\020"
-  "\n\010totalExp\030\004 \001(\003\"=\n\030S2S_RES_SAVE_PLAYER_"
-  "CORE\022\017\n\007success\030\001 \001(\010\022\020\n\010playerId\030\002 \001(\004\""
-  "f\n\026S2S_REQ_SAVE_INVENTORY\022\020\n\010playerId\030\001 "
-  "\001(\004\022!\n\005items\030\002 \003(\0132\022.Protocol.ItemInfo\022\027"
-  "\n\017deletedItemUids\030\003 \003(\004\";\n\026S2S_RES_SAVE_"
-  "INVENTORY\022\017\n\007success\030\001 \001(\010\022\020\n\010playerId\030\002"
-  " \001(\004\"\204\001\n\023S2S_REQ_ITEM_CREATE\022\020\n\010playerId"
-  "\030\001 \001(\004\022\022\n\ntemplateId\030\002 \001(\005\022\021\n\tslotIndex\030"
-  "\003 \001(\005\022\r\n\005count\030\004 \001(\005\022\022\n\nisEquipped\030\005 \001(\010"
-  "\022\021\n\trequestId\030\006 \001(\004\"\246\001\n\023S2S_RES_ITEM_CRE"
-  "ATE\022\017\n\007success\030\001 \001(\010\022\020\n\010playerId\030\002 \001(\004\022\017"
-  "\n\007itemUid\030\003 \001(\004\022\022\n\ntemplateId\030\004 \001(\005\022\021\n\ts"
-  "lotIndex\030\005 \001(\005\022\r\n\005count\030\006 \001(\005\022\022\n\nisEquip"
-  "ped\030\007 \001(\010\022\021\n\trequestId\030\010 \001(\004\"\034\n\032S2S_REQ_"
-  "GAME_ITEM_UID_SEED\"\?\n\032S2S_RES_GAME_ITEM_"
-  "UID_SEED\022\017\n\007success\030\001 \001(\010\022\020\n\010next_uid\030\002 "
-  "\001(\004\"A\n\026S2S_REQ_QUICKSLOT_LOAD\022\020\n\010playerI"
-  "d\030\001 \001(\004\022\025\n\rgameSessionId\030\002 \001(\004\"z\n\026S2S_RE"
-  "S_QUICKSLOT_LOAD\022\017\n\007success\030\001 \001(\010\022\020\n\010pla"
-  "yerId\030\002 \001(\004\022\025\n\rgameSessionId\030\003 \001(\004\022&\n\005sl"
-  "ots\030\004 \003(\0132\027.Protocol.QuickSlotInfo\"R\n\026S2"
-  "S_REQ_SAVE_QUICKSLOT\022\020\n\010playerId\030\001 \001(\004\022&"
-  "\n\005slots\030\002 \003(\0132\027.Protocol.QuickSlotInfo\";"
-  "\n\026S2S_RES_SAVE_QUICKSLOT\022\017\n\007success\030\001 \001("
-  "\010\022\020\n\010playerId\030\002 \001(\004\"\234\002\n\024S2S_REQ_TRADE_CO"
-  "MMIT\022\017\n\007tradeId\030\001 \001(\004\022\021\n\tchannelId\030\002 \001(\005"
-  "\022\r\n\005mapId\030\003 \001(\005\022\022\n\ninstanceId\030\004 \001(\003\022\021\n\tp"
-  "layerAId\030\005 \001(\004\022\021\n\tplayerBId\030\006 \001(\004\022\'\n\013fin"
-  "alAItems\030\007 \003(\0132\022.Protocol.ItemInfo\022\030\n\020de"
-  "letedAItemUids\030\010 \003(\004\022\'\n\013finalBItems\030\t \003("
-  "\0132\022.Protocol.ItemInfo\022\030\n\020deletedBItemUid"
-  "s\030\n \003(\004\022\021\n\trequestId\030\013 \001(\004\"\254\001\n\024S2S_RES_T"
-  "RADE_COMMIT\022\017\n\007tradeId\030\001 \001(\004\022\021\n\tchannelI"
-  "d\030\002 \001(\005\022\r\n\005mapId\030\003 \001(\005\022\022\n\ninstanceId\030\004 \001"
-  "(\003\022\017\n\007success\030\005 \001(\010\022)\n\010failCode\030\006 \001(\0162\027."
-  "Protocol.TradeFailCode\022\021\n\trequestId\030\007 \001("
-  "\004b\006proto3"
+  "ameSessionId\030\002 \001(\004\"\210\001\n\030S2S_RES_LOAD_PLAY"
+  "ER_DATA\022\017\n\007success\030\001 \001(\010\022\020\n\010playerId\030\002 \001"
+  "(\004\022$\n\010statInfo\030\003 \001(\0132\022.Protocol.StatInfo"
+  "\022\025\n\rgameSessionId\030\004 \001(\004\022\014\n\004gold\030\005 \001(\003\"=\n"
+  "\022S2S_REQ_ITEMS_LOAD\022\020\n\010playerId\030\001 \001(\004\022\025\n"
+  "\rgameSessionId\030\002 \001(\004\"q\n\022S2S_RES_ITEMS_LO"
+  "AD\022\020\n\010playerId\030\001 \001(\004\022\017\n\007success\030\002 \001(\010\022!\n"
+  "\005items\030\003 \003(\0132\022.Protocol.ItemInfo\022\025\n\rgame"
+  "SessionId\030\004 \001(\004\"\030\n\026S2S_REQ_LOAD_GAME_DAT"
+  "A\"\254\001\n\026S2S_RES_LOAD_GAME_DATA\022\017\n\007success\030"
+  "\001 \001(\010\022)\n\005stats\030\002 \003(\0132\032.Protocol.StatTemp"
+  "lateInfo\022)\n\005items\030\003 \003(\0132\032.Protocol.ItemT"
+  "emplateInfo\022+\n\006skills\030\004 \003(\0132\033.Protocol.S"
+  "killTemplateInfo\"\024\n\022S2S_RES_HEART_BEAT\"\024"
+  "\n\022S2S_REQ_HEART_BEAT\"g\n\030S2S_REQ_SAVE_PLA"
+  "YER_CORE\022\020\n\010playerId\030\001 \001(\004\022\r\n\005level\030\002 \001("
+  "\005\022\n\n\002hp\030\003 \001(\005\022\020\n\010totalExp\030\004 \001(\003\022\014\n\004gold\030"
+  "\005 \001(\003\"=\n\030S2S_RES_SAVE_PLAYER_CORE\022\017\n\007suc"
+  "cess\030\001 \001(\010\022\020\n\010playerId\030\002 \001(\004\"f\n\026S2S_REQ_"
+  "SAVE_INVENTORY\022\020\n\010playerId\030\001 \001(\004\022!\n\005item"
+  "s\030\002 \003(\0132\022.Protocol.ItemInfo\022\027\n\017deletedIt"
+  "emUids\030\003 \003(\004\";\n\026S2S_RES_SAVE_INVENTORY\022\017"
+  "\n\007success\030\001 \001(\010\022\020\n\010playerId\030\002 \001(\004\"\204\001\n\023S2"
+  "S_REQ_ITEM_CREATE\022\020\n\010playerId\030\001 \001(\004\022\022\n\nt"
+  "emplateId\030\002 \001(\005\022\021\n\tslotIndex\030\003 \001(\005\022\r\n\005co"
+  "unt\030\004 \001(\005\022\022\n\nisEquipped\030\005 \001(\010\022\021\n\trequest"
+  "Id\030\006 \001(\004\"\246\001\n\023S2S_RES_ITEM_CREATE\022\017\n\007succ"
+  "ess\030\001 \001(\010\022\020\n\010playerId\030\002 \001(\004\022\017\n\007itemUid\030\003"
+  " \001(\004\022\022\n\ntemplateId\030\004 \001(\005\022\021\n\tslotIndex\030\005 "
+  "\001(\005\022\r\n\005count\030\006 \001(\005\022\022\n\nisEquipped\030\007 \001(\010\022\021"
+  "\n\trequestId\030\010 \001(\004\"\034\n\032S2S_REQ_GAME_ITEM_U"
+  "ID_SEED\"\?\n\032S2S_RES_GAME_ITEM_UID_SEED\022\017\n"
+  "\007success\030\001 \001(\010\022\020\n\010next_uid\030\002 \001(\004\"A\n\026S2S_"
+  "REQ_QUICKSLOT_LOAD\022\020\n\010playerId\030\001 \001(\004\022\025\n\r"
+  "gameSessionId\030\002 \001(\004\"z\n\026S2S_RES_QUICKSLOT"
+  "_LOAD\022\017\n\007success\030\001 \001(\010\022\020\n\010playerId\030\002 \001(\004"
+  "\022\025\n\rgameSessionId\030\003 \001(\004\022&\n\005slots\030\004 \003(\0132\027"
+  ".Protocol.QuickSlotInfo\"R\n\026S2S_REQ_SAVE_"
+  "QUICKSLOT\022\020\n\010playerId\030\001 \001(\004\022&\n\005slots\030\002 \003"
+  "(\0132\027.Protocol.QuickSlotInfo\";\n\026S2S_RES_S"
+  "AVE_QUICKSLOT\022\017\n\007success\030\001 \001(\010\022\020\n\010player"
+  "Id\030\002 \001(\004\"\304\002\n\024S2S_REQ_TRADE_COMMIT\022\017\n\007tra"
+  "deId\030\001 \001(\004\022\021\n\tchannelId\030\002 \001(\005\022\r\n\005mapId\030\003"
+  " \001(\005\022\022\n\ninstanceId\030\004 \001(\003\022\021\n\tplayerAId\030\005 "
+  "\001(\004\022\021\n\tplayerBId\030\006 \001(\004\022\'\n\013finalAItems\030\007 "
+  "\003(\0132\022.Protocol.ItemInfo\022\030\n\020deletedAItemU"
+  "ids\030\010 \003(\004\022\'\n\013finalBItems\030\t \003(\0132\022.Protoco"
+  "l.ItemInfo\022\030\n\020deletedBItemUids\030\n \003(\004\022\021\n\t"
+  "requestId\030\013 \001(\004\022\022\n\nfinalGoldA\030\014 \001(\003\022\022\n\nf"
+  "inalGoldB\030\r \001(\003\"\254\001\n\024S2S_RES_TRADE_COMMIT"
+  "\022\017\n\007tradeId\030\001 \001(\004\022\021\n\tchannelId\030\002 \001(\005\022\r\n\005"
+  "mapId\030\003 \001(\005\022\022\n\ninstanceId\030\004 \001(\003\022\017\n\007succe"
+  "ss\030\005 \001(\010\022)\n\010failCode\030\006 \001(\0162\027.Protocol.Tr"
+  "adeFailCode\022\021\n\trequestId\030\007 \001(\004b\006proto3"
   ;
 static const ::_pbi::DescriptorTable* const descriptor_table_Protocol_5fS2S_2eproto_deps[2] = {
   &::descriptor_table_Enum_2eproto,
@@ -732,7 +741,7 @@ static const ::_pbi::DescriptorTable* const descriptor_table_Protocol_5fS2S_2epr
 };
 static ::_pbi::once_flag descriptor_table_Protocol_5fS2S_2eproto_once;
 const ::_pbi::DescriptorTable descriptor_table_Protocol_5fS2S_2eproto = {
-    false, false, 2329, descriptor_table_protodef_Protocol_5fS2S_2eproto,
+    false, false, 2398, descriptor_table_protodef_Protocol_5fS2S_2eproto,
     "Protocol_S2S.proto",
     &descriptor_table_Protocol_5fS2S_2eproto_once, descriptor_table_Protocol_5fS2S_2eproto_deps, 2, 24,
     schemas, file_default_instances, TableStruct_Protocol_5fS2S_2eproto::offsets,
@@ -1453,6 +1462,7 @@ S2S_RES_LOAD_PLAYER_DATA::S2S_RES_LOAD_PLAYER_DATA(const S2S_RES_LOAD_PLAYER_DAT
       decltype(_impl_.statinfo_){nullptr}
     , decltype(_impl_.playerid_){}
     , decltype(_impl_.gamesessionid_){}
+    , decltype(_impl_.gold_){}
     , decltype(_impl_.success_){}
     , /*decltype(_impl_._cached_size_)*/{}};
 
@@ -1474,6 +1484,7 @@ inline void S2S_RES_LOAD_PLAYER_DATA::SharedCtor(
       decltype(_impl_.statinfo_){nullptr}
     , decltype(_impl_.playerid_){uint64_t{0u}}
     , decltype(_impl_.gamesessionid_){uint64_t{0u}}
+    , decltype(_impl_.gold_){int64_t{0}}
     , decltype(_impl_.success_){false}
     , /*decltype(_impl_._cached_size_)*/{}
   };
@@ -1551,6 +1562,14 @@ const char* S2S_RES_LOAD_PLAYER_DATA::_InternalParse(const char* ptr, ::_pbi::Pa
         } else
           goto handle_unusual;
         continue;
+      // int64 gold = 5;
+      case 5:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 40)) {
+          _impl_.gold_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          CHK_(ptr);
+        } else
+          goto handle_unusual;
+        continue;
       default:
         goto handle_unusual;
     }  // switch
@@ -1605,6 +1624,12 @@ uint8_t* S2S_RES_LOAD_PLAYER_DATA::_InternalSerialize(
     target = ::_pbi::WireFormatLite::WriteUInt64ToArray(4, this->_internal_gamesessionid(), target);
   }
 
+  // int64 gold = 5;
+  if (this->_internal_gold() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteInt64ToArray(5, this->_internal_gold(), target);
+  }
+
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
     target = ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance), target, stream);
@@ -1636,6 +1661,11 @@ size_t S2S_RES_LOAD_PLAYER_DATA::ByteSizeLong() const {
   // uint64 gameSessionId = 4;
   if (this->_internal_gamesessionid() != 0) {
     total_size += ::_pbi::WireFormatLite::UInt64SizePlusOne(this->_internal_gamesessionid());
+  }
+
+  // int64 gold = 5;
+  if (this->_internal_gold() != 0) {
+    total_size += ::_pbi::WireFormatLite::Int64SizePlusOne(this->_internal_gold());
   }
 
   // bool success = 1;
@@ -1670,6 +1700,9 @@ void S2S_RES_LOAD_PLAYER_DATA::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_ms
   }
   if (from._internal_gamesessionid() != 0) {
     _this->_internal_set_gamesessionid(from._internal_gamesessionid());
+  }
+  if (from._internal_gold() != 0) {
+    _this->_internal_set_gold(from._internal_gold());
   }
   if (from._internal_success() != 0) {
     _this->_internal_set_success(from._internal_success());
@@ -2617,12 +2650,13 @@ S2S_REQ_SAVE_PLAYER_CORE::S2S_REQ_SAVE_PLAYER_CORE(const S2S_REQ_SAVE_PLAYER_COR
     , decltype(_impl_.level_){}
     , decltype(_impl_.hp_){}
     , decltype(_impl_.totalexp_){}
+    , decltype(_impl_.gold_){}
     , /*decltype(_impl_._cached_size_)*/{}};
 
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   ::memcpy(&_impl_.playerid_, &from._impl_.playerid_,
-    static_cast<size_t>(reinterpret_cast<char*>(&_impl_.totalexp_) -
-    reinterpret_cast<char*>(&_impl_.playerid_)) + sizeof(_impl_.totalexp_));
+    static_cast<size_t>(reinterpret_cast<char*>(&_impl_.gold_) -
+    reinterpret_cast<char*>(&_impl_.playerid_)) + sizeof(_impl_.gold_));
   // @@protoc_insertion_point(copy_constructor:Protocol.S2S_REQ_SAVE_PLAYER_CORE)
 }
 
@@ -2635,6 +2669,7 @@ inline void S2S_REQ_SAVE_PLAYER_CORE::SharedCtor(
     , decltype(_impl_.level_){0}
     , decltype(_impl_.hp_){0}
     , decltype(_impl_.totalexp_){int64_t{0}}
+    , decltype(_impl_.gold_){int64_t{0}}
     , /*decltype(_impl_._cached_size_)*/{}
   };
 }
@@ -2663,8 +2698,8 @@ void S2S_REQ_SAVE_PLAYER_CORE::Clear() {
   (void) cached_has_bits;
 
   ::memset(&_impl_.playerid_, 0, static_cast<size_t>(
-      reinterpret_cast<char*>(&_impl_.totalexp_) -
-      reinterpret_cast<char*>(&_impl_.playerid_)) + sizeof(_impl_.totalexp_));
+      reinterpret_cast<char*>(&_impl_.gold_) -
+      reinterpret_cast<char*>(&_impl_.playerid_)) + sizeof(_impl_.gold_));
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
@@ -2702,6 +2737,14 @@ const char* S2S_REQ_SAVE_PLAYER_CORE::_InternalParse(const char* ptr, ::_pbi::Pa
       case 4:
         if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 32)) {
           _impl_.totalexp_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          CHK_(ptr);
+        } else
+          goto handle_unusual;
+        continue;
+      // int64 gold = 5;
+      case 5:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 40)) {
+          _impl_.gold_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
         } else
           goto handle_unusual;
@@ -2759,6 +2802,12 @@ uint8_t* S2S_REQ_SAVE_PLAYER_CORE::_InternalSerialize(
     target = ::_pbi::WireFormatLite::WriteInt64ToArray(4, this->_internal_totalexp(), target);
   }
 
+  // int64 gold = 5;
+  if (this->_internal_gold() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteInt64ToArray(5, this->_internal_gold(), target);
+  }
+
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
     target = ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance), target, stream);
@@ -2795,6 +2844,11 @@ size_t S2S_REQ_SAVE_PLAYER_CORE::ByteSizeLong() const {
     total_size += ::_pbi::WireFormatLite::Int64SizePlusOne(this->_internal_totalexp());
   }
 
+  // int64 gold = 5;
+  if (this->_internal_gold() != 0) {
+    total_size += ::_pbi::WireFormatLite::Int64SizePlusOne(this->_internal_gold());
+  }
+
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
@@ -2825,6 +2879,9 @@ void S2S_REQ_SAVE_PLAYER_CORE::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_ms
   if (from._internal_totalexp() != 0) {
     _this->_internal_set_totalexp(from._internal_totalexp());
   }
+  if (from._internal_gold() != 0) {
+    _this->_internal_set_gold(from._internal_gold());
+  }
   _this->_internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -2843,8 +2900,8 @@ void S2S_REQ_SAVE_PLAYER_CORE::InternalSwap(S2S_REQ_SAVE_PLAYER_CORE* other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   ::PROTOBUF_NAMESPACE_ID::internal::memswap<
-      PROTOBUF_FIELD_OFFSET(S2S_REQ_SAVE_PLAYER_CORE, _impl_.totalexp_)
-      + sizeof(S2S_REQ_SAVE_PLAYER_CORE::_impl_.totalexp_)
+      PROTOBUF_FIELD_OFFSET(S2S_REQ_SAVE_PLAYER_CORE, _impl_.gold_)
+      + sizeof(S2S_REQ_SAVE_PLAYER_CORE::_impl_.gold_)
       - PROTOBUF_FIELD_OFFSET(S2S_REQ_SAVE_PLAYER_CORE, _impl_.playerid_)>(
           reinterpret_cast<char*>(&_impl_.playerid_),
           reinterpret_cast<char*>(&other->_impl_.playerid_));
@@ -5392,12 +5449,14 @@ S2S_REQ_TRADE_COMMIT::S2S_REQ_TRADE_COMMIT(const S2S_REQ_TRADE_COMMIT& from)
     , decltype(_impl_.playeraid_){}
     , decltype(_impl_.playerbid_){}
     , decltype(_impl_.requestid_){}
+    , decltype(_impl_.finalgolda_){}
+    , decltype(_impl_.finalgoldb_){}
     , /*decltype(_impl_._cached_size_)*/{}};
 
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   ::memcpy(&_impl_.tradeid_, &from._impl_.tradeid_,
-    static_cast<size_t>(reinterpret_cast<char*>(&_impl_.requestid_) -
-    reinterpret_cast<char*>(&_impl_.tradeid_)) + sizeof(_impl_.requestid_));
+    static_cast<size_t>(reinterpret_cast<char*>(&_impl_.finalgoldb_) -
+    reinterpret_cast<char*>(&_impl_.tradeid_)) + sizeof(_impl_.finalgoldb_));
   // @@protoc_insertion_point(copy_constructor:Protocol.S2S_REQ_TRADE_COMMIT)
 }
 
@@ -5419,6 +5478,8 @@ inline void S2S_REQ_TRADE_COMMIT::SharedCtor(
     , decltype(_impl_.playeraid_){uint64_t{0u}}
     , decltype(_impl_.playerbid_){uint64_t{0u}}
     , decltype(_impl_.requestid_){uint64_t{0u}}
+    , decltype(_impl_.finalgolda_){int64_t{0}}
+    , decltype(_impl_.finalgoldb_){int64_t{0}}
     , /*decltype(_impl_._cached_size_)*/{}
   };
 }
@@ -5455,8 +5516,8 @@ void S2S_REQ_TRADE_COMMIT::Clear() {
   _impl_.finalbitems_.Clear();
   _impl_.deletedbitemuids_.Clear();
   ::memset(&_impl_.tradeid_, 0, static_cast<size_t>(
-      reinterpret_cast<char*>(&_impl_.requestid_) -
-      reinterpret_cast<char*>(&_impl_.tradeid_)) + sizeof(_impl_.requestid_));
+      reinterpret_cast<char*>(&_impl_.finalgoldb_) -
+      reinterpret_cast<char*>(&_impl_.tradeid_)) + sizeof(_impl_.finalgoldb_));
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
@@ -5570,6 +5631,22 @@ const char* S2S_REQ_TRADE_COMMIT::_InternalParse(const char* ptr, ::_pbi::ParseC
         } else
           goto handle_unusual;
         continue;
+      // int64 finalGoldA = 12;
+      case 12:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 96)) {
+          _impl_.finalgolda_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          CHK_(ptr);
+        } else
+          goto handle_unusual;
+        continue;
+      // int64 finalGoldB = 13;
+      case 13:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 104)) {
+          _impl_.finalgoldb_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          CHK_(ptr);
+        } else
+          goto handle_unusual;
+        continue;
       default:
         goto handle_unusual;
     }  // switch
@@ -5675,6 +5752,18 @@ uint8_t* S2S_REQ_TRADE_COMMIT::_InternalSerialize(
     target = ::_pbi::WireFormatLite::WriteUInt64ToArray(11, this->_internal_requestid(), target);
   }
 
+  // int64 finalGoldA = 12;
+  if (this->_internal_finalgolda() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteInt64ToArray(12, this->_internal_finalgolda(), target);
+  }
+
+  // int64 finalGoldB = 13;
+  if (this->_internal_finalgoldb() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteInt64ToArray(13, this->_internal_finalgoldb(), target);
+  }
+
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
     target = ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance), target, stream);
@@ -5768,6 +5857,16 @@ size_t S2S_REQ_TRADE_COMMIT::ByteSizeLong() const {
     total_size += ::_pbi::WireFormatLite::UInt64SizePlusOne(this->_internal_requestid());
   }
 
+  // int64 finalGoldA = 12;
+  if (this->_internal_finalgolda() != 0) {
+    total_size += ::_pbi::WireFormatLite::Int64SizePlusOne(this->_internal_finalgolda());
+  }
+
+  // int64 finalGoldB = 13;
+  if (this->_internal_finalgoldb() != 0) {
+    total_size += ::_pbi::WireFormatLite::Int64SizePlusOne(this->_internal_finalgoldb());
+  }
+
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
@@ -5811,6 +5910,12 @@ void S2S_REQ_TRADE_COMMIT::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, c
   if (from._internal_requestid() != 0) {
     _this->_internal_set_requestid(from._internal_requestid());
   }
+  if (from._internal_finalgolda() != 0) {
+    _this->_internal_set_finalgolda(from._internal_finalgolda());
+  }
+  if (from._internal_finalgoldb() != 0) {
+    _this->_internal_set_finalgoldb(from._internal_finalgoldb());
+  }
   _this->_internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -5833,8 +5938,8 @@ void S2S_REQ_TRADE_COMMIT::InternalSwap(S2S_REQ_TRADE_COMMIT* other) {
   _impl_.finalbitems_.InternalSwap(&other->_impl_.finalbitems_);
   _impl_.deletedbitemuids_.InternalSwap(&other->_impl_.deletedbitemuids_);
   ::PROTOBUF_NAMESPACE_ID::internal::memswap<
-      PROTOBUF_FIELD_OFFSET(S2S_REQ_TRADE_COMMIT, _impl_.requestid_)
-      + sizeof(S2S_REQ_TRADE_COMMIT::_impl_.requestid_)
+      PROTOBUF_FIELD_OFFSET(S2S_REQ_TRADE_COMMIT, _impl_.finalgoldb_)
+      + sizeof(S2S_REQ_TRADE_COMMIT::_impl_.finalgoldb_)
       - PROTOBUF_FIELD_OFFSET(S2S_REQ_TRADE_COMMIT, _impl_.tradeid_)>(
           reinterpret_cast<char*>(&_impl_.tradeid_),
           reinterpret_cast<char*>(&other->_impl_.tradeid_));

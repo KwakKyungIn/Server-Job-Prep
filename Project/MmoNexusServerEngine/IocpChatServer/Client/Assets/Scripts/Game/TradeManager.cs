@@ -18,6 +18,9 @@ public class TradeManager
     public bool MyReady { get; private set; }
     public bool PeerReady { get; private set; }
 
+    public long MyGoldOffer { get; private set; }
+    public long PeerGoldOffer { get; private set; }
+
     // Sequential display order (server sends as map iteration order; treat as unordered)
     public readonly List<TradeOfferItem> MyOffer = new List<TradeOfferItem>();
     public readonly List<TradeOfferItem> PeerOffer = new List<TradeOfferItem>();
@@ -90,6 +93,18 @@ public class TradeManager
         return true;
     }
 
+    public bool TryOfferGold(long gold)
+    {
+        if (!InTrade || Locked) return false;
+        if (gold < 0) return false;
+
+        long max = GoldManager.Instance.HasGold ? GoldManager.Instance.GetGold() : 0;
+        if (gold > max) return false;
+
+        TradeApi.OfferGold(TradeId, gold);
+        return true;
+    }
+
     public void RemoveOffer(ulong itemUid)
     {
         if (!InTrade || Locked) return;
@@ -155,6 +170,8 @@ public class TradeManager
         PeerReady = false;
         MyOffer.Clear();
         PeerOffer.Clear();
+        MyGoldOffer = 0;
+        PeerGoldOffer = 0;
 
         OnTradeStarted?.Invoke();
         OnTradeUpdated?.Invoke();
@@ -170,6 +187,11 @@ public class TradeManager
         dst.Clear();
         foreach (var e in pkt.Items)
             dst.Add(e);
+
+        if (isMine)
+            MyGoldOffer = pkt.Gold;
+        else
+            PeerGoldOffer = pkt.Gold;
 
         // Offer change resets ready state on server -> UI should update quickly.
         OnTradeUpdated?.Invoke();
@@ -230,6 +252,8 @@ public class TradeManager
         PeerReady = false;
         MyOffer.Clear();
         PeerOffer.Clear();
+        MyGoldOffer = 0;
+        PeerGoldOffer = 0;
         _pendingRole = PendingRole.None;
     }
 }

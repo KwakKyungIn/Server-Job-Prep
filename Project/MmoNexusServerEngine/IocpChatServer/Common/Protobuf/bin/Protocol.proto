@@ -48,6 +48,7 @@ message C_ENTER_GAME {
 message S_ENTER_GAME {
     bool success = 1;
     PlayerInfo myPlayer = 2; // My character info
+    int64 gold = 3; // My gold (private)
 }
 
 // ============================================================
@@ -138,6 +139,11 @@ message S_EQUIP_ITEM {
 
 message S_CHANGE_STAT {
     StatInfo statInfo = 1;
+}
+
+// Gold update (private to owner)
+message S_GOLD_UPDATE {
+    int64 gold = 1;
 }
 
 // ============================================================
@@ -373,10 +379,16 @@ message C_TRADE_OFFER_SET {
     int32 count = 3;
 }
 
+message C_TRADE_GOLD_SET {
+    uint64 tradeId = 1;
+    int64 gold = 2;
+}
+
 message S_TRADE_OFFER_UPDATE {
     uint64 tradeId = 1;
     uint64 whoPlayerId = 2;
     repeated TradeOfferItem items = 3;
+    int64 gold = 4;
 }
 
 message C_TRADE_READY {

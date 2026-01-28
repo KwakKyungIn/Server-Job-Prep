@@ -165,6 +165,7 @@ public:
     void HandleTradeReqById(PlayerSessionRef session, uint64 fromPlayerId, uint64 targetPlayerId);
     void HandleTradeInviteRespById(PlayerSessionRef session, uint64 responderId, bool accept);
     void HandleTradeOfferSetById(PlayerSessionRef session, uint64 playerId, Protocol::C_TRADE_OFFER_SET pkt);
+    void HandleTradeGoldSetById(PlayerSessionRef session, uint64 playerId, Protocol::C_TRADE_GOLD_SET pkt);
     void HandleTradeReadyById(PlayerSessionRef session, uint64 playerId, Protocol::C_TRADE_READY pkt);
     void HandleTradeConfirmById(PlayerSessionRef session, uint64 playerId, Protocol::C_TRADE_CONFIRM pkt);
     void HandleTradeCancelById(PlayerSessionRef session, uint64 playerId, Protocol::C_TRADE_CANCEL pkt);
@@ -297,6 +298,9 @@ private:
         Vector<Protocol::ItemInfo> finalBItems;
         Vector<uint64> deletedBItemUids;
 
+        int64 finalGoldA = 0;
+        int64 finalGoldB = 0;
+
         // DB 성공 후 클라에게 알려줄 변경 사항
         Vector<Protocol::ItemInfo> notifyChangeA;
         Vector<uint64> notifyRemoveA;
@@ -313,6 +317,9 @@ private:
 
         HashMap<uint64, TradeOfferEntry> offerA; // A가 올린 물건들
         HashMap<uint64, TradeOfferEntry> offerB; // B가 올린 물건들
+
+        int64 offerGoldA = 0;
+        int64 offerGoldB = 0;
 
         bool readyA = false;
         bool readyB = false;

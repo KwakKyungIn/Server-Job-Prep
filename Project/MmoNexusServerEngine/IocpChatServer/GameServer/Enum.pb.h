@@ -448,12 +448,13 @@ enum TradeFailCode : int {
   TRADE_FAIL_INVENTORY_FULL = 6,
   TRADE_FAIL_INTERNAL = 7,
   TRADE_FAIL_REJECTED = 8,
+  TRADE_FAIL_NOT_ENOUGH_GOLD = 9,
   TradeFailCode_INT_MIN_SENTINEL_DO_NOT_USE_ = std::numeric_limits<int32_t>::min(),
   TradeFailCode_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits<int32_t>::max()
 };
 bool TradeFailCode_IsValid(int value);
 constexpr TradeFailCode TradeFailCode_MIN = TRADE_FAIL_NONE;
-constexpr TradeFailCode TradeFailCode_MAX = TRADE_FAIL_REJECTED;
+constexpr TradeFailCode TradeFailCode_MAX = TRADE_FAIL_NOT_ENOUGH_GOLD;
 constexpr int TradeFailCode_ARRAYSIZE = TradeFailCode_MAX + 1;
 
 const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* TradeFailCode_descriptor();

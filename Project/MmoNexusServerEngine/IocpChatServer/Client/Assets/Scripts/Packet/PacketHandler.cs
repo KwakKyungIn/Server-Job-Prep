@@ -29,6 +29,8 @@ public class PacketHandler
     public static Action<S_SKILL> OnSkill;
     public static Action<S_CHANGE_HP> OnChangeHp;
 
+    public static Action<long> OnGoldUpdate;
+
     public static Action<S_EQUIP_ITEM> OnEquipItem;
     public static Action<StatInfo> OnChangeStat;
 
@@ -97,7 +99,17 @@ public class PacketHandler
             if (pkt.MyPlayer != null && pkt.MyPlayer.StatInfo != null)
                 OnChangeStat?.Invoke(pkt.MyPlayer.StatInfo);
 
+            OnGoldUpdate?.Invoke(pkt.Gold);
+
         }
+    }
+
+    public static void S_GOLD_UPDATEHandler(ServerSession session, IMessage packet)
+    {
+        S_GOLD_UPDATE pkt = packet as S_GOLD_UPDATE;
+        if (pkt == null) return;
+
+        OnGoldUpdate?.Invoke(pkt.Gold);
     }
 
     // ============================================================
@@ -430,5 +442,4 @@ public class PacketHandler
     }
 
 }
-
 

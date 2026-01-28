@@ -254,13 +254,14 @@ void LobbyRoom::OnStatLoaded(uint64 playerId, const Protocol::S2S_RES_LOAD_PLAYE
 
     if (auto st = p->GetStatInfo())
         st->CopyFrom(pkt.statinfo());
+    p->SetGold(pkt.gold());
 
     // 기본 스탯 + 아이템 스탯 합산
     p->RefreshStats();
 
     // Redis 캐시에 핵심 정보(레벨, HP, 경험치) 업데이트
     if (auto st = p->GetStatInfo())
-        Persistence::PersistenceService::I().PrimeFromDb_PlayerCore(playerId, *st);
+        Persistence::PersistenceService::I().PrimeFromDb_PlayerCore(playerId, *st, p->GetGold());
 
     it->second.statLoaded = true;
     TryEnterWorldIfReady(playerId);

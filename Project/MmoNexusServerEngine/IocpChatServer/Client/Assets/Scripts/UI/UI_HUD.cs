@@ -13,18 +13,24 @@ public class UI_HUD : MonoBehaviour
     public TMP_Text levelText;
     public TMP_Text expText;
 
+    [Header("Gold")]
+    public TMP_Text goldText;
+
     int _hp, _maxHp = 1, _level;
     long _totalExp;
+    long _gold;
 
     void OnEnable()
     {
         StatManager.Instance.OnUpdated += RefreshFromCache;
+        GoldManager.Instance.OnUpdated += RefreshFromCache;
         RefreshFromCache(); // ✅ 씬 전환 직후에도 캐시로 즉시 복구
     }
 
     void OnDisable()
     {
         StatManager.Instance.OnUpdated -= RefreshFromCache;
+        GoldManager.Instance.OnUpdated -= RefreshFromCache;
     }
 
     void RefreshFromCache()
@@ -36,6 +42,7 @@ public class UI_HUD : MonoBehaviour
             _maxHp = 1;
             _level = 0;
             _totalExp = 0;
+            _gold = GoldManager.Instance.HasGold ? GoldManager.Instance.GetGold() : 0;
             Refresh();
             return;
         }
@@ -51,6 +58,11 @@ public class UI_HUD : MonoBehaviour
         int hp = StatManager.Instance.GetHp();
         _hp = Mathf.Clamp(hp, 0, _maxHp);
 
+        if (GoldManager.Instance.HasGold)
+            _gold = GoldManager.Instance.GetGold();
+        else
+            _gold = 0;
+
         Refresh();
     }
 
@@ -63,5 +75,7 @@ public class UI_HUD : MonoBehaviour
         if (expText) expText.text = $"EXP {_totalExp}";
 
         if (expBar) expBar.value = (float)(_totalExp % 1000) / 1000f;
+
+        if (goldText) goldText.text = $"GOLD {_gold}";
     }
 }

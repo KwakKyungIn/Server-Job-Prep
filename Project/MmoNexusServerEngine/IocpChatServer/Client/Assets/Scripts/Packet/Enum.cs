@@ -61,14 +61,14 @@ namespace Protocol {
             "X0NBTkNFTF9OT05FEAASGAoUVFJBREVfQ0FOQ0VMX0JZX1NFTEYQARIZChVU",
             "UkFERV9DQU5DRUxfREVDTElORUQQAhIbChdUUkFERV9DQU5DRUxfRElTQ09O",
             "TkVDVBADEhsKF1RSQURFX0NBTkNFTF9NQVBfQ0hBTkdFEAQSGAoUVFJBREVf",
-            "Q0FOQ0VMX1RJTUVPVVQQBRIZChVUUkFERV9DQU5DRUxfSU5URVJOQUwQBiqQ",
+            "Q0FOQ0VMX1RJTUVPVVQQBRIZChVUUkFERV9DQU5DRUxfSU5URVJOQUwQBiqw",
             "AgoNVHJhZGVGYWlsQ29kZRITCg9UUkFERV9GQUlMX05PTkUQABIdChlUUkFE",
             "RV9GQUlMX0lOVkFMSURfVEFSR0VUEAESHgoaVFJBREVfRkFJTF9BTFJFQURZ",
             "X1RSQURJTkcQAhIfChtUUkFERV9GQUlMX0RJU1RBTkNFX1RPT19GQVIQAxIc",
             "ChhUUkFERV9GQUlMX0lOVkFMSURfU1RBVEUQBBIbChdUUkFERV9GQUlMX0lO",
             "VkFMSURfSVRFTRAFEh0KGVRSQURFX0ZBSUxfSU5WRU5UT1JZX0ZVTEwQBhIX",
             "ChNUUkFERV9GQUlMX0lOVEVSTkFMEAcSFwoTVFJBREVfRkFJTF9SRUpFQ1RF",
-            "RBAIYgZwcm90bzM="));
+            "RBAIEh4KGlRSQURFX0ZBSUxfTk9UX0VOT1VHSF9HT0xEEAliBnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Protocol.MoveState), typeof(global::Protocol.ActionState), typeof(global::Protocol.PlayerType), typeof(global::Protocol.ObjectType), typeof(global::Protocol.ItemType), typeof(global::Protocol.SkillType), typeof(global::Protocol.ConnectStatus), typeof(global::Protocol.RoomType), typeof(global::Protocol.PresenceStatus), typeof(global::Protocol.FriendStatus), typeof(global::Protocol.PartyOp), typeof(global::Protocol.PartyResultReason), typeof(global::Protocol.QuickSlotRefType), typeof(global::Protocol.TradeCancelReason), typeof(global::Protocol.TradeFailCode), }, null, null));
@@ -321,6 +321,7 @@ namespace Protocol {
     [pbr::OriginalName("TRADE_FAIL_INVENTORY_FULL")] TradeFailInventoryFull = 6,
     [pbr::OriginalName("TRADE_FAIL_INTERNAL")] TradeFailInternal = 7,
     [pbr::OriginalName("TRADE_FAIL_REJECTED")] TradeFailRejected = 8,
+    [pbr::OriginalName("TRADE_FAIL_NOT_ENOUGH_GOLD")] TradeFailNotEnoughGold = 9,
   }
 
   #endregion

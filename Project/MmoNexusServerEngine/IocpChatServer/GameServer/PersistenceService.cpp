@@ -50,7 +50,7 @@ namespace Persistence
     }
 
     // 로그인 직후 DB 데이터를 Redis에 밀어넣음
-    void PersistenceService::PrimeFromDb_PlayerCore(uint64 pid, const Protocol::StatInfo& st)
+    void PersistenceService::PrimeFromDb_PlayerCore(uint64 pid, const Protocol::StatInfo& st, int64 gold)
     {
         if (!_redis) return;
 
@@ -60,6 +60,7 @@ namespace Persistence
         _redis->HSet(key, "level", std::to_string(st.level()));
         _redis->HSet(key, "hp", std::to_string(st.hp()));
         _redis->HSet(key, "totalExp", std::to_string(static_cast<long long>(st.totalexp())));
+        _redis->HSet(key, "gold", std::to_string(static_cast<long long>(gold)));
 
         // DB에서 막 가져온 싱싱한 데이터니까 Dirty Flag는 끈다
         // 혹시라도 남아있을지 모를 이전 세션의 잔재를 제거
@@ -120,6 +121,16 @@ namespace Persistence
         if (markDirty) MarkDirty_PlayerCore(pid);
     }
 
+    void PersistenceService::UpdatePlayerGold(uint64 pid, int64 gold, bool markDirty)
+    {
+        if (!_redis) return;
+
+        const std::string key = KeyPlayerCore(pid);
+        _redis->HSet(key, "gold", std::to_string(static_cast<long long>(gold)));
+
+        if (markDirty) MarkDirty_PlayerCore(pid);
+    }
+
     void PersistenceService::UpdateInventoryItem(uint64 pid, uint64 itemUid,
         int32 templateId, int32 slotIndex, int32 count, bool equipped,
         bool markDirty)
@@ -168,20 +179,23 @@ namespace Persistence
             return false;
 
         // 필수 데이터가 하나라도 없으면 저장하면 안 됨 (데이터 오염 방지)
-        if (kv.count("level") == 0 || kv.count("hp") == 0 || kv.count("totalExp") == 0)
+        if (kv.count("level") == 0 || kv.count("hp") == 0 || kv.count("totalExp") == 0 || kv.count("gold") == 0)
             return false;
 
         int32 level = 0, hp = 0;
         int64 totalExp = 0;
+        int64 gold = 0;
 
         if (!ToI32(kv["level"], level)) return false;
         if (!ToI32(kv["hp"], hp)) return false;
         if (!ToI64(kv["totalExp"], totalExp)) return false;
+        if (!ToI64(kv["gold"], gold)) return false;
 
         out.set_playerid(pid);
         out.set_level(level);
         out.set_hp(hp);
         out.set_totalexp(totalExp);
+        out.set_gold(gold);
         return true;
     }
 

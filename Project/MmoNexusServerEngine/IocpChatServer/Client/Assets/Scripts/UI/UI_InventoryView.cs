@@ -24,6 +24,9 @@ public class UI_InventoryView : MonoBehaviour
     public TMP_Text detailDesc;
     public Button detailCloseButton;
 
+    [Header("Gold")]
+    public TMP_Text goldText;
+
     readonly List<UI_ItemSlot> _slots = new();
     int _selectedSlot = -1;
     int _detailSlot = -1;
@@ -49,6 +52,7 @@ public class UI_InventoryView : MonoBehaviour
         }
 
         InventoryManager.Instance.OnInventoryUpdated += Refresh;
+        GoldManager.Instance.OnUpdated += Refresh;
         Refresh();
     }
 
@@ -56,6 +60,8 @@ public class UI_InventoryView : MonoBehaviour
     {
         if (InventoryManager.Instance != null)
             InventoryManager.Instance.OnInventoryUpdated -= Refresh;
+        if (GoldManager.Instance != null)
+            GoldManager.Instance.OnUpdated -= Refresh;
     }
 
     public void Refresh()
@@ -107,6 +113,12 @@ public class UI_InventoryView : MonoBehaviour
 
             if (_detailSlot < 0 || dtItem == null)
                 CloseDetail();
+        }
+
+        if (goldText)
+        {
+            long gold = GoldManager.Instance.HasGold ? GoldManager.Instance.GetGold() : 0;
+            goldText.text = $"GOLD {gold}";
         }
     }
 

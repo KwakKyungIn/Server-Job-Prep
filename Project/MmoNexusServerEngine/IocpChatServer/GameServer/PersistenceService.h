@@ -25,13 +25,14 @@ namespace Persistence
         // ===== Prime (DB -> Redis) =====
         // 플레이어가 로그인할 때 DB에 있는 데이터를 Redis로 캐싱하는 단계
         // DB 접근을 최소화하기 위해 최초 1회만 로딩함
-        void PrimeFromDb_PlayerCore(uint64 pid, const Protocol::StatInfo& st);
+        void PrimeFromDb_PlayerCore(uint64 pid, const Protocol::StatInfo& st, int64 gold);
         void PrimeFromDb_Inventory(uint64 pid, const google::protobuf::RepeatedPtrField<Protocol::ItemInfo>& items);
 
         // ===== Runtime updates (Game -> Redis + Dirty) =====
         // 게임 플레이 도중 스탯이나 경험치가 변하면 Redis에 즉시 반영
         // markDirty가 true면 저장 대상(Dirty Set)에 등록해서 추후 DB 저장을 유도함
         void UpdatePlayerCore(uint64 pid, int32 level, int32 hp, int64 totalExp, bool markDirty = true);
+        void UpdatePlayerGold(uint64 pid, int64 gold, bool markDirty = true);
 
         // 아이템 획득, 이동, 장착 변경 시 호출
         // Redis Hash 구조를 써서 특정 아이템 필드만 빠르게 갱신하도록 설계

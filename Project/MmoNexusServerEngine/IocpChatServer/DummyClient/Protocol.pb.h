@@ -121,6 +121,9 @@ extern C_TRADE_CANCELDefaultTypeInternal _C_TRADE_CANCEL_default_instance_;
 class C_TRADE_CONFIRM;
 struct C_TRADE_CONFIRMDefaultTypeInternal;
 extern C_TRADE_CONFIRMDefaultTypeInternal _C_TRADE_CONFIRM_default_instance_;
+class C_TRADE_GOLD_SET;
+struct C_TRADE_GOLD_SETDefaultTypeInternal;
+extern C_TRADE_GOLD_SETDefaultTypeInternal _C_TRADE_GOLD_SET_default_instance_;
 class C_TRADE_INVITE_RESP;
 struct C_TRADE_INVITE_RESPDefaultTypeInternal;
 extern C_TRADE_INVITE_RESPDefaultTypeInternal _C_TRADE_INVITE_RESP_default_instance_;
@@ -169,6 +172,9 @@ extern S_ENTER_GAMEDefaultTypeInternal _S_ENTER_GAME_default_instance_;
 class S_EQUIP_ITEM;
 struct S_EQUIP_ITEMDefaultTypeInternal;
 extern S_EQUIP_ITEMDefaultTypeInternal _S_EQUIP_ITEM_default_instance_;
+class S_GOLD_UPDATE;
+struct S_GOLD_UPDATEDefaultTypeInternal;
+extern S_GOLD_UPDATEDefaultTypeInternal _S_GOLD_UPDATE_default_instance_;
 class S_HEART_BEAT_RES;
 struct S_HEART_BEAT_RESDefaultTypeInternal;
 extern S_HEART_BEAT_RESDefaultTypeInternal _S_HEART_BEAT_RES_default_instance_;
@@ -267,6 +273,7 @@ template<> ::Protocol::C_SET_QUICKSLOT* Arena::CreateMaybeMessage<::Protocol::C_
 template<> ::Protocol::C_SKILL* Arena::CreateMaybeMessage<::Protocol::C_SKILL>(Arena*);
 template<> ::Protocol::C_TRADE_CANCEL* Arena::CreateMaybeMessage<::Protocol::C_TRADE_CANCEL>(Arena*);
 template<> ::Protocol::C_TRADE_CONFIRM* Arena::CreateMaybeMessage<::Protocol::C_TRADE_CONFIRM>(Arena*);
+template<> ::Protocol::C_TRADE_GOLD_SET* Arena::CreateMaybeMessage<::Protocol::C_TRADE_GOLD_SET>(Arena*);
 template<> ::Protocol::C_TRADE_INVITE_RESP* Arena::CreateMaybeMessage<::Protocol::C_TRADE_INVITE_RESP>(Arena*);
 template<> ::Protocol::C_TRADE_OFFER_SET* Arena::CreateMaybeMessage<::Protocol::C_TRADE_OFFER_SET>(Arena*);
 template<> ::Protocol::C_TRADE_READY* Arena::CreateMaybeMessage<::Protocol::C_TRADE_READY>(Arena*);
@@ -283,6 +290,7 @@ template<> ::Protocol::S_DUNGEON_ENTER_RES* Arena::CreateMaybeMessage<::Protocol
 template<> ::Protocol::S_DUNGEON_EXIT_RES* Arena::CreateMaybeMessage<::Protocol::S_DUNGEON_EXIT_RES>(Arena*);
 template<> ::Protocol::S_ENTER_GAME* Arena::CreateMaybeMessage<::Protocol::S_ENTER_GAME>(Arena*);
 template<> ::Protocol::S_EQUIP_ITEM* Arena::CreateMaybeMessage<::Protocol::S_EQUIP_ITEM>(Arena*);
+template<> ::Protocol::S_GOLD_UPDATE* Arena::CreateMaybeMessage<::Protocol::S_GOLD_UPDATE>(Arena*);
 template<> ::Protocol::S_HEART_BEAT_RES* Arena::CreateMaybeMessage<::Protocol::S_HEART_BEAT_RES>(Arena*);
 template<> ::Protocol::S_ITEM_LIST* Arena::CreateMaybeMessage<::Protocol::S_ITEM_LIST>(Arena*);
 template<> ::Protocol::S_LOGIN* Arena::CreateMaybeMessage<::Protocol::S_LOGIN>(Arena*);
@@ -1207,6 +1215,7 @@ class S_ENTER_GAME final :
 
   enum : int {
     kMyPlayerFieldNumber = 2,
+    kGoldFieldNumber = 3,
     kSuccessFieldNumber = 1,
   };
   // .Protocol.PlayerInfo myPlayer = 2;
@@ -1227,6 +1236,15 @@ class S_ENTER_GAME final :
       ::Protocol::PlayerInfo* myplayer);
   ::Protocol::PlayerInfo* unsafe_arena_release_myplayer();
 
+  // int64 gold = 3;
+  void clear_gold();
+  int64_t gold() const;
+  void set_gold(int64_t value);
+  private:
+  int64_t _internal_gold() const;
+  void _internal_set_gold(int64_t value);
+  public:
+
   // bool success = 1;
   void clear_success();
   bool success() const;
@@ -1245,6 +1263,7 @@ class S_ENTER_GAME final :
   typedef void DestructorSkippable_;
   struct Impl_ {
     ::Protocol::PlayerInfo* myplayer_;
+    int64_t gold_;
     bool success_;
     mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   };
@@ -3620,6 +3639,154 @@ class S_CHANGE_STAT final :
 };
 // -------------------------------------------------------------------
 
+class S_GOLD_UPDATE final :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:Protocol.S_GOLD_UPDATE) */ {
+ public:
+  inline S_GOLD_UPDATE() : S_GOLD_UPDATE(nullptr) {}
+  ~S_GOLD_UPDATE() override;
+  explicit PROTOBUF_CONSTEXPR S_GOLD_UPDATE(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+
+  S_GOLD_UPDATE(const S_GOLD_UPDATE& from);
+  S_GOLD_UPDATE(S_GOLD_UPDATE&& from) noexcept
+    : S_GOLD_UPDATE() {
+    *this = ::std::move(from);
+  }
+
+  inline S_GOLD_UPDATE& operator=(const S_GOLD_UPDATE& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline S_GOLD_UPDATE& operator=(S_GOLD_UPDATE&& from) noexcept {
+    if (this == &from) return *this;
+    if (GetOwningArena() == from.GetOwningArena()
+  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+        && GetOwningArena() != nullptr
+  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+    ) {
+      InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return default_instance().GetMetadata().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return default_instance().GetMetadata().reflection;
+  }
+  static const S_GOLD_UPDATE& default_instance() {
+    return *internal_default_instance();
+  }
+  static inline const S_GOLD_UPDATE* internal_default_instance() {
+    return reinterpret_cast<const S_GOLD_UPDATE*>(
+               &_S_GOLD_UPDATE_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    19;
+
+  friend void swap(S_GOLD_UPDATE& a, S_GOLD_UPDATE& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(S_GOLD_UPDATE* other) {
+    if (other == this) return;
+  #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetOwningArena() != nullptr &&
+        GetOwningArena() == other->GetOwningArena()) {
+   #else  // PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetOwningArena() == other->GetOwningArena()) {
+  #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(S_GOLD_UPDATE* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetOwningArena() == other->GetOwningArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  S_GOLD_UPDATE* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
+    return CreateMaybeMessage<S_GOLD_UPDATE>(arena);
+  }
+  using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
+  void CopyFrom(const S_GOLD_UPDATE& from);
+  using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
+  void MergeFrom( const S_GOLD_UPDATE& from) {
+    S_GOLD_UPDATE::MergeImpl(*this, from);
+  }
+  private:
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg);
+  public:
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  uint8_t* _InternalSerialize(
+      uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
+
+  private:
+  void SharedCtor(::PROTOBUF_NAMESPACE_ID::Arena* arena, bool is_message_owned);
+  void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(S_GOLD_UPDATE* other);
+
+  private:
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "Protocol.S_GOLD_UPDATE";
+  }
+  protected:
+  explicit S_GOLD_UPDATE(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                       bool is_message_owned = false);
+  public:
+
+  static const ClassData _class_data_;
+  const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*GetClassData() const final;
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kGoldFieldNumber = 1,
+  };
+  // int64 gold = 1;
+  void clear_gold();
+  int64_t gold() const;
+  void set_gold(int64_t value);
+  private:
+  int64_t _internal_gold() const;
+  void _internal_set_gold(int64_t value);
+  public:
+
+  // @@protoc_insertion_point(class_scope:Protocol.S_GOLD_UPDATE)
+ private:
+  class _Internal;
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  struct Impl_ {
+    int64_t gold_;
+    mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  };
+  union { Impl_ _impl_; };
+  friend struct ::TableStruct_Protocol_2eproto;
+};
+// -------------------------------------------------------------------
+
 class C_MAP_CHANGE_REQ final :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:Protocol.C_MAP_CHANGE_REQ) */ {
  public:
@@ -3668,7 +3835,7 @@ class C_MAP_CHANGE_REQ final :
                &_C_MAP_CHANGE_REQ_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    19;
+    20;
 
   friend void swap(C_MAP_CHANGE_REQ& a, C_MAP_CHANGE_REQ& b) {
     a.Swap(&b);
@@ -3816,7 +3983,7 @@ class S_MAP_CHANGE_BEGIN final :
                &_S_MAP_CHANGE_BEGIN_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    20;
+    21;
 
   friend void swap(S_MAP_CHANGE_BEGIN& a, S_MAP_CHANGE_BEGIN& b) {
     a.Swap(&b);
@@ -4017,7 +4184,7 @@ class C_MAP_CHANGE_ACK final :
                &_C_MAP_CHANGE_ACK_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    21;
+    22;
 
   friend void swap(C_MAP_CHANGE_ACK& a, C_MAP_CHANGE_ACK& b) {
     a.Swap(&b);
@@ -4165,7 +4332,7 @@ class S_MAP_CHANGE_END final :
                &_S_MAP_CHANGE_END_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    22;
+    23;
 
   friend void swap(S_MAP_CHANGE_END& a, S_MAP_CHANGE_END& b) {
     a.Swap(&b);
@@ -4366,7 +4533,7 @@ class C_CHANNEL_CHANGE_REQ final :
                &_C_CHANNEL_CHANGE_REQ_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    23;
+    24;
 
   friend void swap(C_CHANNEL_CHANGE_REQ& a, C_CHANNEL_CHANGE_REQ& b) {
     a.Swap(&b);
@@ -4514,7 +4681,7 @@ class C_CHAT_REQ final :
                &_C_CHAT_REQ_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    24;
+    25;
 
   friend void swap(C_CHAT_REQ& a, C_CHAT_REQ& b) {
     a.Swap(&b);
@@ -4667,7 +4834,7 @@ class S_CHAT_RES final :
                &_S_CHAT_RES_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    25;
+    26;
 
   friend void swap(S_CHAT_RES& a, S_CHAT_RES& b) {
     a.Swap(&b);
@@ -4815,7 +4982,7 @@ class S_CHAT_NTF final :
                &_S_CHAT_NTF_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    26;
+    27;
 
   friend void swap(S_CHAT_NTF& a, S_CHAT_NTF& b) {
     a.Swap(&b);
@@ -4994,7 +5161,7 @@ class S_HEART_BEAT_RES final :
                &_S_HEART_BEAT_RES_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    27;
+    28;
 
   friend void swap(S_HEART_BEAT_RES& a, S_HEART_BEAT_RES& b) {
     a.Swap(&b);
@@ -5112,7 +5279,7 @@ class C_HEART_BEAT_REQ final :
                &_C_HEART_BEAT_REQ_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    28;
+    29;
 
   friend void swap(C_HEART_BEAT_REQ& a, C_HEART_BEAT_REQ& b) {
     a.Swap(&b);
@@ -5231,7 +5398,7 @@ class C_PARTY_CHAT_REQ final :
                &_C_PARTY_CHAT_REQ_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    29;
+    30;
 
   friend void swap(C_PARTY_CHAT_REQ& a, C_PARTY_CHAT_REQ& b) {
     a.Swap(&b);
@@ -5384,7 +5551,7 @@ class S_PARTY_CHAT_NTF final :
                &_S_PARTY_CHAT_NTF_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    30;
+    31;
 
   friend void swap(S_PARTY_CHAT_NTF& a, S_PARTY_CHAT_NTF& b) {
     a.Swap(&b);
@@ -5575,7 +5742,7 @@ class S_PARTY_INFO_NTF final :
                &_S_PARTY_INFO_NTF_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    31;
+    32;
 
   friend void swap(S_PARTY_INFO_NTF& a, S_PARTY_INFO_NTF& b) {
     a.Swap(&b);
@@ -5781,7 +5948,7 @@ class C_PARTY_CREATE_REQ final :
                &_C_PARTY_CREATE_REQ_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    32;
+    33;
 
   friend void swap(C_PARTY_CREATE_REQ& a, C_PARTY_CREATE_REQ& b) {
     a.Swap(&b);
@@ -5929,7 +6096,7 @@ class C_PARTY_INVITE_REQ final :
                &_C_PARTY_INVITE_REQ_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    33;
+    34;
 
   friend void swap(C_PARTY_INVITE_REQ& a, C_PARTY_INVITE_REQ& b) {
     a.Swap(&b);
@@ -6093,7 +6260,7 @@ class C_PARTY_INVITE_ACCEPT_REQ final :
                &_C_PARTY_INVITE_ACCEPT_REQ_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    34;
+    35;
 
   friend void swap(C_PARTY_INVITE_ACCEPT_REQ& a, C_PARTY_INVITE_ACCEPT_REQ& b) {
     a.Swap(&b);
@@ -6251,7 +6418,7 @@ class C_PARTY_LEAVE_REQ final :
                &_C_PARTY_LEAVE_REQ_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    35;
+    36;
 
   friend void swap(C_PARTY_LEAVE_REQ& a, C_PARTY_LEAVE_REQ& b) {
     a.Swap(&b);
@@ -6370,7 +6537,7 @@ class C_PARTY_KICK_REQ final :
                &_C_PARTY_KICK_REQ_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    36;
+    37;
 
   friend void swap(C_PARTY_KICK_REQ& a, C_PARTY_KICK_REQ& b) {
     a.Swap(&b);
@@ -6517,7 +6684,7 @@ class C_PARTY_DISBAND_REQ final :
                &_C_PARTY_DISBAND_REQ_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    37;
+    38;
 
   friend void swap(C_PARTY_DISBAND_REQ& a, C_PARTY_DISBAND_REQ& b) {
     a.Swap(&b);
@@ -6636,7 +6803,7 @@ class S_PARTY_RESULT final :
                &_S_PARTY_RESULT_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    38;
+    39;
 
   friend void swap(S_PARTY_RESULT& a, S_PARTY_RESULT& b) {
     a.Swap(&b);
@@ -6828,7 +6995,7 @@ class S_PARTY_INVITE_NTF final :
                &_S_PARTY_INVITE_NTF_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    39;
+    40;
 
   friend void swap(S_PARTY_INVITE_NTF& a, S_PARTY_INVITE_NTF& b) {
     a.Swap(&b);
@@ -7003,7 +7170,7 @@ class PartyMemberStatus final :
                &_PartyMemberStatus_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    40;
+    41;
 
   friend void swap(PartyMemberStatus& a, PartyMemberStatus& b) {
     a.Swap(&b);
@@ -7252,7 +7419,7 @@ class C_PARTY_STATUS_REQ final :
                &_C_PARTY_STATUS_REQ_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    41;
+    42;
 
   friend void swap(C_PARTY_STATUS_REQ& a, C_PARTY_STATUS_REQ& b) {
     a.Swap(&b);
@@ -7371,7 +7538,7 @@ class S_PARTY_STATUS_NTF final :
                &_S_PARTY_STATUS_NTF_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    42;
+    43;
 
   friend void swap(S_PARTY_STATUS_NTF& a, S_PARTY_STATUS_NTF& b) {
     a.Swap(&b);
@@ -7550,7 +7717,7 @@ class C_DUNGEON_ENTER_REQ final :
                &_C_DUNGEON_ENTER_REQ_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    43;
+    44;
 
   friend void swap(C_DUNGEON_ENTER_REQ& a, C_DUNGEON_ENTER_REQ& b) {
     a.Swap(&b);
@@ -7698,7 +7865,7 @@ class S_DUNGEON_ENTER_RES final :
                &_S_DUNGEON_ENTER_RES_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    44;
+    45;
 
   friend void swap(S_DUNGEON_ENTER_RES& a, S_DUNGEON_ENTER_RES& b) {
     a.Swap(&b);
@@ -7878,7 +8045,7 @@ class C_DUNGEON_EXIT_REQ final :
                &_C_DUNGEON_EXIT_REQ_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    45;
+    46;
 
   friend void swap(C_DUNGEON_EXIT_REQ& a, C_DUNGEON_EXIT_REQ& b) {
     a.Swap(&b);
@@ -7997,7 +8164,7 @@ class S_DUNGEON_EXIT_RES final :
                &_S_DUNGEON_EXIT_RES_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    46;
+    47;
 
   friend void swap(S_DUNGEON_EXIT_RES& a, S_DUNGEON_EXIT_RES& b) {
     a.Swap(&b);
@@ -8178,7 +8345,7 @@ class S_QUICKSLOT_LIST final :
                &_S_QUICKSLOT_LIST_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    47;
+    48;
 
   friend void swap(S_QUICKSLOT_LIST& a, S_QUICKSLOT_LIST& b) {
     a.Swap(&b);
@@ -8335,7 +8502,7 @@ class C_SET_QUICKSLOT final :
                &_C_SET_QUICKSLOT_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    48;
+    49;
 
   friend void swap(C_SET_QUICKSLOT& a, C_SET_QUICKSLOT& b) {
     a.Swap(&b);
@@ -8505,7 +8672,7 @@ class S_SET_QUICKSLOT final :
                &_S_SET_QUICKSLOT_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    49;
+    50;
 
   friend void swap(S_SET_QUICKSLOT& a, S_SET_QUICKSLOT& b) {
     a.Swap(&b);
@@ -8673,7 +8840,7 @@ class C_TRADE_REQ final :
                &_C_TRADE_REQ_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    50;
+    51;
 
   friend void swap(C_TRADE_REQ& a, C_TRADE_REQ& b) {
     a.Swap(&b);
@@ -8821,7 +8988,7 @@ class S_TRADE_INVITE final :
                &_S_TRADE_INVITE_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    51;
+    52;
 
   friend void swap(S_TRADE_INVITE& a, S_TRADE_INVITE& b) {
     a.Swap(&b);
@@ -8985,7 +9152,7 @@ class C_TRADE_INVITE_RESP final :
                &_C_TRADE_INVITE_RESP_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    52;
+    53;
 
   friend void swap(C_TRADE_INVITE_RESP& a, C_TRADE_INVITE_RESP& b) {
     a.Swap(&b);
@@ -9133,7 +9300,7 @@ class S_TRADE_START final :
                &_S_TRADE_START_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    53;
+    54;
 
   friend void swap(S_TRADE_START& a, S_TRADE_START& b) {
     a.Swap(&b);
@@ -9308,7 +9475,7 @@ class C_TRADE_OFFER_SET final :
                &_C_TRADE_OFFER_SET_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    54;
+    55;
 
   friend void swap(C_TRADE_OFFER_SET& a, C_TRADE_OFFER_SET& b) {
     a.Swap(&b);
@@ -9430,6 +9597,165 @@ class C_TRADE_OFFER_SET final :
 };
 // -------------------------------------------------------------------
 
+class C_TRADE_GOLD_SET final :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:Protocol.C_TRADE_GOLD_SET) */ {
+ public:
+  inline C_TRADE_GOLD_SET() : C_TRADE_GOLD_SET(nullptr) {}
+  ~C_TRADE_GOLD_SET() override;
+  explicit PROTOBUF_CONSTEXPR C_TRADE_GOLD_SET(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+
+  C_TRADE_GOLD_SET(const C_TRADE_GOLD_SET& from);
+  C_TRADE_GOLD_SET(C_TRADE_GOLD_SET&& from) noexcept
+    : C_TRADE_GOLD_SET() {
+    *this = ::std::move(from);
+  }
+
+  inline C_TRADE_GOLD_SET& operator=(const C_TRADE_GOLD_SET& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline C_TRADE_GOLD_SET& operator=(C_TRADE_GOLD_SET&& from) noexcept {
+    if (this == &from) return *this;
+    if (GetOwningArena() == from.GetOwningArena()
+  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+        && GetOwningArena() != nullptr
+  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+    ) {
+      InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return default_instance().GetMetadata().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return default_instance().GetMetadata().reflection;
+  }
+  static const C_TRADE_GOLD_SET& default_instance() {
+    return *internal_default_instance();
+  }
+  static inline const C_TRADE_GOLD_SET* internal_default_instance() {
+    return reinterpret_cast<const C_TRADE_GOLD_SET*>(
+               &_C_TRADE_GOLD_SET_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    56;
+
+  friend void swap(C_TRADE_GOLD_SET& a, C_TRADE_GOLD_SET& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(C_TRADE_GOLD_SET* other) {
+    if (other == this) return;
+  #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetOwningArena() != nullptr &&
+        GetOwningArena() == other->GetOwningArena()) {
+   #else  // PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetOwningArena() == other->GetOwningArena()) {
+  #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(C_TRADE_GOLD_SET* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetOwningArena() == other->GetOwningArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  C_TRADE_GOLD_SET* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
+    return CreateMaybeMessage<C_TRADE_GOLD_SET>(arena);
+  }
+  using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
+  void CopyFrom(const C_TRADE_GOLD_SET& from);
+  using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
+  void MergeFrom( const C_TRADE_GOLD_SET& from) {
+    C_TRADE_GOLD_SET::MergeImpl(*this, from);
+  }
+  private:
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg);
+  public:
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  uint8_t* _InternalSerialize(
+      uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
+
+  private:
+  void SharedCtor(::PROTOBUF_NAMESPACE_ID::Arena* arena, bool is_message_owned);
+  void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(C_TRADE_GOLD_SET* other);
+
+  private:
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "Protocol.C_TRADE_GOLD_SET";
+  }
+  protected:
+  explicit C_TRADE_GOLD_SET(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                       bool is_message_owned = false);
+  public:
+
+  static const ClassData _class_data_;
+  const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*GetClassData() const final;
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kTradeIdFieldNumber = 1,
+    kGoldFieldNumber = 2,
+  };
+  // uint64 tradeId = 1;
+  void clear_tradeid();
+  uint64_t tradeid() const;
+  void set_tradeid(uint64_t value);
+  private:
+  uint64_t _internal_tradeid() const;
+  void _internal_set_tradeid(uint64_t value);
+  public:
+
+  // int64 gold = 2;
+  void clear_gold();
+  int64_t gold() const;
+  void set_gold(int64_t value);
+  private:
+  int64_t _internal_gold() const;
+  void _internal_set_gold(int64_t value);
+  public:
+
+  // @@protoc_insertion_point(class_scope:Protocol.C_TRADE_GOLD_SET)
+ private:
+  class _Internal;
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  struct Impl_ {
+    uint64_t tradeid_;
+    int64_t gold_;
+    mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  };
+  union { Impl_ _impl_; };
+  friend struct ::TableStruct_Protocol_2eproto;
+};
+// -------------------------------------------------------------------
+
 class S_TRADE_OFFER_UPDATE final :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:Protocol.S_TRADE_OFFER_UPDATE) */ {
  public:
@@ -9478,7 +9804,7 @@ class S_TRADE_OFFER_UPDATE final :
                &_S_TRADE_OFFER_UPDATE_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    55;
+    57;
 
   friend void swap(S_TRADE_OFFER_UPDATE& a, S_TRADE_OFFER_UPDATE& b) {
     a.Swap(&b);
@@ -9554,6 +9880,7 @@ class S_TRADE_OFFER_UPDATE final :
     kItemsFieldNumber = 3,
     kTradeIdFieldNumber = 1,
     kWhoPlayerIdFieldNumber = 2,
+    kGoldFieldNumber = 4,
   };
   // repeated .Protocol.TradeOfferItem items = 3;
   int items_size() const;
@@ -9591,6 +9918,15 @@ class S_TRADE_OFFER_UPDATE final :
   void _internal_set_whoplayerid(uint64_t value);
   public:
 
+  // int64 gold = 4;
+  void clear_gold();
+  int64_t gold() const;
+  void set_gold(int64_t value);
+  private:
+  int64_t _internal_gold() const;
+  void _internal_set_gold(int64_t value);
+  public:
+
   // @@protoc_insertion_point(class_scope:Protocol.S_TRADE_OFFER_UPDATE)
  private:
   class _Internal;
@@ -9602,6 +9938,7 @@ class S_TRADE_OFFER_UPDATE final :
     ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::Protocol::TradeOfferItem > items_;
     uint64_t tradeid_;
     uint64_t whoplayerid_;
+    int64_t gold_;
     mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   };
   union { Impl_ _impl_; };
@@ -9657,7 +9994,7 @@ class C_TRADE_READY final :
                &_C_TRADE_READY_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    56;
+    58;
 
   friend void swap(C_TRADE_READY& a, C_TRADE_READY& b) {
     a.Swap(&b);
@@ -9816,7 +10153,7 @@ class S_TRADE_READY_STATE final :
                &_S_TRADE_READY_STATE_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    57;
+    59;
 
   friend void swap(S_TRADE_READY_STATE& a, S_TRADE_READY_STATE& b) {
     a.Swap(&b);
@@ -9986,7 +10323,7 @@ class S_TRADE_LOCKED final :
                &_S_TRADE_LOCKED_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    58;
+    60;
 
   friend void swap(S_TRADE_LOCKED& a, S_TRADE_LOCKED& b) {
     a.Swap(&b);
@@ -10134,7 +10471,7 @@ class C_TRADE_CONFIRM final :
                &_C_TRADE_CONFIRM_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    59;
+    61;
 
   friend void swap(C_TRADE_CONFIRM& a, C_TRADE_CONFIRM& b) {
     a.Swap(&b);
@@ -10282,7 +10619,7 @@ class C_TRADE_CANCEL final :
                &_C_TRADE_CANCEL_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    60;
+    62;
 
   friend void swap(C_TRADE_CANCEL& a, C_TRADE_CANCEL& b) {
     a.Swap(&b);
@@ -10441,7 +10778,7 @@ class S_TRADE_CANCELLED final :
                &_S_TRADE_CANCELLED_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    61;
+    63;
 
   friend void swap(S_TRADE_CANCELLED& a, S_TRADE_CANCELLED& b) {
     a.Swap(&b);
@@ -10600,7 +10937,7 @@ class S_TRADE_RESULT final :
                &_S_TRADE_RESULT_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    62;
+    64;
 
   friend void swap(S_TRADE_RESULT& a, S_TRADE_RESULT& b) {
     a.Swap(&b);
@@ -10786,7 +11123,7 @@ class C_INV_DRAG_DROP final :
                &_C_INV_DRAG_DROP_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    63;
+    65;
 
   friend void swap(C_INV_DRAG_DROP& a, C_INV_DRAG_DROP& b) {
     a.Swap(&b);
@@ -11476,6 +11813,26 @@ inline void S_ENTER_GAME::set_allocated_myplayer(::Protocol::PlayerInfo* myplaye
   }
   _impl_.myplayer_ = myplayer;
   // @@protoc_insertion_point(field_set_allocated:Protocol.S_ENTER_GAME.myPlayer)
+}
+
+// int64 gold = 3;
+inline void S_ENTER_GAME::clear_gold() {
+  _impl_.gold_ = int64_t{0};
+}
+inline int64_t S_ENTER_GAME::_internal_gold() const {
+  return _impl_.gold_;
+}
+inline int64_t S_ENTER_GAME::gold() const {
+  // @@protoc_insertion_point(field_get:Protocol.S_ENTER_GAME.gold)
+  return _internal_gold();
+}
+inline void S_ENTER_GAME::_internal_set_gold(int64_t value) {
+  
+  _impl_.gold_ = value;
+}
+inline void S_ENTER_GAME::set_gold(int64_t value) {
+  _internal_set_gold(value);
+  // @@protoc_insertion_point(field_set:Protocol.S_ENTER_GAME.gold)
 }
 
 // -------------------------------------------------------------------
@@ -12547,6 +12904,30 @@ inline void S_CHANGE_STAT::set_allocated_statinfo(::Protocol::StatInfo* statinfo
   }
   _impl_.statinfo_ = statinfo;
   // @@protoc_insertion_point(field_set_allocated:Protocol.S_CHANGE_STAT.statInfo)
+}
+
+// -------------------------------------------------------------------
+
+// S_GOLD_UPDATE
+
+// int64 gold = 1;
+inline void S_GOLD_UPDATE::clear_gold() {
+  _impl_.gold_ = int64_t{0};
+}
+inline int64_t S_GOLD_UPDATE::_internal_gold() const {
+  return _impl_.gold_;
+}
+inline int64_t S_GOLD_UPDATE::gold() const {
+  // @@protoc_insertion_point(field_get:Protocol.S_GOLD_UPDATE.gold)
+  return _internal_gold();
+}
+inline void S_GOLD_UPDATE::_internal_set_gold(int64_t value) {
+  
+  _impl_.gold_ = value;
+}
+inline void S_GOLD_UPDATE::set_gold(int64_t value) {
+  _internal_set_gold(value);
+  // @@protoc_insertion_point(field_set:Protocol.S_GOLD_UPDATE.gold)
 }
 
 // -------------------------------------------------------------------
@@ -14929,6 +15310,50 @@ inline void C_TRADE_OFFER_SET::set_count(int32_t value) {
 
 // -------------------------------------------------------------------
 
+// C_TRADE_GOLD_SET
+
+// uint64 tradeId = 1;
+inline void C_TRADE_GOLD_SET::clear_tradeid() {
+  _impl_.tradeid_ = uint64_t{0u};
+}
+inline uint64_t C_TRADE_GOLD_SET::_internal_tradeid() const {
+  return _impl_.tradeid_;
+}
+inline uint64_t C_TRADE_GOLD_SET::tradeid() const {
+  // @@protoc_insertion_point(field_get:Protocol.C_TRADE_GOLD_SET.tradeId)
+  return _internal_tradeid();
+}
+inline void C_TRADE_GOLD_SET::_internal_set_tradeid(uint64_t value) {
+  
+  _impl_.tradeid_ = value;
+}
+inline void C_TRADE_GOLD_SET::set_tradeid(uint64_t value) {
+  _internal_set_tradeid(value);
+  // @@protoc_insertion_point(field_set:Protocol.C_TRADE_GOLD_SET.tradeId)
+}
+
+// int64 gold = 2;
+inline void C_TRADE_GOLD_SET::clear_gold() {
+  _impl_.gold_ = int64_t{0};
+}
+inline int64_t C_TRADE_GOLD_SET::_internal_gold() const {
+  return _impl_.gold_;
+}
+inline int64_t C_TRADE_GOLD_SET::gold() const {
+  // @@protoc_insertion_point(field_get:Protocol.C_TRADE_GOLD_SET.gold)
+  return _internal_gold();
+}
+inline void C_TRADE_GOLD_SET::_internal_set_gold(int64_t value) {
+  
+  _impl_.gold_ = value;
+}
+inline void C_TRADE_GOLD_SET::set_gold(int64_t value) {
+  _internal_set_gold(value);
+  // @@protoc_insertion_point(field_set:Protocol.C_TRADE_GOLD_SET.gold)
+}
+
+// -------------------------------------------------------------------
+
 // S_TRADE_OFFER_UPDATE
 
 // uint64 tradeId = 1;
@@ -15006,6 +15431,26 @@ inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::Protocol::TradeOfferIt
 S_TRADE_OFFER_UPDATE::items() const {
   // @@protoc_insertion_point(field_list:Protocol.S_TRADE_OFFER_UPDATE.items)
   return _impl_.items_;
+}
+
+// int64 gold = 4;
+inline void S_TRADE_OFFER_UPDATE::clear_gold() {
+  _impl_.gold_ = int64_t{0};
+}
+inline int64_t S_TRADE_OFFER_UPDATE::_internal_gold() const {
+  return _impl_.gold_;
+}
+inline int64_t S_TRADE_OFFER_UPDATE::gold() const {
+  // @@protoc_insertion_point(field_get:Protocol.S_TRADE_OFFER_UPDATE.gold)
+  return _internal_gold();
+}
+inline void S_TRADE_OFFER_UPDATE::_internal_set_gold(int64_t value) {
+  
+  _impl_.gold_ = value;
+}
+inline void S_TRADE_OFFER_UPDATE::set_gold(int64_t value) {
+  _internal_set_gold(value);
+  // @@protoc_insertion_point(field_set:Protocol.S_TRADE_OFFER_UPDATE.gold)
 }
 
 // -------------------------------------------------------------------
@@ -15433,6 +15878,10 @@ inline void C_INV_DRAG_DROP::set_toslot(int32_t value) {
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------

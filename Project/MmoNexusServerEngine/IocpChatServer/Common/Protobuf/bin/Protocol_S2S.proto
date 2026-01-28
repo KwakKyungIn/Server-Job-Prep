@@ -43,6 +43,7 @@ message S2S_RES_LOAD_PLAYER_DATA {
     uint64 playerId = 2;
     StatInfo statInfo = 3;    // DB¿¡¼­ ±Ü¾î¿Â ½ºÅÈ Á¤º¸
     uint64 gameSessionId = 4; // ¿Õº¹ Æ¼ÄÏ ¹ÝÈ¯
+    int64 gold = 5;
 }
 
 
@@ -90,6 +91,7 @@ message S2S_REQ_SAVE_PLAYER_CORE {
     int32 level = 2;
     int32 hp = 3;
     int64 totalExp = 4;
+    int64 gold = 5;
 }
 
 message S2S_RES_SAVE_PLAYER_CORE {
@@ -188,6 +190,9 @@ message S2S_REQ_TRADE_COMMIT {
     repeated uint64 deletedBItemUids = 10;
 
     uint64 requestId = 11; // optional (debug/matching)
+
+    int64 finalGoldA = 12;
+    int64 finalGoldB = 13;
 }
 
 message S2S_RES_TRADE_COMMIT {

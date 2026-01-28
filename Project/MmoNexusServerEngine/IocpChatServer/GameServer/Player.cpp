@@ -4,6 +4,7 @@
 #include "GameRoom.h"
 #include "DataManager.h"
 #include "PersistenceService.h"
+#include <limits>
 
 // 플레이어 생성자. 부모 클래스인 Creature를 먼저 초기화해준다
 // OBJECT_TYPE_PLAYER 타입을 넘겨줘야 나중에 캐스팅할 때 안 헷갈림
@@ -98,6 +99,33 @@ void Player::Init(const Protocol::PlayerInfo& info)
 	// 룸 스레드에서만 접근해야 하므로 여기서 미리 세팅해둠
 	ResetMoveStamp_ActorOnly();
 	_lastAcceptedPos.CopyFrom(*_posInfo);
+}
+
+void Player::SetGold(int64 v)
+{
+	if (v < 0)
+		v = 0;
+	_gold = v;
+}
+
+bool Player::AddGold(int64 delta)
+{
+	if (delta == 0)
+		return true;
+
+	if (delta < 0)
+	{
+		if (_gold < -delta)
+			return false;
+		_gold += delta;
+		return true;
+	}
+
+	if (_gold > ((std::numeric_limits<int64>::max)() - delta))
+		return false;
+
+	_gold += delta;
+	return true;
 }
 
 // 스탯 재계산 함수

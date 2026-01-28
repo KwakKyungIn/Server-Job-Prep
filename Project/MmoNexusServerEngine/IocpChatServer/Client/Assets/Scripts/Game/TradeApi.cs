@@ -29,6 +29,17 @@ public static class TradeApi
         NetworkManager.Instance.Send(pkt, (ushort)PacketManager.MsgId.C_TRADE_OFFER_SET);
     }
 
+    public static void OfferGold(ulong tradeId, long gold)
+    {
+        Debug.Log($"[Trade] OfferGold tradeId={tradeId} gold={gold}");
+        var pkt = new C_TRADE_GOLD_SET
+        {
+            TradeId = tradeId,
+            Gold = gold,
+        };
+        NetworkManager.Instance.Send(pkt, (ushort)PacketManager.MsgId.C_TRADE_GOLD_SET);
+    }
+
     public static void SetReady(ulong tradeId, bool ready)
     {
         Debug.Log($"[Trade] SetReady tradeId={tradeId} ready={ready}");

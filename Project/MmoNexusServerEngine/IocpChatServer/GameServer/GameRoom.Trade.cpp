@@ -9,6 +9,7 @@
 #include "AutoCommitService.h"
 #include "GameItemUidGen.h"
 #include "DataManager.h"
+#include <limits>
 
 namespace
 {
@@ -344,6 +345,62 @@ void GameRoom::HandleTradeOfferSetById(PlayerSessionRef session, uint64 playerId
     SendReadyState_ActorOnly(tradeId);
 }
 
+// 3-1. 골드 제안/수정
+void GameRoom::HandleTradeGoldSetById(PlayerSessionRef session, uint64 playerId, Protocol::C_TRADE_GOLD_SET pkt)
+{
+    if (!session) return;
+
+    const uint64 tradeId = pkt.tradeid();
+    TradeSession* ts = FindTrade_ActorOnly(tradeId);
+    if (!ts)
+    {
+        SendTradeResult(playerId, tradeId, false, Protocol::TRADE_FAIL_INVALID_STATE, "trade not found");
+        return;
+    }
+
+    if (ts->state != TradeState::Active)
+    {
+        SendTradeResult(playerId, tradeId, false, Protocol::TRADE_FAIL_INVALID_STATE, "invalid state");
+        return;
+    }
+
+    PlayerRef p = FindPlayer_ActorOnly(playerId);
+    if (!p)
+    {
+        SendTradeResult(playerId, tradeId, false, Protocol::TRADE_FAIL_INTERNAL, "player missing");
+        return;
+    }
+
+    const int64 gold = pkt.gold();
+    if (gold < 0)
+    {
+        SendTradeResult(playerId, tradeId, false, Protocol::TRADE_FAIL_INTERNAL, "invalid gold");
+        return;
+    }
+
+    if (gold > p->GetGold())
+    {
+        SendTradeResult(playerId, tradeId, false, Protocol::TRADE_FAIL_NOT_ENOUGH_GOLD, "not enough gold");
+        return;
+    }
+
+    const uint64 nowMs = ::GetTickCount64();
+    ts->lastTouchedMs = nowMs;
+
+    if (playerId == ts->playerAId)
+        ts->offerGoldA = gold;
+    else if (playerId == ts->playerBId)
+        ts->offerGoldB = gold;
+    else
+        return;
+
+    ts->readyA = ts->readyB = false;
+    ts->confirmA = ts->confirmB = false;
+
+    SendOfferUpdate_ActorOnly(tradeId, playerId);
+    SendReadyState_ActorOnly(tradeId);
+}
+
 // 4. 준비(Ready) 단계
 void GameRoom::HandleTradeReadyById(PlayerSessionRef session, uint64 playerId, Protocol::C_TRADE_READY pkt)
 {
@@ -471,10 +528,12 @@ void GameRoom::SendOfferUpdate_ActorOnly(uint64 tradeId, uint64 whoPlayerId)
     if (!ts) return;
 
     const auto& offer = (whoPlayerId == ts->playerAId) ? ts->offerA : ts->offerB;
+    const int64 offerGold = (whoPlayerId == ts->playerAId) ? ts->offerGoldA : ts->offerGoldB;
 
     Protocol::S_TRADE_OFFER_UPDATE ntf;
     ntf.set_tradeid(tradeId);
     ntf.set_whoplayerid(whoPlayerId);
+    ntf.set_gold(offerGold);
 
     for (const auto& kv : offer)
     {
@@ -582,6 +641,44 @@ bool GameRoom::BuildTradeCommitPlan_ActorOnly(uint64 tradeId, TradeCommitPlan& o
         outMsg = "player missing";
         return false;
     }
+
+    // 골드 검증 및 최종값 계산
+    const int64 goldA = a->GetGold();
+    const int64 goldB = b->GetGold();
+    const int64 offerGoldA = ts->offerGoldA;
+    const int64 offerGoldB = ts->offerGoldB;
+
+    if (offerGoldA < 0 || offerGoldB < 0)
+    {
+        outFail = Protocol::TRADE_FAIL_INTERNAL;
+        outMsg = "invalid gold";
+        return false;
+    }
+
+    if (offerGoldA > goldA || offerGoldB > goldB)
+    {
+        outFail = Protocol::TRADE_FAIL_NOT_ENOUGH_GOLD;
+        outMsg = "not enough gold";
+        return false;
+    }
+
+    const int64 afterA = goldA - offerGoldA;
+    const int64 afterB = goldB - offerGoldB;
+    if (offerGoldB > 0 && afterA > ((std::numeric_limits<int64>::max)() - offerGoldB))
+    {
+        outFail = Protocol::TRADE_FAIL_INTERNAL;
+        outMsg = "gold overflow";
+        return false;
+    }
+    if (offerGoldA > 0 && afterB > ((std::numeric_limits<int64>::max)() - offerGoldA))
+    {
+        outFail = Protocol::TRADE_FAIL_INTERNAL;
+        outMsg = "gold overflow";
+        return false;
+    }
+
+    outPlan.finalGoldA = afterA + offerGoldB;
+    outPlan.finalGoldB = afterB + offerGoldA;
 
     // 소모품인지 확인 (스택 가능 여부)
     auto isConsumable = [](int32 templateId) -> bool
@@ -879,6 +976,8 @@ bool GameRoom::StartTradeCommitPhase2_ActorOnly(uint64 tradeId, Protocol::TradeF
     req.set_instanceid(GetInstanceId());
     req.set_playeraid(ts->playerAId);
     req.set_playerbid(ts->playerBId);
+    req.set_finalgolda(ts->commitPlan->finalGoldA);
+    req.set_finalgoldb(ts->commitPlan->finalGoldB);
 
     // 변경될 최종 아이템 목록과 삭제될 아이템 목록을 전부 보냄
     // DBAgent는 이걸 받아서 SQL Transaction 안에서 싹 다 처리하거나, 실패하면 하나도 처리 안 함
@@ -967,6 +1066,9 @@ void GameRoom::OnTradeCommitResult_ActorOnly(const Protocol::S2S_RES_TRADE_COMMI
     a->GetItems() = plan.finalAItems;
     b->GetItems() = plan.finalBItems;
 
+    a->SetGold(plan.finalGoldA);
+    b->SetGold(plan.finalGoldB);
+
     // 2. Redis 캐시 동기화: RDBMS는 업데이트됐으니 Redis도 맞춰줌
     // markDirty=false로 하는 이유는 이미 DB에는 들어갔으니까 또 DB 저장 큐에 넣을 필요가 없어서임
     for (uint64 uid : plan.deletedAItemUids)
@@ -980,6 +1082,19 @@ void GameRoom::OnTradeCommitResult_ActorOnly(const Protocol::S2S_RES_TRADE_COMMI
     for (const auto& it : plan.finalBItems)
         Persistence::PersistenceService::I().UpdateInventoryItem(b->GetPlayerId(), static_cast<uint64>(it.itemuid()), it.templateid(), it.slot(), it.count(), it.isequipped(), /*markDirty=*/false);
     Persistence::PersistenceService::I().ClearDirtyOnCommitSuccess(b->GetPlayerId(), /*coreOk=*/false, /*invOk=*/true, /*qsOk=*/false);
+
+    Persistence::PersistenceService::I().UpdatePlayerGold(a->GetPlayerId(), a->GetGold(), /*markDirty=*/false);
+    Persistence::PersistenceService::I().UpdatePlayerGold(b->GetPlayerId(), b->GetGold(), /*markDirty=*/false);
+
+    {
+        Protocol::S_GOLD_UPDATE goldPktA;
+        goldPktA.set_gold(a->GetGold());
+        SendToPlayer(a->GetPlayerId(), ClientPacketHandler::MakeSendBuffer(goldPktA));
+
+        Protocol::S_GOLD_UPDATE goldPktB;
+        goldPktB.set_gold(b->GetGold());
+        SendToPlayer(b->GetPlayerId(), ClientPacketHandler::MakeSendBuffer(goldPktB));
+    }
 
     // 3. 클라이언트 알림: 아이템 사라지고 생긴 거 패킷으로 쏴줌 (델타 업데이트)
     for (uint64 uid : plan.notifyRemoveA)

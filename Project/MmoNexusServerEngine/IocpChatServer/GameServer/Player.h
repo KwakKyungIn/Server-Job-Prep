@@ -67,6 +67,9 @@ public:
 	std::string				GetName() const { return _playerInfo.name(); }
 
 	Protocol::PlayerInfo* GetPlayerInfo() { return &_playerInfo; }
+	int64 GetGold() const { return _gold; }
+	void SetGold(int64 v);
+	bool AddGold(int64 delta);
 
 	// 위치랑 스탯 정보는 부모 클래스 거 쓰면 됨
 
@@ -158,6 +161,7 @@ protected:
 	// [Core Data] 플레이어 핵심 데이터
 	// Protobuf 객체를 그대로 멤버로 들고 있음
 	Protocol::PlayerInfo	_playerInfo;
+	int64 _gold = 0;
 	Vector<Protocol::ItemInfo> _items;
 	uint64 _activeTradeId = 0;
 

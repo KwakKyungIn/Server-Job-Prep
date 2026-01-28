@@ -45,7 +45,6 @@ void DBSession::OnSend(int32 len)
 void DBSession::Ping()
 {
 	// 연결 살아있는지 확인하려고 주기적으로 하트비트 패킷 쏨
-	std::cout << "GAME -> DB" << std::endl;
 	Protocol::S2S_REQ_HEART_BEAT pkt;
 	auto sendBuffer = S2SPacketHandler::MakeSendBuffer(pkt);
 	Send(sendBuffer);

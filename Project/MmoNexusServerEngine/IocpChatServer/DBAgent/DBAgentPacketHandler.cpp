@@ -376,15 +376,17 @@ bool DBAgentPacketHandler::Handle_S2S_REQ_LOAD_PLAYER_DATA(PacketSessionRef& ses
 				int32 level = 1;
 				int32 hp = 100;
 				int64 totalExp = 0;
+				int64 gold = 0;
 
 				// [Query]
-				if (conn->Prepare(L"SELECT level, hp, total_exp FROM PLAYERS WHERE playerId = ?"))
+				if (conn->Prepare(L"SELECT level, hp, total_exp, gold FROM PLAYERS WHERE playerId = ?"))
 				{
 					conn->BindParam(1, SQL_C_SBIGINT, SQL_BIGINT, sizeof(int64), &dbPlayerId, &len);
 
 					conn->BindCol(1, SQL_C_SLONG, sizeof(int32), &level, &len);
 					conn->BindCol(2, SQL_C_SLONG, sizeof(int32), &hp, &len);
 					conn->BindCol(3, SQL_C_SBIGINT, sizeof(int64), &totalExp, &len);
+					conn->BindCol(4, SQL_C_SBIGINT, sizeof(int64), &gold, &len);
 
 					if (conn->Execute())
 					{
@@ -397,6 +399,7 @@ bool DBAgentPacketHandler::Handle_S2S_REQ_LOAD_PLAYER_DATA(PacketSessionRef& ses
 							info->set_level(level);
 							info->set_hp(hp);
 							info->set_totalexp(totalExp);
+							resPkt.set_gold(gold);
 
 							// MaxHp 등은 어차피 GameServer가 Template 보고 다시 계산함.
 							// 여기서는 DB에 저장된 "현재 상태"만 넘김.
@@ -447,14 +450,16 @@ bool DBAgentPacketHandler::Handle_S2S_REQ_SAVE_PLAYER_CORE(PacketSessionRef& ses
 			int32 level = pkt.level();
 			int32 hp = pkt.hp();
 			int64 totalExp = (int64)pkt.totalexp();
+			int64 gold = (int64)pkt.gold();
 			SQLLEN len = 0;
 
-			if (conn->Prepare(L"UPDATE PLAYERS SET level = ?, hp = ?, total_exp = ? WHERE playerId = ?"))
+			if (conn->Prepare(L"UPDATE PLAYERS SET level = ?, hp = ?, total_exp = ?, gold = ? WHERE playerId = ?"))
 			{
 				ok &= conn->BindParam(1, SQL_C_SLONG, SQL_INTEGER, sizeof(int32), &level, &len);
 				ok &= conn->BindParam(2, SQL_C_SLONG, SQL_INTEGER, sizeof(int32), &hp, &len);
 				ok &= conn->BindParam(3, SQL_C_SBIGINT, SQL_BIGINT, sizeof(int64), &totalExp, &len);
-				ok &= conn->BindParam(4, SQL_C_SBIGINT, SQL_BIGINT, sizeof(int64), &dbPlayerId, &len);
+				ok &= conn->BindParam(4, SQL_C_SBIGINT, SQL_BIGINT, sizeof(int64), &gold, &len);
+				ok &= conn->BindParam(5, SQL_C_SBIGINT, SQL_BIGINT, sizeof(int64), &dbPlayerId, &len);
 
 				if (ok)
 					ok = conn->Execute();
@@ -807,6 +812,8 @@ bool DBAgentPacketHandler::Handle_S2S_REQ_TRADE_COMMIT(
 
 			int64 playerAId = (int64)pkt.playeraid();
 			int64 playerBId = (int64)pkt.playerbid();
+			int64 finalGoldA = (int64)pkt.finalgolda();
+			int64 finalGoldB = (int64)pkt.finalgoldb();
 
 			Protocol::S2S_RES_TRADE_COMMIT res;
 			res.set_tradeid(pkt.tradeid());
@@ -959,6 +966,36 @@ bool DBAgentPacketHandler::Handle_S2S_REQ_TRADE_COMMIT(
 			// ===============================
 			// COMMIT / ROLLBACK
 			// ===============================
+			if (ok)
+			{
+				conn->Unbind();
+				if (!conn->Prepare(L"UPDATE PLAYERS SET gold=? WHERE playerId=?"))
+				{
+					ok = false;
+				}
+				else
+				{
+					ok &= conn->BindParam(1, SQL_C_SBIGINT, SQL_BIGINT, sizeof(int64), &finalGoldA, &len);
+					ok &= conn->BindParam(2, SQL_C_SBIGINT, SQL_BIGINT, sizeof(int64), &playerAId, &len);
+					ok &= conn->Execute();
+				}
+			}
+
+			if (ok)
+			{
+				conn->Unbind();
+				if (!conn->Prepare(L"UPDATE PLAYERS SET gold=? WHERE playerId=?"))
+				{
+					ok = false;
+				}
+				else
+				{
+					ok &= conn->BindParam(1, SQL_C_SBIGINT, SQL_BIGINT, sizeof(int64), &finalGoldB, &len);
+					ok &= conn->BindParam(2, SQL_C_SBIGINT, SQL_BIGINT, sizeof(int64), &playerBId, &len);
+					ok &= conn->Execute();
+				}
+			}
+
 			conn->Unbind();
 			if (ok) conn->Execute(L"COMMIT TRAN");
 			else    conn->Execute(L"ROLLBACK TRAN");

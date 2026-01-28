@@ -22,6 +22,12 @@ public class UI_TradePanel : MonoBehaviour
     public Button btnConfirm;
     public Button btnCancel;
 
+    [Header("Gold")]
+    public TMP_InputField myGoldInput;
+    public TMP_Text peerGoldText;
+
+    bool _suppressGoldInput = false;
+
     void Awake()
     {
         TradeManager.Instance.Init();
@@ -59,6 +65,25 @@ public class UI_TradePanel : MonoBehaviour
             {
                 if (!TradeManager.Instance.InTrade) return;
                 TradeManager.Instance.Cancel(TradeCancelReason.TradeCancelBySelf);
+            });
+        }
+
+        if (myGoldInput != null)
+        {
+            myGoldInput.contentType = TMP_InputField.ContentType.IntegerNumber;
+            myGoldInput.onEndEdit.RemoveAllListeners();
+            myGoldInput.onEndEdit.AddListener(text =>
+            {
+                if (_suppressGoldInput) return;
+                if (!TradeManager.Instance.InTrade) return;
+                if (TradeManager.Instance.Locked) return;
+
+                long gold = 0;
+                if (!long.TryParse(text, out gold)) gold = 0;
+                if (gold < 0) gold = 0;
+
+                if (!TradeManager.Instance.TryOfferGold(gold))
+                    Refresh();
             });
         }
 
@@ -129,6 +154,17 @@ public class UI_TradePanel : MonoBehaviour
             else
                 stateText.text = $"Ready: me={tm.MyReady} peer={tm.PeerReady}";
         }
+
+        if (myGoldInput != null)
+        {
+            _suppressGoldInput = true;
+            myGoldInput.text = tm.MyGoldOffer.ToString();
+            myGoldInput.interactable = !tm.Locked;
+            _suppressGoldInput = false;
+        }
+
+        if (peerGoldText != null)
+            peerGoldText.text = $"Peer Gold: {tm.PeerGoldOffer}";
 
         // Fill slots sequentially
         FillSlots(mySlots, tm.MyOffer, allowDrop: true);

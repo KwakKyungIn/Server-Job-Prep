@@ -1,11 +1,13 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Protocol;
+using TMPro;
 
 public class UI_Inventory : MonoBehaviour
 {
     public GameObject _slotPrefab;
     public Transform _slotRoot; // Grid Layout Group이 있는 Panel
+    public TMP_Text goldText;
 
     private List<UI_ItemSlot> _slots = new List<UI_ItemSlot>();
     private const int SLOT_COUNT = 24; // 인벤토리 크기 고정
@@ -25,6 +27,7 @@ public class UI_Inventory : MonoBehaviour
 
         // 2. 이벤트 구독
         InventoryManager.Instance.OnInventoryUpdated += RefreshUI;
+        GoldManager.Instance.OnUpdated += RefreshUI;
 
         // 3. 최초 1회 갱신 (이미 데이터가 있을 수 있으므로)
         RefreshUI();
@@ -34,6 +37,8 @@ public class UI_Inventory : MonoBehaviour
     {
         if (InventoryManager.Instance != null)
             InventoryManager.Instance.OnInventoryUpdated -= RefreshUI;
+        if (GoldManager.Instance != null)
+            GoldManager.Instance.OnUpdated -= RefreshUI;
     }
 
     void RefreshUI()
@@ -52,6 +57,13 @@ public class UI_Inventory : MonoBehaviour
             {
                 _slots[i].SetItem(null);
             }
+        }
+
+
+        if (goldText)
+        {
+            long gold = GoldManager.Instance.HasGold ? GoldManager.Instance.GetGold() : 0;
+            goldText.text = $"GOLD {gold}";
         }
 
         Debug.Log("[UI] Inventory Refreshed.");

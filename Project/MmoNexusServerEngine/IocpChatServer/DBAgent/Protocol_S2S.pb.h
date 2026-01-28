@@ -768,6 +768,7 @@ class S2S_RES_LOAD_PLAYER_DATA final :
     kStatInfoFieldNumber = 3,
     kPlayerIdFieldNumber = 2,
     kGameSessionIdFieldNumber = 4,
+    kGoldFieldNumber = 5,
     kSuccessFieldNumber = 1,
   };
   // .Protocol.StatInfo statInfo = 3;
@@ -806,6 +807,15 @@ class S2S_RES_LOAD_PLAYER_DATA final :
   void _internal_set_gamesessionid(uint64_t value);
   public:
 
+  // int64 gold = 5;
+  void clear_gold();
+  int64_t gold() const;
+  void set_gold(int64_t value);
+  private:
+  int64_t _internal_gold() const;
+  void _internal_set_gold(int64_t value);
+  public:
+
   // bool success = 1;
   void clear_success();
   bool success() const;
@@ -826,6 +836,7 @@ class S2S_RES_LOAD_PLAYER_DATA final :
     ::Protocol::StatInfo* statinfo_;
     uint64_t playerid_;
     uint64_t gamesessionid_;
+    int64_t gold_;
     bool success_;
     mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   };
@@ -1870,6 +1881,7 @@ class S2S_REQ_SAVE_PLAYER_CORE final :
     kLevelFieldNumber = 2,
     kHpFieldNumber = 3,
     kTotalExpFieldNumber = 4,
+    kGoldFieldNumber = 5,
   };
   // uint64 playerId = 1;
   void clear_playerid();
@@ -1907,6 +1919,15 @@ class S2S_REQ_SAVE_PLAYER_CORE final :
   void _internal_set_totalexp(int64_t value);
   public:
 
+  // int64 gold = 5;
+  void clear_gold();
+  int64_t gold() const;
+  void set_gold(int64_t value);
+  private:
+  int64_t _internal_gold() const;
+  void _internal_set_gold(int64_t value);
+  public:
+
   // @@protoc_insertion_point(class_scope:Protocol.S2S_REQ_SAVE_PLAYER_CORE)
  private:
   class _Internal;
@@ -1919,6 +1940,7 @@ class S2S_REQ_SAVE_PLAYER_CORE final :
     int32_t level_;
     int32_t hp_;
     int64_t totalexp_;
+    int64_t gold_;
     mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   };
   union { Impl_ _impl_; };
@@ -3950,6 +3972,8 @@ class S2S_REQ_TRADE_COMMIT final :
     kPlayerAIdFieldNumber = 5,
     kPlayerBIdFieldNumber = 6,
     kRequestIdFieldNumber = 11,
+    kFinalGoldAFieldNumber = 12,
+    kFinalGoldBFieldNumber = 13,
   };
   // repeated .Protocol.ItemInfo finalAItems = 7;
   int finalaitems_size() const;
@@ -4094,6 +4118,24 @@ class S2S_REQ_TRADE_COMMIT final :
   void _internal_set_requestid(uint64_t value);
   public:
 
+  // int64 finalGoldA = 12;
+  void clear_finalgolda();
+  int64_t finalgolda() const;
+  void set_finalgolda(int64_t value);
+  private:
+  int64_t _internal_finalgolda() const;
+  void _internal_set_finalgolda(int64_t value);
+  public:
+
+  // int64 finalGoldB = 13;
+  void clear_finalgoldb();
+  int64_t finalgoldb() const;
+  void set_finalgoldb(int64_t value);
+  private:
+  int64_t _internal_finalgoldb() const;
+  void _internal_set_finalgoldb(int64_t value);
+  public:
+
   // @@protoc_insertion_point(class_scope:Protocol.S2S_REQ_TRADE_COMMIT)
  private:
   class _Internal;
@@ -4115,6 +4157,8 @@ class S2S_REQ_TRADE_COMMIT final :
     uint64_t playeraid_;
     uint64_t playerbid_;
     uint64_t requestid_;
+    int64_t finalgolda_;
+    int64_t finalgoldb_;
     mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   };
   union { Impl_ _impl_; };
@@ -4672,6 +4716,26 @@ inline void S2S_RES_LOAD_PLAYER_DATA::set_gamesessionid(uint64_t value) {
   // @@protoc_insertion_point(field_set:Protocol.S2S_RES_LOAD_PLAYER_DATA.gameSessionId)
 }
 
+// int64 gold = 5;
+inline void S2S_RES_LOAD_PLAYER_DATA::clear_gold() {
+  _impl_.gold_ = int64_t{0};
+}
+inline int64_t S2S_RES_LOAD_PLAYER_DATA::_internal_gold() const {
+  return _impl_.gold_;
+}
+inline int64_t S2S_RES_LOAD_PLAYER_DATA::gold() const {
+  // @@protoc_insertion_point(field_get:Protocol.S2S_RES_LOAD_PLAYER_DATA.gold)
+  return _internal_gold();
+}
+inline void S2S_RES_LOAD_PLAYER_DATA::_internal_set_gold(int64_t value) {
+  
+  _impl_.gold_ = value;
+}
+inline void S2S_RES_LOAD_PLAYER_DATA::set_gold(int64_t value) {
+  _internal_set_gold(value);
+  // @@protoc_insertion_point(field_set:Protocol.S2S_RES_LOAD_PLAYER_DATA.gold)
+}
+
 // -------------------------------------------------------------------
 
 // S2S_REQ_ITEMS_LOAD
@@ -5046,6 +5110,26 @@ inline void S2S_REQ_SAVE_PLAYER_CORE::_internal_set_totalexp(int64_t value) {
 inline void S2S_REQ_SAVE_PLAYER_CORE::set_totalexp(int64_t value) {
   _internal_set_totalexp(value);
   // @@protoc_insertion_point(field_set:Protocol.S2S_REQ_SAVE_PLAYER_CORE.totalExp)
+}
+
+// int64 gold = 5;
+inline void S2S_REQ_SAVE_PLAYER_CORE::clear_gold() {
+  _impl_.gold_ = int64_t{0};
+}
+inline int64_t S2S_REQ_SAVE_PLAYER_CORE::_internal_gold() const {
+  return _impl_.gold_;
+}
+inline int64_t S2S_REQ_SAVE_PLAYER_CORE::gold() const {
+  // @@protoc_insertion_point(field_get:Protocol.S2S_REQ_SAVE_PLAYER_CORE.gold)
+  return _internal_gold();
+}
+inline void S2S_REQ_SAVE_PLAYER_CORE::_internal_set_gold(int64_t value) {
+  
+  _impl_.gold_ = value;
+}
+inline void S2S_REQ_SAVE_PLAYER_CORE::set_gold(int64_t value) {
+  _internal_set_gold(value);
+  // @@protoc_insertion_point(field_set:Protocol.S2S_REQ_SAVE_PLAYER_CORE.gold)
 }
 
 // -------------------------------------------------------------------
@@ -6140,6 +6224,46 @@ inline void S2S_REQ_TRADE_COMMIT::_internal_set_requestid(uint64_t value) {
 inline void S2S_REQ_TRADE_COMMIT::set_requestid(uint64_t value) {
   _internal_set_requestid(value);
   // @@protoc_insertion_point(field_set:Protocol.S2S_REQ_TRADE_COMMIT.requestId)
+}
+
+// int64 finalGoldA = 12;
+inline void S2S_REQ_TRADE_COMMIT::clear_finalgolda() {
+  _impl_.finalgolda_ = int64_t{0};
+}
+inline int64_t S2S_REQ_TRADE_COMMIT::_internal_finalgolda() const {
+  return _impl_.finalgolda_;
+}
+inline int64_t S2S_REQ_TRADE_COMMIT::finalgolda() const {
+  // @@protoc_insertion_point(field_get:Protocol.S2S_REQ_TRADE_COMMIT.finalGoldA)
+  return _internal_finalgolda();
+}
+inline void S2S_REQ_TRADE_COMMIT::_internal_set_finalgolda(int64_t value) {
+  
+  _impl_.finalgolda_ = value;
+}
+inline void S2S_REQ_TRADE_COMMIT::set_finalgolda(int64_t value) {
+  _internal_set_finalgolda(value);
+  // @@protoc_insertion_point(field_set:Protocol.S2S_REQ_TRADE_COMMIT.finalGoldA)
+}
+
+// int64 finalGoldB = 13;
+inline void S2S_REQ_TRADE_COMMIT::clear_finalgoldb() {
+  _impl_.finalgoldb_ = int64_t{0};
+}
+inline int64_t S2S_REQ_TRADE_COMMIT::_internal_finalgoldb() const {
+  return _impl_.finalgoldb_;
+}
+inline int64_t S2S_REQ_TRADE_COMMIT::finalgoldb() const {
+  // @@protoc_insertion_point(field_get:Protocol.S2S_REQ_TRADE_COMMIT.finalGoldB)
+  return _internal_finalgoldb();
+}
+inline void S2S_REQ_TRADE_COMMIT::_internal_set_finalgoldb(int64_t value) {
+  
+  _impl_.finalgoldb_ = value;
+}
+inline void S2S_REQ_TRADE_COMMIT::set_finalgoldb(int64_t value) {
+  _internal_set_finalgoldb(value);
+  // @@protoc_insertion_point(field_set:Protocol.S2S_REQ_TRADE_COMMIT.finalGoldB)
 }
 
 // -------------------------------------------------------------------

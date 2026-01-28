@@ -27,50 +27,52 @@ public:
 		PKT_C_EQUIP_ITEM = 1015,
 		PKT_S_EQUIP_ITEM = 1016,
 		PKT_S_CHANGE_STAT = 1017,
-		PKT_C_MAP_CHANGE_REQ = 1018,
-		PKT_S_MAP_CHANGE_BEGIN = 1019,
-		PKT_C_MAP_CHANGE_ACK = 1020,
-		PKT_S_MAP_CHANGE_END = 1021,
-		PKT_C_CHANNEL_CHANGE_REQ = 1022,
-		PKT_C_CHAT_REQ = 1023,
-		PKT_S_CHAT_RES = 1024,
-		PKT_S_CHAT_NTF = 1025,
-		PKT_S_HEART_BEAT_RES = 1026,
-		PKT_C_HEART_BEAT_REQ = 1027,
-		PKT_C_PARTY_CHAT_REQ = 1028,
-		PKT_S_PARTY_CHAT_NTF = 1029,
-		PKT_S_PARTY_INFO_NTF = 1030,
-		PKT_C_PARTY_CREATE_REQ = 1031,
-		PKT_C_PARTY_INVITE_REQ = 1032,
-		PKT_C_PARTY_INVITE_ACCEPT_REQ = 1033,
-		PKT_C_PARTY_LEAVE_REQ = 1034,
-		PKT_C_PARTY_KICK_REQ = 1035,
-		PKT_C_PARTY_DISBAND_REQ = 1036,
-		PKT_S_PARTY_RESULT = 1037,
-		PKT_S_PARTY_INVITE_NTF = 1038,
-		PKT_C_PARTY_STATUS_REQ = 1039,
-		PKT_S_PARTY_STATUS_NTF = 1040,
-		PKT_C_DUNGEON_ENTER_REQ = 1041,
-		PKT_S_DUNGEON_ENTER_RES = 1042,
-		PKT_C_DUNGEON_EXIT_REQ = 1043,
-		PKT_S_DUNGEON_EXIT_RES = 1044,
-		PKT_S_QUICKSLOT_LIST = 1045,
-		PKT_C_SET_QUICKSLOT = 1046,
-		PKT_S_SET_QUICKSLOT = 1047,
-		PKT_C_TRADE_REQ = 1048,
-		PKT_S_TRADE_INVITE = 1049,
-		PKT_C_TRADE_INVITE_RESP = 1050,
-		PKT_S_TRADE_START = 1051,
-		PKT_C_TRADE_OFFER_SET = 1052,
-		PKT_S_TRADE_OFFER_UPDATE = 1053,
-		PKT_C_TRADE_READY = 1054,
-		PKT_S_TRADE_READY_STATE = 1055,
-		PKT_S_TRADE_LOCKED = 1056,
-		PKT_C_TRADE_CONFIRM = 1057,
-		PKT_C_TRADE_CANCEL = 1058,
-		PKT_S_TRADE_CANCELLED = 1059,
-		PKT_S_TRADE_RESULT = 1060,
-		PKT_C_INV_DRAG_DROP = 1061,
+		PKT_S_GOLD_UPDATE = 1018,
+		PKT_C_MAP_CHANGE_REQ = 1019,
+		PKT_S_MAP_CHANGE_BEGIN = 1020,
+		PKT_C_MAP_CHANGE_ACK = 1021,
+		PKT_S_MAP_CHANGE_END = 1022,
+		PKT_C_CHANNEL_CHANGE_REQ = 1023,
+		PKT_C_CHAT_REQ = 1024,
+		PKT_S_CHAT_RES = 1025,
+		PKT_S_CHAT_NTF = 1026,
+		PKT_S_HEART_BEAT_RES = 1027,
+		PKT_C_HEART_BEAT_REQ = 1028,
+		PKT_C_PARTY_CHAT_REQ = 1029,
+		PKT_S_PARTY_CHAT_NTF = 1030,
+		PKT_S_PARTY_INFO_NTF = 1031,
+		PKT_C_PARTY_CREATE_REQ = 1032,
+		PKT_C_PARTY_INVITE_REQ = 1033,
+		PKT_C_PARTY_INVITE_ACCEPT_REQ = 1034,
+		PKT_C_PARTY_LEAVE_REQ = 1035,
+		PKT_C_PARTY_KICK_REQ = 1036,
+		PKT_C_PARTY_DISBAND_REQ = 1037,
+		PKT_S_PARTY_RESULT = 1038,
+		PKT_S_PARTY_INVITE_NTF = 1039,
+		PKT_C_PARTY_STATUS_REQ = 1040,
+		PKT_S_PARTY_STATUS_NTF = 1041,
+		PKT_C_DUNGEON_ENTER_REQ = 1042,
+		PKT_S_DUNGEON_ENTER_RES = 1043,
+		PKT_C_DUNGEON_EXIT_REQ = 1044,
+		PKT_S_DUNGEON_EXIT_RES = 1045,
+		PKT_S_QUICKSLOT_LIST = 1046,
+		PKT_C_SET_QUICKSLOT = 1047,
+		PKT_S_SET_QUICKSLOT = 1048,
+		PKT_C_TRADE_REQ = 1049,
+		PKT_S_TRADE_INVITE = 1050,
+		PKT_C_TRADE_INVITE_RESP = 1051,
+		PKT_S_TRADE_START = 1052,
+		PKT_C_TRADE_OFFER_SET = 1053,
+		PKT_C_TRADE_GOLD_SET = 1054,
+		PKT_S_TRADE_OFFER_UPDATE = 1055,
+		PKT_C_TRADE_READY = 1056,
+		PKT_S_TRADE_READY_STATE = 1057,
+		PKT_S_TRADE_LOCKED = 1058,
+		PKT_C_TRADE_CONFIRM = 1059,
+		PKT_C_TRADE_CANCEL = 1060,
+		PKT_S_TRADE_CANCELLED = 1061,
+		PKT_S_TRADE_RESULT = 1062,
+		PKT_C_INV_DRAG_DROP = 1063,
 	};
 
 	static void Init()
@@ -89,6 +91,7 @@ public:
 		GPacketHandler[PKT_S_REMOVE_ITEM] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S_REMOVE_ITEM>(Handle_S_REMOVE_ITEM, session, buffer, len); };
 		GPacketHandler[PKT_S_EQUIP_ITEM] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S_EQUIP_ITEM>(Handle_S_EQUIP_ITEM, session, buffer, len); };
 		GPacketHandler[PKT_S_CHANGE_STAT] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S_CHANGE_STAT>(Handle_S_CHANGE_STAT, session, buffer, len); };
+		GPacketHandler[PKT_S_GOLD_UPDATE] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S_GOLD_UPDATE>(Handle_S_GOLD_UPDATE, session, buffer, len); };
 		GPacketHandler[PKT_S_MAP_CHANGE_BEGIN] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S_MAP_CHANGE_BEGIN>(Handle_S_MAP_CHANGE_BEGIN, session, buffer, len); };
 		GPacketHandler[PKT_S_MAP_CHANGE_END] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S_MAP_CHANGE_END>(Handle_S_MAP_CHANGE_END, session, buffer, len); };
 		GPacketHandler[PKT_S_CHAT_RES] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::S_CHAT_RES>(Handle_S_CHAT_RES, session, buffer, len); };
@@ -142,6 +145,7 @@ public:
 	static SendBufferRef MakeSendBuffer(Protocol::C_TRADE_REQ& pkt) { return MakeSendBuffer(pkt, PKT_C_TRADE_REQ); }
 	static SendBufferRef MakeSendBuffer(Protocol::C_TRADE_INVITE_RESP& pkt) { return MakeSendBuffer(pkt, PKT_C_TRADE_INVITE_RESP); }
 	static SendBufferRef MakeSendBuffer(Protocol::C_TRADE_OFFER_SET& pkt) { return MakeSendBuffer(pkt, PKT_C_TRADE_OFFER_SET); }
+	static SendBufferRef MakeSendBuffer(Protocol::C_TRADE_GOLD_SET& pkt) { return MakeSendBuffer(pkt, PKT_C_TRADE_GOLD_SET); }
 	static SendBufferRef MakeSendBuffer(Protocol::C_TRADE_READY& pkt) { return MakeSendBuffer(pkt, PKT_C_TRADE_READY); }
 	static SendBufferRef MakeSendBuffer(Protocol::C_TRADE_CONFIRM& pkt) { return MakeSendBuffer(pkt, PKT_C_TRADE_CONFIRM); }
 	static SendBufferRef MakeSendBuffer(Protocol::C_TRADE_CANCEL& pkt) { return MakeSendBuffer(pkt, PKT_C_TRADE_CANCEL); }
@@ -162,6 +166,7 @@ public:
 	static bool Handle_S_REMOVE_ITEM(PacketSessionRef& session, Protocol::S_REMOVE_ITEM& pkt);
 	static bool Handle_S_EQUIP_ITEM(PacketSessionRef& session, Protocol::S_EQUIP_ITEM& pkt);
 	static bool Handle_S_CHANGE_STAT(PacketSessionRef& session, Protocol::S_CHANGE_STAT& pkt);
+	static bool Handle_S_GOLD_UPDATE(PacketSessionRef& session, Protocol::S_GOLD_UPDATE& pkt);
 	static bool Handle_S_MAP_CHANGE_BEGIN(PacketSessionRef& session, Protocol::S_MAP_CHANGE_BEGIN& pkt);
 	static bool Handle_S_MAP_CHANGE_END(PacketSessionRef& session, Protocol::S_MAP_CHANGE_END& pkt);
 	static bool Handle_S_CHAT_RES(PacketSessionRef& session, Protocol::S_CHAT_RES& pkt);

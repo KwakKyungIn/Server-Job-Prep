@@ -60,6 +60,7 @@ public class NetworkManager : MonoBehaviour
 
         InventoryManager.Instance.Init();
         StatManager.Instance.Init();
+        GoldManager.Instance.Init();
         QuickSlotManager.Instance.Init();
         SkillCooldownManager.Instance.Init();
         TradeManager.Instance.Init();
