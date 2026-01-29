@@ -307,6 +307,8 @@ public class ObjectManager : MonoBehaviour
 
             if (pkt.PosInfo.ActionState == ActionState.ActionDead)
                 ca.SetDead();
+            else
+                ca.SetAlive();
         }
     }
 

@@ -23,6 +23,20 @@ void GameRoom::HandleSkill(std::shared_ptr<Creature> attacker, int32 skillId, fl
     if (skillData == nullptr)
         return;
 
+    // 사망 상태면 스킬 사용 불가
+    if (auto* st = attacker->GetStatInfo())
+    {
+        if (st->hp() <= 0)
+            return;
+    }
+
+    if (attacker->GetPosInfo() && attacker->GetPosInfo()->actionstate() == Protocol::ACTION_DEAD)
+        return;
+
+    // 서버 쿨타임 검증 (권위)
+    if (attacker->CanUseSkill(skillId) == false)
+        return;
+
     const Protocol::SkillType type = skillData->skilltype();
 
     // =========================================================
@@ -31,6 +45,9 @@ void GameRoom::HandleSkill(std::shared_ptr<Creature> attacker, int32 skillId, fl
     // =========================================================
     if (type == Protocol::SKILL_PROJECTILE)
     {
+        // 쿨타임 소비
+        attacker->StartSkillCooldown(skillId, skillData->cooldown());
+
         // 1. 스킬 사용 모션부터 주변에 브로드캐스트 (선딜레이 표현)
         const int32 zoneIndex = _grid.GetZoneIndex(*attacker->GetPosInfo());
         {
@@ -101,6 +118,9 @@ void GameRoom::HandleSkill(std::shared_ptr<Creature> attacker, int32 skillId, fl
     // BattleManager에게 판정 위임 (명중, 크리티컬, 데미지 계산)
     if (_battle->ResolveSkill(attacker, skillId, result) == false)
         return;
+
+    // 쿨타임 소비 (명중 판정 성공 시)
+    attacker->StartSkillCooldown(skillId, skillData->cooldown());
 
     // 1. 스킬 모션 패킷 전송
     {

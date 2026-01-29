@@ -85,10 +85,7 @@
 - [ ] 다음 편 예고 2줄(+ 링크 자리)
 
 ### 4.2 증거(코드 근거) 표기 규칙
-- “근거 파일 경로 + 핵심 함수 이름”을 항상 남긴다.
-  - 예: `Server/GameServer/Network/Session.cpp :: OnRecv()`
-  - 예: `Server/GameServer/Room/RoomActor.cpp :: HandleMove()`
-- 코드 전체는 GitHub 링크로 빼고, 본문에는 “핵심만” 넣는다.
+- “근거 파일 스니펫 + 핵심 함수 이름”을 항상 남긴다
 
 ---
 

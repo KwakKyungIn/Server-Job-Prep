@@ -38,4 +38,11 @@ public class CreatureAnimator : MonoBehaviour
         _dead = true;
         _anim.SetBool(DeadHash, true);
     }
+
+    public void SetAlive()
+    {
+        if (_dead == false) return;
+        _dead = false;
+        _anim.SetBool(DeadHash, false);
+    }
 }

@@ -51,6 +51,8 @@ public:
 
     // 스킬 쿨타임 및 상태 이상 체크
     bool CanUseSkill(int32 skillId);
+    // 쿨타임 소비 (서버 기준)
+    void StartSkillCooldown(int32 skillId, int32 cooldownMs);
     // 실제 스킬 사용 요청 (여기서 쿨타임 돌리고 룸에 처리 위임)
     void UseSkill(int32 skillId);
 

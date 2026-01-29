@@ -1,8 +1,12 @@
 ﻿#include "pch.h"
 #include "PartyActor.h"
 
+#include "ClientPacketHandler.MapChangeUtil.h"
+#include "GameSessionManager.h"
 #include "InstanceActor.h"
 #include "InstanceManagerCore.h"
+#include "Player.h"
+#include "PlayerSession.h"
 #include "RoomManager.h"
 #include "GameRoom.h"
 
@@ -13,6 +17,81 @@ static void MarkInstanceRoomClosing(const InstanceManagerCore::InstanceInfo& clo
     if (!GRoomManager) return;
     auto room = GRoomManager->FindRoom(closed.channelId, closed.mapId, closed.instanceId);
     if (room) room->MarkClosing(true);
+}
+
+namespace
+{
+	void MarkForceReturnAsync(uint64 playerId)
+	{
+		if (playerId == 0) return;
+		PartyActor::Instance().Push([playerId]()
+			{
+				PartyActor::Instance().Core().MarkForceReturn(playerId);
+			});
+	}
+
+	void RequestForceReturnToWorld(uint64 playerId, int64 expectedInstanceId)
+	{
+		if (playerId == 0 || expectedInstanceId == 0)
+			return;
+
+		if (!GameSessionManager::GSessionManager)
+			return;
+
+		auto session = GameSessionManager::GSessionManager->FindByPlayerId(playerId);
+		if (!session)
+		{
+			MarkForceReturnAsync(playerId);
+			return;
+		}
+
+		session->Post([playerId, expectedInstanceId](PlayerSessionRef self)
+			{
+				if (!self || self->IsMapChanging())
+					return;
+
+				RoomActorRef room = self->GetCurrentRoom_ActorOnly();
+				auto gr = (room && room->GetKind() == RoomKind::Game)
+					? std::dynamic_pointer_cast<GameRoom>(room)
+					: nullptr;
+
+				if (!gr)
+					return;
+
+				gr->PushJob([gr, self, playerId, expectedInstanceId]()
+					{
+						PlayerRef p = gr->FindPlayer_ActorOnly(playerId);
+						if (!p)
+							return;
+
+						if (p->GetInstanceId() == 0 || p->GetInstanceId() != expectedInstanceId)
+							return;
+
+						int32 rm = 0;
+						int64 ri = 0;
+						Protocol::PositionInfo rp;
+						MapChangeUtil::MakeSafeReturn(p, rm, ri, rp);
+
+						int32 targetChannelId = p->GetChannelId();
+						if (targetChannelId <= 0)
+							targetChannelId = gr->GetChannelId();
+
+						self->Post([playerId, targetChannelId, rm, ri, rp](PlayerSessionRef s) mutable
+							{
+								MapChangeUtil::SendMapChangeBegin(s, playerId, targetChannelId, rm, ri, rp);
+							});
+					});
+			});
+	}
+
+	void RequestForceReturnToWorld(const HashSet<uint64>& members, int64 expectedInstanceId)
+	{
+		if (expectedInstanceId == 0)
+			return;
+
+		for (uint64 pid : members)
+			RequestForceReturnToWorld(pid, expectedInstanceId);
+	}
 }
 
 // 플레이어가 스스로 파티를 나갈 때의 처리
@@ -72,8 +151,8 @@ void PartyActor::LeaveAndHandleInstance(uint64 playerId)
                     }
                 }
 
-                // 추후 구현: 클라이언트에게 마을로 강제 이동 패킷 전송
-                // TODO: ForceReturnToTown(pid, instId);
+                // 인스턴스에서 빠졌으면 마을로 강제 귀환 처리
+                RequestForceReturnToWorld(pid, instId);
             });
     }
 
@@ -100,7 +179,7 @@ void PartyActor::LeaveAndHandleInstance(uint64 playerId)
                         });
 
                     // 아직 맵에 남아있는 유저들이 있다면 강제 귀환 시켜야 함
-                    // TODO: 남은 멤버들 강제 퇴출(마을) 브로드캐스트/맵체인지
+                    RequestForceReturnToWorld(closed.members, closed.instanceId);
                 }
             });
     }
@@ -126,7 +205,7 @@ void PartyActor::DisbandAndHandleInstance(uint64 leaderId)
                 if (InstanceActor::Instance().Core().CloseForParty(closedPartyId, closed))
                 {
                     MarkInstanceRoomClosing(closed);
-                    // TODO: 멤버들 강제 퇴출(마을) 연결
+                    RequestForceReturnToWorld(closed.members, closed.instanceId);
                 }
             });
     }
@@ -175,7 +254,8 @@ void PartyActor::KickAndHandleInstance(uint64 leaderId, uint64 targetId)
                     }
                 }
 
-                // TODO: ForceReturnToTown(pid, instId);
+                // 강퇴된 멤버는 마을로 강제 귀환 처리
+                RequestForceReturnToWorld(pid, instId);
             });
     }
 }

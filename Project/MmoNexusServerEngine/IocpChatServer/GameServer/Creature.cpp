@@ -73,6 +73,19 @@ bool Creature::CanUseSkill(int32 skillId)
     return true;
 }
 
+// 스킬 쿨타임 시작 (서버 권위)
+void Creature::StartSkillCooldown(int32 skillId, int32 cooldownMs)
+{
+    if (skillId <= 0)
+        return;
+
+    if (cooldownMs < 0)
+        cooldownMs = 0;
+
+    const uint64 now = ::GetTickCount64();
+    _cooldowns[skillId] = now + static_cast<uint64>(cooldownMs);
+}
+
 // 스킬 사용을 요청하는 메인 함수
 // 여기서 직접 스킬 로직을 돌리는 게 아니라, GameRoom의 JobQueue에 작업을 넣는다
 void Creature::UseSkill(int32 skillId)
@@ -87,8 +100,7 @@ void Creature::UseSkill(int32 skillId)
         return;
 
     // 쿨타임 갱신 (서버 기준 시간)
-    uint64 now = ::GetTickCount64();
-    _cooldowns[skillId] = now + skillData->cooldown();
+    StartSkillCooldown(skillId, skillData->cooldown());
 
     // 실제 스킬 판정은 Room 스레드에서 안전하게 처리해야 하므로 작업을 위임함
     // 이렇게 해야 여러 명이 동시에 스킬을 써도 동기화 문제가 발생하지 않음

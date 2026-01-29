@@ -2,6 +2,7 @@
 #include "Player.h"
 #include "PlayerSession.h"
 #include "GameRoom.h"
+#include "ClientPacketHandler.h"
 #include "DataManager.h"
 #include "PersistenceService.h"
 #include <limits>
@@ -67,9 +68,31 @@ void Player::OnDead(std::shared_ptr<Creature> attacker)
 	// 1. 부모 쪽 사망 처리 (상태 변경 등)
 	Creature::OnDead(attacker);
 
+	// 이미 사망 상태면 중복 처리 방지
+	if (_posInfo && _posInfo->actionstate() == Protocol::ACTION_DEAD)
+		return;
+
+	if (_posInfo)
+	{
+		_posInfo->set_actionstate(Protocol::ACTION_DEAD);
+		_posInfo->set_state(Protocol::MOVE_IDLE);
+	}
+
 	// 2. 플레이어 전용 사망 로직
 	// 나중엔 여기에 경험치 드랍이나 부활 UI 패킷 보내는 거 추가해야 함
 	printf(" [Player Dead] %s has been slain!\n", _playerInfo.name().c_str());
+
+	// 사망 상태를 주변에 전파 (액션 스테이트)
+	if (auto room = GetGameRoom())
+	{
+		Protocol::S_MOVE movePkt;
+		movePkt.set_objectid(GetPlayerId());
+		if (_posInfo)
+			*movePkt.mutable_posinfo() = *_posInfo;
+
+		SendBufferRef sb = ClientPacketHandler::MakeSendBuffer(movePkt);
+		room->BroadcastToZone(sb, GetZoneIndex());
+	}
 
 	// 변신 상태였다면 해제하거나 버프 다 지우는 로직도 필요할 듯
 }

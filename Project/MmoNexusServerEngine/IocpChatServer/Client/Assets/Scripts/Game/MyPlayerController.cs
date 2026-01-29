@@ -73,6 +73,11 @@ public class MyPlayerController : MonoBehaviour
                 Debug.Log("💀 [Die] You are dead!");
                 _anim?.SetDead(); // ✅ 내 캐릭터도 즉시 죽음 애니 반영
             }
+            else if (_isDead)
+            {
+                _isDead = false;
+                _anim?.SetAlive();
+            }
             else
             {
                 // (선택) 맞을 때 히트 애니

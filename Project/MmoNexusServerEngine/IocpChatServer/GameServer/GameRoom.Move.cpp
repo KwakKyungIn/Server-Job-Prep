@@ -33,6 +33,15 @@ void GameRoom::HandleMove(PlayerSessionRef session, PlayerRef player, Protocol::
     const uint64 playerId = player->GetPlayerId();
     if (_players.find(playerId) == _players.end()) return;
 
+    // 사망 상태면 이동 차단 (클라 오입력/핵 방지)
+    if (auto* st = player->GetStatInfo())
+    {
+        if (st->hp() <= 0)
+            return;
+    }
+    if (player->GetPosInfo() && player->GetPosInfo()->actionstate() == Protocol::ACTION_DEAD)
+        return;
+
     // Step 0: 입력 데이터 정상성 검사
     // 이상한 좌표 들어오면 로그 찍고 무시함
     const auto& reqRaw = pkt.posinfo();

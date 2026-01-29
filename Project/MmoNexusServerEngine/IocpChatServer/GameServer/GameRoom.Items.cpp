@@ -164,6 +164,8 @@ void GameRoom::HandleUseItem(PlayerSessionRef session, PlayerRef player, Protoco
 	Protocol::StatInfo* stat = player->GetStatInfo();
 	if (stat == nullptr) return;
 
+	const bool wasDead = (stat->hp() <= 0);
+
 	// 이미 풀피면 아까우니까 사용 안 함
 	if (stat->hp() >= stat->maxhp())
 		return;
@@ -171,6 +173,33 @@ void GameRoom::HandleUseItem(PlayerSessionRef session, PlayerRef player, Protoco
 	// HP 갱신
 	const int32 newHp = min(stat->hp() + heal, stat->maxhp());
 	stat->set_hp(newHp);
+
+	// 죽었다가 회복되면 부활 상태 전파
+	if (wasDead && newHp > 0)
+	{
+		auto pos = player->GetPosInfo();
+		if (pos)
+		{
+			pos->set_actionstate(Protocol::ACTION_IDLE);
+			pos->set_state(Protocol::MOVE_IDLE);
+		}
+
+		Protocol::S_MOVE movePkt;
+		movePkt.set_objectid(playerId);
+		if (pos)
+			*movePkt.mutable_posinfo() = *pos;
+
+		SendBufferRef moveSb = ClientPacketHandler::MakeSendBuffer(movePkt);
+		BroadcastToZone(moveSb, player->GetZoneIndex());
+
+		Protocol::S_CHANGE_HP hpPkt;
+		hpPkt.set_objectid(playerId);
+		hpPkt.set_attackerid(0);
+		hpPkt.set_currenthp(newHp);
+		hpPkt.set_damage(0);
+		SendBufferRef hpSb = ClientPacketHandler::MakeSendBuffer(hpPkt);
+		BroadcastToZone(hpSb, player->GetZoneIndex());
+	}
 
 	// DB/Redis에 변경된 HP 즉시 저장 (Write-Back)
 	Persistence::PersistenceService::I().UpdatePlayerCore(
