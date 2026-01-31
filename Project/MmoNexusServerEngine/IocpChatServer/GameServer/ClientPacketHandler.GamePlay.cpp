@@ -159,6 +159,35 @@ bool ClientPacketHandler::Handle_C_SKILL(PacketSessionRef& session, Protocol::C_
 	return true;
 }
 
+// 부활 요청 핸들러
+bool ClientPacketHandler::Handle_C_RESPAWN_REQ(PacketSessionRef& session, Protocol::C_RESPAWN_REQ& pkt)
+{
+	PlayerSessionRef ps = static_pointer_cast<PlayerSession>(session);
+	if (!ps) return false;
+
+	if (ps->IsMapChanging())
+		return true;
+
+	const uint64 playerId = ps->GetPlayerId_AnyThread();
+	if (playerId == 0)
+		return true;
+
+	ps->PostRoom([playerId](PlayerSessionRef self, RoomActorRef room) mutable
+		{
+			if (!room) return;
+			if (self->IsMapChanging()) return;
+			if (room->GetKind() != RoomKind::Game) return;
+
+			auto gr = std::static_pointer_cast<GameRoom>(room);
+			gr->Push([gr, self, playerId]() mutable
+				{
+					gr->HandleRespawnById(self, playerId);
+				});
+		});
+
+	return true;
+}
+
 // 채팅 메시지 전송 요청 핸들러
 bool ClientPacketHandler::Handle_C_CHAT_REQ(PacketSessionRef& session, Protocol::C_CHAT_REQ& pkt)
 {

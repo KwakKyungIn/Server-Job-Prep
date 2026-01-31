@@ -116,7 +116,7 @@ void GameRoom::HandleSkill(std::shared_ptr<Creature> attacker, int32 skillId, fl
 
     SkillResult result;
     // BattleManager에게 판정 위임 (명중, 크리티컬, 데미지 계산)
-    if (_battle->ResolveSkill(attacker, skillId, result) == false)
+    if (_battle->ResolveSkill(attacker, skillId, castYaw, result) == false)
         return;
 
     // 쿨타임 소비 (명중 판정 성공 시)

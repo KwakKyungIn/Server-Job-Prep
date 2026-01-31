@@ -3,6 +3,11 @@
 #include "Player.h"
 #include "PlayerSession.h"
 #include "RoomManager.h"
+#include "ClientPacketHandler.h"
+#include "ClientPacketHandler.MapChangeUtil.h"
+#include "DataManager.h"
+#include "GameRoom.Net.h"
+#include "PersistenceService.h"
 
 // 플레이어를 다른 맵이나 채널로 이동시키는 함수
 // 비동기 구조라 로비 -> 새 방 순서로 Job을 넘겨가며 처리함
@@ -63,6 +68,48 @@ void GameRoom::TransferMapChangeById(PlayerSessionRef session,
     if (player->GetPosInfo())
         player->GetPosInfo()->CopyFrom(spawn);
 
+    // [Respawn] 던전에서 사망 후 월드 복귀하는 경우, 여기서 부활 상태로 전환
+    if (player->HasPendingRespawn())
+    {
+        auto* st = player->GetStatInfo();
+        if (st)
+        {
+            int32 maxHp = st->maxhp();
+            if (maxHp <= 0)
+                maxHp = 1;
+            st->set_hp(maxHp);
+
+            Persistence::PersistenceService::I().UpdatePlayerCore(
+                player->GetPlayerId(),
+                st->level(),
+                st->hp(),
+                st->totalexp(),
+                true
+            );
+        }
+
+        if (auto pos = player->GetPosInfo())
+        {
+            pos->set_state(Protocol::MOVE_IDLE);
+            pos->set_actionstate(Protocol::ACTION_IDLE);
+        }
+
+        player->ResetMoveStamp_ActorOnly();
+
+        // 클라에 HP 복구를 알려서 부활 상태 UI를 갱신한다
+        if (st)
+        {
+            Protocol::S_CHANGE_HP hpPkt;
+            hpPkt.set_objectid(playerId);
+            hpPkt.set_attackerid(0);
+            hpPkt.set_currenthp(st->hp());
+            hpPkt.set_damage(0);
+            session->Send(ClientPacketHandler::MakeSendBuffer(hpPkt));
+        }
+
+        player->ClearPendingRespawn();
+    }
+
     player->SetSession(session);
     player->SetRoom(lobby); // 일단 로비 소속으로 변경
 
@@ -106,4 +153,134 @@ void GameRoom::SaveReturnLocation_ActorOnly(uint64 playerId)
 
     // 현재 플레이어가 서 있는 곳을 귀환 위치로 저장함
     p->SetReturnLocation(p->GetMapId(), p->GetInstanceId(), *pos);
+}
+
+// [부활 처리] 플레이어가 죽었을 때 요청받아 리스폰 시킨다
+void GameRoom::HandleRespawn(PlayerSessionRef session, PlayerRef player)
+{
+    if (!session || !player) return;
+
+    auto* st = player->GetStatInfo();
+    auto* pos = player->GetPosInfo();
+    if (!st || !pos) return;
+
+    const bool isDead = (st->hp() <= 0) || (pos->actionstate() == Protocol::ACTION_DEAD);
+    if (!isDead)
+        return;
+
+    // 던전에서는 원래 복귀해야 할 위치로 리스폰 (맵 이동 처리)
+    DataManager* dm = DataManager::Instance();
+    const bool isDungeon = IsInstanceRoom() || (dm && dm->IsDungeonMapId(player->GetMapId()));
+    if (isDungeon)
+    {
+        if (!player->HasPendingRespawn())
+            player->MarkPendingRespawn(true);
+
+        MapChangeUtil::ForceReturnToWorld(session);
+        return;
+    }
+
+    // 월드맵이면 현재 맵의 스폰 위치로 리스폰
+    Protocol::PositionInfo spawn;
+    const MapConfig* cfg = (dm ? dm->GetMapConfig(player->GetMapId()) : nullptr);
+    if (cfg)
+    {
+        spawn.set_x(cfg->spawnX);
+        spawn.set_y(cfg->spawnY);
+        spawn.set_z(cfg->spawnZ);
+    }
+    else
+    {
+        spawn.set_x(50.f);
+        spawn.set_y(0.f);
+        spawn.set_z(50.f);
+    }
+    spawn.set_yaw(0.f);
+    spawn.set_state(Protocol::MOVE_IDLE);
+    spawn.set_actionstate(Protocol::ACTION_IDLE);
+
+    pos->CopyFrom(spawn);
+
+    int32 maxHp = st->maxhp();
+    if (maxHp <= 0)
+        maxHp = 1;
+    st->set_hp(maxHp);
+
+    // 이동 검증 스탬프 초기화 (텔레포트 후 스피드핵 오탐 방지)
+    player->ResetMoveStamp_ActorOnly();
+
+    // Zone 이동 처리
+    const int32 oldZoneIndex = player->GetZoneIndex();
+    const int32 newZoneIndex = _grid.GetZoneIndex(*pos);
+    const int32 totalZones = _grid.GetGridSizeX() * _grid.GetGridSizeY();
+    if (newZoneIndex >= 0 && newZoneIndex < totalZones)
+    {
+        if (oldZoneIndex != newZoneIndex)
+        {
+            if (oldZoneIndex >= 0 && oldZoneIndex < totalZones)
+                _grid.GetZone(oldZoneIndex).players.erase(player);
+
+            _grid.GetZone(newZoneIndex).players.insert(player);
+            player->SetZoneIndex(newZoneIndex);
+        }
+    }
+
+    // AOI 갱신 (텔레포트 처리를 위해 강제 호출)
+    UpdateAOI(session, player, false);
+
+    const uint64 playerId = player->GetPlayerId();
+
+    // 위치/상태 동기화
+    {
+        Protocol::S_MOVE movePkt;
+        movePkt.set_objectid(playerId);
+        *movePkt.mutable_posinfo() = *pos;
+
+        SendBufferRef moveSb = ClientPacketHandler::MakeSendBuffer(movePkt);
+        session->Send(moveSb);
+
+        auto& vis = player->VisiblePlayers_ActorOnly();
+        for (uint64 vid : vis)
+        {
+            if (vid == playerId) continue;
+            SendToPlayer(vid, moveSb);
+        }
+    }
+
+    // HP 복구 동기화
+    {
+        Protocol::S_CHANGE_HP hpPkt;
+        hpPkt.set_objectid(playerId);
+        hpPkt.set_attackerid(0);
+        hpPkt.set_currenthp(st->hp());
+        hpPkt.set_damage(0);
+
+        SendBufferRef hpSb = ClientPacketHandler::MakeSendBuffer(hpPkt);
+        session->Send(hpSb);
+
+        auto& vis = player->VisiblePlayers_ActorOnly();
+        for (uint64 vid : vis)
+        {
+            if (vid == playerId) continue;
+            SendToPlayer(vid, hpSb);
+        }
+    }
+
+    // DB/Redis에 즉시 반영
+    Persistence::PersistenceService::I().UpdatePlayerCore(
+        playerId,
+        st->level(),
+        st->hp(),
+        st->totalexp(),
+        true
+    );
+}
+
+void GameRoom::HandleRespawnById(PlayerSessionRef session, uint64 playerId)
+{
+    auto it = _players.find(playerId);
+    if (it == _players.end())
+        return;
+
+    HandleRespawn(session, it->second);
 }

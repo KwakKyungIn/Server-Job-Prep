@@ -53,6 +53,11 @@ public:
 	int64 GetReturnInstanceId() const { return _returnInstanceId; }
 	const Protocol::PositionInfo& GetReturnPos() const { return _returnPos; }
 
+	// 부활 처리 플래그 (던전 -> 월드 리스폰 등 비동기 흐름에서 사용)
+	void MarkPendingRespawn(bool value = true) { _pendingRespawn = value; }
+	bool HasPendingRespawn() const { return _pendingRespawn; }
+	void ClearPendingRespawn() { _pendingRespawn = false; }
+
 public:
 	// 네트워크 세션 연결
 	// Player는 로직 객체고, Session은 통신 객체임. 서로 알고 있어야 패킷을 보낼 수 있음
@@ -195,4 +200,7 @@ private:
 	uint64 _lastAoiTickMs = 0;
 
 	uint32 _snapshotSeq = 0;
+
+	// 던전 사망 시 월드 복귀 등, 맵 이동과 함께 부활해야 하는 경우에 사용
+	bool _pendingRespawn = false;
 };

@@ -160,6 +160,7 @@ public:
     void HandleUseItemById(PlayerSessionRef session, uint64 playerId, Protocol::C_USE_ITEM pkt);
     void HandleEquipItemById(PlayerSessionRef session, uint64 playerId, Protocol::C_EQUIP_ITEM pkt);
     void HandleInvDragDropById(PlayerSessionRef session, uint64 playerId, Protocol::C_INV_DRAG_DROP pkt);
+    void HandleRespawnById(PlayerSessionRef session, uint64 playerId);
 
     // [Trade System Handlers] 거래 관련 요청 처리
     void HandleTradeReqById(PlayerSessionRef session, uint64 fromPlayerId, uint64 targetPlayerId);
@@ -173,6 +174,9 @@ public:
     // 스킬 및 채팅 핸들러 라우터
     void HandleSkillById(PlayerSessionRef session, uint64 playerId, int32 skillId);
     void HandleChatById(PlayerSessionRef session, uint64 playerId, const std::string& msg);
+
+    // 플레이어 부활 처리
+    void HandleRespawn(PlayerSessionRef session, PlayerRef player);
 
     // 맵 이동 요청 처리 (DB 저장 후 다른 서버/채널로 이동)
     void TransferMapChangeById(PlayerSessionRef session,

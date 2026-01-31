@@ -67,24 +67,34 @@ public class MyPlayerController : MonoBehaviour
     {
         if (pkt.ObjectId == ObjectManager.MyPlayerId)
         {
-            if (pkt.CurrentHp <= 0)
-            {
-                _isDead = true;
-                Debug.Log("💀 [Die] You are dead!");
-                _anim?.SetDead(); // ✅ 내 캐릭터도 즉시 죽음 애니 반영
-            }
-            else if (_isDead)
-            {
-                _isDead = false;
-                _anim?.SetAlive();
-            }
-            else
-            {
-                // (선택) 맞을 때 히트 애니
-                // _anim?.PlayHit();
-            }
+            SetDeadState(pkt.CurrentHp <= 0);
         }
     }
+
+    void SetDeadState(bool dead)
+    {
+        if (dead)
+        {
+            if (_isDead) return;
+            _isDead = true;
+            Debug.Log("💀 [Die] You are dead!");
+            _anim?.SetDead();
+            UI_RespawnPopup.Show();
+            return;
+        }
+
+        if (_isDead == false) return;
+        _isDead = false;
+        _anim?.SetAlive();
+        UI_RespawnPopup.Hide();
+    }
+
+    public void ApplyServerActionState(ActionState actionState)
+    {
+        SetDeadState(actionState == ActionState.ActionDead);
+    }
+
+    
 
     void Update()
     {

@@ -284,9 +284,14 @@ public class ObjectManager : MonoBehaviour
         {
             var my = go.GetComponent<MyPlayerController>();
             if (my != null)
+            {
                 my.ApplyServerMove(serverPos, serverYaw, pkt.PosInfo.State);
+                my.ApplyServerActionState(pkt.PosInfo.ActionState);
+            }
             else
+            {
                 go.transform.SetPositionAndRotation(serverPos, Quaternion.Euler(0f, serverYaw, 0f));
+            }
             return;
         }
 
