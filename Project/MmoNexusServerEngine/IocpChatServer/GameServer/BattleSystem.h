@@ -34,6 +34,7 @@ public:
     // attacker가 skillId를 썼을 때 결과가 outResult에 담김
     bool ResolveSkill(const std::shared_ptr<Creature>& attacker,
         int32 skillId,
+        float castYaw,
         SkillResult& outResult);
 
 private:

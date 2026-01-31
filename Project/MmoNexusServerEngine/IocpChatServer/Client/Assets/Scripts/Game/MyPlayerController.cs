@@ -144,37 +144,27 @@ public class MyPlayerController : MonoBehaviour
         // ============================================================
         // [ATTACK]
         // ============================================================
-        if (Input.GetKeyDown(KeyCode.Space))
+        if (Input.GetMouseButtonDown(0))
         {
-            TryCastSkill(1, includeYaw: false);
+            bool overUI = (EventSystem.current != null) && EventSystem.current.IsPointerOverGameObject();
+            if (!overUI)
+                TryCastSkill(1);
         }
 
         // ============================================================
-        // [PROJECTILE TEST] Q -> SkillId=2
+        // [SKILL] Q/E/R
         // ============================================================
         if (Input.GetKeyDown(KeyCode.Q))
         {
-            TryCastSkill(2, includeYaw: true);
+            TryCastSkill(2);
         }
-
-        // ============================================================
-        // [Item Test] E
-        // ============================================================
         if (Input.GetKeyDown(KeyCode.E))
         {
-            var allItems = InventoryManager.Instance.GetAllItems();
-            if (allItems.Count > 0)
-            {
-                var enumerator = allItems.GetEnumerator();
-                enumerator.MoveNext();
-                ItemInfo item = enumerator.Current.Value;
-
-                C_EQUIP_ITEM pkt = new C_EQUIP_ITEM();
-                pkt.ItemUid = item.ItemUid;
-                pkt.SlotIndex = item.Slot;
-                pkt.Equip = !item.IsEquipped;
-                NetworkManager.Instance.Send(pkt, (ushort)PacketManager.MsgId.C_EQUIP_ITEM);
-            }
+            TryCastSkill(3);
+        }
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            TryCastSkill(4);
         }
 
         // ============================================================
@@ -429,7 +419,7 @@ public class MyPlayerController : MonoBehaviour
     // ============================================================
     // [SKILL CAST] Client-side cooldown gate
     // ============================================================
-    void TryCastSkill(int skillId, bool includeYaw)
+    void TryCastSkill(int skillId)
     {
         if (NetworkManager.Instance != null && NetworkManager.Instance.IsMapChanging)
             return;
@@ -442,8 +432,7 @@ public class MyPlayerController : MonoBehaviour
 
         C_SKILL pkt = new C_SKILL();
         pkt.SkillId = skillId;
-        if (includeYaw)
-            pkt.CastYaw = transform.eulerAngles.y;
+        pkt.CastYaw = transform.eulerAngles.y;
         pkt.ClientTimeMs = (uint)(Time.realtimeSinceStartupAsDouble * 1000.0);
 
         NetworkManager.Instance.Send(pkt, (ushort)PacketManager.MsgId.C_SKILL);

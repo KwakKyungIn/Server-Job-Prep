@@ -2,7 +2,7 @@
 
 | 현재 구현 완료 기능 | 부분 구현 | 계획 |
 |---|---|---|
-| 로그인 토큰 검증·게임 입장 게이트<br>채널/맵 이동 핸드셰이크<br>서버 권위 이동 검증·NavMesh 슬라이딩<br>AOI 스냅샷/Spawn·Despawn 동기화<br>투사체 전투/피격 처리<br>파티 생성·초대·채팅·상태 스냅샷<br>거래 상태머신 + DB 원자 커밋<br>인벤/장비/퀵슬롯/드래그앤드롭<br>로컬 채팅<br>Redis 기반 자동 저장 | 로그인 비밀번호 검증 미사용<br>스킬 타입 확장·쿨타임 검증 미완<br>플레이어 부활/몬스터 리젠/드랍 테이블 미완<br>던전 강제 귀환/강퇴 처리 일부 TODO<br>채팅 서버 중계 스텁(브로드캐스트/프로토콜 불일치)<br>더미 클라이언트(구형 프로토콜) | 계정 생성/가입 플로우<br>길드 시스템(타입만 정의)<br>퀘스트 시스템(코드 미발견)<br>채팅 로그/모니터링 고도화 |
+| 로그인 토큰 검증·게임 입장 게이트<br>채널/맵 이동 핸드셰이크<br>서버 권위 이동 검증·NavMesh 슬라이딩<br>AOI 스냅샷/Spawn·Despawn 동기화<br>투사체 전투/피격 처리<br>스킬 쿨타임 서버 검증<br>파티 생성·초대·채팅·상태 스냅샷<br>파티 기반 인스턴스 던전 + 강제 귀환/강퇴 처리<br>거래 상태머신 + 골드/아이템 + DB 원자 커밋<br>인벤/장비/퀵슬롯/드래그앤드롭<br>로컬 채팅<br>Redis 기반 자동 저장 | 로그인 비밀번호 검증 미사용<br>스킬 타입 확장(원형/부채꼴 등) 미완<br>플레이어 부활/몬스터 리젠/드랍 테이블 미완<br>DB 로딩 실패 처리 미완<br>하트비트 타임아웃/지연 측정 미구현 | 계정 생성/가입 플로우<br>채팅 로그/모니터링 고도화 |
 
 ## 1) 계정/로그인/세션
 ### 로그인 인증 및 토큰 발급 (상태: 부분 구현)
@@ -142,7 +142,7 @@
 - `GameServer/GameRoom.MapChange.cpp`
 - `Common/Protobuf/bin/Protocol.proto` - `C_MAP_CHANGE_REQ/ACK`, `S_MAP_CHANGE_BEGIN/END`, `C_CHANNEL_CHANGE_REQ`
 
-### 인스턴스 던전(파티 기반) (상태: 부분 구현)
+### 인스턴스 던전(파티 기반) (상태: 완료)
 **유저 관점**
 - 파티가 던전에 입장하면 모두 같은 인스턴스로 이동한다.
 - 던전 종료 시 원래 월드 위치로 복귀한다.
@@ -157,7 +157,7 @@
 **검증/예외 케이스**
 - 파티 미가입/이미 던전 진행 중이면 실패.
 - 맵 이동 중에는 요청 차단.
-- 강퇴/해산 시 강제 귀환 로직 일부 TODO.
+- 강퇴/해산 시 강제 귀환 처리.
 
 **근거**
 - `GameServer/ClientPacketHandler.Dungeon.cpp`
@@ -247,7 +247,7 @@
 **검증/예외 케이스**
 - 스킬 데이터가 없으면 무시.
 - `SKILL_AUTO`만 판정 로직 구현됨(원형/부채꼴 미구현).
-- 쿨타임 서버 검증은 별도 로직 미연결.
+- 쿨타임은 `CanUseSkill/StartSkillCooldown`으로 서버 권위 적용.
 
 **근거**
 - `GameServer/GameRoom.Combat.cpp` - `HandleSkill`
@@ -280,19 +280,19 @@
 
 ### 쿨타임/사망 처리 (상태: 부분 구현)
 **유저 관점**
-- 클라이언트는 쿨타임 값을 받지만 서버가 입력을 완전히 제한하지는 않는다.
-- 플레이어 사망 후 부활/리젠 흐름은 제공되지 않는다.
+- 쿨타임은 클라이언트 UI에 표시되며 서버에서도 검증된다.
+- 사망 상태는 전파되지만 자동 부활/리젠 흐름은 제공되지 않는다.
 
 **서버 내부 흐름**
-1. `SkillTemplateInfo`에 쿨타임이 정의되어 있다.
-2. `S_SKILL`에 `cooldownMs`를 포함해 클라이언트 UI에 전달한다.
-3. `Creature::CanUseSkill`/`UseSkill`에는 쿨타임 맵이 있으나,
-4. 플레이어 `C_SKILL` 경로는 `UseSkill`을 통과하지 않는다.
-5. `Player::OnDead`는 로그만 출력하고 부활/리젠 로직은 없음.
+1. `Creature::CanUseSkill`로 쿨타임 만료를 검사한다.
+2. `GameRoom::HandleSkill`에서 검증 후 `StartSkillCooldown`을 적용한다.
+3. `S_SKILL`에 `cooldownMs`를 포함해 클라이언트 UI에 전달한다.
+4. `Player::OnDead`가 상태를 `ACTION_DEAD`로 전파한다.
+5. 포션 사용 시 HP 회복과 함께 사망 상태 해제 전파가 가능하다.
 
 **검증/예외 케이스**
-- 스킬 쿨타임 서버 검증 부재.
-- 플레이어 사망 상태 전파/부활 패킷 없음.
+- 쿨타임 중 스킬 요청은 무시된다.
+- 부활/리젠 스폰 로직 및 전용 패킷 흐름은 미구현이다.
 
 **근거**
 - `GameServer/Creature.cpp` - `CanUseSkill`, `UseSkill`
@@ -447,17 +447,17 @@
 - `GameServer/ClientPacketHandler.Party.cpp` - `Handle_C_PARTY_STATUS_REQ`
 - `Common/Protobuf/bin/Protocol.proto` - `PartyMemberStatus`, `S_PARTY_STATUS_NTF`
 
-### 던전 연동(파티 인스턴스 메타) (상태: 부분 구현)
+### 던전 연동(파티 인스턴스 메타) (상태: 완료)
 **유저 관점**
 - 파티 던전 입장/퇴장 시 파티 상태가 함께 관리된다.
-- 일부 강제 귀환/강퇴 연동은 미완이다.
+- 강제 귀환/강퇴 연동까지 함께 처리된다.
 
 **서버 내부 흐름**
 1. PartyManagerCore가 `instanceId`, `dungeonState`를 저장한다.
 2. 던전 입장 시 ENTERING/IN_DUNGEON 상태로 전이한다.
 3. 던전 종료 시 인스턴스를 닫고 상태를 NONE으로 되돌린다.
 4. 파티 탈퇴/강퇴/해산 시 인스턴스 멤버를 제거한다.
-5. 강제 귀환(ForceReturnToTown) 로직은 TODO 주석만 존재한다.
+5. 강퇴/해산/종료 시 ForceReturnToWorld로 원래 맵으로 복귀시킨다.
 
 **검증/예외 케이스**
 - 던전 상태 전이 중 중복 요청은 실패.
@@ -465,7 +465,7 @@
 
 **근거**
 - `GameServer/PartyManagerCore.h/.cpp` - `DungeonState`
-- `GameServer/PartyActor.cpp` - 인스턴스 정리 및 TODO
+- `GameServer/PartyActor.cpp` - 인스턴스 정리/강제 귀환
 - `GameServer/ClientPacketHandler.Dungeon.cpp`
 
 ## 7) 교환(거래 상태, 아이템/골드, Ready/Confirm 등)
@@ -531,25 +531,26 @@
 - `DBAgent/DBAgentPacketHandler.cpp` - `Handle_S2S_REQ_TRADE_COMMIT`
 - `Common/Protobuf/bin/Protocol_S2S.proto` - `S2S_REQ/RES_TRADE_COMMIT`
 
-### 골드 거래 (상태: 계획/미구현)
+### 골드 거래 (상태: 완료)
 **유저 관점**
-- 현재는 아이템 거래만 가능하며 골드 교환 UI/패킷이 없다.
-- 골드 포함 거래는 동작하지 않는다.
+- 거래에 골드를 올리고 확정할 수 있다.
+- 확정 후 양쪽 골드가 즉시 갱신된다.
 
-**서버 내부 흐름(현재 상태)**
-1. Trade 패킷이 아이템 UID/수량만 포함한다.
-2. 오퍼/커밋 로직이 아이템만 처리한다.
-3. Redis/DB 커밋에 골드 필드가 없다.
-4. 금액 검증/잔액 차감 로직이 없다.
-5. 클라이언트 통지 패킷에도 골드 정보가 없다.
+**서버 내부 흐름**
+1. `C_TRADE_GOLD_SET`으로 골드 제안 금액을 전송한다.
+2. 서버가 잔액/음수/오버플로우를 검증한다.
+3. `S_TRADE_OFFER_UPDATE`에 골드 정보를 포함해 양쪽에 동기화한다.
+4. Phase1에서 아이템+골드를 포함한 최종 스냅샷을 계산한다.
+5. `S2S_REQ_TRADE_COMMIT`에 `finalGoldA/B`를 담아 DB 업데이트 후 `S_GOLD_UPDATE`를 전송한다.
 
 **검증/예외 케이스**
-- 골드 관련 검증 자체가 없음.
+- 보유 골드보다 큰 금액은 실패.
+- 음수/오버플로우 금액 차단.
 
 **근거**
-- `Common/Protobuf/bin/Protocol.proto` - Trade 메시지(골드 필드 없음)
-- `GameServer/GameRoom.Trade.cpp` - 아이템 기반 로직
-- `DBAgent/DBAgentPacketHandler.cpp` - 아이템 테이블만 갱신
+- `Common/Protobuf/bin/Protocol.proto` - `C_TRADE_GOLD_SET`, `S_TRADE_OFFER_UPDATE`, `S_GOLD_UPDATE`
+- `GameServer/GameRoom.Trade.cpp` - `HandleTradeGoldSetById`, `BuildTradeCommitPlan_ActorOnly`, `OnTradeCommitResult_ActorOnly`
+- `DBAgent/DBAgentPacketHandler.cpp` - `Handle_S2S_REQ_TRADE_COMMIT`
 
 ## 8) 인벤토리/장비/퀵슬롯
 ### 인벤토리 로딩/동기화 (상태: 완료)
@@ -677,7 +678,7 @@
 - `GameServer/GameRoom.Items.cpp` - `HandleMonsterDead`, `AddExpAndLevelUp`
 - `GameServer/DataManager.cpp` - `StatTemplateInfo`, `ItemTemplateInfo`
 
-## 9) 채팅/길드/퀘스트(있다면)
+## 9) 채팅
 ### 로컬(맵) 채팅 (상태: 완료)
 **유저 관점**
 - 같은 맵/룸의 유저에게 채팅이 브로드캐스트된다.
@@ -717,44 +718,6 @@
 **근거**
 - `GameServer/ClientPacketHandler.Party.cpp` - `Handle_C_PARTY_CHAT_REQ`
 - `Common/Protobuf/bin/Protocol.proto` - `S_PARTY_CHAT_NTF`
-
-### 채팅 서버(S2S) 중계 (상태: 부분 구현/스텁)
-**유저 관점**
-- 전역/다중 서버 채팅 중계는 현재 동작하지 않는다.
-- 로컬/파티 채팅만 실제 적용된다.
-
-**서버 내부 흐름(현재 상태)**
-1. ChatServer에 `S2S_REQ_BROADCAST_CHAT/ PARTY_SYNC/ PARTY_CHAT` 핸들러가 존재한다.
-2. `PARTY_CHAT`은 ACK만 보내고 멤버 브로드캐스트는 TODO 상태다.
-3. GameServer의 chatService 연결 코드가 주석 처리되어 있다.
-4. `Protocol_S2S.proto`에는 채팅 관련 메시지 정의가 없다.
-5. 결과적으로 실제 연동 경로가 완성되지 않았다.
-
-**검증/예외 케이스**
-- S2S 프로토콜 불일치로 빌드/연동 위험.
-
-**근거**
-- `ChatServer/ChatServerPacketHandler.cpp` - `Handle_S2S_REQ_BROADCAST_CHAT`, `Handle_S2S_REQ_PARTY_CHAT` (TODO)
-- `GameServer/GameServer.cpp` - chatService 연결 주석 처리
-- `Common/Protobuf/bin/Protocol_S2S.proto` - 채팅 메시지 정의 없음
-
-### 길드/퀘스트 (상태: 계획/미구현)
-**유저 관점**
-- 길드/퀘스트 관련 기능은 제공되지 않는다.
-- UI/패킷/DB 연동이 확인되지 않는다.
-
-**서버 내부 흐름(현재 상태)**
-1. `RoomType`에 `ROOM_GUILD` 타입만 정의되어 있다.
-2. 길드/퀘스트용 패킷 및 핸들러가 없다.
-3. 관련 DB/Redis 접근 로직이 없다.
-4. GameServer/ChatServer에 관련 클래스가 없다.
-5. 따라서 기능은 미구현 상태다.
-
-**검증/예외 케이스**
-- 길드/퀘스트 관련 요청을 처리할 경로 없음.
-
-**근거**
-- `Common/Protobuf/bin/Enum.proto` - `RoomType.ROOM_GUILD`
 
 ## 10) 운영/디버깅/로그/관리툴
 ### Redis Write-Back 저장 + 자동 커밋 (상태: 완료)
@@ -822,23 +785,16 @@
 ### 테스트/운영 도구 (상태: 부분 구현)
 **유저 관점**
 - 콘솔 명령으로 파티 기능을 테스트할 수 있다.
-- 패킷 생성 도구와 더미 클라이언트가 제공된다.
+- 패킷 생성 도구를 통해 핸들러/패킷 코드를 생성한다.
 
 **서버 내부 흐름**
 1. GameServer 콘솔 스레드가 `/p_create` 등 테스트 명령을 처리한다.
 2. PacketGenerator가 프로토콜 기반 핸들러/패킷 코드를 생성한다.
-3. DummyClient가 로그인/채팅을 수동 테스트한다(구형 프로토콜 사용).
-4. ChatServer의 채팅 로그 파일 로직은 주석 처리 상태다.
-5. 운영용 모니터링 UI는 별도 미구현이다.
-
-**검증/예외 케이스**
-- DummyClient는 `C_LOGIN_REQ` 기반으로 현재 프로토콜과 불일치.
+3. 운영용 모니터링 UI는 별도 미구현이다.
 
 **근거**
 - `GameServer/GameServer.cpp` - `ConsoleThread`
 - `Tools/PacketGenerator/PacketGenerator.py`
-- `DummyClient/DummyClient.cpp`
-- `ChatServer/Room.cpp` - 로그 관련 주석 코드
 
 ## 데모 시나리오 5개(영상/면접에서 보여줄 흐름)
 1. 로그인 → 토큰 발급 → `C_ENTER_GAME` → 인벤/퀵슬롯 로딩 → `S_ENTER_GAME`/AOI 스냅샷.
@@ -846,3 +802,13 @@
 3. 파티 생성/초대/상태 스냅샷 → 던전 입장 → 인스턴스 생성 → 던전 종료 후 복귀.
 4. 전투 데모: 몬스터 AI 추격 → 투사체 스킬 적중 → `S_CHANGE_HP` → 경험치/드랍 반영.
 5. 1:1 거래 데모: 초대 → 오퍼 → Ready/Lock → Confirm → DB 커밋 → 인벤 변경 확인.
+
+## TODO / 미완 정리
+- 로그인 비밀번호 검증 및 계정 생성/가입 플로우
+- DB 로딩 실패 처리(로비 게이트)
+- 스킬 타입 확장(원형/부채꼴 등) 및 범위 판정 고도화 (완료)
+- 플레이어 부활/리젠 흐름(리스폰 패킷/스폰)
+- 몬스터 리젠/스폰 테이블 + 드랍 테이블/랜덤 로직
+- 하트비트 타임아웃/지연 측정 + 모니터링
+- 채팅 로그/모니터링 고도화
+- 운영용 모니터링 UI

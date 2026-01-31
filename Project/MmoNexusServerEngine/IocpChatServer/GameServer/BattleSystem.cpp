@@ -19,6 +19,7 @@ BattleSystem::BattleSystem(SpatialGrid* grid)
 // 여기서 데미지 계산까지 끝내서 결과 구조체에 담아준다
 bool BattleSystem::ResolveSkill(const std::shared_ptr<Creature>& attacker,
     int32 skillId,
+    float castYaw,
     SkillResult& outResult)
 {
     if (_grid == nullptr || attacker == nullptr)
@@ -32,7 +33,29 @@ bool BattleSystem::ResolveSkill(const std::shared_ptr<Creature>& attacker,
 
     Protocol::SkillType type = skillData->skilltype();
     float               range = skillData->range();
+    float               radius = skillData->radius();
+    float               angle = skillData->angle();
     int32               damage = skillData->damage();
+
+    if (range < 0.0f) range = 0.0f;
+    if (radius < 0.0f) radius = 0.0f;
+    if (angle < 0.0f) angle = 0.0f;
+
+    auto pickPrimaryOrFallback = [](float primary, float fallback) -> float
+        {
+            if (primary > 0.0f)
+                return primary;
+            return fallback > 0.0f ? fallback : 0.0f;
+        };
+
+    const float singleRange = pickPrimaryOrFallback(range, radius);
+    const float circleRadius = pickPrimaryOrFallback(radius, range);
+    const float coneRange = pickPrimaryOrFallback(radius, range);
+    float coneAngle = angle;
+    if (coneAngle <= 0.0f)
+        coneAngle = 90.0f;
+
+    Vector3 viewDir = ObjectUtils::GetVectorFromYaw(castYaw);
 
     bool isMonster = (attacker->GetObjectType() == Protocol::OBJECT_TYPE_MONSTER);
 
@@ -64,7 +87,29 @@ bool BattleSystem::ResolveSkill(const std::shared_ptr<Creature>& attacker,
         {
             // 평타나 타겟팅 스킬은 원형 범위 체크로 단순하게 판정
             if (ObjectUtils::CheckCircle(*attacker->GetPosInfo(),
-                range,
+                singleRange,
+                *victim->GetPosInfo()))
+            {
+                isHit = true;
+            }
+        }
+        break;
+        case Protocol::SKILL_AREA_CIRCLE:
+        {
+            if (ObjectUtils::CheckCircle(*attacker->GetPosInfo(),
+                circleRadius,
+                *victim->GetPosInfo()))
+            {
+                isHit = true;
+            }
+        }
+        break;
+        case Protocol::SKILL_AREA_CONE:
+        {
+            if (ObjectUtils::CheckFan(*attacker->GetPosInfo(),
+                viewDir,
+                coneRange,
+                coneAngle,
                 *victim->GetPosInfo()))
             {
                 isHit = true;

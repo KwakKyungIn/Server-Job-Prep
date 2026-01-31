@@ -1,36 +1,38 @@
 # Tech Stack & Techniques
 
 ## 한 페이지 요약
-- IOCP 기반 멀티 서버 구조 — Login/Game/DBAgent/Chat 분리와 S2S 통신 골격을 구성.
+- IOCP 기반 멀티 서버 구조 — Login/Game/DBAgent 분리와 S2S 통신 골격을 구성.
 - 전역 초기화(CoreGlobal) — 소켓/설정/매니저/Redis를 부팅 시점에 일괄 세팅.
 - Hybrid 스레드 모델 — IOCP 네트워크 스레드 + JobQueue 로직 스레드 분리.
 - JobQueue/GlobalQueue — 액터 단위 작업 큐로 경합을 줄이는 구조.
 - RW SpinLock + 매크로 — 읽기/쓰기 락을 간단히 적용하는 공용 패턴.
 - Protobuf 기반 프로토콜 — 클라/S2S 메시지를 .proto로 정의하고 코드 생성 활용.
 - 맵/인스턴스/룸 — 채널/맵/인스턴스를 RoomKey로 관리.
+- 맵 변경 핸드셰이크 — 토큰 검증 + 안전 귀환(던전/강퇴).
 - 서버 권위 이동 검증 — 속도 클램프 + NavMesh 슬라이딩 보정.
 - AOI/SpatialGrid — 근접 엔티티만 동기화하고 스냅샷 배칭.
-- 전투/투사체 — 즉발 판정 + 투사체 충돌/벽 레이캐스트 처리.
+- 전투/투사체 — 즉발 판정 + 투사체 충돌/벽 레이캐스트 + 쿨타임 서버 검증.
 - 몬스터 FSM AI — Idle/Chase/Attack/Return + 경로 탐색/LOS.
 - Redis Write-Back — 실시간 변경을 캐시하고 AutoCommit로 DB 저장.
 - ODBC DB 트랜잭션 — Prepared Statement/Transaction으로 원자 커밋.
+- 거래 2단계 커밋 — 메모리 시뮬레이션 + DB 트랜잭션(아이템/골드).
 - 메모리 풀링 — ObjectPool/SendBufferChunk로 할당 비용 절감.
 - 패킷 생성 도구 — Python+Jinja2로 핸들러 템플릿 생성.
 
 ---
 
 ## Architecture
-### 멀티 서버 분리 + S2S 통신 골격 — 내가 한 일: Login/Game/DBAgent/Chat 서버를 분리하고 S2S 프로토콜 골격을 구성
+### 멀티 서버 분리 + S2S 통신 골격 — 내가 한 일: Login/Game/DBAgent 서버 분리와 S2S 프로토콜 골격 구성
 **근거**
-- `GameServer/GameServer.cpp` — `int main()`에서 DB/Chat/Login 세션 연결 로직
+- `GameServer/GameServer.cpp` — `int main()`에서 DB 세션 연결 로직
 - `LoginServer/LoginServer.cpp` — `int main()`에서 서비스 분리(클라/게임서버/DBAgent)
 - `DBAgent/DBAgent.cpp` — GameServer용/ LoginServer용 서비스 분리
 - `Common/Protobuf/bin/Protocol_S2S.proto` — S2S 메시지 정의
 
-1) Problem: 게임/로그인/DB/채팅 역할이 뒤섞이면 장애 격리와 스케일링이 어렵다.
-2) Implementation: Login/Game/DBAgent/Chat을 별도 프로세스로 두고, S2S 패킷으로 요청/응답을 전달하도록 구성했다.
+1) Problem: 게임/로그인/DB 역할이 뒤섞이면 장애 격리와 스케일링이 어렵다.
+2) Implementation: Login/Game/DBAgent를 별도 프로세스로 두고, S2S 패킷으로 요청/응답을 전달하도록 구성했다.
 3) Pros/Cons: Pros) 장애 격리/역할 분리. Cons) 네트워크/운영 복잡도 증가.
-4) Next: ChatServer 연동을 정식화(프로토콜 정합성, 브로드캐스트 루트 완성).
+4) Next: S2S 메시지 버전 관리/헬스체크 및 재시도 정책 강화.
 
 ### RoomActor + Lobby/Game 룸 분리 — 내가 한 일: 액터 기반 룸 구조로 작업 흐름을 단일 스레드화
 **근거**
@@ -109,7 +111,7 @@
 **근거**
 - `ServerCore/Session.h` — `PacketHeader { size, id, crc, seq }`
 - `GameServer/ClientPacketHandler.h` — `GPacketHandler` 매핑
-- `DummyClient/ServerPacketHandler.h` — 클라이언트 측 핸들러 매핑
+- `LoginServer/ClientPacketHandler.h` — `GPacketHandler` 매핑
 
 1) Problem: 수신 패킷을 빠르고 일관되게 디스패치해야 한다.
 2) Implementation: 고정 헤더로 패킷을 식별하고 핸들러 테이블로 분기 처리한다.
@@ -127,17 +129,6 @@
 3) Pros/Cons: Pros) 스키마 명확/호환성 확보. Cons) 코드 생성 의존성.
 4) Next: 스키마 버전/마이그레이션 정책 정식화.
 
-### S2S 채팅 중계(확인 불가) — 내가 한 일: ChatServer 중계 핸들러를 만들었으나 연동 정합성은 불명확
-**근거**
-- `ChatServer/ChatServerPacketHandler.cpp` — `Handle_S2S_REQ_BROADCAST_CHAT`, `Handle_S2S_REQ_PARTY_CHAT`
-- `GameServer/GameServer.cpp` — ChatService 연결 코드 주석 처리
-- `Common/Protobuf/bin/Protocol_S2S.proto` — 채팅 관련 메시지 정의 없음
-
-1) Problem: 다중 서버 간 채팅 브로드캐스트가 필요하다.
-2) Implementation: ChatServer에 핸들러는 있으나 S2S 프로토콜 정의와 연결 경로가 불완전하다.
-3) Pros/Cons: Pros) 구조 시도. Cons) 프로토콜 불일치로 실제 동작 확인 불가.
-4) Next: S2S 채팅 메시지 정의 추가 및 GameServer 연결 복구.
-
 ---
 
 ## Gameplay Server Systems
@@ -151,6 +142,18 @@
 2) Implementation: `RoomKey(channelId, mapId, instanceId)`로 룸을 분리하고 InstanceActor로 인스턴스를 관리했다.
 3) Pros/Cons: Pros) 명확한 룸 식별. Cons) 룸 수 증가 시 관리 비용 상승.
 4) Next: 룸 메타 모니터링/강제 정리 정책 개선.
+
+### 맵 변경 핸드셰이크 + 안전 귀환 — 내가 한 일: 토큰 기반 전이와 강제 귀환 흐름 통합
+**근거**
+- `GameServer/ClientPacketHandler.MapChangeUtil.cpp` — `MakeMapChangeToken`, `SendMapChangeBegin`, `ForceReturnToWorld`
+- `GameServer/ClientPacketHandler.MapChange.cpp` — `Handle_C_MAP_CHANGE_REQ/ACK`
+- `GameServer/ClientPacketHandler.Dungeon.cpp` — 던전 입장/퇴장 맵 전이
+- `GameServer/PartyActor.cpp` — 강퇴/해산/인스턴스 종료 시 강제 귀환
+
+1) Problem: 맵 이동/던전 전이는 스푸핑·중복 요청에 취약하고 실패 시 유저가 고립될 수 있다.
+2) Implementation: 토큰 발급 → MapChanging 상태 전이 → ACK 검증 후 룸 이동, 강제 귀환은 안전 좌표 계산 후 동일 핸드셰이크로 처리한다.
+3) Pros/Cons: Pros) 전이 검증 일원화, 안전 복귀 보장. Cons) 전이 중 지연/끊김 처리 복잡.
+4) Next: 전이 타임아웃/롤백 및 실패 응답 표준화.
 
 ### 서버 권위 이동 검증 + NavMesh 슬라이딩 — 내가 한 일: 속도/시퀀스/네비 검증을 통합
 **근거**
@@ -181,7 +184,7 @@
 - `GameServer/GameRoom.Projectile.cpp` — 투사체 이동/충돌
 
 1) Problem: 다양한 스킬 판정을 서버에서 일관되게 처리해야 한다.
-2) Implementation: 즉발형은 BattleSystem에서 판정하고, 투사체는 별도 오브젝트로 갱신한다.
+2) Implementation: 즉발형은 BattleSystem에서 판정하고, 투사체는 별도 오브젝트로 갱신한다. `CanUseSkill`로 서버 쿨타임을 검증하고 `StartSkillCooldown`으로 소비한다.
 3) Pros/Cons: Pros) 스킬 타입 확장 용이. Cons) 일부 스킬 타입 미구현.
 4) Next: 원형/부채꼴 등 범위 스킬 판정 추가.
 
@@ -195,6 +198,18 @@
 2) Implementation: FSM(Idle/Chase/Attack/Return) + LOS/경로 재계산으로 추적을 구현했다.
 3) Pros/Cons: Pros) 예측 가능한 AI 흐름. Cons) 복잡한 지형에서 CPU 부담.
 4) Next: AI 업데이트 주기 최적화/스킬 다양화.
+
+### 거래 2단계 커밋(Phase1/Phase2) — 내가 한 일: 아이템/골드를 시뮬레이션 후 원자 커밋
+**근거**
+- `GameServer/GameRoom.Trade.cpp` — `BuildTradeCommitPlan_ActorOnly`, `StartTradeCommitPhase2_ActorOnly`
+- `GameServer/GameRoom.Trade.cpp` — `HandleTradeGoldSetById`, `OnTradeCommitResult_ActorOnly`
+- `DBAgent/DBAgentPacketHandler.cpp` — `Handle_S2S_REQ_TRADE_COMMIT`
+- `Common/Protobuf/bin/Protocol_S2S.proto` — `S2S_REQ/RES_TRADE_COMMIT`
+
+1) Problem: 거래 중 아이템/골드 유실·복제가 발생하면 치명적인 데이터 오류가 생긴다.
+2) Implementation: Phase1에서 인벤/골드를 메모리 시뮬레이션해 검증하고, Phase2에서 DBAgent 트랜잭션으로 커밋 후 결과를 메모리/Redis에 반영한다.
+3) Pros/Cons: Pros) 원자성 확보, 롤백 가능. Cons) DB 지연에 민감, 실패 처리 복잡.
+4) Next: 커밋 타임아웃/재시도 정책 및 모니터링 추가.
 
 ---
 
@@ -325,13 +340,11 @@
 3) Pros/Cons: Pros) 개발 시간 단축. Cons) 외부 의존성 증가.
 4) Next: 버전/보안 업데이트 체계화.
 
-### 테스트/운영용 유틸 — 내가 한 일: 더미 클라와 콘솔 명령을 통해 수동 테스트 경로 확보
+### 콘솔 명령 기반 수동 테스트 — 내가 한 일: 서버 내 테스트 커맨드로 기능 검증
 **근거**
-- `DummyClient/DummyClient.cpp` — 로그인/채팅 테스트 루프
 - `GameServer/GameServer.cpp` — `ConsoleThread` 테스트 명령
 
 1) Problem: 클라이언트 없이도 기능을 빠르게 검증할 경로가 필요했다.
-2) Implementation: 콘솔 명령과 더미 클라로 수동 테스트 흐름을 마련했다.
+2) Implementation: 서버 콘솔 명령으로 파티/상태 등 핵심 흐름을 수동 검증한다.
 3) Pros/Cons: Pros) 빠른 수동 검증. Cons) 자동화 테스트 부재.
 4) Next: 자동화 테스트/시뮬레이터 추가.
-
