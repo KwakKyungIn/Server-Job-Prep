@@ -152,10 +152,59 @@ void LobbyRoom::TryEnterWorldIfReady(uint64 playerId)
         });
 }
 
+void LobbyRoom::OnDbLoadFailed(uint64 playerId, const char* reason)
+{
+    PlayerSessionRef ps;
+
+    auto it = _players.find(playerId);
+    if (it != _players.end())
+    {
+        if (it->second.player)
+        {
+            ps = it->second.player->GetSession();
+            it->second.player->SetSession(nullptr);
+            it->second.player->SetRoom(nullptr);
+        }
+
+        _players.erase(it);
+    }
+
+    if (!ps && GameSessionManager::GSessionManager)
+        ps = GameSessionManager::GSessionManager->FindByPlayerId(playerId);
+
+    if (!ps)
+        return;
+
+    if (ps->HasPendingEnter_AnyThread() == false)
+        return;
+
+    const char* tag = (reason ? reason : "Unknown");
+    printf(" [Lobby] DB load failed (%s): %llu\n", tag, playerId);
+
+    ps->Post([playerId](PlayerSessionRef self)
+        {
+            Protocol::S_ENTER_GAME failPkt;
+            failPkt.set_success(false);
+            self->Send(ClientPacketHandler::MakeSendBuffer(failPkt));
+
+            self->ClearPendingEnter_ActorOnly();
+            if (GameSessionManager::GSessionManager)
+                GameSessionManager::GSessionManager->UnbindPlayerId(playerId);
+            self->ClearPlayerId_ActorOnly();
+            self->Disconnect(L"DB Load Failed");
+        });
+}
+
 
 // [DB 콜백 1] 아이템 정보 로드 완료
 void LobbyRoom::OnItemsLoaded(uint64 playerId, const Protocol::S2S_RES_ITEMS_LOAD& pkt)
 {
+    if (!pkt.success())
+    {
+        OnDbLoadFailed(playerId, "Items");
+        return;
+    }
+
     auto it = _players.find(playerId);
     if (it == _players.end()) return;
     if (!it->second.player) return;
@@ -246,6 +295,12 @@ void LobbyRoom::OnItemsLoaded(uint64 playerId, const Protocol::S2S_RES_ITEMS_LOA
 // [DB 콜백 2] 플레이어 스탯 정보 로드 완료
 void LobbyRoom::OnStatLoaded(uint64 playerId, const Protocol::S2S_RES_LOAD_PLAYER_DATA& pkt)
 {
+    if (!pkt.success())
+    {
+        OnDbLoadFailed(playerId, "Stat");
+        return;
+    }
+
     auto it = _players.find(playerId);
     if (it == _players.end()) return;
     if (!it->second.player) return;
@@ -352,10 +407,15 @@ PlayerRef LobbyRoom::Find(uint64 playerId) const
 // [DB 콜백 3] 퀵슬롯 정보 로드 완료
 void LobbyRoom::OnQuickSlotsLoaded(uint64 playerId, const Protocol::S2S_RES_QUICKSLOT_LOAD& pkt)
 {
+    if (!pkt.success())
+    {
+        OnDbLoadFailed(playerId, "QuickSlot");
+        return;
+    }
+
     auto it = _players.find(playerId);
     if (it == _players.end()) return;
     if (!it->second.player) return;
-    if (!pkt.success()) return;
 
     PlayerRef p = it->second.player;
 

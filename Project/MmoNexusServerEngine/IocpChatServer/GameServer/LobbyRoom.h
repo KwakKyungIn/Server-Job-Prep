@@ -69,6 +69,8 @@ public:
     void OnQuickSlotsLoaded(uint64 playerId, const Protocol::S2S_RES_QUICKSLOT_LOAD& pkt);
 
 private:
+    void OnDbLoadFailed(uint64 playerId, const char* reason);
+
     // 로딩 상태 추적용 구조체
     // DB 로딩은 비동기라 순서가 보장되지 않으므로, 플래그로 상태를 체크해야 함
     struct Pending

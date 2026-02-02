@@ -36,16 +36,6 @@ bool S2SPacketHandler::Handle_S2S_RES_LOAD_PLAYER_DATA(PacketSessionRef& session
 	PlayerSessionRef ps = GameSessionManager::GSessionManager->FindBySessionId(pkt.gamesessionid());
 	if (!ps) return true; // 세션이 이미 끊겼으면 무시
 
-	if (!pkt.success())
-	{
-		ps->Post([](PlayerSessionRef self)
-			{
-				// 실패 시 클라한테 에러 알림 보내고 끊어야 함
-				// 나중에 구현 예정
-			});
-		return true;
-	}
-
 	const uint64 playerId = pkt.playerid(); // DB가 보내준 ID가 가장 정확함
 	if (playerId == 0) return true;
 
@@ -73,15 +63,6 @@ bool S2SPacketHandler::Handle_S2S_RES_ITEMS_LOAD(PacketSessionRef& session, Prot
 {
 	PlayerSessionRef ps = GameSessionManager::GSessionManager->FindBySessionId(pkt.gamesessionid());
 	if (!ps) return true;
-
-	if (!pkt.success())
-	{
-		ps->Post([](PlayerSessionRef self)
-			{
-				// 로딩 실패 처리
-			});
-		return true;
-	}
 
 	const uint64 playerId = pkt.playerid();
 	if (playerId == 0) return true;
