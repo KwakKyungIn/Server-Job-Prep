@@ -344,10 +344,10 @@
     <None Include="..\Common\Protobuf\bin\Enum.proto">
       <Filter>Protocol</Filter>
     </None>
-    <None Include="Maps.json" />
-    <None Include="MonsterTemplates.json" />
-    <None Include="SpawnTables.json" />
-    <None Include="DropTables.json" />
     <None Include="packages.config" />
+    <None Include="..\Binary\Debug\DropTables.json" />
+    <None Include="..\Binary\Debug\Maps.json" />
+    <None Include="..\Binary\Debug\MonsterTemplates.json" />
+    <None Include="..\Binary\Debug\SpawnTables.json" />
   </ItemGroup>
 </Project>

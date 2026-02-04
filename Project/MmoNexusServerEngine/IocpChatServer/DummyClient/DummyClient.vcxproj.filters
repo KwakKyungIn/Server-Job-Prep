@@ -36,6 +36,12 @@
     <ClCompile Include="ServerSession.cpp">
       <Filter>ServerSession</Filter>
     </ClCompile>
+    <ClCompile Include="LoadClientConfig.cpp">
+      <Filter>Main</Filter>
+    </ClCompile>
+    <ClCompile Include="LoadClientManager.cpp">
+      <Filter>Main</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -56,6 +62,12 @@
     <ClInclude Include="ServerSession.h">
       <Filter>ServerSession</Filter>
     </ClInclude>
+    <ClInclude Include="LoadClientConfig.h">
+      <Filter>Main</Filter>
+    </ClInclude>
+    <ClInclude Include="LoadClientManager.h">
+      <Filter>Main</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Common\Protobuf\bin\Protocol.proto">
@@ -69,6 +81,9 @@
     </None>
     <None Include="..\Common\Protobuf\bin\GenPackets.bat">
       <Filter>Protocol</Filter>
+    </None>
+    <None Include="LoadClientConfig.json">
+      <Filter>Main</Filter>
     </None>
   </ItemGroup>
 </Project>
