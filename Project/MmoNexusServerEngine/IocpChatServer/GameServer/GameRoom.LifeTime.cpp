@@ -2,6 +2,7 @@
 #include "GameRoom.h"
 #include "GameMap.h"
 #include "Monster.h"
+#include "DataManager.h"
 
 GameRoom::GameRoom()
 {
@@ -59,41 +60,121 @@ void GameRoom::Init(int32 channelId, int32 mapId, int32 sizeX, int32 sizeY, int3
 			mapId, sizeX, sizeY, zoneSize);
 	}
 
+	// JSON 스폰 테이블 기반으로 몬스터 초기 스폰
+	InitSpawnPoints_ActorOnly();
+}
 
-	// 서버 켜지면 테스트용으로 슬라임 킹 한 마리 소환해봄
-	MonsterRef slime = ObjectPool<Monster>::MakeShared();
-	slime->Init(1); // 템플릿 ID 1번
+void GameRoom::InitSpawnPoints_ActorOnly()
+{
+	_spawnPoints.clear();
 
-	// 스폰 위치 잡기. Config에 지정된 위치가 있으면 거기다 찍고 아니면 그냥 (52, 0, 52)에 박음
-	if (config)
+	DataManager* dm = DataManager::Instance();
+	const Vector<SpawnEntry>* entries = (dm ? dm->GetSpawnEntries(_mapId) : nullptr);
+	if (!entries || entries->empty())
 	{
-		slime->GetPosInfo()->set_x(config->spawnX);
-		slime->GetPosInfo()->set_y(config->spawnY);
-		slime->GetPosInfo()->set_z(config->spawnZ);
+		std::cout << " [GameRoom] SpawnTables empty for MapId=" << _mapId << std::endl;
+		return;
 	}
+
+	for (const auto& e : *entries)
+	{
+		SpawnPointRuntime sp;
+		sp.spawnId = e.spawnId;
+		sp.monsterId = e.monsterId;
+		sp.pos.set_x(e.x);
+		sp.pos.set_y(e.y);
+		sp.pos.set_z(e.z);
+		sp.pos.set_yaw(0.0f);
+		sp.maxAlive = e.maxAlive;
+		sp.respawnMs = static_cast<uint64>(e.respawnSec) * 1000;
+
+		_spawnPoints[sp.spawnId] = sp;
+	}
+
+	const uint64 now = ::GetTickCount64();
+	for (auto& kv : _spawnPoints)
+	{
+		auto& sp = kv.second;
+		for (int32 i = 0; i < sp.maxAlive; ++i)
+			SpawnFromPoint_ActorOnly(sp, now);
+	}
+
+	std::cout << " [GameRoom] SpawnPoints initialized: " << _spawnPoints.size() << std::endl;
+}
+
+void GameRoom::UpdateSpawns_ActorOnly(uint64 nowMs)
+{
+	for (auto& kv : _spawnPoints)
+	{
+		auto& sp = kv.second;
+		if (sp.aliveCount >= sp.maxAlive)
+			continue;
+
+		if (sp.nextSpawnMs == 0)
+			sp.nextSpawnMs = nowMs;
+
+		if (nowMs < sp.nextSpawnMs)
+			continue;
+
+		const int32 missing = sp.maxAlive - sp.aliveCount;
+		const int32 spawnCount = (sp.respawnMs == 0) ? missing : 1;
+
+		for (int32 i = 0; i < spawnCount; ++i)
+		{
+			if (sp.aliveCount >= sp.maxAlive)
+				break;
+			SpawnFromPoint_ActorOnly(sp, nowMs);
+			if (sp.respawnMs > 0)
+				break;
+		}
+	}
+}
+
+void GameRoom::SpawnFromPoint_ActorOnly(SpawnPointRuntime& sp, uint64 nowMs)
+{
+	MonsterRef monster = ObjectPool<Monster>::MakeShared();
+	monster->Init(sp.monsterId, sp.spawnId);
+
+	auto* pos = monster->GetPosInfo();
+	pos->set_x(sp.pos.x());
+	pos->set_y(sp.pos.y());
+	pos->set_z(sp.pos.z());
+	pos->set_yaw(sp.pos.yaw());
+
+	EnterMonster(monster);
+
+	sp.aliveCount++;
+	if (sp.aliveCount >= sp.maxAlive)
+		sp.nextSpawnMs = 0;
 	else
+		sp.nextSpawnMs = nowMs + sp.respawnMs;
+}
+
+void GameRoom::OnMonsterDespawned_ActorOnly(MonsterRef monster)
+{
+	if (!monster) return;
+
+	const int32 spawnId = monster->GetSpawnId();
+	if (spawnId == 0) return;
+
+	auto it = _spawnPoints.find(spawnId);
+	if (it == _spawnPoints.end())
+		return;
+
+	auto& sp = it->second;
+	if (sp.aliveCount > 0)
+		sp.aliveCount--;
+
+	if (sp.aliveCount < sp.maxAlive)
 	{
-		slime->GetPosInfo()->set_x(52.0f);
-		slime->GetPosInfo()->set_y(0.0f);
-		slime->GetPosInfo()->set_z(52.0f);
+		const uint64 nowMs = ::GetTickCount64();
+		const uint64 next = nowMs + sp.respawnMs;
+
+		if (sp.respawnMs == 0)
+			sp.nextSpawnMs = nowMs;
+		else if (sp.nextSpawnMs == 0 || sp.nextSpawnMs > next)
+			sp.nextSpawnMs = next;
 	}
-	slime->GetPosInfo()->set_yaw(0.0f);
-
-	// 몬스터 방 입장 처리. 여기서 Grid Zone에 등록되고 주변 플레이어한테 패킷 날아감
-	EnterMonster(slime);
-
-	printf("[Test] Slime_King Spawned at (%.1f, %.1f, %.1f)\n",
-		slime->GetPosInfo()->x(), slime->GetPosInfo()->y(), slime->GetPosInfo()->z());
-
-	// 디버깅용으로 Grid에 잘 들어갔나 확인
-	int32 debugZoneIndex = _grid.GetZoneIndex(*slime->GetPosInfo());
-	Zone& debugZone = _grid.GetZone(debugZoneIndex);
-
-	printf(" [DEBUG] Monster Check: Slime ID %llu is in Zone [%d]. Players in Zone: %zu, Monsters in Zone: %zu\n",
-		slime->GetObjectId(),
-		debugZoneIndex,
-		debugZone.players.size(),
-		debugZone.monsters.size());
 }
 
 bool GameRoom::ShouldPurge(uint64 nowMs) const

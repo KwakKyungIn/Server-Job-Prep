@@ -36,6 +36,51 @@ struct MapConfig
 	MapType type = MapType::World;
 };
 
+// 몬스터 템플릿 정보 (JSON 기반 기획 데이터)
+struct MonsterTemplate
+{
+	int32 monsterId = 0;
+	std::string name;
+	Protocol::StatInfo stat;
+	int64 exp = 0;
+	int32 dropGroupId = 0;
+
+	float searchRange = 10.0f;
+	float attackRange = 1.5f;
+	float leashRange = 25.0f;
+};
+
+// 스폰 테이블 엔트리 (고정 좌표 기반)
+struct SpawnEntry
+{
+	int32 spawnId = 0;
+	int32 monsterId = 0;
+	float x = 0.0f;
+	float y = 0.0f;
+	float z = 0.0f;
+
+	int32 maxAlive = 1;
+	int32 respawnSec = 30;
+};
+
+// 드랍 테이블 엔트리
+struct DropEntry
+{
+	int32 itemId = 0;
+	int32 weight = 0;
+	int32 minCount = 1;
+	int32 maxCount = 1;
+};
+
+struct DropGroup
+{
+	int32 dropGroupId = 0;
+	int32 rolls = 1;
+	int32 noDropWeight = 0;
+	int32 totalWeight = 0;
+	Vector<DropEntry> entries;
+};
+
 class DataManager
 {
 public:
@@ -57,6 +102,11 @@ public:
 	// JSON 파일 파싱해서 맵 설정 로드
 	bool LoadMapConfigsFromJson(const std::string& path);
 
+	// JSON 파일 파싱해서 몬스터/스폰/드랍 데이터 로드
+	bool LoadMonsterTemplatesFromJson(const std::string& path);
+	bool LoadSpawnTablesFromJson(const std::string& path);
+	bool LoadDropTablesFromJson(const std::string& path);
+
 	// 월드맵인지 던전인지 구분할 때 사용
 	int32 GetDefaultWorldMapId() const { return _defaultWorldMapId; }
 	bool IsDungeonMapId(int32 mapId) const;
@@ -67,6 +117,9 @@ public:
 	const Protocol::StatTemplateInfo* GetStatTemplate(int32 level);
 	const Protocol::ItemTemplateInfo* GetItemTemplate(int32 templateId);
 	const Protocol::SkillTemplateInfo* GetSkillTemplate(int32 skillId);
+	const MonsterTemplate* GetMonsterTemplate(int32 monsterId) const;
+	const Vector<SpawnEntry>* GetSpawnEntries(int32 mapId) const;
+	const DropGroup* GetDropGroup(int32 dropGroupId) const;
 
 private:
 	DataManager();                // 생성자에서 기본 맵 등록함
@@ -82,4 +135,8 @@ private:
 	Map<int32, Protocol::SkillTemplateInfo> _skillTemplates;
 
 	Map<int32, MapConfig> _mapConfigs;
+
+	Map<int32, MonsterTemplate> _monsterTemplates;
+	Map<int32, Vector<SpawnEntry>> _spawnTables;
+	Map<int32, DropGroup> _dropGroups;
 };

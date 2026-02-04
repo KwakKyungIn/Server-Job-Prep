@@ -15,10 +15,11 @@ public:
 	virtual void	OnDamaged(std::shared_ptr<Creature> attacker, int32 damage) override;
 	virtual void	OnDead(std::shared_ptr<Creature> attacker) override;
 
-	void			Init(int32 templateId);
+	void			Init(int32 templateId, int32 spawnId = 0);
 	void			Update(uint64 nowMs, uint64 deltaMs); // AI 메인 업데이트
 
 	Protocol::MonsterInfo* GetMonsterInfo() { return &_monsterInfo; }
+	int32			GetSpawnId() const { return _spawnId; }
 
 	// AOI 최적화를 위한 시야(Viewer) 목록 관리
 	HashSet<uint64>& Viewers_ActorOnly() { return _viewers; }
@@ -60,6 +61,7 @@ private:
 
 private:
 	Protocol::MonsterInfo _monsterInfo;
+	int32 _spawnId = 0;
 
 	// 타겟 및 사거리 설정
 	std::weak_ptr<Creature> _target;

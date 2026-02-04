@@ -270,6 +270,26 @@ private:
     // 시야 반경을 그리드 셀 단위로 변환
     int32 EffectiveAoiRadiusCells() const;
 
+    // =========================================================
+    // [Spawn System]
+    // 고정 좌표 기반 몬스터 스폰/리스폰 관리
+    // =========================================================
+    struct SpawnPointRuntime
+    {
+        int32 spawnId = 0;
+        int32 monsterId = 0;
+        Protocol::PositionInfo pos;
+        int32 maxAlive = 1;
+        uint64 respawnMs = 0;
+        int32 aliveCount = 0;
+        uint64 nextSpawnMs = 0;
+    };
+
+    void InitSpawnPoints_ActorOnly();
+    void UpdateSpawns_ActorOnly(uint64 nowMs);
+    void SpawnFromPoint_ActorOnly(SpawnPointRuntime& sp, uint64 nowMs);
+    void OnMonsterDespawned_ActorOnly(MonsterRef monster);
+
 
     // =========================================================
     // [Trade System v1]
@@ -363,4 +383,6 @@ private:
 
     Map<uint64, ProjectileRef> _projectiles;    // 방에 날아다니는 투사체들
     uint64 _lastUpdateMs = 0; // 델타 타임 계산용
+
+    Map<int32, SpawnPointRuntime> _spawnPoints;
 };

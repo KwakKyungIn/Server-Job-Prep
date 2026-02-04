@@ -24,19 +24,38 @@ Monster::~Monster()
 {
 }
 
-void Monster::Init(int32 templateId)
+void Monster::Init(int32 templateId, int32 spawnId)
 {
+	_spawnId = spawnId;
 	_monsterInfo.set_templateid(templateId);
 
-	// 스탯 설정 (추후에는 DataManager에서 Template ID로 긁어와야 함)
 	Protocol::StatInfo* stat = GetStatInfo();
-	stat->set_maxhp(10);
-	stat->set_hp(10);
-	stat->set_attack(10);
-	stat->set_defense(0);
-	stat->set_speed(1); // 초당 이동 속도 (너무 느리면 동기화 티가 많이 남)
 
-	_monsterInfo.set_name("Slime_King");
+	const MonsterTemplate* tpl = DataManager::Instance()->GetMonsterTemplate(templateId);
+	if (tpl)
+	{
+		stat->CopyFrom(tpl->stat);
+
+		if (stat->maxhp() <= 0) stat->set_maxhp(1);
+		if (stat->hp() <= 0) stat->set_hp(stat->maxhp());
+
+		_monsterInfo.set_name(tpl->name.empty() ? ("Monster_" + std::to_string(templateId)) : tpl->name);
+
+		_searchRange = tpl->searchRange;
+		_attackRange = tpl->attackRange;
+		_leashRange = tpl->leashRange;
+	}
+	else
+	{
+		// 스탯 설정 (Template 없을 때 기본값)
+		stat->set_maxhp(10);
+		stat->set_hp(10);
+		stat->set_attack(10);
+		stat->set_defense(0);
+		stat->set_speed(1);
+
+		_monsterInfo.set_name("Monster_Default");
+	}
 }
 
 // [AI 메인 루프]

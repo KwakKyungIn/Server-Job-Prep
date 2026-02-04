@@ -9,6 +9,7 @@
 #include "PersistenceService.h"
 #include "GameItemUidGen.h"
 #include <limits>
+#include <random>
 
 // 인벤토리에서 비어있는 슬롯 인덱스를 찾는 헬퍼 함수
 // O(N)이지만 슬롯 개수가 적어서(20~30개) 성능 이슈 없음
@@ -116,6 +117,128 @@ static bool IsStackableTemplate(int32 templateId)
 		return false;
 	const Protocol::ItemType itemType = static_cast<Protocol::ItemType>(tpl->itemtype());
 	return (itemType == Protocol::ITEM_TYPE_CONSUMABLE);
+}
+
+struct DropRollResult
+{
+	int32 itemId = 0;
+	int32 count = 0;
+};
+
+static int32 RandRange(int32 minValue, int32 maxValue)
+{
+	if (minValue >= maxValue) return minValue;
+	thread_local std::mt19937 rng{ std::random_device{}() };
+	std::uniform_int_distribution<int32> dist(minValue, maxValue);
+	return dist(rng);
+}
+
+static void RollDropGroup(const DropGroup* group, Vector<DropRollResult>& outDrops)
+{
+	if (group == nullptr) return;
+	if (group->totalWeight <= 0 || group->rolls <= 0) return;
+
+	for (int32 i = 0; i < group->rolls; ++i)
+	{
+		int32 r = RandRange(1, group->totalWeight);
+		if (r <= group->noDropWeight)
+			continue;
+
+		r -= group->noDropWeight;
+
+		for (const auto& e : group->entries)
+		{
+			if (r <= e.weight)
+			{
+				const int32 count = RandRange(e.minCount, e.maxCount);
+				if (count > 0)
+					outDrops.push_back({ e.itemId, count });
+				break;
+			}
+			r -= e.weight;
+		}
+	}
+}
+
+static int32 TryAutoLootItem(PlayerRef player, int32 templateId, int32 count)
+{
+	if (!player || count <= 0)
+		return 0;
+
+	const Protocol::ItemTemplateInfo* tpl = DataManager::Instance()->GetItemTemplate(templateId);
+	if (tpl == nullptr || static_cast<Protocol::ItemType>(tpl->itemtype()) == Protocol::ITEM_TYPE_NONE)
+		return 0;
+
+	auto& items = player->GetItems();
+	const int32 maxSlots = 24;
+	const bool stackable = IsStackableTemplate(templateId);
+
+	if (stackable)
+	{
+		auto stackIt = std::find_if(items.begin(), items.end(),
+			[&](const Protocol::ItemInfo& it)
+			{
+				return it.templateid() == templateId && it.isequipped() == false;
+			});
+
+		if (stackIt != items.end())
+		{
+			stackIt->set_count(stackIt->count() + count);
+
+			Persistence::PersistenceService::I().UpdateInventoryItem(
+				player->GetPlayerId(),
+				stackIt->itemuid(),
+				stackIt->templateid(),
+				stackIt->slot(),
+				stackIt->count(),
+				stackIt->isequipped(),
+				true
+			);
+
+			Protocol::S_CHANGE_ITEM ch;
+			ch.mutable_item()->CopyFrom(*stackIt);
+			SendToPlayer(player->GetPlayerId(), ClientPacketHandler::MakeSendBuffer(ch));
+
+			return count;
+		}
+	}
+
+	int32 remaining = count;
+	while (remaining > 0)
+	{
+		int32 emptySlot = FindEmptySlot(items, maxSlots);
+		if (emptySlot < 0)
+			break;
+
+		const int32 addCount = stackable ? remaining : 1;
+
+		Protocol::ItemInfo newItem;
+		newItem.set_itemuid(GameItemUidGen::Alloc());
+		newItem.set_templateid(templateId);
+		newItem.set_count(addCount);
+		newItem.set_slot(emptySlot);
+		newItem.set_isequipped(false);
+
+		items.push_back(newItem);
+
+		Persistence::PersistenceService::I().UpdateInventoryItem(
+			player->GetPlayerId(),
+			newItem.itemuid(),
+			newItem.templateid(),
+			newItem.slot(),
+			newItem.count(),
+			newItem.isequipped(),
+			true
+		);
+
+		Protocol::S_CHANGE_ITEM ch;
+		ch.mutable_item()->CopyFrom(newItem);
+		SendToPlayer(player->GetPlayerId(), ClientPacketHandler::MakeSendBuffer(ch));
+
+		remaining -= addCount;
+	}
+
+	return count - remaining;
 }
 
 // [아이템 사용] 포션 마시기 등
@@ -591,10 +714,13 @@ void GameRoom::HandleMonsterDead(std::shared_ptr<Creature> attacker, MonsterRef 
 	if (attacker && attacker->GetObjectType() == Protocol::OBJECT_TYPE_PLAYER)
 		killer = std::static_pointer_cast<Player>(attacker);
 
+	const int32 monsterTemplateId = monster->GetMonsterInfo()->templateid();
+	const MonsterTemplate* monsterTpl = DataManager::Instance()->GetMonsterTemplate(monsterTemplateId);
+
 	// 2. 경험치 지급
-	if (killer)
+	if (killer && monsterTpl && monsterTpl->exp > 0)
 	{
-		const int64 exp = 1000; // 나중엔 데이터 시트에서 읽어오도록 수정 예정
+		const int64 exp = monsterTpl->exp;
 		AddExpAndLevelUp(killer, exp);
 
 		// 경험치 획득 정보 저장
@@ -616,89 +742,25 @@ void GameRoom::HandleMonsterDead(std::shared_ptr<Creature> attacker, MonsterRef 
 		SendToPlayer(killer->GetPlayerId(), ClientPacketHandler::MakeSendBuffer(st));
 	}
 
-	// 3. 아이템 드랍 (Auto-Loot 방식: 인벤토리로 바로 꽂아줌)
-	// 리니지처럼 바닥에 떨구고 줍는 방식은 나중에 구현
-	if (killer)
+	// 3. 아이템 드랍 (Auto-Loot 기본, 바닥 드랍은 추후 확장)
+	if (killer && monsterTpl && monsterTpl->dropGroupId > 0)
 	{
-		const int32 dropTemplateId = 2001; // 테스트용 드랍 아이템
-		const int32 dropCount = 10;
+		const DropGroup* group = DataManager::Instance()->GetDropGroup(monsterTpl->dropGroupId);
+		Vector<DropRollResult> drops;
+		RollDropGroup(group, drops);
 
-		const Protocol::ItemTemplateInfo* tpl = DataManager::Instance()->GetItemTemplate(dropTemplateId);
-		if (tpl == nullptr || static_cast<Protocol::ItemType>(tpl->itemtype()) == Protocol::ITEM_TYPE_NONE)
+		for (const auto& d : drops)
 		{
-			// 드랍 데이터 없으면 패스
-		}
-		else
-		{
-			auto& items = killer->GetItems();
-			const int32 maxSlots = 24;
-
-			// 3-A. 이미 가지고 있는 아이템이면 개수 추가 (스택)
-			auto stackIt = std::find_if(items.begin(), items.end(),
-				[&](const Protocol::ItemInfo& it)
-				{
-					return it.templateid() == dropTemplateId && it.isequipped() == false;
-				});
-
-			if (stackIt != items.end())
+			const int32 added = TryAutoLootItem(killer, d.itemId, d.count);
+			if (added < d.count)
 			{
-				stackIt->set_count(stackIt->count() + dropCount);
-
-				// DB 업데이트
-				Persistence::PersistenceService::I().UpdateInventoryItem(
-					killer->GetPlayerId(),
-					stackIt->itemuid(),
-					stackIt->templateid(),
-					stackIt->slot(),
-					stackIt->count(),
-					stackIt->isequipped(),
-					true
-				);
-
-				Protocol::S_CHANGE_ITEM ch;
-				ch.mutable_item()->CopyFrom(*stackIt);
-				SendToPlayer(killer->GetPlayerId(), ClientPacketHandler::MakeSendBuffer(ch));
-			}
-			else
-			{
-				// 3-B. 없는 아이템이면 빈 슬롯에 새로 생성
-				int32 emptySlot = FindEmptySlot(items, maxSlots);
-				if (emptySlot >= 0)
-				{
-					Protocol::ItemInfo newItem;
-					// 유니크 ID 발급 (서버 전체 유일 키)
-					newItem.set_itemuid(GameItemUidGen::Alloc());
-					newItem.set_templateid(dropTemplateId);
-					newItem.set_count(dropCount);
-					newItem.set_slot(emptySlot);
-					newItem.set_isequipped(false);
-
-					items.push_back(newItem);
-
-					// DB 추가
-					Persistence::PersistenceService::I().UpdateInventoryItem(
-						killer->GetPlayerId(),
-						newItem.itemuid(),
-						newItem.templateid(),
-						newItem.slot(),
-						newItem.count(),
-						newItem.isequipped(),
-						true
-					);
-
-					Protocol::S_CHANGE_ITEM ch;
-					ch.mutable_item()->CopyFrom(newItem);
-					SendToPlayer(killer->GetPlayerId(), ClientPacketHandler::MakeSendBuffer(ch));
-				}
-				else
-				{
-					// 인벤토리 꽉 찼으면 획득 실패 (메시지 띄워주면 좋음)
-				}
+				// TODO: 바닥 드랍 시스템 추가 시 여기서 월드 아이템 생성
 			}
 		}
 	}
 
 	// 4. 몬스터 소멸 (Despawn)
 	// 월드에서 지우고 리스폰 타이머 돌림
+	OnMonsterDespawned_ActorOnly(monster);
 	LeaveMonster(monsterId);
 }

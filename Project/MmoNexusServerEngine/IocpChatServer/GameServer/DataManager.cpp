@@ -113,6 +113,30 @@ const Protocol::SkillTemplateInfo* DataManager::GetSkillTemplate(int32 skillId)
 	return &(it->second);
 }
 
+const MonsterTemplate* DataManager::GetMonsterTemplate(int32 monsterId) const
+{
+	auto it = _monsterTemplates.find(monsterId);
+	if (it == _monsterTemplates.end())
+		return nullptr;
+	return &(it->second);
+}
+
+const Vector<SpawnEntry>* DataManager::GetSpawnEntries(int32 mapId) const
+{
+	auto it = _spawnTables.find(mapId);
+	if (it == _spawnTables.end())
+		return nullptr;
+	return &(it->second);
+}
+
+const DropGroup* DataManager::GetDropGroup(int32 dropGroupId) const
+{
+	auto it = _dropGroups.find(dropGroupId);
+	if (it == _dropGroups.end())
+		return nullptr;
+	return &(it->second);
+}
+
 bool DataManager::LoadMapConfigsFromJson(const std::string& path)
 {
 	// 외부 JSON 파일에서 맵 설정값들을 읽어오는 기능
@@ -185,6 +209,202 @@ bool DataManager::LoadMapConfigsFromJson(const std::string& path)
 
 	std::cout << " [DataManager] MapConfigs loaded: " << _mapConfigs.size()
 		<< " (defaultWorldMapId=" << _defaultWorldMapId << ")\n";
+	return true;
+}
+
+bool DataManager::LoadMonsterTemplatesFromJson(const std::string& path)
+{
+	std::ifstream ifs(path);
+	if (!ifs.is_open())
+	{
+		std::cout << " [DataManager] Failed to open: " << path << std::endl;
+		return false;
+	}
+
+	json j;
+	try { ifs >> j; }
+	catch (const std::exception& e)
+	{
+		std::cout << " [DataManager] JSON parse error: " << e.what() << std::endl;
+		return false;
+	}
+
+	_monsterTemplates.clear();
+
+	if (!j.contains("monsters") || !j["monsters"].is_array())
+	{
+		std::cout << " [DataManager] monsters array missing" << std::endl;
+		return false;
+	}
+
+	for (const auto& m : j["monsters"])
+	{
+		MonsterTemplate tpl;
+		tpl.monsterId = m.value("monsterId", 0);
+		if (tpl.monsterId <= 0)
+			continue;
+
+		tpl.name = m.value("name", "");
+		tpl.exp = m.value("exp", 0);
+		tpl.dropGroupId = m.value("dropGroupId", 0);
+
+		const json stat = (m.contains("stat") && m["stat"].is_object()) ? m["stat"] : json::object();
+		tpl.stat.set_level(stat.value("level", 1));
+		tpl.stat.set_maxhp(stat.value("maxHp", 1));
+		tpl.stat.set_hp(stat.value("hp", tpl.stat.maxhp()));
+		tpl.stat.set_attack(stat.value("attack", 1));
+		tpl.stat.set_defense(stat.value("defense", 0));
+		tpl.stat.set_speed(stat.value("speed", 1));
+		tpl.stat.set_totalexp(stat.value("totalExp", 0));
+
+		const json ai = (m.contains("ai") && m["ai"].is_object()) ? m["ai"] : json::object();
+		tpl.searchRange = ai.value("searchRange", 10.0f);
+		tpl.attackRange = ai.value("attackRange", 1.5f);
+		tpl.leashRange = ai.value("leashRange", 25.0f);
+
+		_monsterTemplates[tpl.monsterId] = std::move(tpl);
+	}
+
+	std::cout << " [DataManager] MonsterTemplates loaded: " << _monsterTemplates.size() << std::endl;
+	return true;
+}
+
+bool DataManager::LoadSpawnTablesFromJson(const std::string& path)
+{
+	std::ifstream ifs(path);
+	if (!ifs.is_open())
+	{
+		std::cout << " [DataManager] Failed to open: " << path << std::endl;
+		return false;
+	}
+
+	json j;
+	try { ifs >> j; }
+	catch (const std::exception& e)
+	{
+		std::cout << " [DataManager] JSON parse error: " << e.what() << std::endl;
+		return false;
+	}
+
+	_spawnTables.clear();
+
+	if (!j.contains("maps") || !j["maps"].is_array())
+	{
+		std::cout << " [DataManager] maps array missing" << std::endl;
+		return false;
+	}
+
+	for (const auto& map : j["maps"])
+	{
+		const int32 mapId = map.value("mapId", 0);
+		if (mapId <= 0)
+			continue;
+
+		if (!map.contains("spawns") || !map["spawns"].is_array())
+			continue;
+
+		HashSet<int32> seenSpawnIds;
+		auto& vec = _spawnTables[mapId];
+
+		for (const auto& s : map["spawns"])
+		{
+			SpawnEntry e;
+			e.spawnId = s.value("spawnId", 0);
+			e.monsterId = s.value("monsterId", 0);
+			if (e.spawnId <= 0 || e.monsterId <= 0)
+				continue;
+
+			if (seenSpawnIds.find(e.spawnId) != seenSpawnIds.end())
+				continue;
+			seenSpawnIds.insert(e.spawnId);
+
+			const json pos = (s.contains("pos") && s["pos"].is_object()) ? s["pos"] : json::object();
+			e.x = pos.value("x", 0.0f);
+			e.y = pos.value("y", 0.0f);
+			e.z = pos.value("z", 0.0f);
+
+			e.maxAlive = s.value("maxAlive", 1);
+			if (e.maxAlive <= 0) e.maxAlive = 1;
+
+			e.respawnSec = s.value("respawnSec", 30);
+			if (e.respawnSec < 0) e.respawnSec = 0;
+
+			vec.push_back(e);
+		}
+	}
+
+	size_t total = 0;
+	for (const auto& kv : _spawnTables)
+		total += kv.second.size();
+
+	std::cout << " [DataManager] SpawnTables loaded: " << total << std::endl;
+	return true;
+}
+
+bool DataManager::LoadDropTablesFromJson(const std::string& path)
+{
+	std::ifstream ifs(path);
+	if (!ifs.is_open())
+	{
+		std::cout << " [DataManager] Failed to open: " << path << std::endl;
+		return false;
+	}
+
+	json j;
+	try { ifs >> j; }
+	catch (const std::exception& e)
+	{
+		std::cout << " [DataManager] JSON parse error: " << e.what() << std::endl;
+		return false;
+	}
+
+	_dropGroups.clear();
+
+	if (!j.contains("groups") || !j["groups"].is_array())
+	{
+		std::cout << " [DataManager] groups array missing" << std::endl;
+		return false;
+	}
+
+	for (const auto& g : j["groups"])
+	{
+		DropGroup group;
+		group.dropGroupId = g.value("dropGroupId", 0);
+		if (group.dropGroupId <= 0)
+			continue;
+
+		group.rolls = g.value("rolls", 1);
+		if (group.rolls <= 0) group.rolls = 1;
+
+		group.noDropWeight = g.value("noDropWeight", 0);
+		if (group.noDropWeight < 0) group.noDropWeight = 0;
+
+		group.totalWeight = group.noDropWeight;
+
+		if (g.contains("entries") && g["entries"].is_array())
+		{
+			for (const auto& e : g["entries"])
+			{
+				DropEntry entry;
+				entry.itemId = e.value("itemId", 0);
+				entry.weight = e.value("weight", 0);
+				if (entry.itemId <= 0 || entry.weight <= 0)
+					continue;
+
+				entry.minCount = e.value("min", 1);
+				entry.maxCount = e.value("max", entry.minCount);
+				if (entry.minCount <= 0) entry.minCount = 1;
+				if (entry.maxCount < entry.minCount) entry.maxCount = entry.minCount;
+
+				group.entries.push_back(entry);
+				group.totalWeight += entry.weight;
+			}
+		}
+
+		_dropGroups[group.dropGroupId] = std::move(group);
+	}
+
+	std::cout << " [DataManager] DropTables loaded: " << _dropGroups.size() << std::endl;
 	return true;
 }
 

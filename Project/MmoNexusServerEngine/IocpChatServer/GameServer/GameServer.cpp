@@ -194,6 +194,52 @@ int main()
 		{
 			std::cout << " [GameServer] Maps.json loaded.\n";
 		}
+
+		// 2. 몬스터/스폰/드랍 데이터 로딩
+		std::ifstream ifsMonster("MonsterTemplates.json");
+		if (!ifsMonster.is_open())
+		{
+			std::cout << " [GameServer] MonsterTemplates.json not found (expected next to exe).\n";
+		}
+		else
+		{
+			std::cout << " [GameServer] MonsterTemplates.json found.\n";
+		}
+
+		if (!dm->LoadMonsterTemplatesFromJson("MonsterTemplates.json"))
+		{
+			std::cout << " [GameServer] MonsterTemplates.json load failed.\n";
+		}
+
+		std::ifstream ifsSpawn("SpawnTables.json");
+		if (!ifsSpawn.is_open())
+		{
+			std::cout << " [GameServer] SpawnTables.json not found (expected next to exe).\n";
+		}
+		else
+		{
+			std::cout << " [GameServer] SpawnTables.json found.\n";
+		}
+
+		if (!dm->LoadSpawnTablesFromJson("SpawnTables.json"))
+		{
+			std::cout << " [GameServer] SpawnTables.json load failed.\n";
+		}
+
+		std::ifstream ifsDrop("DropTables.json");
+		if (!ifsDrop.is_open())
+		{
+			std::cout << " [GameServer] DropTables.json not found (expected next to exe).\n";
+		}
+		else
+		{
+			std::cout << " [GameServer] DropTables.json found.\n";
+		}
+
+		if (!dm->LoadDropTablesFromJson("DropTables.json"))
+		{
+			std::cout << " [GameServer] DropTables.json load failed.\n";
+		}
 	}
 
 

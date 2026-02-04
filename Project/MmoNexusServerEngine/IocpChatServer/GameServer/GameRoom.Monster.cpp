@@ -24,6 +24,9 @@ void GameRoom::Update()
 	// 투사체 이동 처리
 	UpdateProjectiles(deltaMs);
 
+	// 스폰/리스폰 처리
+	UpdateSpawns_ActorOnly(now);
+
 	// 거래 타임아웃 같은 거 체크
 	UpdateTrades_ActorOnly(now);
 }

@@ -345,6 +345,9 @@
       <Filter>Protocol</Filter>
     </None>
     <None Include="Maps.json" />
+    <None Include="MonsterTemplates.json" />
+    <None Include="SpawnTables.json" />
+    <None Include="DropTables.json" />
     <None Include="packages.config" />
   </ItemGroup>
 </Project>

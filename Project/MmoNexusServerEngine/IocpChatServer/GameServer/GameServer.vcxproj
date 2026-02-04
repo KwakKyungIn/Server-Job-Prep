@@ -303,6 +303,9 @@
     <None Include="..\Common\Protobuf\bin\Protocol_S2S.proto" />
     <None Include="..\Common\Protobuf\bin\Struct.proto" />
     <None Include="Maps.json" />
+    <None Include="MonsterTemplates.json" />
+    <None Include="SpawnTables.json" />
+    <None Include="DropTables.json" />
     <None Include="packages.config" />
     <None Include="ServerConfig.json" />
   </ItemGroup>
