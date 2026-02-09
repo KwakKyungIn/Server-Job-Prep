@@ -1,6 +1,6 @@
-#pragma once
+ï»¿#pragma once
 #include "Protocol_S2S.pb.h"
-#include "Crc32.h" // [GIGACHAD] CRC ¸ğµâ Æ÷ÇÔ
+#include "Crc32.h" // [GIGACHAD] CRC ëª¨ë“ˆ í¬í•¨
 
 using PacketHandlerFunc = std::function<bool(PacketSessionRef&, BYTE*, int32)>;
 
@@ -94,23 +94,23 @@ private:
 		PacketHeader* header = reinterpret_cast<PacketHeader*>(buffer);
 		int32 dataSize = len - sizeof(PacketHeader);
 
-		// [GIGACHAD] 1. CRC Check (¹«°á¼º °Ë»ç)
-		// º¸³¾ ¶§ Body¸¸ °è»êÇß´Ù°í °¡Á¤.
+		// [GIGACHAD] 1. CRC Check (ë¬´ê²°ì„± ê²€ì‚¬)
+		// ë³´ë‚¼ ë•Œ Bodyë§Œ ê³„ì‚°í–ˆë‹¤ê³  ê°€ì •.
 		uint32 calcCrc = Crc32::Compute(buffer + sizeof(PacketHeader), dataSize);
 		if (header->crc != calcCrc)
 		{
-			// CRC ºÒÀÏÄ¡ = µ¥ÀÌÅÍ ±úÁü or º¯Á¶
+			// CRC ë¶ˆì¼ì¹˜ = ë°ì´í„° ê¹¨ì§ or ë³€ì¡°
 			return false; 
 		}
 
-		// [GIGACHAD] 2. Seq Check (Replay Attack ¹æÁö)
+		// [GIGACHAD] 2. Seq Check (Replay Attack ë°©ì§€)
 		if (session->CheckRecvSeq(header->seq) == false)
 		{
-			// ÀÌ¹Ì Ã³¸®ÇÑ ÆĞÅ¶ÀÌ ´Ù½Ã ¿È
+			// ì´ë¯¸ ì²˜ë¦¬í•œ íŒ¨í‚·ì´ ë‹¤ì‹œ ì˜´
 			return false;
 		}
 
-		// [GIGACHAD] 3. Decrypt (¾ÏÈ£È­ ÇØÁ¦)
+		// [GIGACHAD] 3. Decrypt (ì•”í˜¸í™” í•´ì œ)
 		XorCrypt(buffer + sizeof(PacketHeader), dataSize);
 
 		// [GIGACHAD] 4. Parse
@@ -132,14 +132,14 @@ private:
 		header->size = packetSize;
 		header->id = pktId;
 		
-		// [Seq]¿Í [CRC]´Â ¿©±â¼­ 0À¸·Î µÒ. (Session::Send¿¡¼­ Ã¤¿ò)
+		// [Seq]ì™€ [CRC]ëŠ” ì—¬ê¸°ì„œ 0ìœ¼ë¡œ ë‘ . (Session::Sendì—ì„œ ì±„ì›€)
 		header->seq = 0;
 		header->crc = 0;
 
-		// 1. Á÷·ÄÈ­
+		// 1. ì§ë ¬í™”
 		ASSERT_CRASH(pkt.SerializeToArray(&header[1], dataSize));
 
-		// 2. ¾ÏÈ£È­ (Seq, CRC °è»ê Àü¿¡ º»¹®À» ¸ÕÀú ¾ÏÈ£È­ÇØµÎ´Â °Ô ÀÏ¹İÀû)
+		// 2. ì•”í˜¸í™” (Seq, CRC ê³„ì‚° ì „ì— ë³¸ë¬¸ì„ ë¨¼ì € ì•”í˜¸í™”í•´ë‘ëŠ” ê²Œ ì¼ë°˜ì )
 		XorCrypt(reinterpret_cast<BYTE*>(&header[1]), dataSize);
 
 		sendBuffer->Close(packetSize);

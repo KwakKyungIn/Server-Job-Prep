@@ -78,4 +78,5 @@ bool ClientPacketHandler::Handle_C_TRADE_CONFIRM(PacketSessionRef& session, Prot
 bool ClientPacketHandler::Handle_C_TRADE_CANCEL(PacketSessionRef& session, Protocol::C_TRADE_CANCEL& pkt) { return false; }
 bool ClientPacketHandler::Handle_C_INV_DRAG_DROP(PacketSessionRef& session, Protocol::C_INV_DRAG_DROP& pkt) { return false; }
 bool ClientPacketHandler:: Handle_C_CHANNEL_CHANGE_REQ(PacketSessionRef& session, Protocol::C_CHANNEL_CHANGE_REQ& pkt) { return false; }
-
+bool ClientPacketHandler::Handle_C_RESPAWN_REQ(PacketSessionRef& session, Protocol::C_RESPAWN_REQ& pkt) { return false; }
+bool ClientPacketHandler::Handle_C_TRADE_GOLD_SET(PacketSessionRef& session, Protocol::C_TRADE_GOLD_SET& pkt) { return false; }
