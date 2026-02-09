@@ -116,6 +116,49 @@ MetricsRegistry& MetricsSystem::Registry()
 	return _registry;
 }
 
+std::shared_ptr<Counter> MetricsSystem::RegisterCounter(
+	const std::string& metricBaseName,
+	const std::string& help,
+	const std::vector<std::string>& labelNames)
+{
+	std::string metricName;
+	{
+		std::lock_guard<std::mutex> guard(_lock);
+		metricName = BuildMetricName(metricBaseName);
+	}
+
+	return _registry.RegisterCounter(metricName, help, labelNames);
+}
+
+std::shared_ptr<Gauge> MetricsSystem::RegisterGauge(
+	const std::string& metricBaseName,
+	const std::string& help,
+	const std::vector<std::string>& labelNames)
+{
+	std::string metricName;
+	{
+		std::lock_guard<std::mutex> guard(_lock);
+		metricName = BuildMetricName(metricBaseName);
+	}
+
+	return _registry.RegisterGauge(metricName, help, labelNames);
+}
+
+std::shared_ptr<Histogram> MetricsSystem::RegisterHistogram(
+	const std::string& metricBaseName,
+	const std::string& help,
+	const std::vector<double>& buckets,
+	const std::vector<std::string>& labelNames)
+{
+	std::string metricName;
+	{
+		std::lock_guard<std::mutex> guard(_lock);
+		metricName = BuildMetricName(metricBaseName);
+	}
+
+	return _registry.RegisterHistogram(metricName, help, buckets, labelNames);
+}
+
 void MetricsSystem::RefreshProcessMetrics()
 {
 	ProcessMetricsProvider* provider = nullptr;

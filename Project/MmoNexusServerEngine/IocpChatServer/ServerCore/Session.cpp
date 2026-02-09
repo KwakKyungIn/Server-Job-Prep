@@ -3,11 +3,51 @@
 #include "SocketUtils.h"
 #include "Service.h"
 #include "Crc32.h"
+#include "MetricsSystem.h"
 
 // Session.cpp
 #include <cstring> // memcpy
 
 static std::atomic<uint64> GSessionIdDistributor = 1;
+
+namespace
+{
+	struct SessionIoMetrics
+	{
+		std::shared_ptr<Counter> rxBytesCounter;
+		std::shared_ptr<Counter> txBytesCounter;
+	};
+
+	SessionIoMetrics& GetSessionIoMetrics()
+	{
+		static SessionIoMetrics metrics{
+			MetricsSystem::Instance().RegisterCounter(
+				"session_rx_bytes_total",
+				"Total received bytes processed by Session::ProcessRecv."),
+			MetricsSystem::Instance().RegisterCounter(
+				"session_tx_bytes_total",
+				"Total sent bytes processed by Session::ProcessSend."),
+		};
+
+		return metrics;
+	}
+
+	void AddSessionRxBytes(int32 numOfBytes)
+	{
+		if (numOfBytes <= 0)
+			return;
+
+		GetSessionIoMetrics().rxBytesCounter->Inc(static_cast<double>(numOfBytes));
+	}
+
+	void AddSessionTxBytes(int32 numOfBytes)
+	{
+		if (numOfBytes <= 0)
+			return;
+
+		GetSessionIoMetrics().txBytesCounter->Inc(static_cast<double>(numOfBytes));
+	}
+}
 
 // ==============================
 // Session
@@ -369,6 +409,8 @@ void Session::ProcessRecv(int32 numOfBytes)
 		return;
 	}
 
+	AddSessionRxBytes(numOfBytes);
+
 	// [ADD] 데이터가 들어왔으니 RecvTime 갱신! (나는 살아있다)
 	_lastRecvTime = ::GetTickCount64();
 
@@ -408,6 +450,8 @@ void Session::ProcessSend(int32 numOfBytes)
 		Disconnect(L"Send 0");
 		return;
 	}
+
+	AddSessionTxBytes(numOfBytes);
 
 	OnSend(numOfBytes); // 컨텐츠 훅
 

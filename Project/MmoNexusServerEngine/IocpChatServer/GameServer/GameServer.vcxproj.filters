@@ -102,6 +102,9 @@
     <ClCompile Include="GameMap.cpp">
       <Filter>GameContents\Map</Filter>
     </ClCompile>
+    <ClCompile Include="GameMetrics.cpp">
+      <Filter>Manager</Filter>
+    </ClCompile>
     <ClCompile Include="SpatialGrid.cpp">
       <Filter>GameContents\AOI</Filter>
     </ClCompile>
@@ -260,6 +263,9 @@
     </ClInclude>
     <ClInclude Include="GameMap.h">
       <Filter>GameContents\Map</Filter>
+    </ClInclude>
+    <ClInclude Include="GameMetrics.h">
+      <Filter>Manager</Filter>
     </ClInclude>
     <ClInclude Include="GameRoom.h">
       <Filter>GameContents\Room</Filter>

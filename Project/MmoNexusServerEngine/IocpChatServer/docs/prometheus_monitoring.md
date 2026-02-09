@@ -204,6 +204,13 @@
 - 카디널리티 상한(최대 시계열 900) 초과 시 `other` 폴딩.
 - `type/op` 문자열은 패킷ID/쿼리ID를 코드 테이블로 매핑해 생성하고, 런타임 자유 문자열은 금지한다.
 
+### 2단계 진행 상태
+- 상태: 완료 (`2026-02-09`)
+- 기획 대비 차이:
+- PacketHandler 계측 삽입은 자동 생성 파일 직접 수정 대신 `GenPackets` 템플릿(`PacketHandler.h`) 훅 방식으로 반영했다.
+- 비고:
+- S2S RTT는 `S2SPacketHandler`의 send/parse 훅을 사용해 `(op, correlationKey)` inflight map 매칭/TTL/상한 정책으로 계측한다.
+
 ### 예상 변경 파일
 - `ServerCore/GlobalQueue.cpp`
 - `ServerCore/JobQueue.cpp`

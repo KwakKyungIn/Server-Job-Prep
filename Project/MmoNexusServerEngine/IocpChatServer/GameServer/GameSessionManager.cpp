@@ -1,5 +1,6 @@
 ﻿#include "pch.h"
 #include "GameSessionManager.h"
+#include "GameMetrics.h"
 #include "PlayerSession.h"
 
 GameSessionManager* GameSessionManager::GSessionManager = nullptr;
@@ -10,8 +11,14 @@ void GameSessionManager::Add(PlayerSessionRef session)
 {
     if (!session) return;
 
-    WRITE_LOCK;
-    _bySessionId[session->GetSessionId()] = session;
+    int64 sessionCount = 0;
+    {
+        WRITE_LOCK;
+        _bySessionId[session->GetSessionId()] = session;
+        sessionCount = static_cast<int64>(_bySessionId.size());
+    }
+
+    GameMetrics::OnSessionCountChanged(sessionCount);
 }
 
 // 세션 종료 시 관리 목록에서 제거
@@ -21,35 +28,46 @@ void GameSessionManager::Remove(PlayerSessionRef session)
 {
     if (!session) return;
 
-    WRITE_LOCK;
+    int64 sessionCount = 0;
+    int64 ingameCount = 0;
 
-    const uint64 sessionId = session->GetSessionId();
-
-    // 1. SessionID 맵에서 제거
-    _bySessionId.erase(sessionId);
-
-    // 2. PlayerID 매핑 정보도 제거
-    // 주의: session->GetPlayerId()로 접근하면 안 됨. 
-    // 세션이 파괴되는 시점에는 Player 객체가 이미 날아갔을 수도 있어서
-    // 별도로 관리하던 역인덱스(_playerIdBySessionId)를 통해 찾아야 안전함
-    auto it = _playerIdBySessionId.find(sessionId);
-    if (it != _playerIdBySessionId.end())
     {
-        const uint64 playerId = it->second;
-        _playerIdBySessionId.erase(it);
+        WRITE_LOCK;
 
-        if (playerId != 0)
+        const uint64 sessionId = session->GetSessionId();
+
+        // 1. SessionID 맵에서 제거
+        _bySessionId.erase(sessionId);
+
+        // 2. PlayerID 매핑 정보도 제거
+        // 주의: session->GetPlayerId()로 접근하면 안 됨.
+        // 세션이 파괴되는 시점에는 Player 객체가 이미 날아갔을 수도 있어서
+        // 별도로 관리하던 역인덱스(_playerIdBySessionId)를 통해 찾아야 안전함
+        auto it = _playerIdBySessionId.find(sessionId);
+        if (it != _playerIdBySessionId.end())
         {
-            _byPlayerId.erase(playerId);
-            auto nameIt = _nameByPlayerId.find(playerId);
-            if (nameIt != _nameByPlayerId.end())
+            const uint64 playerId = it->second;
+            _playerIdBySessionId.erase(it);
+
+            if (playerId != 0)
             {
-                const std::string name = nameIt->second;
-                _nameByPlayerId.erase(nameIt); // 이름 캐시도 정리
-                RebuildNameIndex_Locked(name);
+                _byPlayerId.erase(playerId);
+                auto nameIt = _nameByPlayerId.find(playerId);
+                if (nameIt != _nameByPlayerId.end())
+                {
+                    const std::string name = nameIt->second;
+                    _nameByPlayerId.erase(nameIt); // 이름 캐시도 정리
+                    RebuildNameIndex_Locked(name);
+                }
             }
         }
+
+        sessionCount = static_cast<int64>(_bySessionId.size());
+        ingameCount = static_cast<int64>(_byPlayerId.size());
     }
+
+    GameMetrics::OnSessionCountChanged(sessionCount);
+    GameMetrics::OnIngamePlayerCountChanged(ingameCount);
 }
 
 // 로그인 성공 시 세션과 PlayerID를 바인딩함
@@ -58,27 +76,33 @@ void GameSessionManager::BindPlayerId(PlayerSessionRef session, uint64 playerId)
 {
     if (!session || playerId == 0) return;
 
-    WRITE_LOCK;
-
-    const uint64 sessionId = session->GetSessionId();
-
-    // 기존에 다른 ID로 바인딩되어 있었다면 정리 (재로그인 등)
-    auto prev = _playerIdBySessionId.find(sessionId);
-    if (prev != _playerIdBySessionId.end())
+    int64 ingameCount = 0;
     {
-        const uint64 oldPlayerId = prev->second;
-        if (oldPlayerId != 0 && oldPlayerId != playerId)
-            _byPlayerId.erase(oldPlayerId);
+        WRITE_LOCK;
 
-        prev->second = playerId;
-    }
-    else
-    {
-        _playerIdBySessionId[sessionId] = playerId;
+        const uint64 sessionId = session->GetSessionId();
+
+        // 기존에 다른 ID로 바인딩되어 있었다면 정리 (재로그인 등)
+        auto prev = _playerIdBySessionId.find(sessionId);
+        if (prev != _playerIdBySessionId.end())
+        {
+            const uint64 oldPlayerId = prev->second;
+            if (oldPlayerId != 0 && oldPlayerId != playerId)
+                _byPlayerId.erase(oldPlayerId);
+
+            prev->second = playerId;
+        }
+        else
+        {
+            _playerIdBySessionId[sessionId] = playerId;
+        }
+
+        // 중복 로그인 처리 정책: 나중 접속이 우선권을 가짐
+        _byPlayerId[playerId] = session;
+        ingameCount = static_cast<int64>(_byPlayerId.size());
     }
 
-    // 중복 로그인 처리 정책: 나중 접속이 우선권을 가짐
-    _byPlayerId[playerId] = session;
+    GameMetrics::OnIngamePlayerCountChanged(ingameCount);
 }
 
 // 로그아웃 시 바인딩 해제
@@ -86,25 +110,32 @@ void GameSessionManager::UnbindPlayerId(uint64 playerId)
 {
     if (playerId == 0) return;
 
-    WRITE_LOCK;
-
-    auto it = _byPlayerId.find(playerId);
-    if (it != _byPlayerId.end())
+    int64 ingameCount = 0;
     {
-        // SessionID -> PlayerID 역인덱스도 같이 정리
-        const uint64 sessionId = it->second ? it->second->GetSessionId() : 0;
-        if (sessionId != 0)
-            _playerIdBySessionId.erase(sessionId);
+        WRITE_LOCK;
 
-        _byPlayerId.erase(it);
+        auto it = _byPlayerId.find(playerId);
+        if (it != _byPlayerId.end())
+        {
+            // SessionID -> PlayerID 역인덱스도 같이 정리
+            const uint64 sessionId = it->second ? it->second->GetSessionId() : 0;
+            if (sessionId != 0)
+                _playerIdBySessionId.erase(sessionId);
+
+            _byPlayerId.erase(it);
+        }
+        auto nameIt = _nameByPlayerId.find(playerId);
+        if (nameIt != _nameByPlayerId.end())
+        {
+            const std::string name = nameIt->second;
+            _nameByPlayerId.erase(nameIt);
+            RebuildNameIndex_Locked(name);
+        }
+
+        ingameCount = static_cast<int64>(_byPlayerId.size());
     }
-    auto nameIt = _nameByPlayerId.find(playerId);
-    if (nameIt != _nameByPlayerId.end())
-    {
-        const std::string name = nameIt->second;
-        _nameByPlayerId.erase(nameIt);
-        RebuildNameIndex_Locked(name);
-    }
+
+    GameMetrics::OnIngamePlayerCountChanged(ingameCount);
 }
 
 // 네트워크용: SessionID로 세션 찾기

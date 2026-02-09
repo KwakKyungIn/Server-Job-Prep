@@ -175,6 +175,7 @@
     <ClInclude Include="MetricsSystem.h" />
     <ClInclude Include="NetAddress.h" />
     <ClInclude Include="ObjectPool.h" />
+    <ClInclude Include="PacketMetricsHooks.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="ProcessMetricsProvider.h" />
     <ClInclude Include="PrometheusTextRenderer.h" />

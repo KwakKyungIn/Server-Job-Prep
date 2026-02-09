@@ -1,6 +1,9 @@
 #pragma once
 #include "Protocol_S2S.pb.h"
 #include "Crc32.h" // [GIGACHAD] CRC 모듈 포함
+#include "PacketMetricsHooks.h"
+
+#include <chrono>
 
 using PacketHandlerFunc = std::function<bool(PacketSessionRef&, BYTE*, int32)>;
 
@@ -56,6 +59,7 @@ public:
 	static bool HandlePacket(PacketSessionRef& session, BYTE* buffer, int32 len)
 	{
 		PacketHeader* header = reinterpret_cast<PacketHeader*>(buffer);
+		PacketMetricsHooks::OnDispatch("S2SPacketHandler", header->id);
 		return GPacketHandler[header->id](session, buffer, len);
 	}
 	static SendBufferRef MakeSendBuffer(Protocol::S2S_REQ_LOGIN& pkt) { return MakeSendBuffer(pkt, PKT_S2S_REQ_LOGIN); }
@@ -100,6 +104,7 @@ private:
 		if (header->crc != calcCrc)
 		{
 			// CRC 불일치 = 데이터 깨짐 or 변조
+			PacketMetricsHooks::OnFailure("S2SPacketHandler", header->id, PacketMetricsHooks::FailureReason::Validate);
 			return false; 
 		}
 
@@ -107,6 +112,7 @@ private:
 		if (session->CheckRecvSeq(header->seq) == false)
 		{
 			// 이미 처리한 패킷이 다시 옴
+			PacketMetricsHooks::OnFailure("S2SPacketHandler", header->id, PacketMetricsHooks::FailureReason::Validate);
 			return false;
 		}
 
@@ -116,14 +122,29 @@ private:
 		// [GIGACHAD] 4. Parse
 		PacketType pkt;
 		if (pkt.ParseFromArray(buffer + sizeof(PacketHeader), dataSize) == false)
+		{
+			PacketMetricsHooks::OnFailure("S2SPacketHandler", header->id, PacketMetricsHooks::FailureReason::Parse);
 			return false;
+		}
 
-		return func(session, pkt);
+		PacketMetricsHooks::OnPacketParsed("S2SPacketHandler", header->id, &pkt);
+
+		const auto start = std::chrono::steady_clock::now();
+		const bool handled = func(session, pkt);
+		const auto end = std::chrono::steady_clock::now();
+
+		PacketMetricsHooks::OnHandled("S2SPacketHandler", header->id, std::chrono::duration<double>(end - start).count());
+		if (handled == false)
+			PacketMetricsHooks::OnFailure("S2SPacketHandler", header->id, PacketMetricsHooks::FailureReason::Handler);
+
+		return handled;
 	}
 
 	template<typename T>
 	static SendBufferRef MakeSendBuffer(T& pkt, uint16 pktId)
 	{
+		PacketMetricsHooks::OnMakeSendBuffer("S2SPacketHandler", pktId, &pkt);
+
 		const uint16 dataSize = static_cast<uint16>(pkt.ByteSizeLong());
 		const uint16 packetSize = dataSize + sizeof(PacketHeader);
 

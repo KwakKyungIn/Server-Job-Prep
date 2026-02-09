@@ -1,17 +1,104 @@
 #include "pch.h"
 #include "JobQueue.h"
 #include "GlobalQueue.h"
+#include "Metrics.h"
+#include "MetricsSystem.h"
+
+#include <chrono>
+
+namespace
+{
+    uint64 NowSteadyMicroseconds()
+    {
+        return static_cast<uint64>(std::chrono::duration_cast<std::chrono::microseconds>(
+            std::chrono::steady_clock::now().time_since_epoch()).count());
+    }
+
+    struct JobQueueMetrics
+    {
+        std::shared_ptr<Gauge> depthGauge;
+        std::shared_ptr<Histogram> batchSizeHistogram;
+        std::shared_ptr<Histogram> waitHistogram;
+        std::shared_ptr<Histogram> execHistogram;
+    };
+
+    JobQueueMetrics& GetJobQueueMetrics()
+    {
+        static const std::vector<double> kBatchSizeBuckets = {
+            1.0,
+            2.0,
+            4.0,
+            8.0,
+            16.0,
+            32.0,
+            64.0,
+            128.0,
+        };
+
+        static JobQueueMetrics metrics{
+            MetricsSystem::Instance().RegisterGauge(
+                "jobqueue_depth",
+                "Current depth of JobQueue.",
+                { "queue" }),
+            MetricsSystem::Instance().RegisterHistogram(
+                "jobqueue_batch_size",
+                "Batch size executed by JobQueue::Execute.",
+                kBatchSizeBuckets,
+                { "queue" }),
+            MetricsSystem::Instance().RegisterHistogram(
+                "jobqueue_wait_seconds",
+                "Wait time from enqueue to execution start in JobQueue.",
+                MetricsHistogramBuckets::JobQueueWaitSeconds(),
+                { "queue" }),
+            MetricsSystem::Instance().RegisterHistogram(
+                "jobqueue_exec_seconds",
+                "Execution time per Job in JobQueue.",
+                MetricsHistogramBuckets::JobQueueWaitSeconds(),
+                { "queue" }),
+        };
+
+        return metrics;
+    }
+
+    void ObserveJobQueueDepth(int64 depth)
+    {
+        GetJobQueueMetrics().depthGauge->Set(static_cast<double>(depth), { { "queue", "job" } });
+    }
+
+    void ObserveJobQueueBatchSize(size_t batchSize)
+    {
+        GetJobQueueMetrics().batchSizeHistogram->Observe(static_cast<double>(batchSize), { { "queue", "job" } });
+    }
+
+    void ObserveJobQueueWaitSeconds(double waitSeconds)
+    {
+        GetJobQueueMetrics().waitHistogram->Observe(waitSeconds, { { "queue", "job" } });
+    }
+
+    void ObserveJobQueueExecSeconds(double execSeconds)
+    {
+        GetJobQueueMetrics().execHistogram->Observe(execSeconds, { { "queue", "job" } });
+    }
+}
 
 void JobQueue::Push(shared_ptr<Job> job)
 {
+    if (job == nullptr)
+        return;
+
+    job->SetEnqueueTimestampUs(NowSteadyMicroseconds());
+
     const bool prev = _posted.exchange(true);
+    int64 depthAfterPush = 0;
 
     {
-        WRITE_LOCK; // _lock을 건다
+        WRITE_LOCK;
         _jobs.push(job);
+        depthAfterPush = ++_depth;
     }
 
-    // 이전에 아무도 처리를 안 하고 있었다면, 이제 내가 GlobalQueue에 등록하러 간다.
+    ObserveJobQueueDepth(depthAfterPush);
+
     if (prev == false)
     {
         GGlobalQueue->Push(shared_from_this());
@@ -20,46 +107,63 @@ void JobQueue::Push(shared_ptr<Job> job)
 
 void JobQueue::Execute()
 {
-    // 큐에 있는 일감을 한 번에 싹 처리할지, 몇 개만 할지 결정.
-    // 여기선 일단 다 처리하는 구조로 간다.
-
     while (true)
     {
         vector<shared_ptr<Job>> jobs;
+
         {
             WRITE_LOCK;
             while (_jobs.empty() == false)
             {
                 jobs.push_back(_jobs.front());
                 _jobs.pop();
+                --_depth;
             }
         }
 
-        // 일감이 없으면 종료 루틴
+        ObserveJobQueueDepth(_depth.load());
+
+        if (jobs.empty() == false)
+            ObserveJobQueueBatchSize(jobs.size());
+
         if (jobs.empty())
         {
-            // 처리 끝났다고 깃발 내림
             _posted.store(false);
 
-            // 그 사이에 누가 또 넣었을 수도 있으니까 다시 확인
             {
                 WRITE_LOCK;
                 if (_jobs.empty())
-                    break; // 진짜 없음. 퇴근.
+                    break;
 
-                // 누가 또 넣었네? 다시 깃발 들고 일하러 감
                 const bool prev = _posted.exchange(true);
                 if (prev == false)
-                    continue; // 내가 다시 처리
+                    continue;
                 else
-                    break; // 이미 다른 애가 GlobalQueue에 넣었을 것임
+                    break;
             }
         }
 
-        // 잡 실행 (Lock 밖에서 실행해야 함! 중요!)
         for (shared_ptr<Job>& job : jobs)
         {
+            if (job == nullptr)
+                continue;
+
+            const uint64 execStartUs = NowSteadyMicroseconds();
+            const uint64 enqueueUs = job->GetEnqueueTimestampUs();
+            if (enqueueUs != 0 && execStartUs >= enqueueUs)
+            {
+                const double waitSeconds = static_cast<double>(execStartUs - enqueueUs) / 1000000.0;
+                ObserveJobQueueWaitSeconds(waitSeconds);
+            }
+
             job->Execute();
+
+            const uint64 execEndUs = NowSteadyMicroseconds();
+            if (execEndUs >= execStartUs)
+            {
+                const double execSeconds = static_cast<double>(execEndUs - execStartUs) / 1000000.0;
+                ObserveJobQueueExecSeconds(execSeconds);
+            }
         }
     }
 }

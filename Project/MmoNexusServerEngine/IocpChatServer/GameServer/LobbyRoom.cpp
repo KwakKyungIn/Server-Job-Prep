@@ -6,6 +6,7 @@
 #include "RoomManager.h"
 #include "PersistenceService.h"
 #include "GameSessionManager.h"
+#include "GameMetrics.h"
 
 // 퀵슬롯 최대 개수 제한 (프로토콜 및 DB 스키마와 일치시켜야 함)
 static constexpr int32 QS_MAX = 12; // 0~11
@@ -41,6 +42,8 @@ void LobbyRoom::EnterGame(PlayerSessionRef ps, uint64 playerId, int32 channelId,
         printf(" [Lobby] EnterGame blocked - Player already ready: %llu\n", playerId);
         return;
     }
+
+    GameMetrics::OnLobbyEnterStart(playerId);
 
 
     // 이름 결정: Redis에서 못 가져왔으면 기존 이름이나 기본값으로 보정
@@ -145,6 +148,8 @@ void LobbyRoom::TryEnterWorldIfReady(uint64 playerId)
             self->ClearPendingEnter_ActorOnly();
         });
 
+    GameMetrics::OnLobbyEnterComplete(playerId);
+
     // 월드 룸의 JobQueue에 입장 작업을 밀어넣음 (스레드 전환)
     world->Push([world, ps, p]() mutable
         {
@@ -154,6 +159,8 @@ void LobbyRoom::TryEnterWorldIfReady(uint64 playerId)
 
 void LobbyRoom::OnDbLoadFailed(uint64 playerId, const char* reason)
 {
+    GameMetrics::OnLobbyEnterCancelled(playerId);
+
     PlayerSessionRef ps;
 
     auto it = _players.find(playerId);

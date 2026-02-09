@@ -8,6 +8,7 @@
 #include "RoomManager.h"
 #include "AutoCommitService.h"
 #include "PersistenceService.h"
+#include "GameMetrics.h"
 
 // 클라가 접속하면 호출됨
 void PlayerSession::OnConnected()
@@ -44,6 +45,8 @@ void PlayerSession::OnDisconnected()
             // 로그인 상태였다면 정리 작업 수행
             if (playerId != 0)
             {
+                GameMetrics::OnLobbyEnterCancelled(playerId);
+
                 // [중요] DB 저장 트리거 (PersistenceService)
                 // 연결 끊기면 무조건 Dirty 찍어서 저장하게 만듦
                 // 나중에 최적화해서 진짜 변한 게 있을 때만 찍도록 수정할 예정

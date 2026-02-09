@@ -20,6 +20,19 @@ public:
 
 	bool IsExporterRunning() const;
 	MetricsRegistry& Registry();
+	std::shared_ptr<Counter> RegisterCounter(
+		const std::string& metricBaseName,
+		const std::string& help,
+		const std::vector<std::string>& labelNames = {});
+	std::shared_ptr<Gauge> RegisterGauge(
+		const std::string& metricBaseName,
+		const std::string& help,
+		const std::vector<std::string>& labelNames = {});
+	std::shared_ptr<Histogram> RegisterHistogram(
+		const std::string& metricBaseName,
+		const std::string& help,
+		const std::vector<double>& buckets,
+		const std::vector<std::string>& labelNames = {});
 
 	void RefreshProcessMetrics();
 

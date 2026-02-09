@@ -72,6 +72,9 @@
     <ClInclude Include="ObjectPool.h">
       <Filter>Memory</Filter>
     </ClInclude>
+    <ClInclude Include="PacketMetricsHooks.h">
+      <Filter>Metrics</Filter>
+    </ClInclude>
     <ClInclude Include="TypeCast.h">
       <Filter>Memory</Filter>
     </ClInclude>

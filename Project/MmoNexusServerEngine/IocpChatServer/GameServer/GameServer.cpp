@@ -14,6 +14,7 @@
 #include "RoomManager.h" 
 #include "DataManager.h"
 #include "LobbyRoom.h"
+#include "GameMetrics.h"
 #include <fstream> 
 #include "PersistenceService.h"
 #include "AutoCommitService.h"
@@ -165,6 +166,8 @@ void ConsoleThread()
 int main()
 {
 	SetConsoleCtrlHandler(CtrlHandler, TRUE);
+
+	GameMetrics::Initialize();
 
 	// 패킷 핸들러 테이블 초기화 (함수 포인터 매핑)
 	ClientPacketHandler::Init();
@@ -395,6 +398,8 @@ int main()
 	gameService->CloseService();
 	dbService->CloseService();
 	loginService->CloseService();
+
+	GameMetrics::Shutdown();
 
 	return 0;
 }

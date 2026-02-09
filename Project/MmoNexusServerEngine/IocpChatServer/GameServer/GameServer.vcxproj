@@ -210,6 +210,7 @@
     </ClCompile>
     <ClCompile Include="GameItemUidGen.cpp" />
     <ClCompile Include="GameMap.cpp" />
+    <ClCompile Include="GameMetrics.cpp" />
     <ClCompile Include="GameRoom.AOI.cpp" />
     <ClCompile Include="GameRoom.AOI.v2.cpp" />
     <ClCompile Include="GameRoom.Chat.cpp" />
@@ -266,6 +267,7 @@
     <ClInclude Include="Enum.pb.h" />
     <ClInclude Include="GameItemUidGen.h" />
     <ClInclude Include="GameMap.h" />
+    <ClInclude Include="GameMetrics.h" />
     <ClInclude Include="GameRoom.h" />
     <ClInclude Include="GameRoom.Net.h" />
     <ClInclude Include="GameSessionManager.h" />
