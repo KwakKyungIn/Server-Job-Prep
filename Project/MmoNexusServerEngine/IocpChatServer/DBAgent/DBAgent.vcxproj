@@ -192,6 +192,7 @@
   <ItemGroup>
     <ClCompile Include="ChatSession.cpp" />
     <ClCompile Include="DBAgent.cpp" />
+    <ClCompile Include="DBAgentMetrics.cpp" />
     <ClCompile Include="DBAgentPacketHandler.cpp" />
     <ClCompile Include="DBConnection.cpp" />
     <ClCompile Include="DBConnectionPool.cpp" />
@@ -212,6 +213,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ChatSession.h" />
+    <ClInclude Include="DBAgentMetrics.h" />
     <ClInclude Include="DBAgentPacketHandler.h" />
     <ClInclude Include="DBConnection.h" />
     <ClInclude Include="DBConnectionPool.h" />

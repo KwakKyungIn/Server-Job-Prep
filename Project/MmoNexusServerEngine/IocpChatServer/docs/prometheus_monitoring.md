@@ -264,26 +264,36 @@
 - Grafana 대시보드 패널/쿼리 정리.
 
 6. 포트폴리오 결과 문서화
-- 부하 시나리오(예: 100/300/500 CCU) 고정.
-- 워밍업/측정 구간 분리.
-- 개선 전/후 비교 템플릿 작성.
+- 사용자 진행 항목으로 본 작업 범위에서 제외.
+
+### 3단계 진행 상태
+- 상태: 완료 (`2026-02-09`)
+- 기획 대비 차이:
+- 4번(DBAgent 큐 계측)은 2단계에서 공통 반영된 `db_jobqueue_wait_seconds`, `db_jobqueue_exec_seconds`를 재사용해 추가 코드 없이 충족했다.
+- 6번(포트폴리오 결과 문서화)은 사용자 요청에 따라 제외했다.
+- 비고:
+- 요청 처리 시간은 비동기 Job 실행 구간을 기준으로 측정하도록 `DBAgentPacketHandler` Job 람다 시작점에 스코프 타이머를 배치했다.
 
 ### 예상 변경 파일
+- `DBAgent/DBAgentMetrics.h`
+- `DBAgent/DBAgentMetrics.cpp`
 - `DBAgent/DBAgentPacketHandler.cpp`
+- `DBAgent/DBConnection.cpp`
 - `DBAgent/DBConnectionPool.cpp`
 - `DBAgent/DBAgent.cpp`
-- `docs/` 하위 결과 문서
-- Prometheus/Grafana 설정 파일
+- `docs/monitoring/prometheus.yml`
+- `docs/monitoring/grafana_dbagent_dashboard.json`
+- `docs/monitoring/dbagent_dashboard_queries.md`
 
 ### 단계 완료 기준
 - `db_req_handle_seconds`, `db_query_seconds`, `db_pool_wait_seconds` 3축 분석 가능.
-- 개선 전/후 비교 그래프를 최소 3개 이상 확보.
-- 재현 절차 문서가 독립적으로 실행 가능하다.
+- Prometheus `scrape_configs`가 `GameServer`/`DBAgent` 타깃으로 반영되어 1초 스크랩 가능.
+- Grafana 대시보드 JSON과 패널별 PromQL 문서로 동일 시각화 재구성이 가능.
 
 ### 단계 산출물
 - DBAgent 계측 코드
+- Prometheus/Grafana 설정 파일
 - 대시보드/쿼리 문서
-- 비교 리포트 템플릿
 
 ---
 

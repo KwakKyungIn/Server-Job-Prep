@@ -6,6 +6,7 @@
 #include <iostream>
 #include "DBConnectionPool.h"
 #include "DBAgentPacketHandler.h"
+#include "DBAgentMetrics.h"
 #include "GameSession.h" 
 #include "ChatSession.h"
 #include "LoginSession.h" // [ADD] 아까 만든 헤더 포함
@@ -39,6 +40,7 @@ int main()
 
 	// 1. 핸들러 초기화
 	DBAgentPacketHandler::Init();
+	DBAgentMetrics::Initialize();
 
 	// 2. DBConnectionPool 생성 및 연결
 	GDBConnectionPool = xnew<DBConnectionPool>();
@@ -131,6 +133,9 @@ int main()
 	loginService->CloseService(); // [ADD]
 	//chatService->CloseService();
 	xdelete(GDBConnectionPool);
+	GDBConnectionPool = nullptr;
+
+	DBAgentMetrics::Shutdown();
 
 		std::cout << "[DBAgent] Bye!" << std::endl;
 	return 0;

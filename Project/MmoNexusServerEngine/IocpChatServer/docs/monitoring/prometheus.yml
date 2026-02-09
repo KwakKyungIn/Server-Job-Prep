@@ -1,0 +1,21 @@
+global:
+  scrape_interval: 1s
+  scrape_timeout: 800ms
+  evaluation_interval: 5s
+
+scrape_configs:
+  - job_name: game_server
+    metrics_path: /metrics
+    static_configs:
+      - targets:
+          - host.docker.internal:8080
+        labels:
+          service: game
+
+  - job_name: db_agent
+    metrics_path: /metrics
+    static_configs:
+      - targets:
+          - host.docker.internal:8081
+        labels:
+          service: db

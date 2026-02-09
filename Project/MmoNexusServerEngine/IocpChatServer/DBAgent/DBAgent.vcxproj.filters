@@ -33,6 +33,9 @@
     <ClCompile Include="DBAgent.cpp">
       <Filter>Main</Filter>
     </ClCompile>
+    <ClCompile Include="DBAgentMetrics.cpp">
+      <Filter>Main</Filter>
+    </ClCompile>
     <ClCompile Include="Enum.pb.cc">
       <Filter>Protocol</Filter>
     </ClCompile>
@@ -64,6 +67,9 @@
   <ItemGroup>
     <ClInclude Include="pch.h">
       <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="DBAgentMetrics.h">
+      <Filter>Main</Filter>
     </ClInclude>
     <ClInclude Include="Enum.pb.h">
       <Filter>Protocol</Filter>

@@ -1,6 +1,7 @@
 ﻿#include "pch.h"
 #include "DBAgentPacketHandler.h"
 #include "DBConnectionPool.h"
+#include "DBAgentMetrics.h"
 #include "GameSession.h" // [필수] GameSession 클래스를 알기 위해 추가
 #include "Job.h"         // [필수] Job을 생성하기 위해 추가
 
@@ -24,6 +25,8 @@ bool DBAgentPacketHandler::Handle_S2S_REQ_LOGIN(PacketSessionRef& session, Proto
 	// 이제 이 코드는 네트워크 스레드가 아니라, 로직 스레드에서 실행된다.
 	gameSession->PushJob(ObjectPool<Job>::MakeShared([gameSession, pkt]()
 		{
+			DBAgentMetrics::ScopedRequestMetrics requestScope(DBAgentPacketHandler::PKT_S2S_REQ_LOGIN);
+
 			// ==========================================================
 			//  여기서부터 기존 코드 복사 붙여넣기 (Logic Thread 실행)
 			// ==========================================================
@@ -110,6 +113,8 @@ bool DBAgentPacketHandler::Handle_S2S_REQ_ITEMS_LOAD(PacketSessionRef& session, 
 
 	gameSession->PushJob(ObjectPool<Job>::MakeShared([gameSession, pkt]()
 		{
+			DBAgentMetrics::ScopedRequestMetrics requestScope(DBAgentPacketHandler::PKT_S2S_REQ_ITEMS_LOAD);
+
 			DBConnection* conn = GDBConnectionPool->Pop();
 			if (conn == nullptr) return;
 
@@ -182,6 +187,8 @@ bool DBAgentPacketHandler::Handle_S2S_REQ_LOAD_GAME_DATA(PacketSessionRef& sessi
 
 	gameSession->PushJob(ObjectPool<Job>::MakeShared([gameSession, pkt]()
 		{
+			DBAgentMetrics::ScopedRequestMetrics requestScope(DBAgentPacketHandler::PKT_S2S_REQ_LOAD_GAME_DATA);
+
 			DBConnection* conn = GDBConnectionPool->Pop();
 			if (conn == nullptr) return;
 
@@ -357,6 +364,8 @@ bool DBAgentPacketHandler::Handle_S2S_REQ_LOAD_PLAYER_DATA(PacketSessionRef& ses
 
 	gameSession->PushJob(ObjectPool<Job>::MakeShared([gameSession, pkt]()
 		{
+			DBAgentMetrics::ScopedRequestMetrics requestScope(DBAgentPacketHandler::PKT_S2S_REQ_LOAD_PLAYER_DATA);
+
 			DBConnection* conn = GDBConnectionPool->Pop();
 			if (conn == nullptr) return;
 
@@ -422,6 +431,8 @@ bool DBAgentPacketHandler::Handle_S2S_REQ_LOAD_PLAYER_DATA(PacketSessionRef& ses
 
 bool DBAgentPacketHandler::Handle_S2S_REQ_HEART_BEAT(PacketSessionRef& session, Protocol::S2S_REQ_HEART_BEAT& pkt)
 {
+	DBAgentMetrics::ScopedRequestMetrics requestScope(DBAgentPacketHandler::PKT_S2S_REQ_HEART_BEAT);
+
 	Protocol::S2S_RES_HEART_BEAT resPkt;
 	auto sendBuffer = DBAgentPacketHandler::MakeSendBuffer(resPkt);
 	session->Send(sendBuffer);
@@ -435,6 +446,8 @@ bool DBAgentPacketHandler::Handle_S2S_REQ_SAVE_PLAYER_CORE(PacketSessionRef& ses
 
 	gameSession->PushJob(ObjectPool<Job>::MakeShared([gameSession, pkt]()
 		{
+			DBAgentMetrics::ScopedRequestMetrics requestScope(DBAgentPacketHandler::PKT_S2S_REQ_SAVE_PLAYER_CORE);
+
 			DBConnection* conn = GDBConnectionPool->Pop();
 			if (conn == nullptr) return;
 
@@ -483,6 +496,8 @@ bool DBAgentPacketHandler::Handle_S2S_REQ_SAVE_INVENTORY(PacketSessionRef& sessi
 
 	gameSession->PushJob(ObjectPool<Job>::MakeShared([gameSession, pkt]()
 		{
+			DBAgentMetrics::ScopedRequestMetrics requestScope(DBAgentPacketHandler::PKT_S2S_REQ_SAVE_INVENTORY);
+
 			DBConnection* conn = GDBConnectionPool->Pop();
 			if (conn == nullptr) return;
 
@@ -601,6 +616,8 @@ bool DBAgentPacketHandler::Handle_S2S_REQ_SAVE_INVENTORY(PacketSessionRef& sessi
 
 bool DBAgentPacketHandler::Handle_S2S_REQ_ITEM_CREATE(PacketSessionRef& session, Protocol::S2S_REQ_ITEM_CREATE& pkt)
 {
+	DBAgentMetrics::ScopedRequestMetrics requestScope(DBAgentPacketHandler::PKT_S2S_REQ_ITEM_CREATE);
+
 	
 	return true;
 }
@@ -611,6 +628,8 @@ bool DBAgentPacketHandler::Handle_S2S_REQ_GAME_ITEM_UID_SEED(PacketSessionRef& s
 
 	gameSession->PushJob(ObjectPool<Job>::MakeShared([gameSession, pkt]()
 		{
+			DBAgentMetrics::ScopedRequestMetrics requestScope(DBAgentPacketHandler::PKT_S2S_REQ_GAME_ITEM_UID_SEED);
+
 			DBConnection* conn = GDBConnectionPool->Pop();
 			if (!conn) return;
 
@@ -651,6 +670,8 @@ bool DBAgentPacketHandler::Handle_S2S_REQ_QUICKSLOT_LOAD(PacketSessionRef& sessi
 
 	gameSession->PushJob(ObjectPool<Job>::MakeShared([gameSession, pkt]()
 		{
+			DBAgentMetrics::ScopedRequestMetrics requestScope(DBAgentPacketHandler::PKT_S2S_REQ_QUICKSLOT_LOAD);
+
 			DBConnection* conn = GDBConnectionPool->Pop();
 			if (!conn) return;
 
@@ -711,6 +732,8 @@ bool DBAgentPacketHandler::Handle_S2S_REQ_SAVE_QUICKSLOT(PacketSessionRef& sessi
 
 	gameSession->PushJob(ObjectPool<Job>::MakeShared([gameSession, pkt]()
 		{
+			DBAgentMetrics::ScopedRequestMetrics requestScope(DBAgentPacketHandler::PKT_S2S_REQ_SAVE_QUICKSLOT);
+
 			DBConnection* conn = GDBConnectionPool->Pop();
 			if (!conn) return;
 
@@ -803,6 +826,8 @@ bool DBAgentPacketHandler::Handle_S2S_REQ_TRADE_COMMIT(
 
 	gameSession->PushJob(ObjectPool<Job>::MakeShared([gameSession, pkt]()
 		{
+			DBAgentMetrics::ScopedRequestMetrics requestScope(DBAgentPacketHandler::PKT_S2S_REQ_TRADE_COMMIT);
+
 			DBConnection* conn = GDBConnectionPool->Pop();
 			if (!conn)
 				return;

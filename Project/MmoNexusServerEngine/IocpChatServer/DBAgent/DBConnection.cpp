@@ -1,5 +1,7 @@
 ﻿#include "pch.h"
 #include "DBConnection.h"
+#include "DBAgentMetrics.h"
+#include <chrono>
 #include <iostream>
 #include <locale>
 
@@ -65,8 +67,14 @@ bool DBConnection::Prepare(const WCHAR* query)
 
 bool DBConnection::Execute()
 {
+    const auto start = std::chrono::steady_clock::now();
+
     // 준비된 쿼리 실행
     SQLRETURN ret = ::SQLExecute(_statement);
+
+    const double elapsedSeconds = std::chrono::duration<double>(
+        std::chrono::steady_clock::now() - start).count();
+    DBAgentMetrics::ObserveQueryDuration(elapsedSeconds);
 
     switch (ret)
     {
@@ -88,8 +96,14 @@ bool DBConnection::Execute()
 
 bool DBConnection::Execute(const WCHAR* query)
 {
+    const auto start = std::chrono::steady_clock::now();
+
     // 쿼리 바로 실행 (Prepare 없이 바로)
     SQLRETURN ret = ::SQLExecDirectW(_statement, (SQLWCHAR*)query, SQL_NTSL);
+
+    const double elapsedSeconds = std::chrono::duration<double>(
+        std::chrono::steady_clock::now() - start).count();
+    DBAgentMetrics::ObserveQueryDuration(elapsedSeconds);
 
     switch (ret)
     {

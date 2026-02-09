@@ -1,5 +1,6 @@
 ﻿#include "pch.h"
 #include "DBConnectionPool.h"
+#include "DBAgentMetrics.h"
 #include <iostream>
 #include <chrono>
 
@@ -12,6 +13,9 @@ DBConnectionPool::~DBConnectionPool()
 bool DBConnectionPool::Connect(int32 connectionCount, const WCHAR* connectionString)
 {
     std::unique_lock<std::mutex> lock(_mutex);
+    _shutdown = false;
+    _poolSize = 0;
+    _inUse = 0;
 
     // ODBC 환경 핸들 생성
     if (::SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, &_environment) != SQL_SUCCESS)
@@ -42,6 +46,13 @@ bool DBConnectionPool::Connect(int32 connectionCount, const WCHAR* connectionStr
         _connections.push(connection);
     }
 
+    _poolSize = connectionCount;
+    const int32 poolSize = _poolSize;
+    const int32 inUse = _inUse;
+    lock.unlock();
+
+    DBAgentMetrics::ObservePoolState(poolSize, inUse);
+
     return true;
 }
 
@@ -68,12 +79,16 @@ void DBConnectionPool::Clear()
         _environment = SQL_NULL_HANDLE;
     }
 
+    _poolSize = 0;
+    _inUse = 0;
+    lock.unlock();
+
+    DBAgentMetrics::ObservePoolState(0, 0);
 }
 
 DBConnection* DBConnectionPool::Pop()
 {
-    // 대기 시간 측정 시작
-    auto t0 = std::chrono::steady_clock::now();
+    const auto waitStart = std::chrono::steady_clock::now();
 
     std::unique_lock<std::mutex> lock(_mutex);
 
@@ -86,23 +101,42 @@ DBConnection* DBConnectionPool::Pop()
     // 사용 가능한 연결 하나 꺼내기
     DBConnection* connection = _connections.front();
     _connections.pop();
+    ++_inUse;
 
-    // 대기 시간 계산 및 메트릭 기록
-    auto waitMs = std::chrono::duration_cast<std::chrono::milliseconds>(
-        std::chrono::steady_clock::now() - t0).count();
+    const int32 poolSize = _poolSize;
+    const int32 inUse = _inUse;
+    lock.unlock();
+
+    const double waitSeconds = std::chrono::duration<double>(
+        std::chrono::steady_clock::now() - waitStart).count();
+    DBAgentMetrics::ObservePoolWait(waitSeconds);
+    DBAgentMetrics::ObservePoolState(poolSize, inUse);
 
     return connection;
 }
 
 void DBConnectionPool::Push(DBConnection* connection)
 {
+    if (connection == nullptr)
+        return;
+
+    int32 poolSize = 0;
+    int32 inUse = 0;
+
     {
         std::unique_lock<std::mutex> lock(_mutex);
 
         // 사용한 연결을 다시 풀에 반납
         _connections.push(connection);
+        if (_inUse > 0)
+            --_inUse;
+
+        poolSize = _poolSize;
+        inUse = _inUse;
 
     }
+
+    DBAgentMetrics::ObservePoolState(poolSize, inUse);
 
     // 대기 중인 Pop 스레드 깨우기
     _cv.notify_one();

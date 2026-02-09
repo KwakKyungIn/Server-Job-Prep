@@ -34,4 +34,8 @@ private:
 
     // 풀 종료 여부 플래그
     bool _shutdown = false;
+
+    // 설정된 풀 크기와 현재 대여 중인 연결 수
+    int32 _poolSize = 0;
+    int32 _inUse = 0;
 };
