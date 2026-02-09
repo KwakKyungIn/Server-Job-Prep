@@ -170,9 +170,14 @@
     <ClInclude Include="Lock.h" />
     <ClInclude Include="Memory.h" />
     <ClInclude Include="MemoryPool.h" />
+    <ClInclude Include="Metrics.h" />
+    <ClInclude Include="MetricsExporter.h" />
+    <ClInclude Include="MetricsSystem.h" />
     <ClInclude Include="NetAddress.h" />
     <ClInclude Include="ObjectPool.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="ProcessMetricsProvider.h" />
+    <ClInclude Include="PrometheusTextRenderer.h" />
     <ClInclude Include="RecvBuffer.h" />
     <ClInclude Include="RedisManager.h" />
     <ClInclude Include="RefCounting.h" />
@@ -201,6 +206,9 @@
     <ClCompile Include="Lock.cpp" />
     <ClCompile Include="Memory.cpp" />
     <ClCompile Include="MemoryPool.cpp" />
+    <ClCompile Include="Metrics.cpp" />
+    <ClCompile Include="MetricsExporter.cpp" />
+    <ClCompile Include="MetricsSystem.cpp" />
     <ClCompile Include="NetAddress.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -210,6 +218,8 @@
     </ClCompile>
     <ClCompile Include="RecvBuffer.cpp" />
     <ClCompile Include="RedisManager.cpp" />
+    <ClCompile Include="ProcessMetricsProvider.cpp" />
+    <ClCompile Include="PrometheusTextRenderer.cpp" />
     <ClCompile Include="RefCounting.cpp" />
     <ClCompile Include="SendBuffer.cpp" />
     <ClCompile Include="Service.cpp" />

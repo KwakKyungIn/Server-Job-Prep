@@ -70,11 +70,9 @@ void ThreadManager::DestroyTLS()
 // [NEW] 워커 스레드가 실행할 메인 루프
 void ThreadManager::DoGlobalQueueWork()
 {
-    while (true) // 혹은 while (GIsRunning)
+    while (GIsRunning.load()) // 혹은 while (GIsRunning)
     {
         // 1. GlobalQueue에서 일감이 있는 JobQueue를 꺼내온다
-        uint64 now = ::GetTickCount64();
-
         // GGlobalQueue가 nullptr면 크래시 나니까 방어 코드 (초반 초기화 이슈 방지)
         if (GGlobalQueue == nullptr)
         {

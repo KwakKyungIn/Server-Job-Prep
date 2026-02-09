@@ -22,6 +22,9 @@
     <Filter Include="Redis">
       <UniqueIdentifier>{43d1776f-b60f-419f-af2f-d71de1a73957}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Metrics">
+      <UniqueIdentifier>{2dcfce2c-5ab3-4b8e-a294-dc5f214db88a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CorePch.h">
@@ -120,6 +123,21 @@
     <ClInclude Include="RedisManager.h">
       <Filter>Redis</Filter>
     </ClInclude>
+    <ClInclude Include="Metrics.h">
+      <Filter>Metrics</Filter>
+    </ClInclude>
+    <ClInclude Include="MetricsExporter.h">
+      <Filter>Metrics</Filter>
+    </ClInclude>
+    <ClInclude Include="MetricsSystem.h">
+      <Filter>Metrics</Filter>
+    </ClInclude>
+    <ClInclude Include="ProcessMetricsProvider.h">
+      <Filter>Metrics</Filter>
+    </ClInclude>
+    <ClInclude Include="PrometheusTextRenderer.h">
+      <Filter>Metrics</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CorePch.cpp">
@@ -199,6 +217,21 @@
     </ClCompile>
     <ClCompile Include="RedisManager.cpp">
       <Filter>Redis</Filter>
+    </ClCompile>
+    <ClCompile Include="Metrics.cpp">
+      <Filter>Metrics</Filter>
+    </ClCompile>
+    <ClCompile Include="MetricsExporter.cpp">
+      <Filter>Metrics</Filter>
+    </ClCompile>
+    <ClCompile Include="MetricsSystem.cpp">
+      <Filter>Metrics</Filter>
+    </ClCompile>
+    <ClCompile Include="ProcessMetricsProvider.cpp">
+      <Filter>Metrics</Filter>
+    </ClCompile>
+    <ClCompile Include="PrometheusTextRenderer.cpp">
+      <Filter>Metrics</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
