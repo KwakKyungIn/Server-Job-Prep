@@ -429,29 +429,6 @@ int main() {
 
 }
 */
-int go(vector<vector<int>> grid, vector<vector<int>> visited, int size1, int size2) {
-
-
-}
-
-int main() {
-    int n = 0;
-    int m = 0;
-    vector<vector<int>> visited(n, vector<int>(m));
-    ios_base::sync_with_stdio(false); cin.tie(NULL); cout.tie(NULL);
-    cin >> n >> m;
-    vector<vector<int>> grid(n, vector<int>(m));
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < m; j++) {
-            cin >>grid[i][j];
-            
-        }
-    }
-    go(grid,visited, n,m);
-
-    
-    
-}
 
 //1주차 m번 문제
 //1주차 o번 문제

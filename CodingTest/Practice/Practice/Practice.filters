@@ -18,5 +18,8 @@
     <ClCompile Include="condingTest_1week.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="condingTest_2week.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
