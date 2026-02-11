@@ -419,6 +419,220 @@
       ],
       "title": "Session RX/TX Throughput",
       "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 32
+      },
+      "id": 11,
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom"
+        }
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.95, sum(rate(gs_jobqueue_wait_seconds_bucket{queue=\"job\"}[$__rate_interval])) by (le))",
+          "legendFormat": "jobqueue_wait_p95",
+          "refId": "A"
+        },
+        {
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.95, sum(rate(gs_packet_handle_seconds_bucket{op=\"skill\"}[$__rate_interval])) by (le))",
+          "legendFormat": "skill_handle_p95",
+          "refId": "B"
+        },
+        {
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.95, sum(rate(gs_packet_handle_seconds_bucket{op=\"use_item\"}[$__rate_interval])) by (le))",
+          "legendFormat": "use_item_handle_p95",
+          "refId": "C"
+        }
+      ],
+      "title": "Queue vs Skill/UseItem Handle p95 (CSV)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 40
+      },
+      "id": 12,
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom"
+        }
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "gs_ccu",
+          "legendFormat": "ccu",
+          "refId": "A"
+        },
+        {
+          "editorMode": "code",
+          "expr": "gs_ingame_players",
+          "legendFormat": "ingame_players",
+          "refId": "B"
+        },
+        {
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.95, sum(rate(gs_jobqueue_wait_seconds_bucket{queue=\"job\"}[$__rate_interval])) by (le))",
+          "legendFormat": "jobqueue_wait_p95",
+          "refId": "C"
+        },
+        {
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.95, sum(rate(gs_jobqueue_exec_seconds_bucket{queue=\"job\"}[$__rate_interval])) by (le))",
+          "legendFormat": "jobqueue_exec_p95",
+          "refId": "D"
+        },
+        {
+          "editorMode": "code",
+          "expr": "max(gs_jobqueue_depth{queue=\"job\"})",
+          "legendFormat": "jobqueue_depth_max",
+          "refId": "E"
+        },
+        {
+          "editorMode": "code",
+          "expr": "sum(gs_globalqueue_depth{queue=\"global\"})",
+          "legendFormat": "globalqueue_depth_sum",
+          "refId": "F"
+        },
+        {
+          "editorMode": "code",
+          "expr": "sum(rate(gs_worker_exec_seconds_total{type=\"logic\"}[$__rate_interval]))",
+          "legendFormat": "worker_exec_rate",
+          "refId": "G"
+        },
+        {
+          "editorMode": "code",
+          "expr": "sum(rate(gs_worker_idle_seconds_total{type=\"logic\"}[$__rate_interval]))",
+          "legendFormat": "worker_idle_rate",
+          "refId": "H"
+        },
+        {
+          "editorMode": "code",
+          "expr": "sum(rate(gs_worker_exec_seconds_total{type=\"logic\"}[$__rate_interval])) / clamp_min(sum(rate(gs_worker_exec_seconds_total{type=\"logic\"}[$__rate_interval])) + sum(rate(gs_worker_idle_seconds_total{type=\"logic\"}[$__rate_interval])), 1e-9)",
+          "legendFormat": "worker_busy_ratio",
+          "refId": "I"
+        },
+        {
+          "editorMode": "code",
+          "expr": "sum(rate(gs_packet_ingress_total[$__rate_interval]))",
+          "legendFormat": "packet_ingress_total_rps",
+          "refId": "J"
+        },
+        {
+          "editorMode": "code",
+          "expr": "sum(rate(gs_packet_ingress_total{op=\"skill\"}[$__rate_interval]))",
+          "legendFormat": "packet_ingress_skill_rps",
+          "refId": "K"
+        },
+        {
+          "editorMode": "code",
+          "expr": "sum(rate(gs_packet_ingress_total{op=\"use_item\"}[$__rate_interval]))",
+          "legendFormat": "packet_ingress_use_item_rps",
+          "refId": "L"
+        },
+        {
+          "editorMode": "code",
+          "expr": "sum(rate(gs_packet_failure_total[$__rate_interval]))",
+          "legendFormat": "packet_failure_total_rps",
+          "refId": "M"
+        },
+        {
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.95, sum(rate(gs_packet_handle_seconds_bucket[$__rate_interval])) by (le))",
+          "legendFormat": "packet_handle_p95_all",
+          "refId": "N"
+        },
+        {
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.95, sum(rate(gs_packet_handle_seconds_bucket{op=\"skill\"}[$__rate_interval])) by (le))",
+          "legendFormat": "packet_handle_p95_skill",
+          "refId": "O"
+        },
+        {
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.95, sum(rate(gs_packet_handle_seconds_bucket{op=\"use_item\"}[$__rate_interval])) by (le))",
+          "legendFormat": "packet_handle_p95_use_item",
+          "refId": "P"
+        },
+        {
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.95, sum(rate(gs_s2s_rtt_seconds_bucket{op!=\"other\"}[$__rate_interval])) by (le))",
+          "legendFormat": "s2s_rtt_p95_all",
+          "refId": "Q"
+        },
+        {
+          "editorMode": "code",
+          "expr": "rate(gs_session_rx_bytes_total[$__rate_interval])",
+          "legendFormat": "session_rx_bps",
+          "refId": "R"
+        },
+        {
+          "editorMode": "code",
+          "expr": "rate(gs_session_tx_bytes_total[$__rate_interval])",
+          "legendFormat": "session_tx_bps",
+          "refId": "S"
+        },
+        {
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.95, sum(rate(db_req_handle_seconds_bucket{op!=\"other\"}[$__rate_interval])) by (le))",
+          "legendFormat": "db_req_handle_p95_all",
+          "refId": "T"
+        },
+        {
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.95, sum(rate(db_query_seconds_bucket{op!=\"other\"}[$__rate_interval])) by (le))",
+          "legendFormat": "db_query_p95_all",
+          "refId": "U"
+        },
+        {
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.95, sum(rate(db_pool_wait_seconds_bucket{op!=\"other\"}[$__rate_interval])) by (le))",
+          "legendFormat": "db_pool_wait_p95_all",
+          "refId": "V"
+        },
+        {
+          "editorMode": "code",
+          "expr": "db_pool_inuse / clamp_min(db_pool_size, 1)",
+          "legendFormat": "db_pool_utilization",
+          "refId": "W"
+        }
+      ],
+      "title": "CSV Snapshot - Major Signals",
+      "type": "timeseries"
     }
   ],
   "refresh": "10s",
@@ -440,6 +654,6 @@
   "timezone": "",
   "title": "GameServer Observability",
   "uid": "gameserver-phase2",
-  "version": 1,
+  "version": 3,
   "weekStart": ""
 }

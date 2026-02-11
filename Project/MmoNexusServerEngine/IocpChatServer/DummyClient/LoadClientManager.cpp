@@ -302,6 +302,10 @@ void LoadClient::OnEnterGameResponse(const Protocol::S_ENTER_GAME& pkt, uint64 n
 		_path.clear();
 		_pathIndex = 0;
 		_lastRepathMs = 0;
+		_lastAckX = _pos.x();
+		_lastAckZ = _pos.z();
+		_stuckAckCount = 0;
+		_forceRepath = false;
 		if (pkt.has_myplayer() && pkt.myplayer().has_statinfo())
 		{
 			const int32 spd = pkt.myplayer().statinfo().speed();
@@ -329,7 +333,38 @@ void LoadClient::OnMoveAck(const Protocol::S_MOVE& pkt, uint64 nowMs)
 	{
 		std::lock_guard<std::mutex> lock(_mtx);
 		if (pkt.has_posinfo())
-			_pos = pkt.posinfo();
+		{
+			const Protocol::PositionInfo& ackPos = pkt.posinfo();
+			const float dx = ackPos.x() - _lastAckX;
+			const float dz = ackPos.z() - _lastAckZ;
+			const float moved = std::sqrt(dx * dx + dz * dz);
+
+			const bool pathActive = !_path.empty() && _pathIndex < _path.size();
+			if (pathActive && moved < 0.03f)
+			{
+				if (_stuckAckCount < 1000000)
+					++_stuckAckCount;
+
+				if (_stuckAckCount >= 3)
+				{
+					// The server keeps snapping us to the same point (e.g. wall hit),
+					// so drop the current path and force a fresh random goal.
+					_path.clear();
+					_pathIndex = 0;
+					_lastRepathMs = 0;
+					_forceRepath = true;
+					_stuckAckCount = 0;
+				}
+			}
+			else
+			{
+				_stuckAckCount = 0;
+			}
+
+			_pos = ackPos;
+			_lastAckX = ackPos.x();
+			_lastAckZ = ackPos.z();
+		}
 	}
 
 	const uint64 lastMove = _lastMoveSentMs.load(std::memory_order_acquire);
@@ -626,9 +661,10 @@ void LoadClient::UpdatePositionRandomLocked(float maxStep, uint64 nowMs)
 	if (_manager && _manager->HasNavSystem())
 	{
 		const int repathSec = cfg.navMesh.repathIntervalSec;
-		if (_path.empty() || _pathIndex >= _path.size() ||
+		if (_forceRepath || _path.empty() || _pathIndex >= _path.size() ||
 			(repathSec > 0 && nowMs - _lastRepathMs >= static_cast<uint64>(repathSec) * 1000))
 		{
+			_forceRepath = false;
 			if (!BuildPathLocked(nowMs))
 				return;
 		}

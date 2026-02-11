@@ -160,6 +160,10 @@ private:
 	Vector<Protocol::PositionInfo> _path;
 	size_t _pathIndex = 0;
 	uint64 _lastRepathMs = 0;
+	float _lastAckX = 0.0f;
+	float _lastAckZ = 0.0f;
+	uint32 _stuckAckCount = 0;
+	bool _forceRepath = false;
 
 	uint64 _connectStartMs = 0;
 	std::atomic<uint64> _loginStartMs{ 0 };
