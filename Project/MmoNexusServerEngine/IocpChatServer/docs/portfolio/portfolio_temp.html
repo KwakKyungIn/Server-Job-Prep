@@ -1,0 +1,1263 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Portfolio Temp - Page 1~7</title>
+  <style>
+    :root {
+      --ink: #222;
+      --line: #cfcfcf;
+      --muted: #e6e6e6;
+      --paper: #fff;
+      --text: #111;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 18px;
+      background: #efefef;
+      color: var(--text);
+      font-family: "Noto Sans KR", "Malgun Gothic", sans-serif;
+      line-height: 1.4;
+    }
+
+    .pages {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      align-items: center;
+    }
+
+    .page {
+      width: 297mm;
+      min-height: 210mm;
+      background: var(--paper);
+      border: 1px solid #c9c9c9;
+      padding: 14mm 14mm;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .page-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: #4d4d4d;
+      font-size: 12px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 16px;
+      align-items: start;
+    }
+
+    .hero h1 {
+      margin: 0 0 8px;
+      font-size: 34px;
+      line-height: 1.2;
+      color: var(--ink);
+    }
+
+    .subtitle-list {
+      margin: 0;
+      padding-left: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 16px;
+      color: #222;
+    }
+
+    .summary-box {
+      border: 1px solid #d5d5d5;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .summary-title {
+      margin: 0;
+      font-weight: 700;
+      font-size: 14px;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      color: #444;
+    }
+
+    .summary-quote {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 600;
+      color: #111;
+    }
+
+    .section-title {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 700;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 6px;
+      color: #222;
+    }
+
+    .message-list {
+      margin: 0;
+      padding-left: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      font-size: 16px;
+      color: #222;
+    }
+
+    .identity-box {
+      margin-top: auto;
+      border-top: 1px solid #ddd;
+      padding-top: 10px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      font-size: 14px;
+      color: #222;
+    }
+
+    .contents-head {
+      margin-top: 2px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .head-line {
+      width: 72%;
+      height: 2px;
+      background: var(--line);
+    }
+
+    .head-line.short {
+      width: 50%;
+      height: 1px;
+    }
+
+    .contents-title {
+      margin: 0;
+      color: var(--ink);
+      letter-spacing: 0.2em;
+      font-size: 32px;
+      font-weight: 500;
+    }
+
+    .preview-chip {
+      margin-top: 8px;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      padding: 8px 10px;
+      display: flex;
+      gap: 12px;
+      align-items: baseline;
+    }
+
+    .preview-chip .no {
+      color: var(--muted);
+      font-size: 36px;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .preview-chip .txt {
+      color: #333;
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .toc-grid {
+      margin-top: 4px;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+      flex: 1;
+    }
+
+    .toc-card {
+      border-top: 1px solid var(--line);
+      border-left: 1px solid var(--line);
+      padding: 12px 12px 10px;
+      min-height: 185px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .toc-num {
+      color: var(--muted);
+      font-size: 48px;
+      line-height: 1;
+      font-weight: 700;
+      margin: 0;
+    }
+
+    .toc-card h3 {
+      margin: 0;
+      color: var(--ink);
+      font-size: 18px;
+      line-height: 1.25;
+    }
+
+    .toc-card ul {
+      margin: 0;
+      padding-left: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      color: #333;
+      font-size: 15px;
+      line-height: 1.35;
+    }
+
+    .page3 {
+      gap: 14px;
+    }
+
+    .p3-hero {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr;
+      gap: 14px;
+      align-items: stretch;
+    }
+
+    .p3-kicker {
+      margin: 0 0 6px;
+      color: #666;
+      font-size: 12px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    .p3-title {
+      margin: 0;
+      font-size: 32px;
+      line-height: 1.2;
+      color: #191919;
+    }
+
+    .p3-quote {
+      border: 1px solid #ddd;
+      background: #fafafa;
+      padding: 14px;
+      font-size: 20px;
+      font-weight: 700;
+      line-height: 1.35;
+      display: flex;
+      align-items: center;
+    }
+
+    .p3-body {
+      flex: 1;
+      display: block;
+    }
+
+    .p3-block {
+      border: 1px solid #ddd;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      min-height: 0;
+    }
+
+    .p3-block h3 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 700;
+      color: #222;
+      border-bottom: 1px solid #ececec;
+      padding-bottom: 8px;
+    }
+
+    .p3-diff-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+
+    .p3-card {
+      border: 2px solid #d9d9d9;
+      background: #fff;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      min-height: 0;
+    }
+
+    .p3-card .no {
+      font-size: 14px;
+      font-weight: 800;
+      color: #777;
+      letter-spacing: 0.06em;
+    }
+
+    .p3-card p {
+      margin: 0;
+      font-size: 18px;
+      line-height: 1.4;
+      font-weight: 600;
+      color: #222;
+    }
+
+    .page4,
+    .page5,
+    .page6,
+    .page7 {
+      gap: 12px;
+    }
+
+    .p4-head,
+    .p5-head,
+    .p6-head,
+    .p7-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 12px;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 8px;
+    }
+
+    .p4-head h2,
+    .p5-head h2,
+    .p6-head h2,
+    .p7-head h2 {
+      margin: 0;
+      font-size: 30px;
+      line-height: 1.2;
+      color: #222;
+    }
+
+    .p4-sub,
+    .p5-sub,
+    .p6-sub,
+    .p7-sub {
+      margin: 0;
+      color: #666;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .p4-body,
+    .p5-body {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 12px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .p6-keymsg {
+      border: 1px solid #ddd;
+      background: #fafafa;
+      padding: 10px 12px;
+      font-size: 18px;
+      font-weight: 700;
+      color: #222;
+    }
+
+    .p6-main {
+      display: grid;
+      grid-template-columns: 1.1fr 1fr;
+      gap: 12px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .p6-panel,
+    .p7-panel,
+    .p6-bottom,
+    .p7-bottom,
+    .p7-side {
+      border: 1px solid #ddd;
+      background: #fff;
+      padding: 10px;
+      min-height: 0;
+    }
+
+    .p7-side {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .p6-panel h3,
+    .p7-panel h3,
+    .p6-bottom h3,
+    .p7-bottom h3,
+    .p7-side h3 {
+      margin: 0 0 8px;
+      font-size: 16px;
+      color: #222;
+    }
+
+    .threat-grid {
+      display: grid;
+      gap: 8px;
+    }
+
+    .threat-card {
+      border: 1px solid #e1e1e1;
+      background: #fcfcfc;
+      padding: 8px 10px;
+    }
+
+    .threat-card h4 {
+      margin: 0 0 4px;
+      font-size: 14px;
+      color: #222;
+    }
+
+    .threat-card p {
+      margin: 0;
+      font-size: 13px;
+      color: #333;
+      line-height: 1.35;
+    }
+
+    .mini-note {
+      margin: 8px 0 0;
+      font-size: 13px;
+      color: #333;
+      line-height: 1.4;
+      border-top: 1px solid #ececec;
+      padding-top: 8px;
+    }
+
+    .compact-list {
+      margin: 0;
+      padding-left: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      font-size: 14px;
+      line-height: 1.35;
+      color: #333;
+    }
+
+    .p6-bottom,
+    .p7-bottom {
+      margin-top: 2px;
+    }
+
+    .p6-bottom .mermaid {
+      min-height: 220px;
+      font-size: 13px;
+    }
+
+    .evidence-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .evidence-grid ul {
+      margin: 0;
+      padding-left: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 13px;
+      line-height: 1.35;
+      color: #333;
+    }
+
+    .p7-main {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      flex: 0 0 auto;
+      min-height: 0;
+    }
+
+    .p7-panel .mermaid {
+      min-height: 210px;
+      font-size: 12px;
+    }
+
+    .p7-panel .mermaid svg {
+      width: 100% !important;
+      height: auto !important;
+      max-height: 190px;
+    }
+
+    .p7-step-list {
+      margin: 0;
+      padding-left: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 12px;
+      color: #333;
+      line-height: 1.25;
+    }
+
+    .p7-step-list li strong {
+      display: inline;
+      font-size: 12px;
+      color: #222;
+      margin: 0;
+    }
+
+    .p7-side-list {
+      margin: 0;
+      padding-left: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      font-size: 13px;
+      line-height: 1.35;
+      color: #333;
+    }
+
+    .p7-note {
+      border: 1px solid #ddd;
+      background: #fafafa;
+      padding: 8px 10px;
+      font-size: 12px;
+      line-height: 1.3;
+      color: #222;
+      font-weight: 600;
+      margin-top: 8px;
+    }
+
+    .page7 {
+      gap: 8px;
+    }
+
+    .page7 .p7-head h2 {
+      font-size: 27px;
+    }
+
+    .page7 .p7-sub {
+      font-size: 13px;
+    }
+
+    .page7 .p7-panel,
+    .page7 .p7-bottom {
+      padding: 8px;
+    }
+
+    .page7 .p7-panel h3,
+    .page7 .p7-bottom h3 {
+      font-size: 14px;
+      margin: 0 0 6px;
+    }
+
+    .p7-bottom-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 10px;
+      align-items: start;
+    }
+
+    /* A4 고정용: 페이지 7은 반응형 축소에서도 2열 유지 */
+    .page7 .p7-main {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .page7 .p7-bottom-grid {
+      grid-template-columns: 2fr 1fr;
+    }
+
+    .diagram-panel {
+      border: 1px solid #ddd;
+      background: #fff;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    .diagram-title {
+      margin: 0 0 6px;
+      font-size: 15px;
+      color: #444;
+      font-weight: 700;
+    }
+
+    .diagram-panel .mermaid {
+      width: 100%;
+      height: 100%;
+      min-height: 360px;
+      font-size: 14px;
+      overflow: hidden;
+    }
+
+    .p4-side,
+    .p5-side {
+      border: 1px solid #ddd;
+      background: #fff;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .p4-side h3,
+    .p5-side h3 {
+      margin: 0 0 2px;
+      font-size: 16px;
+      color: #222;
+    }
+
+    .side-list {
+      margin: 0;
+      padding-left: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 14px;
+      color: #333;
+      line-height: 1.35;
+    }
+
+    .p5-footer {
+      border-top: 1px solid #ddd;
+      padding-top: 8px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .flow-chip {
+      border: 1px solid #d9d9d9;
+      background: #fafafa;
+      padding: 6px 10px;
+      font-size: 12px;
+      color: #333;
+      font-weight: 700;
+    }
+
+	    .p4-foot-grid {
+	      display: grid;
+	      grid-template-columns: repeat(2, minmax(0, 1fr));
+	      gap: 10px;
+	    }
+
+    .p4-foot-card {
+      border: 1px solid #ddd;
+      background: #fff;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      min-height: 86px;
+    }
+
+    .p4-foot-card h4 {
+      margin: 0;
+      font-size: 14px;
+      color: #222;
+    }
+
+    .p4-foot-card p {
+      margin: 0;
+      font-size: 13px;
+      line-height: 1.35;
+      color: #333;
+    }
+
+    /* Page 4: 내용 스왑 후 가독성/공백 보정 */
+    .page4 {
+      gap: 8px;
+    }
+
+    .page4 .p4-body {
+      flex: 0 0 auto;
+      align-items: start;
+    }
+
+    .page4 .diagram-panel .mermaid {
+      min-height: 300px;
+    }
+
+    /* 우측 경로 설명은 조금 작게 */
+    .page4 .p4-side h3 {
+      font-size: 15px;
+    }
+
+    .page4 .p4-side .side-list {
+      font-size: 13px;
+      line-height: 1.3;
+    }
+
+    /* 하단 핵심요약은 조금 크게 */
+    .page4 .p4-foot-card h4 {
+      font-size: 16px;
+    }
+
+    .page4 .p4-foot-card p {
+      font-size: 14px;
+      line-height: 1.4;
+    }
+
+    .code-list {
+      margin: 0;
+      padding-left: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      font-size: 12px;
+      color: #444;
+      font-family: Consolas, "Courier New", monospace;
+      line-height: 1.3;
+    }
+
+    @media (max-width: 1200px) {
+      .page {
+        width: 100%;
+        min-height: auto;
+        padding: 18px 16px;
+      }
+
+      .hero,
+      .identity-box,
+      .p3-hero,
+      .p4-body,
+      .p5-body,
+      .p6-main,
+      .p7-main,
+      .p7-bottom-grid,
+      .evidence-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .p4-foot-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .toc-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media print {
+      @page {
+        size: A4 landscape;
+        margin: 0;
+      }
+
+      body {
+        background: #fff;
+        padding: 0;
+      }
+
+      .pages {
+        gap: 0;
+      }
+
+      .page {
+        width: 297mm;
+        min-height: 210mm;
+        border: 0;
+        margin: 0 auto;
+        page-break-after: always;
+      }
+
+      /* 인쇄 시에도 7페이지가 A4 한 장에 들어가도록 동일 레이아웃 유지 */
+      .page7 .p7-main {
+        grid-template-columns: 1fr 1fr !important;
+      }
+
+      .page7 .p7-bottom-grid {
+        grid-template-columns: 2fr 1fr !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="pages">
+    <section class="page">
+      <div class="page-top">
+        <strong>Portfolio Draft</strong>
+        <span>Page 1</span>
+      </div>
+
+      <div class="hero">
+        <div>
+          <h1>MMORPG 서버 포트폴리오</h1>
+          <ul class="subtitle-list">
+            <li>IOCP 기반 멀티 서버 구조</li>
+            <li>서버 권위 게임 서버 (C++ / Redis / ODBC)</li>
+          </ul>
+        </div>
+
+        <div class="summary-box">
+          <p class="summary-title">한 줄 요약</p>
+          <p class="summary-quote">
+            "서버 권위 전투/이동/거래를 중심으로 MMORPG 핵심 경로를 직접 구현한 IOCP 멀티 서버"
+          </p>
+        </div>
+      </div>
+
+      <h2 class="section-title">핵심 메시지</h2>
+      <ul class="message-list">
+        <li>클라이언트 신뢰를 배제하고 서버가 전투/이동/거래 결과를 최종 확정</li>
+        <li>정합성, 영속화, 모니터링, 부하검증까지 실서비스 관점으로 완결</li>
+      </ul>
+
+      <div class="identity-box">
+        <div><strong>이름</strong><br />[이름]</div>
+        <div><strong>연락처</strong><br />[이메일 / 전화번호]</div>
+        <div><strong>GitHub</strong><br />[github.com/yourname]</div>
+      </div>
+    </section>
+
+    <section class="page">
+      <div class="page-top">
+        <strong>Portfolio Draft</strong>
+        <span>Page 2</span>
+      </div>
+
+      <div class="contents-head">
+        <span class="head-line"></span>
+        <span class="head-line short"></span>
+        <h2 class="contents-title">CONTENTS</h2>
+      </div>
+
+      <div class="preview-chip">
+        <span class="no">00</span>
+        <span class="txt">Preview - 표지 + 프로젝트 30초 요약</span>
+      </div>
+
+      <div class="toc-grid">
+        <article class="toc-card">
+          <p class="toc-num">01</p>
+          <h3>Section 1. 개요 &amp; 범위 정의</h3>
+          <ul>
+            <li>프로젝트 한 페이지 요약</li>
+            <li>시스템 아키텍처</li>
+            <li>End-to-End 데이터 흐름</li>
+          </ul>
+        </article>
+
+        <article class="toc-card">
+          <p class="toc-num">02</p>
+          <h3>Section 2. 핵심 차별화 기능 딥다이브</h3>
+          <ul>
+            <li>서버 권위 이동 검증</li>
+            <li>AOI + 스냅샷 배칭</li>
+            <li>전투/투사체 + AI/드랍</li>
+            <li>거래 상태머신 + 2PC</li>
+          </ul>
+        </article>
+
+        <article class="toc-card">
+          <p class="toc-num">03</p>
+          <h3>Section 3. 서버 엔진 설계</h3>
+          <ul>
+            <li>Actor + JobQueue</li>
+            <li>Hybrid Thread + IOCP</li>
+            <li>패킷 파이프라인</li>
+            <li>로비 로딩/세션 수명주기</li>
+          </ul>
+        </article>
+
+        <article class="toc-card">
+          <p class="toc-num">04</p>
+          <h3>Section 4. 데이터 정합성 &amp; 영속화</h3>
+          <ul>
+            <li>Redis 토큰 인증/바인딩</li>
+            <li>Write-Back + AutoCommit</li>
+            <li>DBAgent 트랜잭션 경로</li>
+            <li>부팅 동기화 + UID 시드</li>
+          </ul>
+        </article>
+
+        <article class="toc-card">
+          <p class="toc-num">05</p>
+          <h3>Section 5. 운영 관측 &amp; 성능 검증</h3>
+          <ul>
+            <li>메모리/송신 가드레일</li>
+            <li>Prometheus + Grafana</li>
+            <li>DummyClient 부하 검증</li>
+          </ul>
+        </article>
+
+        <article class="toc-card">
+          <p class="toc-num">06</p>
+          <h3>Section 6. 신뢰성 사례 &amp; 마무리</h3>
+          <ul>
+            <li>안정성 도구 + 트러블슈팅</li>
+            <li>역량 요약 &amp; 참고 링크</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section class="page page3">
+      <div class="page-top">
+        <strong>Portfolio Draft</strong>
+        <span>Page 3</span>
+      </div>
+
+      <div class="p3-hero">
+        <div>
+          <p class="p3-kicker">Section 1 / One Page Summary</p>
+          <h2 class="p3-title">프로젝트 한 페이지 요약 (정리본)</h2>
+        </div>
+        <div class="p3-quote">
+          "실서비스형 MMORPG 서버 핵심 경로를 직접 구현"
+        </div>
+      </div>
+
+      <div class="p3-body">
+        <article class="p3-block">
+          <h3>핵심 차별화 5개</h3>
+          <div class="p3-diff-grid">
+            <div class="p3-card">
+              <span class="no">01</span>
+              <p>서버 권위 이동 검증 + NavMesh 슬라이딩</p>
+            </div>
+            <div class="p3-card">
+              <span class="no">02</span>
+              <p>AOI SpatialGrid + 스냅샷 배칭</p>
+            </div>
+            <div class="p3-card">
+              <span class="no">03</span>
+              <p>1:1 거래 2-Phase Commit (아이템/골드 원자성)</p>
+            </div>
+            <div class="p3-card">
+              <span class="no">04</span>
+              <p>Redis Write-Back + AutoCommit + 종료 Flush</p>
+            </div>
+            <div class="p3-card">
+              <span class="no">05</span>
+              <p>Prometheus/Grafana + DummyClient 부하 검증</p>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="page page4">
+      <div class="page-top">
+        <strong>Portfolio Draft</strong>
+        <span>Page 4</span>
+      </div>
+
+      <div class="p4-head">
+        <h2>시스템 아키텍처</h2>
+        <p class="p4-sub">LoginServer / GameServer / DBAgent / Redis / RDBMS 연동 구조</p>
+      </div>
+
+      <div class="p4-body">
+        <article class="diagram-panel">
+          <p class="diagram-title">Architecture Flow</p>
+          <pre class="mermaid">
+flowchart LR
+  C[Client]
+  L[LoginServer]
+  G[GameServer]
+  D[DBAgent]
+  R[(Redis)]
+  DB[(RDBMS)]
+
+  C -->|login/auth| L
+  L -->|token issue| R
+  C -->|enter/play| G
+  G -->|token verify| R
+  G -->|S2S save/load| D
+  D -->|ODBC| DB
+  G -->|dirty cache| R
+          </pre>
+        </article>
+
+	        <aside class="p4-side">
+	          <h3>인증/입장 경로</h3>
+	          <ul class="side-list">
+	            <li>C_LOGIN → Token 발급/저장 → C_ENTER_GAME 검증 → 월드 입장</li>
+	            <li>LoginServer/Redis에서 인증 상태를 확인한 뒤 GameServer 입장 처리</li>
+	          </ul>
+
+	          <h3>플레이 경로</h3>
+	          <ul class="side-list">
+	            <li>이동/전투/거래는 GameServer 액터 경로에서 직렬 처리 후 반영</li>
+	            <li>서버 권위 판정 이후 주변 AOI 대상에게 결과 전파</li>
+	          </ul>
+
+	          <h3>저장 경로</h3>
+	          <ul class="side-list">
+	            <li>Redis Dirty 누적 → S2S_REQ_SAVE_* → DBAgent 트랜잭션 커밋</li>
+	            <li>종료 시 Flush를 수행해 미커밋 데이터 누락 최소화</li>
+	          </ul>
+	        </aside>
+	      </div>
+
+	      <div class="p4-foot-grid">
+	        <article class="p4-foot-card">
+	          <h4>핵심 포인트</h4>
+	          <p>인증/토큰은 LoginServer + Redis에서 처리하고, 게임플레이 권위 로직은 GameServer에 집중한다. DB I/O는 DBAgent로 분리해 트랜잭션을 전담하며, 캐시(Redis)와 영속화(RDBMS)를 역할 분리했다.</p>
+	        </article>
+	        <article class="p4-foot-card">
+	          <h4>컴포넌트 책임</h4>
+	          <p>LoginServer는 로그인/토큰 발급(TTL 300초), GameServer는 룸/전투/이동/거래 서버 권위 판정, DBAgent는 ODBC 트랜잭션(BEGIN/COMMIT) 전담으로 구분한다.</p>
+	        </article>
+	      </div>
+	    </section>
+
+    <section class="page page5">
+      <div class="page-top">
+        <strong>Portfolio Draft</strong>
+        <span>Page 5</span>
+      </div>
+
+      <div class="p5-head">
+        <h2>End-to-End 데이터 흐름</h2>
+        <p class="p5-sub">Login → Enter → Play → Save → Exit</p>
+      </div>
+
+      <div class="p5-body">
+        <article class="diagram-panel">
+          <p class="diagram-title">Sequence Flow</p>
+          <pre class="mermaid">
+sequenceDiagram
+  participant C as Client
+  participant L as LoginServer
+  participant R as Redis
+  participant G as GameServer
+  participant D as DBAgent
+  participant DB as RDBMS
+
+  C->>L: C_LOGIN
+  L->>R: save token(TTL)
+  L-->>C: S_LOGIN(token)
+
+  C->>G: C_ENTER_GAME(token)
+  G->>R: token verify
+  G-->>C: enter world
+
+  C->>G: move / combat / trade
+  G->>R: dirty write-back
+
+  G->>D: S2S_REQ_SAVE_*
+  D->>DB: BEGIN...COMMIT
+  D-->>G: save result
+
+  C-->>G: disconnect
+  G->>D: flush pending save
+          </pre>
+        </article>
+
+        <aside class="p5-side">
+          <h3>구간별 의도</h3>
+          <ul class="side-list">
+            <li>Login: 인증 + 토큰 발급</li>
+            <li>Enter: 토큰 검증 + 로딩 게이트</li>
+            <li>Play: 서버 권위 판정 + 캐시 반영</li>
+            <li>Save: Dirty 수집 후 트랜잭션 저장</li>
+            <li>Exit: 종료 시점 Flush로 누락 방지</li>
+          </ul>
+
+          <h3>주요 저장 이벤트</h3>
+          <ul class="side-list">
+            <li>S2S_REQ_SAVE_PLAYER_CORE</li>
+            <li>S2S_REQ_SAVE_INVENTORY</li>
+            <li>S2S_REQ_SAVE_QUICKSLOT</li>
+            <li>S2S_REQ_TRADE_COMMIT / S2S_RES_TRADE_COMMIT</li>
+          </ul>
+
+          <h3>실패 시 처리 원칙</h3>
+          <ul class="side-list">
+            <li>DB 실패 시 ROLLBACK으로 원자성 유지</li>
+            <li>종료 시 Flush로 미커밋 데이터 손실 최소화</li>
+            <li>로딩 게이트 실패 시 입장 차단 + 세션 정리</li>
+          </ul>
+        </aside>
+      </div>
+
+      <div class="p5-footer">
+        <span class="flow-chip">AUTH</span>
+        <span class="flow-chip">TOKEN VERIFY</span>
+        <span class="flow-chip">SERVER AUTHORITY</span>
+        <span class="flow-chip">WRITE-BACK</span>
+        <span class="flow-chip">COMMIT & FLUSH</span>
+      </div>
+    </section>
+
+    <section class="page page6">
+      <div class="page-top">
+        <strong>Portfolio Draft</strong>
+        <span>Page 6</span>
+      </div>
+
+      <div class="p6-head">
+        <h2>2-1. 서버 권위 이동 검증: 필요한 이유</h2>
+        <p class="p6-sub">클라이언트 입력은 제안, 위치 확정은 서버 책임</p>
+      </div>
+
+      <div class="p6-keymsg">
+        핵심 메시지: "이동은 클라이언트 입력일 뿐, 최종 위치는 서버가 검증 후 확정한다."
+      </div>
+
+      <div class="p6-main">
+        <article class="p6-panel">
+          <h3>클라이언트 신뢰 시 실제 문제</h3>
+          <div class="threat-grid">
+            <div class="threat-card">
+              <h4>1) 속도핵 / 텔레포트</h4>
+              <p>비정상 delta를 반영하면 짧은 시간에 과도한 거리 이동이 가능해진다.</p>
+            </div>
+            <div class="threat-card">
+              <h4>2) 벽 통과 / 비정상 지형 진입</h4>
+              <p>충돌 지형을 무시한 좌표가 그대로 적용되면 월드 규칙이 깨진다.</p>
+            </div>
+            <div class="threat-card">
+              <h4>3) 시퀀스 역전 / 재전송 패킷</h4>
+              <p>과거 패킷이 최신 상태를 덮어써 위치 롤백이나 순간이동이 발생한다.</p>
+            </div>
+          </div>
+          <p class="mini-note">
+            결과: 월드 상태 오염 → 전투 공정성 저하 → 클라이언트 간 위치 불일치(Desync)
+          </p>
+        </article>
+
+        <aside class="p6-panel">
+          <h3>서버 권위 설계 원칙</h3>
+          <ul class="compact-list">
+            <li>서버가 `seq`, `dt`, `speed`, `navmesh`를 순차 검증</li>
+            <li>비정상 요청은 drop 또는 clamp/slide 보정</li>
+            <li>검증 완료 좌표만 월드 상태로 commit</li>
+            <li>확정 결과만 AOI 대상에게 `S_MOVE` 브로드캐스트</li>
+          </ul>
+          <h3 style="margin-top:12px;">검증 경계(제출 포인트)</h3>
+          <ul class="compact-list">
+            <li>입력 안정성: NaN/Inf/Crazy Position 즉시 거부</li>
+            <li>순서/시간: 역순 seq drop, dt 최소/최대 clamp</li>
+            <li>속도: 허용 거리 초과 시 이동 거리 제한</li>
+            <li>지형: NavMesh ValidateMove 통과 좌표만 반영</li>
+          </ul>
+        </aside>
+      </div>
+
+      <article class="p6-bottom">
+        <h3>위협-대응 구조 다이어그램</h3>
+        <pre class="mermaid">
+flowchart LR
+  A[Client Sends Position] --> B{Trust Client As-Is?}
+  B -->|Yes| C1[Speed Hack / Teleport]
+  B -->|Yes| C2[Wall Clip / Invalid Terrain]
+  B -->|Yes| C3[Seq Reorder / Replayed Packet]
+  C1 --> D[World State Corruption]
+  C2 --> D
+  C3 --> D
+  D --> E[Combat Fairness Break + Desync]
+  B -->|No: Server Authoritative| F[Server Validation]
+  F --> G[Seq Check + dt Clamp + Speed Check + NavMesh]
+  G --> H[Commit + S_MOVE Broadcast]
+  H --> I[Consistent Shared World]
+        </pre>
+      </article>
+    </section>
+
+    <section class="page page7">
+      <div class="page-top">
+        <strong>Portfolio Draft</strong>
+        <span>Page 7</span>
+      </div>
+
+      <div class="p7-head">
+        <h2>2-1. 이동 검증 파이프라인</h2>
+        <p class="p7-sub">코드 순서 기준: 입력 수신부터 상태 확정/전파까지의 검증 체인</p>
+      </div>
+
+      <div class="p7-main">
+        <article class="p7-panel">
+          <h3>검증 흐름 A (1~3 단계)</h3>
+          <pre class="mermaid">
+flowchart TB
+  A["1) Handle_C_MOVE 수신"]
+  B["RoomActor JobQueue enqueue"]
+  C{"2) 입력 안정성 검사<br/>NaN / Inf / CrazyPos"}
+  D{"3) 시간/순서 검증<br/>IsSeqNewer + ComputeDtSec"}
+  E["4단계로 전달"]
+
+  A --> B --> C --> D --> E
+  C -->|invalid| X1["DROP"]
+  D -->|rewind| X2["DROP"]
+          </pre>
+        </article>
+
+        <article class="p7-panel">
+          <h3>검증 흐름 B (4~6 단계)</h3>
+          <pre class="mermaid">
+flowchart TB
+  P["3단계 통과 입력"]
+  A{"4) 속도 검증<br/>CheckSpeed2D"}
+  B["CLAMP"]
+  C["요청 좌표 유지"]
+  D{"5) 지형/충돌 검증<br/>GameMap ValidateMove"}
+  E["SLIDE / CORRECT"]
+  F["검증 통과 좌표"]
+  G["6) 상태 확정/전파<br/>Commit + AOI + S_MOVE + MoveStamp"]
+
+  P --> A
+  A -->|over speed| B --> D
+  A -->|ok| C --> D
+  D -->|blocked| E --> F
+  D -->|pass| F
+  F --> G
+          </pre>
+        </article>
+      </div>
+
+      <article class="p7-bottom">
+        <div class="p7-bottom-grid">
+          <section>
+            <h3>파이프라인 개요 (코드 순서 기준)</h3>
+            <ol class="p7-step-list">
+              <li><strong>1) `Handle_C_MOVE`</strong> RoomActor Queue enqueue</li>
+              <li><strong>2) 입력 안정성</strong> NaN/Inf/CrazyPos 즉시 거부</li>
+              <li><strong>3) 시간/순서</strong> `IsSeqNewer` + `ComputeDtSec`</li>
+              <li><strong>4) 속도 검증</strong> `CheckSpeed2D` 초과 시 clamp</li>
+              <li><strong>5) 지형/충돌</strong> `GameMap::ValidateMove` 보정 분기</li>
+              <li><strong>6) 상태 확정</strong> Commit + AOI + `S_MOVE` + MoveStamp</li>
+            </ol>
+          </section>
+
+          <section>
+            <h3>분기 처리</h3>
+            <ul class="p7-side-list">
+              <li>입력 오류/역순 seq: drop</li>
+              <li>과속 이동: clamp 후 재검증</li>
+              <li>지형 불일치: slide/correct 보정</li>
+            </ul>
+
+            <div class="p7-note">
+              핵심: 순차 검증으로 비정상 이동은 drop/clamp하고 확정 좌표만 공유 상태에 반영한다.
+            </div>
+          </section>
+        </div>
+      </article>
+    </section>
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <script>
+    if (window.mermaid) {
+      mermaid.initialize({
+        startOnLoad: true,
+        theme: "base",
+        securityLevel: "loose"
+      });
+    }
+  </script>
+</body>
+</html>

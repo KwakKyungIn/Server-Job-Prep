@@ -1,4 +1,4 @@
-#include <iostream>
+ï»¿#include <iostream>
 #include <vector>
 #include <string>
 #include <algorithm>
@@ -13,7 +13,7 @@
 #include <memory>
 using namespace std;
 
-//1ÁÖÂ÷ b¹ø¹®Á¦
+//1ì£¼ì°¨ bë²ˆë¬¸ì œ
 /*
 int main() {
     ios_base::sync_with_stdio(false); cin.tie(NULL); cout.tie(NULL);
@@ -35,7 +35,7 @@ int main() {
 
 */
 
-//1ÁÖÂ÷ c¹ø ¹®Á¦
+//1ì£¼ì°¨ cë²ˆ ë¬¸ì œ
 /*
 int main() {
     ios_base::sync_with_stdio(false); cin.tie(NULL); cout.tie(NULL);
@@ -66,7 +66,7 @@ int main() {
 }
 */
 
-//1ÁÖÂ÷ d¹ø ¹®Á¦
+//1ì£¼ì°¨ dë²ˆ ë¬¸ì œ
 /*
 int main() {
     ios::sync_with_stdio(false);
@@ -87,7 +87,7 @@ int main() {
 }
 */
 
-//1ÁÖÂ÷ e¹ø ¹®Á¦
+//1ì£¼ì°¨ eë²ˆ ë¬¸ì œ
 /*
 int main() {
     ios_base::sync_with_stdio(false); cin.tie(NULL); cout.tie(NULL);
@@ -118,7 +118,7 @@ int main() {
     
 }
 */
-//1ÁÖÂ÷ f¹ø ¹®Á¦
+//1ì£¼ì°¨ fë²ˆ ë¬¸ì œ
 /*
 int main() {
     ios_base::sync_with_stdio(false), cin.tie(NULL); cout.tie(NULL);
@@ -146,7 +146,7 @@ int main() {
 }
 
 */
-//1ÁÖÂ÷ g¹ø ¹®Á¦
+//1ì£¼ì°¨ gë²ˆ ë¬¸ì œ
 /*
 int main() {
     ios_base::sync_with_stdio(false);
@@ -155,7 +155,7 @@ int main() {
 
     string Input;
     int num;
-    vector<string> str(100); // ³× Æ² À¯Áö
+    vector<string> str(100); // ë„¤ í‹€ ìœ ì§€
 
     cin >> num;
     cin >> Input;
@@ -166,7 +166,7 @@ int main() {
         str[i] = temp;
     }
 
-    // ÆĞÅÏ split: prefix*suffix
+    // íŒ¨í„´ split: prefix*suffix
     size_t star = Input.find('*');
     string prefix = Input.substr(0, star);
     string suffix = Input.substr(star + 1);
@@ -174,19 +174,19 @@ int main() {
     for (int i = 0; i < num; i++) {
         const string& s = str[i];
 
-        // ÃÖ¼Ò ±æÀÌ Á¶°Ç
+        // ìµœì†Œ ê¸¸ì´ ì¡°ê±´
         if (s.size() < prefix.size() + suffix.size()) {
             cout << "NE\n";
             continue;
         }
 
-        // prefix·Î ½ÃÀÛ?
+        // prefixë¡œ ì‹œì‘?
         if (s.compare(0, prefix.size(), prefix) != 0) {
             cout << "NE\n";
             continue;
         }
 
-        // suffix·Î ³¡?
+        // suffixë¡œ ë?
         if (s.compare(s.size() - suffix.size(), suffix.size(), suffix) != 0) {
             cout << "NE\n";
             continue;
@@ -198,7 +198,7 @@ int main() {
     return 0;
 }
 */
-//1ÁÖÂ÷ h¹ø ¹®Á¦
+//1ì£¼ì°¨ hë²ˆ ë¬¸ì œ
 /*
 int go(const vector<int>& numbers, int mi) {
     int max1 = 0;
@@ -238,7 +238,7 @@ int main() {
     return 0;
 }
 */
-//1ÁÖÂ÷ i¹ø ¹®Á¦
+//1ì£¼ì°¨ ië²ˆ ë¬¸ì œ
 /*
 bool isNumber(const string& s) {
     return !s.empty() && isdigit((unsigned char)s[0]);
@@ -276,7 +276,7 @@ int main(){
 
 }
 */
-//1ÁÖÂ÷ j¹ø ¹®Á¦
+//1ì£¼ì°¨ jë²ˆ ë¬¸ì œ
 /*
 int main() {
     ios_base::sync_with_stdio(false); cin.tie(NULL); cout.tie(NULL);
@@ -315,7 +315,7 @@ int main() {
     }
 }
 */
-//1ÁÖÂ÷ k¹ø ¹®Á¦
+//1ì£¼ì°¨ kë²ˆ ë¬¸ì œ
 /*
 int main() {
     ios_base::sync_with_stdio(false); cin.tie(NULL); cout.tie(NULL);
@@ -368,7 +368,7 @@ int main() {
     cout << answer << '\n';
 }
 */
-//1ÁÖÂ÷ l¹ø ¹®Á¦
+//1ì£¼ì°¨ lë²ˆ ë¬¸ì œ
 /*
 int main() {
     ios_base::sync_with_stdio(false); cin.tie(NULL); cout.tie(NULL);
@@ -396,7 +396,7 @@ int main() {
 
 }
 */
-//1ÁÖÂ÷ n¹ø ¹®Á¦
+//1ì£¼ì°¨ në²ˆ ë¬¸ì œ
 /*
 bool crushPairsEmpty(const string& s) {
     vector<pair<char, int>> st;
@@ -409,7 +409,7 @@ bool crushPairsEmpty(const string& s) {
         if (st.back().second == 2) st.pop_back();
     }
 
-    return st.empty(); // ÃÖÁ¾ ¹®ÀÚ¿­ÀÌ ºó ¹®ÀÚ¿­ÀÌ¸é true
+    return st.empty(); // ìµœì¢… ë¬¸ìì—´ì´ ë¹ˆ ë¬¸ìì—´ì´ë©´ true
 }
 
 int main() {
@@ -430,5 +430,5 @@ int main() {
 }
 */
 
-//1ÁÖÂ÷ m¹ø ¹®Á¦
-//1ÁÖÂ÷ o¹ø ¹®Á¦
+//1ì£¼ì°¨ më²ˆ ë¬¸ì œ
+//1ì£¼ì°¨ oë²ˆ ë¬¸ì œ

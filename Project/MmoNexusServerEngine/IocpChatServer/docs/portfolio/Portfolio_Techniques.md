@@ -11,11 +11,18 @@
 - 맵 변경 핸드셰이크 — 토큰 검증 + 안전 귀환(던전/강퇴).
 - 서버 권위 이동 검증 — 속도 클램프 + NavMesh 슬라이딩 보정.
 - AOI/SpatialGrid — 근접 엔티티만 동기화하고 스냅샷 배칭.
-- 전투/투사체 — 즉발 판정 + 투사체 충돌/벽 레이캐스트 + 쿨타임 서버 검증.
+- 전투/범위/투사체 — 즉발/원형/부채꼴 판정 + 투사체 충돌/벽 레이캐스트 + 쿨타임 서버 검증.
+- 플레이어 리스폰 — 월드 스폰 부활 + 던전 강제 귀환 부활 처리.
+- 몬스터 스폰/리젠/드랍 — JSON 스폰 포인트 + 확률 드랍 그룹 롤링.
 - 몬스터 FSM AI — Idle/Chase/Attack/Return + 경로 탐색/LOS.
+- 파티 초대 검증 — 이름 기반 대상 해석 + 동명이인 차단 + 60초 만료 제어.
 - Redis Write-Back — 실시간 변경을 캐시하고 AutoCommit로 DB 저장.
 - ODBC DB 트랜잭션 — Prepared Statement/Transaction으로 원자 커밋.
+- 게임 아이템 UID 시드 부트스트랩 — 서버 시작 시 DB 최대 UID+1 동기화.
 - 거래 2단계 커밋 — 메모리 시뮬레이션 + DB 트랜잭션(아이템/골드).
+- Prometheus 메트릭 — `/metrics` exporter + Game/DB 커스텀 지표 수집.
+- Grafana 대시보드 — Prometheus 지표 시각화 자산 구성.
+- DummyClient 부하 테스트 — 시나리오 기반 CCU 램프업 + CSV(P95) 리포트.
 - 메모리 풀링 — ObjectPool/SendBufferChunk로 할당 비용 절감.
 - 패킷 생성 도구 — Python+Jinja2로 핸들러 템플릿 생성.
 
@@ -129,6 +136,18 @@
 3) Pros/Cons: Pros) 스키마 명확/호환성 확보. Cons) 코드 생성 의존성.
 4) Next: 스키마 버전/마이그레이션 정책 정식화.
 
+### 서비스 하트비트 + 자동 재연결 — 내가 한 일: S2S 연결의 timeout/ping/reconnect 경로를 공통 서비스 계층에 구축
+**근거**
+- `ServerCore/Service.cpp` — `CheckHeartbeat`, `ClientService::CheckHeartbeat`
+- `GameServer/DBSession.cpp`, `GameServer/LoginSession.cpp` — `Ping`
+- `DBAgent/DBAgentPacketHandler.cpp` — `Handle_S2S_REQ_HEART_BEAT`
+- `LoginServer/GameServerSession.cpp` — `PKT_S2S_REQ_HEART_BEAT` 직접 응답
+
+1) Problem: DB/Login 연결이 끊기면 인증/영속화 흐름이 연쇄적으로 중단된다.
+2) Implementation: 서비스 공통 계층에서 30초 timeout 검사 + Ping 송신을 수행하고, ClientService는 세션 부족 시 자동 재연결을 시도한다.
+3) Pros/Cons: Pros) 서버간 연결 복원 자동화. Cons) 게임 클라이언트 heartbeat timeout은 현재 메인 루프에서 비활성.
+4) Next: 클라이언트 세션 heartbeat 강제 종료/RTT 기반 정책까지 통합.
+
 ---
 
 ## Gameplay Server Systems
@@ -143,6 +162,17 @@
 3) Pros/Cons: Pros) 명확한 룸 식별. Cons) 룸 수 증가 시 관리 비용 상승.
 4) Next: 룸 메타 모니터링/강제 정리 정책 개선.
 
+### 파티 초대 이름 매칭 + 만료 제어 — 내가 한 일: 온라인 이름 인덱스와 TTL 초대장을 결합해 초대 정합성 강화
+**근거**
+- `GameServer/ClientPacketHandler.Party.cpp` — `Handle_C_PARTY_INVITE_REQ`
+- `GameServer/GameSessionManager.cpp` — `TryGetPlayerIdByName`, `RebuildNameIndex_Locked`
+- `GameServer/PartyManagerCore.cpp` — `Invite`, `AcceptInvite` (`expireTick`)
+
+1) Problem: 이름 기반 초대는 동명이인/오프라인/지연 응답에서 잘못된 대상 매칭이 발생하기 쉽다.
+2) Implementation: SessionManager 이름 인덱스로 대상 ID를 해석하고, 동명이인은 ambiguous로 거절한다. PartyManagerCore가 초대장을 target 기준으로 보관하고 60초 만료(`expireTick`)를 강제한다.
+3) Pros/Cons: Pros) 초대 대상 오매칭과 지연 수락 이슈를 줄임. Cons) 닉네임 중복 정책에 따라 이름 초대 UX 제약이 생김.
+4) Next: 닉네임+태그(예: `name#1234`) 기반 식별자 도입 및 초대 만료 사유 코드 분리.
+
 ### 맵 변경 핸드셰이크 + 안전 귀환 — 내가 한 일: 토큰 기반 전이와 강제 귀환 흐름 통합
 **근거**
 - `GameServer/ClientPacketHandler.MapChangeUtil.cpp` — `MakeMapChangeToken`, `SendMapChangeBegin`, `ForceReturnToWorld`
@@ -154,6 +184,17 @@
 2) Implementation: 토큰 발급 → MapChanging 상태 전이 → ACK 검증 후 룸 이동, 강제 귀환은 안전 좌표 계산 후 동일 핸드셰이크로 처리한다.
 3) Pros/Cons: Pros) 전이 검증 일원화, 안전 복귀 보장. Cons) 전이 중 지연/끊김 처리 복잡.
 4) Next: 전이 타임아웃/롤백 및 실패 응답 표준화.
+
+### 로비 DB 로딩 게이트 + 실패 롤백 — 내가 한 일: 비동기 3종 로딩 완료 전까지 월드 입장을 차단하고 실패 시 정리
+**근거**
+- `GameServer/ClientPacketHandler.EnterGame.cpp` — `SetPendingEnter_ActorOnly`, DB 로딩 요청
+- `GameServer/LobbyRoom.cpp` — `OnStatLoaded`, `OnItemsLoaded`, `OnQuickSlotsLoaded`, `TryEnterWorldIfReady`, `OnDbLoadFailed`
+- `GameServer/S2SPacketHandler.cpp` — 로딩 응답을 LobbyRoom으로 전달
+
+1) Problem: 스탯/인벤/퀵슬롯이 반쯤 로딩된 상태로 월드 입장하면 데이터 정합성이 깨진다.
+2) Implementation: 로비에서 3개 로딩 플래그를 게이트로 관리하고, 전부 완료될 때만 입장시킨다. `OnItemsLoaded` 단계에서 중복 장착(동일 부위 다중 장착)을 정규화해 Redis/Dirty까지 즉시 동기화한다. 실패 시 `S_ENTER_GAME(false)` 응답 후 세션 정리/종료한다.
+3) Pros/Cons: Pros) 불완전 로딩 및 비정상 장비 상태를 입장 전에 차단. Cons) 로딩 단계에서 정규화 비용이 추가되고 부분복구 경로는 아직 단순.
+4) Next: 로딩 실패 원인 코드화 및 재시도 백오프 추가.
 
 ### 서버 권위 이동 검증 + NavMesh 슬라이딩 — 내가 한 일: 속도/시퀀스/네비 검증을 통합
 **근거**
@@ -177,16 +218,28 @@
 3) Pros/Cons: Pros) 네트워크/CPU 절약. Cons) 복잡한 상태 동기화 필요.
 4) Next: 시야 갱신 주기/임계값 동적 조절.
 
-### 전투 시스템(즉발/투사체) — 내가 한 일: 스킬 타입에 따라 판정과 투사체 로직을 분리
+### 전투 시스템(즉발/원형/부채꼴/투사체) — 내가 한 일: 스킬 타입별 판정과 투사체 로직을 분리
 **근거**
 - `GameServer/GameRoom.Combat.cpp` — `HandleSkill` 분기
 - `GameServer/BattleSystem.cpp` — `ResolveSkill`
 - `GameServer/GameRoom.Projectile.cpp` — 투사체 이동/충돌
 
 1) Problem: 다양한 스킬 판정을 서버에서 일관되게 처리해야 한다.
-2) Implementation: 즉발형은 BattleSystem에서 판정하고, 투사체는 별도 오브젝트로 갱신한다. `CanUseSkill`로 서버 쿨타임을 검증하고 `StartSkillCooldown`으로 소비한다.
-3) Pros/Cons: Pros) 스킬 타입 확장 용이. Cons) 일부 스킬 타입 미구현.
-4) Next: 원형/부채꼴 등 범위 스킬 판정 추가.
+2) Implementation: `ResolveSkill`에서 `SKILL_AUTO`, `SKILL_AREA_CIRCLE`, `SKILL_AREA_CONE`를 판정하고, `SKILL_PROJECTILE`은 별도 오브젝트 업데이트 루프에서 처리한다. `CanUseSkill`/`StartSkillCooldown`으로 쿨타임을 서버 권위로 소비한다.
+3) Pros/Cons: Pros) 스킬 타입별 권위 판정 확립. Cons) 판정 파라미터(range/radius/angle) 튜닝 난이도.
+4) Next: 스킬별 히트 피드백/로그 계측을 추가해 밸런싱 루프 단축.
+
+### 플레이어 부활(월드 스폰 + 던전 강제 귀환) — 내가 한 일: `C_RESPAWN_REQ`를 월드/던전 전이에 맞게 처리
+**근거**
+- `GameServer/ClientPacketHandler.GamePlay.cpp` — `Handle_C_RESPAWN_REQ`
+- `GameServer/GameRoom.MapChange.cpp` — `HandleRespawn`, `TransferMapChangeById`
+- `GameServer/Player.cpp` — `OnDead`
+- `Common/Protobuf/bin/Protocol.proto` — `C_RESPAWN_REQ`
+
+1) Problem: 사망 후 복귀 경로가 없으면 플레이 흐름이 끊기고 던전 내부 고립이 발생한다.
+2) Implementation: 월드맵은 스폰 좌표로 즉시 부활, 던전은 `pendingRespawn` 마킹 후 `ForceReturnToWorld` 핸드셰이크로 안전 복귀 후 부활하도록 분기했다.
+3) Pros/Cons: Pros) 사망→복귀 흐름 일관화. Cons) 전용 respawn 응답 패킷 없이 `S_MOVE`/`S_CHANGE_HP` 조합에 의존.
+4) Next: 부활 무적시간/쿨다운 정책과 전용 응답 패킷 정식화.
 
 ### 몬스터 FSM AI + 경로 탐색 — 내가 한 일: FSM과 NavMesh 경로/LOS를 결합
 **근거**
@@ -198,6 +251,18 @@
 2) Implementation: FSM(Idle/Chase/Attack/Return) + LOS/경로 재계산으로 추적을 구현했다.
 3) Pros/Cons: Pros) 예측 가능한 AI 흐름. Cons) 복잡한 지형에서 CPU 부담.
 4) Next: AI 업데이트 주기 최적화/스킬 다양화.
+
+### 몬스터 스폰/리젠 + 드랍 테이블 — 내가 한 일: JSON 테이블 기반 스폰 포인트/확률 드랍 시스템 적용
+**근거**
+- `GameServer/GameServer.cpp` — `MonsterTemplates/SpawnTables/DropTables` 로드
+- `GameServer/DataManager.cpp` — `LoadSpawnTablesFromJson`, `LoadDropTablesFromJson`
+- `GameServer/GameRoom.LifeTime.cpp` — `InitSpawnPoints_ActorOnly`, `UpdateSpawns_ActorOnly`
+- `GameServer/GameRoom.Items.cpp` — `HandleMonsterDead`, `RollDropGroup`
+
+1) Problem: 고정 스폰/고정 드랍은 밸런싱과 운영 확장성이 낮다.
+2) Implementation: `spawnId/maxAlive/respawnSec` 기반 런타임 스폰 포인트를 관리하고, `DropGroup(weight/roll/noDropWeight)`로 처치 보상을 롤링한다.
+3) Pros/Cons: Pros) 데이터 중심 밸런싱 가능. Cons) 인벤 가득 찬 보상은 현재 바닥 드랍으로 이관되지 않음.
+4) Next: 월드 드랍 오브젝트/획득 실패 알림 추가.
 
 ### 거래 2단계 커밋(Phase1/Phase2) — 내가 한 일: 아이템/골드를 시뮬레이션 후 원자 커밋
 **근거**
@@ -221,9 +286,9 @@
 - `ServerCore/RedisManager.h` — `Set/Get` API
 
 1) Problem: 로그인과 게임 접속 사이의 인증 정보를 안전하게 전달해야 한다.
-2) Implementation: LoginServer가 토큰을 Redis에 저장하고 GameServer가 검증한다.
-3) Pros/Cons: Pros) 간단한 중앙 인증. Cons) Redis 장애 시 로그인 실패.
-4) Next: 토큰 서명(JWT 등)과 Redis 장애 대응(캐시/재시도) 강화.
+2) Implementation: LoginServer가 토큰과 `token:name:{token}`를 Redis에 저장하고, GameServer가 토큰 검증과 이름 복구에 사용한다.
+3) Pros/Cons: Pros) 간단한 중앙 인증/이름 컨텍스트 전달. Cons) Redis 장애 시 로그인 실패, `S_LOGIN.serverList`는 현재 정적 하드코딩이라 실시간 혼잡도 연동이 없다.
+4) Next: 토큰 서명(JWT 등), Redis 장애 대응(캐시/재시도), 로그인 서버 리스트 동적 디스커버리/혼잡도 연동.
 
 ### Redis Write-Back + AutoCommit — 내가 한 일: 실시간 변경을 Redis에 누적 후 주기 저장
 **근거**
@@ -247,16 +312,27 @@
 3) Pros/Cons: Pros) 정합성 보장. Cons) DB 병목 시 지연 증가.
 4) Next: 쿼리 배치 최적화/비동기 재시도 추가.
 
-### JSON 기반 설정/맵 데이터 — 내가 한 일: ServerConfig와 Maps.json을 로드
+### JSON 기반 설정/맵 데이터 — 내가 한 일: 서버별 설정과 맵 파라미터를 실행 파일 기준으로 로드
 **근거**
-- `ServerCore/CoreGlobal.cpp` — `ServerConfig.json` 로드(`nlohmann::json`)
+- `ServerCore/CoreGlobal.cpp` — `ServerConfig.{Exe}.json` 우선 + `ServerConfig.json` 폴백 로드
 - `GameServer/DataManager.cpp` — `LoadMapConfigsFromJson`
 - `GameServer/Maps.json` — `mapId/zoneSize/interestRadius` 등 설정 키
 
 1) Problem: 서버 설정과 맵 파라미터를 코드에서 분리해야 한다.
-2) Implementation: JSON 파일에서 설정 값을 읽어 전역/맵 설정에 반영했다.
+2) Implementation: 실행 파일 이름 기반으로 설정 파일을 선택해 로드하고(`GameServer`/`DBAgent` 등), 맵 파라미터는 `Maps.json`으로 분리했다.
 3) Pros/Cons: Pros) 운영 편의성. Cons) 파일 누락 시 런타임 위험.
 4) Next: 환경별 설정 분리 및 유효성 검사 강화.
+
+### JSON 기반 몬스터/스폰/드랍 데이터 — 내가 한 일: 기획 테이블을 서버 런타임 데이터로 변환
+**근거**
+- `GameServer/DataManager.h` — `MonsterTemplate`, `SpawnEntry`, `DropGroup`
+- `GameServer/DataManager.cpp` — `LoadMonsterTemplatesFromJson`, `LoadSpawnTablesFromJson`, `LoadDropTablesFromJson`
+- `Binary/Debug/MonsterTemplates.json`, `Binary/Debug/SpawnTables.json`, `Binary/Debug/DropTables.json`
+
+1) Problem: 몬스터/드랍 밸런스 조정이 코드 수정을 요구하면 운영 속도가 느리다.
+2) Implementation: JSON 테이블을 로드해 메모리 캐시로 변환하고, 룸/전투 시스템이 이를 조회하도록 연결했다.
+3) Pros/Cons: Pros) 기획 데이터 반영 속도 향상. Cons) 스키마 유효성 검증이 느슨하면 런타임 누락 가능.
+4) Next: JSON 스키마 검증과 로드 실패 리포트 고도화.
 
 ### 게임 데이터 S2S 로딩(스탯/아이템/스킬) — 내가 한 일: DBAgent에서 게임 데이터 스냅샷 로딩
 **근거**
@@ -268,6 +344,18 @@
 2) Implementation: GameServer가 S2S로 요청하고 DBAgent가 DB에서 로드해 전달한다.
 3) Pros/Cons: Pros) 데이터 동기화 일원화. Cons) 로딩 실패 시 대체 경로 부족.
 4) Next: 캐시/핫 리로드 지원.
+
+### 게임 아이템 UID 시드 부트스트랩 — 내가 한 일: 재시작 시 UID 충돌을 막기 위해 DB 기준 시드를 동기화
+**근거**
+- `GameServer/DBSession.cpp` — `S2S_REQ_GAME_ITEM_UID_SEED` 요청
+- `DBAgent/DBAgentPacketHandler.cpp` — `Handle_S2S_REQ_GAME_ITEM_UID_SEED` (MAX UID 조회)
+- `GameServer/S2SPacketHandler.cpp` — `Handle_S2S_RES_GAME_ITEM_UID_SEED`
+- `GameServer/GameItemUidGen.h/.cpp` — `Init`, `Alloc`
+
+1) Problem: 서버 재시작 후 아이템 UID를 로컬 카운터로만 발급하면 기존 DB UID와 충돌할 수 있다.
+2) Implementation: GameServer 시작 시 DBAgent에 UID 시드를 요청하고, DBAgent가 `ITEMS`의 `MAX(game_item_uid)+1`을 계산해 반환하면 `GameItemUidGen::Init(next_uid)`로 발급기를 초기화한다.
+3) Pros/Cons: Pros) 재시작 이후에도 UID 단조 증가/중복 방지. Cons) 부팅 시 DB 의존성이 늘고, 실패 시 시드 동기화가 불완전할 수 있다.
+4) Next: UID range lease(서버별 블록 할당)로 다중 게임서버 동시 발급 경로 확장.
 
 ---
 
@@ -306,6 +394,42 @@
 
 ---
 
+## Observability
+### Prometheus Exporter + MetricsSystem — 내가 한 일: 공용 `/metrics` 노출 계층 구축
+**근거**
+- `ServerCore/CoreGlobal.cpp` — Metrics 설정 로드 및 `MetricsSystem::Initialize`
+- `ServerCore/MetricsSystem.cpp` — 레지스트리/프로세스 메트릭/응답시간 히스토그램 관리
+- `ServerCore/MetricsExporter.cpp` — HTTP `/metrics` 서버 및 Prometheus text 렌더링
+
+1) Problem: 서버 상태를 런타임에서 정량적으로 관찰할 공용 경로가 필요했다.
+2) Implementation: CoreGlobal에서 메트릭 시스템을 부팅하고 exporter가 `/metrics`를 노출해 Prometheus 수집 포맷으로 제공한다.
+3) Pros/Cons: Pros) 서버 공통 관측 인프라 확보. Cons) 지표 설계가 과도하면 cardinality 관리 이슈 발생.
+4) Next: 고카디널리티 라벨 가이드와 샘플링 정책 정리.
+
+### GameServer/DBAgent 도메인 메트릭 계측 — 내가 한 일: 패킷/로비/S2S/DB 풀 지표를 서비스별로 계측
+**근거**
+- `GameServer/GameMetrics.cpp` — packet ingress/handle/failure, lobby wait, S2S RTT, CCU/ingame
+- `DBAgent/DBAgentMetrics.cpp` — req handle/failure, query, pool wait/size/inuse
+- `ServerCore/PacketMetricsHooks.h` — 핸들러 계층 공통 훅
+
+1) Problem: `/metrics`만 열어두고 업무 지표를 넣지 않으면 병목 원인 분석이 어렵다.
+2) Implementation: packet dispatch/handle 훅, 로비 로딩 대기, S2S RTT, DB pool/query 시간을 히스토그램/카운터/게이지로 계측했다.
+3) Pros/Cons: Pros) 장애 원인 구간을 빠르게 좁힐 수 있음. Cons) 지표 추가 시 라벨 설계 실수 위험.
+4) Next: SLA 기준 대시보드 임계치와 알림 규칙(Alerting) 추가.
+
+### Grafana 대시보드 자산 — 내가 한 일: Prometheus 수집 경로와 대시보드 템플릿을 문서화
+**근거**
+- `docs/monitoring/prometheus.yml`
+- `docs/monitoring/docker-compose.yml`
+- `docs/monitoring/grafana_gameserver_dashboard.json`, `docs/monitoring/grafana_dbagent_dashboard.json`
+
+1) Problem: 메트릭은 있어도 재현 가능한 시각화 구성이 없으면 운영 전환이 느리다.
+2) Implementation: Prometheus/Grafana compose, 스크랩 설정, 대시보드 JSON과 쿼리 문서를 저장소에 포함했다.
+3) Pros/Cons: Pros) 온보딩/재현성 향상. Cons) 대시보드 버전 동기화 관리가 필요.
+4) Next: 대시보드 버전 태깅과 환경별 datasource 템플릿 자동화.
+
+---
+
 ## Tooling & Build
 ### 패킷 코드 생성 도구 — 내가 한 일: Proto 기반 핸들러 생성 스크립트 유지
 **근거**
@@ -317,6 +441,18 @@
 2) Implementation: Python+Jinja2로 핸들러/ID 매핑 코드를 자동 생성한다.
 3) Pros/Cons: Pros) 반복 작업 감소. Cons) 템플릿/스키마 변경 시 관리 필요.
 4) Next: CI에서 자동 생성/검증 단계 추가.
+
+### DummyClient 부하 테스트 러너 — 내가 한 일: 시나리오 기반 접속/행동 부하를 자동 실행하고 CSV 리포트를 생성
+**근거**
+- `DummyClient/DummyClient.cpp` — 실행 엔트리/루프
+- `DummyClient/LoadClientManager.h` — `LoadScenario`, `MetricsCollector`
+- `DummyClient/LoadClientManager.cpp` — 램프업, RTT 수집, CSV 출력
+- `DummyClient/LoadClientConfig.json` — `ccu_target`, `move_hz`, `skill_hz`, `heartbeat_hz`
+
+1) Problem: 기능 추가 후 성능 회귀를 수치로 재현할 부하 도구가 필요했다.
+2) Implementation: `idle/move/combat/mix` 시나리오, CCU 램프업, NavMesh 이동, heartbeat 송신, RTT/전송량 집계를 통합했다.
+3) Pros/Cons: Pros) 반복 가능한 성능 검증 경로 확보. Cons) 실제 클라 렌더/입력 부하는 반영되지 않음.
+4) Next: 시나리오별 리포트 비교 자동화와 장기 soak 테스트 추가.
 
 ### Visual Studio 빌드 구성 — 내가 한 일: 솔루션/프로젝트 기반으로 빌드 구조 유지
 **근거**

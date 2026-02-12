@@ -1,0 +1,23 @@
+flowchart TD
+    A[C_MOVE Received] --> B[Enqueue to RoomActor JobQueue]
+    B --> C{Finite + Bounds Check}
+    C -->|Fail| R0[Drop Packet]
+    C -->|Pass| D{IsSeqNewer?}
+
+    D -->|No| R1[Drop Rewind/Duplicate]
+    D -->|Yes| E[ComputeDtSec]
+    E --> F{CheckSpeed2D}
+
+    F -->|Too Fast| G[Clamp Position]
+    F -->|OK| H[Use Requested Position]
+
+    G --> I[GameMap ValidateMove]
+    H --> I
+
+    I -->|Blocked| J[Slide/Correct or Drop]
+    I -->|Pass| K[Server Position Commit]
+    J --> K
+
+    K --> L[Zone/AOI Update]
+    L --> M[S_MOVE Broadcast]
+    M --> N[SetMoveStamp]

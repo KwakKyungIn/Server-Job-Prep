@@ -1,0 +1,18 @@
+flowchart LR
+    A[Client Sends Position] --> B{Trust Client As-Is?}
+
+    B -->|Yes| C1[Speed Hack / Teleport]
+    B -->|Yes| C2[Wall Clip / Invalid Terrain]
+    B -->|Yes| C3[Seq Reorder / Replayed Packet]
+
+    C1 --> D[World State Corruption]
+    C2 --> D
+    C3 --> D
+    D --> E[Combat Fairness Break + Desync]
+
+    B -->|No: Server Authoritative| F[Server Validation]
+    F --> G[Seq Check]
+    F --> H[dt Clamp + Speed Check]
+    F --> I[NavMesh ValidateMove]
+    F --> J[Commit + S_MOVE Broadcast]
+    J --> K[Consistent Shared World]

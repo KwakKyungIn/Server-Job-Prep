@@ -2,7 +2,7 @@
 
 | 현재 구현 완료 기능 | 부분 구현 | 계획 |
 |---|---|---|
-| 로그인 토큰 검증·게임 입장 게이트<br>채널/맵 이동 핸드셰이크<br>서버 권위 이동 검증·NavMesh 슬라이딩<br>AOI 스냅샷/Spawn·Despawn 동기화<br>투사체 전투/피격 처리<br>스킬 쿨타임 서버 검증<br>파티 생성·초대·채팅·상태 스냅샷<br>파티 기반 인스턴스 던전 + 강제 귀환/강퇴 처리<br>거래 상태머신 + 골드/아이템 + DB 원자 커밋<br>인벤/장비/퀵슬롯/드래그앤드롭<br>로컬 채팅<br>Redis 기반 자동 저장 | 로그인 비밀번호 검증 미사용<br>스킬 타입 확장(원형/부채꼴 등) 미완<br>플레이어 부활/몬스터 리젠/드랍 테이블 미완<br>DB 로딩 실패 처리 미완<br>하트비트 타임아웃/지연 측정 미구현 | 계정 생성/가입 플로우<br>채팅 로그/모니터링 고도화 |
+| 로그인 토큰 검증·게임 입장 게이트<br>DB 로딩 실패 게이트(실패 응답/세션 정리)<br>채널/맵 이동 핸드셰이크<br>서버 권위 이동 검증·NavMesh 슬라이딩<br>AOI 스냅샷/Spawn·Despawn 동기화<br>즉발/원형/부채꼴/투사체 전투 처리<br>스킬 쿨타임 서버 검증<br>플레이어 리스폰(월드 스폰+던전 강제 귀환)<br>몬스터 스폰테이블·리젠·드랍테이블 랜덤 롤<br>파티 생성·초대·채팅·상태 스냅샷<br>파티 기반 인스턴스 던전 + 강제 귀환/강퇴 처리<br>거래 상태머신 + 골드/아이템 + DB 원자 커밋<br>인벤/장비/퀵슬롯/드래그앤드롭<br>로컬/파티 채팅<br>서버 부팅 시 DB 템플릿(스탯/아이템/스킬) 동기화<br>아이템 UID 시드 동기화(재시작 충돌 방지)<br>Redis 기반 자동 저장<br>Prometheus 메트릭 + Grafana 대시보드<br>DummyClient 부하 테스트 도구 | 로그인 비밀번호 검증 미사용<br>계정 생성/가입 미구현<br>로그인 서버 리스트 하드코딩(동적 혼잡도 미연동)<br>클라이언트 하트비트 타임아웃/RTT 수집 미구현<br>바닥 드랍(월드 아이템) 미구현<br>채팅 로그 영속화 미구현<br>DBAgent `S2S_REQ_ITEM_CREATE` 스텁 상태 | 계정 생성/가입 플로우<br>로그인 서버 리스트 동적 디스커버리/혼잡도 연동<br>채팅 로그/모니터링 고도화<br>클라이언트 RTT 기반 연결 정책 고도화 |
 
 ## 1) 계정/로그인/세션
 ### 로그인 인증 및 토큰 발급 (상태: 부분 구현)
@@ -21,6 +21,7 @@
 - `userId` 공백, DB 세션 끊김 시 실패 처리.
 - 비밀번호는 현재 검증 로직에서 사용되지 않음.
 - 유저 미존재 시 계정 생성 TODO만 주석으로 존재.
+- `S_LOGIN.serverList`는 현재 LoginServer 코드에 하드코딩된 3개 엔트리로 구성된다.
 
 **근거**
 - `LoginServer/ClientPacketHandler.cpp` - `ClientPacketHandler::Handle_C_LOGIN`
@@ -45,7 +46,7 @@
 **검증/예외 케이스**
 - 토큰이 Redis에 없으면 즉시 연결 종료.
 - 잘못된 맵/던전 ID는 기본 월드맵으로 보정.
-- DB 로딩 실패 시 TODO 처리만 존재(실제 실패 응답 미구현).
+- DB 로딩 실패 시 `OnDbLoadFailed`가 `S_ENTER_GAME(success=false)` 전송 후 세션 정리/종료를 수행.
 
 **근거**
 - `GameServer/ClientPacketHandler.EnterGame.cpp` - `Handle_C_ENTER_GAME`
@@ -117,7 +118,7 @@
 - `GameServer/RoomManager.h` / `GameServer/RoomManager.cpp`
 - `GameServer/LobbyRoom.cpp` - `EnterGame`, `TryEnterWorldIfReady`
 - `GameServer/GameRoom.LifeTime.cpp` - `GameRoom::Init`
-- `GameServer/DataManager.cpp` / `GameServer/Maps.json`
+- `GameServer/DataManager.cpp` / `Maps.json`(실행 경로 기준, 예: `Binary/Debug/Maps.json`)
 
 ### 맵/채널 이동 핸드셰이크 (상태: 완료)
 **유저 관점**
@@ -232,21 +233,22 @@
 - `Common/Protobuf/bin/Protocol.proto` - `S_SPAWN`, `S_DESPAWN`
 
 ## 4) 전투/스킬/투사체/피격/쿨타임
-### 즉발 스킬 판정 및 피해 처리 (상태: 부분 구현)
+### 즉발/범위 스킬 판정 및 피해 처리 (상태: 완료)
 **유저 관점**
 - 기본 공격 등 즉발 스킬이 맞으면 HP가 감소한다.
-- 범위형 스킬은 일부만 판정된다.
+- 원형/부채꼴 범위 스킬도 서버 판정으로 처리된다.
 
 **서버 내부 흐름**
 1. 클라이언트의 `C_SKILL`을 수신한다.
 2. `DataManager`에서 `SkillTemplateInfo`를 조회한다.
-3. `BattleSystem::ResolveSkill`이 주변 타겟을 수집하고 사거리 판정을 수행한다.
+3. `BattleSystem::ResolveSkill`이 주변 타겟을 수집하고 스킬 타입별 판정을 수행한다.
 4. `Creature::OnDamaged`로 HP를 감소시킨다.
 5. `S_SKILL`과 `S_CHANGE_HP`를 브로드캐스트한다.
 
 **검증/예외 케이스**
 - 스킬 데이터가 없으면 무시.
-- `SKILL_AUTO`만 판정 로직 구현됨(원형/부채꼴 미구현).
+- `SKILL_AUTO`, `SKILL_AREA_CIRCLE`, `SKILL_AREA_CONE` 판정 로직 구현.
+- Cone 각도(`angle`)가 0 이하일 때 기본 90도로 보정.
 - 쿨타임은 `CanUseSkill/StartSkillCooldown`으로 서버 권위 적용.
 
 **근거**
@@ -278,27 +280,32 @@
 - `GameServer/GameRoom.Projectile.cpp`
 - `Common/Protobuf/bin/Struct.proto` - `ProjectileInfo`
 
-### 쿨타임/사망 처리 (상태: 부분 구현)
+### 쿨타임/사망/부활 처리 (상태: 완료)
 **유저 관점**
 - 쿨타임은 클라이언트 UI에 표시되며 서버에서도 검증된다.
-- 사망 상태는 전파되지만 자동 부활/리젠 흐름은 제공되지 않는다.
+- 사망 상태가 전파되며, 부활 요청 시 월드 스폰 또는 던전 복귀 부활이 처리된다.
 
 **서버 내부 흐름**
 1. `Creature::CanUseSkill`로 쿨타임 만료를 검사한다.
 2. `GameRoom::HandleSkill`에서 검증 후 `StartSkillCooldown`을 적용한다.
 3. `S_SKILL`에 `cooldownMs`를 포함해 클라이언트 UI에 전달한다.
 4. `Player::OnDead`가 상태를 `ACTION_DEAD`로 전파한다.
-5. 포션 사용 시 HP 회복과 함께 사망 상태 해제 전파가 가능하다.
+5. `C_RESPAWN_REQ` 수신 시 `GameRoom::HandleRespawn`이 월드/던전 분기 처리를 수행한다.
+6. 월드맵은 스폰 좌표로 이동 + HP 복구 + AOI 재동기화를 수행한다.
+7. 던전은 `pendingRespawn`을 마킹하고 `ForceReturnToWorld` 전이 후 부활을 완료한다.
 
 **검증/예외 케이스**
 - 쿨타임 중 스킬 요청은 무시된다.
-- 부활/리젠 스폰 로직 및 전용 패킷 흐름은 미구현이다.
+- 살아있는 상태에서의 부활 요청은 무시된다.
+- 전용 `S_RESPAWN_RES` 없이 `S_MOVE`/`S_CHANGE_HP`로 상태를 동기화한다.
 
 **근거**
 - `GameServer/Creature.cpp` - `CanUseSkill`, `UseSkill`
 - `GameServer/GameRoom.Combat.cpp` - `S_SKILL` 전송
+- `GameServer/ClientPacketHandler.GamePlay.cpp` - `Handle_C_RESPAWN_REQ`
+- `GameServer/GameRoom.MapChange.cpp` - `HandleRespawn`, `TransferMapChangeById`
 - `GameServer/Player.cpp` - `OnDead`
-- `Common/Protobuf/bin/Struct.proto` - `SkillTemplateInfo`
+- `Common/Protobuf/bin/Protocol.proto` - `C_RESPAWN_REQ`
 
 ## 5) 몬스터 AI(FSM/네비/타겟팅 등)
 ### 몬스터 FSM AI (상태: 완료)
@@ -342,26 +349,29 @@
 - `GameServer/GameMap.cpp` - `FindPathWaypoints`, `HasLineOfSight`
 - `GameServer/NavSystem.cpp`
 
-### 스폰/드랍/리젠 (상태: 부분 구현)
+### 스폰/드랍/리젠 (상태: 완료)
 **유저 관점**
-- 기본 몬스터가 스폰되고 처치 시 아이템이 자동 지급된다.
-- 리젠/스폰 테이블은 확인되지 않는다.
+- 맵별 스폰 테이블에 따라 몬스터가 배치되고, 사망 후 리젠된다.
+- 처치 시 드랍 그룹 기반 확률 드랍이 적용된다(기본은 오토루트).
 
 **서버 내부 흐름**
-1. `GameRoom::Init`에서 테스트 몬스터를 1마리 스폰한다.
-2. `EnterMonster`가 AOI/Zone에 등록하고 스폰 패킷을 전송한다.
-3. 사망 시 `HandleMonsterDead`가 경험치/드랍을 처리한다.
-4. 몬스터는 `LeaveMonster`로 디스폰된다.
-5. 리젠 타이머/스폰 테이블 로직은 미발견.
+1. 서버 시작 시 `MonsterTemplates.json`, `SpawnTables.json`, `DropTables.json`을 로드한다.
+2. `InitSpawnPoints_ActorOnly`가 `spawnId/monsterId/maxAlive/respawnSec` 기반 런타임 스폰 포인트를 구성한다.
+3. `UpdateSpawns_ActorOnly`가 매 tick 결손 수를 채우며 리젠 타이머를 처리한다.
+4. 사망 시 `HandleMonsterDead`가 경험치 지급과 드랍 롤을 처리한다.
+5. `OnMonsterDespawned_ActorOnly`가 aliveCount를 줄이고 다음 스폰 시점을 예약한다.
 
 **검증/예외 케이스**
-- 드랍 아이템 템플릿이 없으면 스킵.
-- 인벤이 가득 차면 드랍 획득 실패(알림 없음).
+- 중복 `spawnId`는 로드 단계에서 필터링.
+- `dropGroupId`/아이템 템플릿이 없으면 드랍 스킵.
+- 인벤이 가득 차면 남는 드랍은 현재 유실(바닥 드랍 시스템 TODO).
 
 **근거**
-- `GameServer/GameRoom.LifeTime.cpp` - 초기 스폰
+- `GameServer/GameServer.cpp` - Monster/Spawn/Drop JSON 로드
+- `GameServer/DataManager.cpp` - `LoadMonsterTemplatesFromJson`, `LoadSpawnTablesFromJson`, `LoadDropTablesFromJson`
+- `GameServer/GameRoom.LifeTime.cpp` - `InitSpawnPoints_ActorOnly`, `UpdateSpawns_ActorOnly`, `OnMonsterDespawned_ActorOnly`
 - `GameServer/GameRoom.Monster.cpp` - `EnterMonster`, `LeaveMonster`
-- `GameServer/GameRoom.Items.cpp` - `HandleMonsterDead`
+- `GameServer/GameRoom.Items.cpp` - `HandleMonsterDead`, `RollDropGroup`
 
 ## 6) 파티(생성/초대/탈퇴/던전 연동/서로 다른 룸 참조 가능 여부 포함)
 ### 파티 생성/초대/수락/거절/탈퇴/강퇴/해산 (상태: 완료)
@@ -379,11 +389,14 @@
 **검증/예외 케이스**
 - 대상 오프라인/이미 파티/리더 권한 없음/자기 자신 초대 등은 실패.
 - 맵 이동 중 요청은 무시된다.
+- 이름 기반 초대 시 동명이인이면 초대를 거절한다(ambiguous 처리).
+- 초대장은 60초 TTL 이후 자동 만료된다.
 
 **근거**
 - `GameServer/ClientPacketHandler.Party.cpp`
 - `GameServer/PartyActor.cpp`
 - `GameServer/PartyManagerCore.h/.cpp`
+- `GameServer/GameSessionManager.cpp` - `TryGetPlayerIdByName`
 - `Common/Protobuf/bin/Protocol.proto` - `C_PARTY_CREATE_REQ`, `C_PARTY_INVITE_REQ`, `S_PARTY_RESULT`, `S_PARTY_INFO_NTF`
 
 ### 파티 정보/버전 동기화 (상태: 완료)
@@ -566,8 +579,9 @@
 5. 이후 변경 시 `S_CHANGE_ITEM`/`S_REMOVE_ITEM`를 전송한다.
 
 **검증/예외 케이스**
-- DB 로딩 실패 시 로비 대기/진입 실패 처리 TODO.
+- DB 로딩 실패 시 `OnDbLoadFailed`가 실패 응답 전송 후 세션을 정리한다.
 - 잘못된 슬롯 인덱스는 로딩 단계에서 필터링.
+- 로딩 시 중복 장착 상태(동일 부위 다중 장착)를 감지하면 서버가 자동으로 장착 해제 후 저장 동기화를 수행한다.
 
 **근거**
 - `GameServer/ClientPacketHandler.EnterGame.cpp` - `S2S_REQ_ITEMS_LOAD`
@@ -661,22 +675,22 @@
 ### 몬스터 처치 보상(경험치/드랍) (상태: 부분 구현)
 **유저 관점**
 - 몬스터 처치 시 경험치가 오르고 아이템이 자동으로 인벤에 들어온다.
-- 현재는 테스트 값 기반으로 동작한다.
+- 드랍 그룹 기반 랜덤 보상이 적용되며, 인벤이 가득 차면 일부 보상이 유실될 수 있다.
 
 **서버 내부 흐름**
 1. 몬스터 사망 시 `HandleMonsterDead`가 호출된다.
 2. 경험치를 추가하고 레벨업을 처리한다.
 3. 스탯/인벤 변경을 Redis/DB에 기록한다.
-4. 고정 템플릿 아이템을 오토루트 방식으로 지급한다.
-5. 드랍 테이블/랜덤 로직은 미구현이다.
+4. `DropGroup`의 `rolls/weight/noDropWeight` 기반 랜덤 롤을 수행한다.
+5. `TryAutoLootItem`으로 지급하고 남는 수량은 현재 유실된다(바닥 드랍 미구현).
 
 **검증/예외 케이스**
 - 인벤이 가득 차면 드랍 획득 실패(알림 없음).
 - 아이템 템플릿이 없으면 드랍 생략.
 
 **근거**
-- `GameServer/GameRoom.Items.cpp` - `HandleMonsterDead`, `AddExpAndLevelUp`
-- `GameServer/DataManager.cpp` - `StatTemplateInfo`, `ItemTemplateInfo`
+- `GameServer/GameRoom.Items.cpp` - `HandleMonsterDead`, `AddExpAndLevelUp`, `RollDropGroup`, `TryAutoLootItem`
+- `GameServer/DataManager.cpp` - `GetMonsterTemplate`, `GetDropGroup`
 
 ## 9) 채팅
 ### 로컬(맵) 채팅 (상태: 완료)
@@ -742,6 +756,50 @@
 - `GameServer/PlayerSession.cpp` - `RequestFlushNow`
 - `Common/Protobuf/bin/Protocol_S2S.proto` - `S2S_REQ_SAVE_PLAYER_CORE/INVENTORY/QUICKSLOT`
 
+### 서버 부팅 시 DB 템플릿 동기화(Stat/Item/Skill) (상태: 완료)
+**유저 관점**
+- 서버 재기동 후에도 스탯/아이템/스킬 밸런스 데이터가 DB 기준으로 반영된다.
+- 템플릿 변경 시 서버 재시작만으로 런타임 데이터가 갱신된다.
+
+**서버 내부 흐름**
+1. GameServer가 DBAgent 연결 직후 `S2S_REQ_LOAD_GAME_DATA`를 전송한다.
+2. DBAgent가 `STAT_TEMPLATE`, `ITEM_TEMPLATE`, `SKILL_TEMPLATE`를 조회한다.
+3. `S2S_RES_LOAD_GAME_DATA`로 템플릿 스냅샷을 GameServer에 반환한다.
+4. GameServer `DataManager::LoadFromPacket`이 메모리에 템플릿을 적재한다.
+5. 전투/아이템 계산 로직이 `GetStatTemplate/GetItemTemplate/GetSkillTemplate`를 참조한다.
+
+**검증/예외 케이스**
+- DB 응답 실패 시 템플릿 적재가 완료되지 않아 콘텐츠 계산이 제한될 수 있다.
+- 맵 데이터(`Maps.json`)와 별개로 전투/아이템 템플릿은 DB 부트스트랩 경로를 사용한다.
+
+**근거**
+- `GameServer/DBSession.cpp` - 연결 직후 `S2S_REQ_LOAD_GAME_DATA` 전송
+- `DBAgent/DBAgentPacketHandler.cpp` - `Handle_S2S_REQ_LOAD_GAME_DATA`
+- `GameServer/S2SPacketHandler.cpp` - `Handle_S2S_RES_LOAD_GAME_DATA`
+- `GameServer/DataManager.cpp` - `LoadFromPacket`, `GetStatTemplate`, `GetItemTemplate`, `GetSkillTemplate`
+
+### 게임 아이템 UID 시드 초기화 (상태: 완료)
+**유저 관점**
+- 몬스터 드랍/거래로 생성되는 아이템 UID가 서버 재시작 이후에도 충돌하지 않는다.
+
+**서버 내부 흐름**
+1. GameServer가 DBAgent 연결 시 `S2S_REQ_GAME_ITEM_UID_SEED`를 요청한다.
+2. DBAgent가 `ITEMS` 테이블의 `MAX(game_item_uid)+1` 값을 계산한다.
+3. `S2S_RES_GAME_ITEM_UID_SEED`로 `next_uid`를 반환한다.
+4. GameServer가 `GameItemUidGen::Init(next_uid)`로 메모리 발급기를 초기화한다.
+5. 런타임 아이템 생성 시 `GameItemUidGen::Alloc()`을 사용한다.
+
+**검증/예외 케이스**
+- 시드 응답이 실패하거나 `next_uid==0`이면 초기화하지 않고 실패 로그를 남긴다.
+- 초기 시드가 없을 때를 대비해 로컬 기본값 `1000000`이 선언되어 있다.
+
+**근거**
+- `GameServer/DBSession.cpp` - `S2S_REQ_GAME_ITEM_UID_SEED` 전송
+- `DBAgent/DBAgentPacketHandler.cpp` - `Handle_S2S_REQ_GAME_ITEM_UID_SEED`
+- `GameServer/S2SPacketHandler.cpp` - `Handle_S2S_RES_GAME_ITEM_UID_SEED`
+- `GameServer/GameItemUidGen.h`, `GameServer/GameItemUidGen.cpp`
+- `GameServer/GameRoom.Items.cpp`, `GameServer/GameRoom.Trade.cpp` - UID 발급 사용
+
 ### 접속 종료 처리/인스턴스 정리 (상태: 완료)
 **유저 관점**
 - 접속 종료 시 캐릭터가 월드에서 사라지고 던전 상태가 정리된다.
@@ -763,37 +821,68 @@
 - `GameServer/InstanceManagerCore.cpp` - `OnMemberOffline`
 - `GameServer/RoomManager.cpp` - `PurgeInstanceRooms`
 
-### 하트비트/Ping (상태: 부분 구현)
+### 하트비트/Ping + 자동 재연결 (상태: 부분 구현)
 **유저 관점**
-- 연결 유지용 하트비트가 존재하지만 상세 상태 모니터링은 없다.
+- 서버 간 연결(DB/Login/DBAgent)은 하트비트와 자동 재연결로 유지된다.
+- 게임 클라이언트 하트비트는 응답은 가능하지만 타임아웃 강제 종료 경로는 현재 비활성이다.
 
 **서버 내부 흐름**
-1. 클라이언트가 `C_HEART_BEAT_REQ`를 전송한다.
-2. 서버 핸들러는 별도 로직 없이 성공 처리한다.
-3. `PlayerSession::Ping`이 `S_HEART_BEAT_RES`를 전송한다.
-4. 타임아웃/지연 측정 로직은 없다.
-5. 모니터링 대시보드 연동은 없다.
+1. `Service::CheckHeartbeat`가 `lastRecv`를 검사해 30초 초과 세션을 타임아웃 처리한다.
+2. 같은 루프에서 `Session::Ping`을 호출해 heartbeat 패킷을 송신한다.
+3. `ClientService::CheckHeartbeat`가 부족한 세션 수를 감지하면 자동 재연결을 시도한다.
+4. DB/Login S2S 세션은 `S2S_REQ_HEART_BEAT`를 보내고 상대 서버가 `S2S_RES_HEART_BEAT`로 응답한다.
+5. 게임 클라이언트의 `C_HEART_BEAT_REQ` 핸들러는 현재 no-op이며 RTT 수집은 하지 않는다.
 
 **검증/예외 케이스**
-- 하트비트 미수신 시 강제 종료 로직 미구현.
+- `GameServer`/`LoginServer` 메인 루프는 S2S 서비스에만 `CheckHeartbeat`를 주기 호출한다.
+- 플레이어 클라이언트용 `gameService->CheckHeartbeat()`는 현재 주석 처리되어 강제 종료 경로가 비활성이다.
 
 **근거**
+- `ServerCore/Service.cpp` - `CheckHeartbeat`, `ClientService::CheckHeartbeat`
+- `GameServer/DBSession.cpp`, `GameServer/LoginSession.cpp` - `Ping`
+- `DBAgent/DBAgentPacketHandler.cpp` - `Handle_S2S_REQ_HEART_BEAT`
+- `LoginServer/GameServerSession.cpp` - `PKT_S2S_REQ_HEART_BEAT` 직접 응답
 - `GameServer/ClientPacketHandler.Misc.cpp` - `Handle_C_HEART_BEAT_REQ`
-- `GameServer/PlayerSession.cpp` - `Ping`
-- `Common/Protobuf/bin/Protocol.proto` - `C_HEART_BEAT_REQ`, `S_HEART_BEAT_RES`
 
-### 테스트/운영 도구 (상태: 부분 구현)
+### Prometheus 메트릭 + Grafana 대시보드 (상태: 완료)
+**유저 관점**
+- `/metrics` 엔드포인트로 서버 상태를 수집해 대시보드로 확인할 수 있다.
+- GameServer/DBAgent 지표를 분리해서 관찰할 수 있다.
+
+**서버 내부 흐름**
+1. `CoreGlobal`이 Metrics 설정을 로드하고 `MetricsSystem`을 초기화한다.
+2. `MetricsExporter`가 HTTP `/metrics` 엔드포인트를 열어 Prometheus 포맷으로 노출한다.
+3. `GameMetrics`/`DBAgentMetrics`가 패킷 처리 시간, 실패율, CCU, DB 풀/쿼리 지표를 기록한다.
+4. Prometheus 설정이 GameServer(8080), DBAgent(8081)를 스크랩한다.
+5. Grafana 대시보드 JSON/쿼리 문서로 시각화를 재현한다.
+
+**검증/예외 케이스**
+- 메트릭 서버 기동 실패 시 본 서버 프로세스는 계속 실행(경고 로그).
+- `/metrics` 렌더링 지연이 100ms/500ms 임계치를 넘으면 로그를 남긴다.
+
+**근거**
+- `ServerCore/CoreGlobal.cpp`, `ServerCore/MetricsSystem.cpp`, `ServerCore/MetricsExporter.cpp`
+- `GameServer/GameMetrics.cpp`, `DBAgent/DBAgentMetrics.cpp`
+- `docs/monitoring/prometheus.yml`
+- `docs/monitoring/grafana_gameserver_dashboard.json`, `docs/monitoring/grafana_dbagent_dashboard.json`
+
+### 테스트/운영 도구 (상태: 완료)
 **유저 관점**
 - 콘솔 명령으로 파티 기능을 테스트할 수 있다.
+- DummyClient로 부하 시나리오(`idle/move/combat/mix`)를 실행하고 CSV 성능 로그를 수집할 수 있다.
 - 패킷 생성 도구를 통해 핸들러/패킷 코드를 생성한다.
 
 **서버 내부 흐름**
 1. GameServer 콘솔 스레드가 `/p_create` 등 테스트 명령을 처리한다.
-2. PacketGenerator가 프로토콜 기반 핸들러/패킷 코드를 생성한다.
-3. 운영용 모니터링 UI는 별도 미구현이다.
+2. DummyClient가 `ccu_target/ramp_step/시나리오 Hz` 기반으로 접속/로그인/입장/행동 부하를 재현한다.
+3. LoadClient MetricsCollector가 `login/enter/move/skill` 평균/P95 및 송신량을 CSV로 기록한다.
+4. NavMesh 기반 경로 이동 옵션으로 이동 검증 부하를 현실적으로 재현한다.
+5. PacketGenerator가 프로토콜 기반 핸들러/패킷 코드를 생성한다.
 
 **근거**
 - `GameServer/GameServer.cpp` - `ConsoleThread`
+- `DummyClient/LoadClientManager.cpp`, `DummyClient/LoadClientManager.h`
+- `DummyClient/LoadClientConfig.json`
 - `Tools/PacketGenerator/PacketGenerator.py`
 
 ## 데모 시나리오 5개(영상/면접에서 보여줄 흐름)
@@ -805,10 +894,8 @@
 
 ## TODO / 미완 정리
 - 로그인 비밀번호 검증 및 계정 생성/가입 플로우
-- DB 로딩 실패 처리(로비 게이트)
-- 스킬 타입 확장(원형/부채꼴 등) 및 범위 판정 고도화 (완료)
-- 플레이어 부활/리젠 흐름(리스폰 패킷/스폰) (절반 완료. 애니메이팅만 동기화 하게끔)
-- 몬스터 리젠/스폰 테이블 + 드랍 테이블/랜덤 로직
-- 하트비트 타임아웃/지연 측정 + 모니터링
-- 채팅 로그/모니터링 고도화
-- 운영용 모니터링 UI
+- 로그인 서버 리스트/혼잡도 동적 연동 (현재 `S_LOGIN` 리스트 하드코딩)
+- 클라이언트 하트비트 타임아웃/RTT 수집 + 정책화
+- 바닥 드랍(월드 아이템 오브젝트) 및 드랍 실패 알림
+- 채팅 로그 영속화/검색 + 운영 모니터링 연계
+- DBAgent `S2S_REQ_ITEM_CREATE` 실구현 (현재 스텁)
