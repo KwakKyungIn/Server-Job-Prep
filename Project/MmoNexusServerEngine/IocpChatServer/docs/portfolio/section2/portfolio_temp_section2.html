@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Portfolio Temp - Page 1~7</title>
+  <title>Portfolio Temp - Page 6~12</title>
   <style>
     :root {
       --ink: #222;
@@ -319,7 +319,11 @@
     .page4,
     .page5,
     .page6,
-    .page7 {
+    .page7,
+    .page9,
+    .page10,
+    .page11,
+    .page12 {
       gap: 12px;
     }
 
@@ -498,6 +502,40 @@
       max-height: 190px;
     }
 
+    .p7-keymsg {
+      border: 1px solid #ddd;
+      background: #fafafa;
+      padding: 8px 10px;
+      font-size: 13px;
+      line-height: 1.35;
+      color: #222;
+      font-weight: 700;
+    }
+
+    .p7-rule-grid {
+      display: grid;
+      gap: 7px;
+    }
+
+    .p7-rule-card {
+      border: 1px solid #e3e3e3;
+      background: #fcfcfc;
+      padding: 7px 8px;
+    }
+
+    .p7-rule-card h4 {
+      margin: 0 0 3px;
+      font-size: 12px;
+      color: #222;
+    }
+
+    .p7-rule-card p {
+      margin: 0;
+      font-size: 12px;
+      color: #333;
+      line-height: 1.3;
+    }
+
     .p7-step-list {
       margin: 0;
       padding-left: 18px;
@@ -568,13 +606,279 @@
       align-items: start;
     }
 
+    .p7-caption {
+      margin: 8px 0 0;
+      border-top: 1px solid #ececec;
+      padding-top: 7px;
+      font-size: 12px;
+      line-height: 1.3;
+      color: #222;
+      font-weight: 700;
+    }
+
+    .p7-code-stack {
+      display: grid;
+      gap: 7px;
+    }
+
+    .p7-code-snippet {
+      border: 1px solid #e1e1e1;
+      background: #fff;
+      padding: 6px;
+    }
+
+    .p7-code-snippet h4 {
+      margin: 0 0 4px;
+      font-size: 12px;
+      color: #222;
+    }
+
+    .p7-code-snippet pre {
+      margin: 0;
+      border: 1px solid #ececec;
+      background: #fafafa;
+      padding: 6px;
+      font-size: 10px;
+      line-height: 1.28;
+      color: #222;
+      font-family: Consolas, "Courier New", monospace;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .p7-code-src {
+      margin: 4px 0 0;
+      font-size: 10px;
+      color: #666;
+      font-family: Consolas, "Courier New", monospace;
+    }
+
+    .validate-page {
+      gap: 8px;
+    }
+
+    .validate-page .p7-head h2 {
+      font-size: 27px;
+    }
+
+    .validate-page .p7-sub {
+      font-size: 13px;
+    }
+
+    .stage-desc {
+      border: 1px solid #ddd;
+      background: #fafafa;
+      padding: 8px 10px;
+      font-size: 15px;
+      line-height: 1.55;
+      color: #222;
+      font-weight: 600;
+    }
+
+    .stage-desc p {
+      margin: 0;
+    }
+
+    .stage-desc p + p {
+      margin-top: 6px;
+    }
+
+    .validate-chain {
+      border: 1px solid #ddd;
+      background: #fff;
+      padding: 8px;
+    }
+
+    .validate-chain h3 {
+      margin: 0 0 6px;
+      font-size: 14px;
+      color: #222;
+    }
+
+    .validate-chain .mermaid {
+      min-height: 150px;
+      font-size: 12px;
+    }
+
+    .validate-chain .mermaid svg {
+      width: 100% !important;
+      height: auto !important;
+      max-height: 185px;
+    }
+
+    .validate-top-grid {
+      display: grid;
+      grid-template-columns: 1.4fr 0.9fr;
+      gap: 10px;
+      align-items: stretch;
+    }
+
+    .validate-top-grid .validate-chain {
+      margin: 0;
+    }
+
+    .validate-top-grid .p7-panel {
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .validate-top-grid .p7-panel h3 {
+      margin: 0 0 6px;
+      font-size: 14px;
+      color: #222;
+    }
+
+    .pipeline-list {
+      margin: 0;
+      padding-left: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 12px;
+      line-height: 1.3;
+      color: #333;
+    }
+
+    .snippet-row {
+      display: grid;
+      gap: 7px;
+      grid-template-columns: 1fr 1fr;
+      align-items: start;
+    }
+
+    .pipeline-col {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .branch-box {
+      margin-top: 0;
+      border: 1px solid #e3e3e3;
+      background: #fcfcfc;
+      padding: 6px 8px;
+    }
+
+    .branch-box h4 {
+      margin: 0 0 4px;
+      font-size: 12px;
+      color: #222;
+    }
+
+    .branch-list {
+      margin: 0;
+      padding-left: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 11px;
+      line-height: 1.3;
+      color: #333;
+    }
+
     /* A4 고정용: 페이지 7은 반응형 축소에서도 2열 유지 */
     .page7 .p7-main {
       grid-template-columns: 1fr 1fr;
     }
 
     .page7 .p7-bottom-grid {
-      grid-template-columns: 2fr 1fr;
+      grid-template-columns: 1.3fr 1fr;
+    }
+
+    .page7 .validate-top-grid,
+    .page8 .validate-top-grid {
+      grid-template-columns: 1.4fr 0.9fr;
+    }
+
+    /* Page 7/8: 파이프라인/스니펫 텍스트 확대 */
+    .page7 .snippet-row,
+    .page8 .snippet-row {
+      gap: 10px;
+    }
+
+    .page7 .snippet-row .p7-panel h3,
+    .page8 .snippet-row .p7-panel h3 {
+      font-size: 18px;
+      font-family: "Noto Sans KR", "Malgun Gothic", sans-serif;
+      font-weight: 700;
+    }
+
+    .page7 .pipeline-list,
+    .page8 .pipeline-list {
+      font-size: 14px;
+      line-height: 1.45;
+      gap: 7px;
+      font-family: "Noto Sans KR", "Malgun Gothic", sans-serif;
+      font-weight: 700;
+    }
+
+    .page7 .branch-box,
+    .page8 .branch-box {
+      padding: 8px 10px;
+    }
+
+    .page7 .branch-box h4,
+    .page8 .branch-box h4 {
+      font-size: 18px;
+      margin: 0 0 5px;
+      font-family: "Noto Sans KR", "Malgun Gothic", sans-serif;
+      font-weight: 700;
+    }
+
+    .page7 .validate-chain h3,
+    .page8 .validate-chain h3 {
+      font-size: 18px;
+    }
+
+    .page7 .branch-list,
+    .page8 .branch-list {
+      font-size: 14px;
+      line-height: 1.45;
+      gap: 5px;
+      font-family: "Noto Sans KR", "Malgun Gothic", sans-serif;
+      font-weight: 700;
+    }
+
+    .page7 .p7-code-snippet,
+    .page8 .p7-code-snippet {
+      padding: 8px;
+    }
+
+    .page7 .p7-code-snippet h4,
+    .page8 .p7-code-snippet h4 {
+      font-size: 14px;
+      font-family: "Noto Sans KR", "Malgun Gothic", sans-serif;
+      font-weight: 700;
+    }
+
+    .page7 .pipeline-list code,
+    .page8 .pipeline-list code,
+    .page7 .branch-list code,
+    .page8 .branch-list code {
+      font-family: inherit;
+      font-size: inherit;
+      font-weight: inherit;
+      background: transparent;
+      padding: 0;
+    }
+
+    .page7 .p7-code-snippet pre,
+    .page8 .p7-code-snippet pre {
+      font-size: 12px;
+      line-height: 1.4;
+      padding: 8px;
+    }
+
+    .page7 .p7-code-src,
+    .page8 .p7-code-src {
+      font-size: 12px;
+    }
+
+    /* Page 8 Stage 2: 파이프라인 패널 전체 Bold */
+    .pipeline-stage2-strong,
+    .pipeline-stage2-strong * {
+      font-weight: 700 !important;
     }
 
     .diagram-panel {
@@ -721,6 +1025,796 @@
       line-height: 1.3;
     }
 
+    .p9-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 12px;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 8px;
+    }
+
+    .p9-head h2 {
+      margin: 0;
+      font-size: 29px;
+      line-height: 1.2;
+      color: #1f1f1f;
+    }
+
+    .p9-sub {
+      margin: 0;
+      font-size: 14px;
+      color: #666;
+      font-weight: 700;
+    }
+
+    .p9-target {
+      border: 1px solid #d9dde6;
+      border-left: 5px solid #3f5b84;
+      background: linear-gradient(90deg, #f5f8ff 0%, #fcfdff 75%);
+      padding: 10px 12px;
+      font-size: 16px;
+      font-weight: 700;
+      color: #21324f;
+    }
+
+    .p9-main {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      align-items: stretch;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .p9-case {
+      border: 1px solid #ddd;
+      background: #fff;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      min-height: 0;
+    }
+
+    .p9-case-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .p9-case h3 {
+      margin: 0;
+      font-size: 16px;
+      color: #222;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .p9-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      width: fit-content;
+      flex: 0 0 auto;
+      white-space: nowrap;
+    }
+
+    .p9-badge.fail {
+      background: #fce7ea;
+      color: #9e1f2f;
+      border: 1px solid #f3c8cf;
+    }
+
+    .p9-badge.clamp {
+      background: #e8f3ee;
+      color: #1f6a47;
+      border: 1px solid #c7e2d5;
+    }
+
+    .p9-badge.correct {
+      background: #eaf0ff;
+      color: #2b4f9a;
+      border: 1px solid #cfdcfd;
+    }
+
+    .p9-detail {
+      display: grid;
+      grid-template-columns: 92px 1fr;
+      gap: 5px 10px;
+      margin: 0;
+      font-size: 13px;
+      line-height: 1.35;
+      color: #2d2d2d;
+    }
+
+    .p9-detail dt {
+      font-weight: 700;
+      color: #222;
+    }
+
+    .p9-detail dd {
+      margin: 0;
+    }
+
+    .p9-log {
+      border: 1px solid #ececec;
+      background: #fafafa;
+      padding: 8px;
+    }
+
+    .p9-log h4 {
+      margin: 0 0 6px;
+      font-size: 12px;
+      color: #444;
+      font-weight: 800;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+
+    .p9-log pre {
+      margin: 0;
+      font-size: 11px;
+      line-height: 1.4;
+      color: #222;
+      font-family: Consolas, "Courier New", monospace;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .p9-bottom {
+      border: 1px solid #ddd;
+      background: #fff;
+      padding: 10px;
+    }
+
+    .p9-bottom h3 {
+      margin: 0 0 8px;
+      font-size: 16px;
+      color: #222;
+    }
+
+    .p9-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      color: #222;
+      table-layout: fixed;
+    }
+
+    .p9-table th,
+    .p9-table td {
+      border: 1px solid #e1e1e1;
+      padding: 7px 8px;
+      text-align: left;
+      vertical-align: top;
+      line-height: 1.35;
+    }
+
+    .p9-table th {
+      background: #f6f7f9;
+      font-size: 12px;
+      letter-spacing: 0.02em;
+      font-weight: 800;
+    }
+
+    .p9-result-note {
+      margin: 8px 0 0;
+      border-top: 1px solid #ececec;
+      padding-top: 7px;
+      font-size: 13px;
+      color: #1f1f1f;
+      font-weight: 700;
+    }
+
+    .p10-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 12px;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 8px;
+    }
+
+    .p10-head h2 {
+      margin: 0;
+      font-size: 29px;
+      line-height: 1.2;
+      color: #1f1f1f;
+    }
+
+    .p10-sub {
+      margin: 0;
+      font-size: 14px;
+      color: #666;
+      font-weight: 700;
+    }
+
+    .p10-problem {
+      border: 1px solid #e2d9c8;
+      border-left: 5px solid #b07b30;
+      background: linear-gradient(90deg, #fff8eb 0%, #fffdf8 72%);
+      padding: 10px 12px;
+      font-size: 16px;
+      line-height: 1.45;
+      color: #4b3311;
+      font-weight: 600;
+    }
+
+    .p10-problem strong {
+      display: inline-block;
+      margin-right: 6px;
+      font-size: 13px;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      color: #7b5218;
+    }
+
+    .p10-solution {
+      border: 1px solid #d7deeb;
+      border-left: 5px solid #476b9e;
+      background: linear-gradient(90deg, #f4f8ff 0%, #fcfdff 72%);
+      padding: 10px 12px;
+      font-size: 16px;
+      line-height: 1.5;
+      color: #223754;
+      font-weight: 600;
+    }
+
+    .p10-solution strong {
+      display: inline-block;
+      margin-right: 6px;
+      font-size: 13px;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      color: #2d4f80;
+    }
+
+    .p10-main {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      align-items: stretch;
+      min-height: 0;
+    }
+
+    .p10-card {
+      border: 1px solid #ddd;
+      background: #fff;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      min-height: 0;
+    }
+
+    .p10-card h3 {
+      margin: 0;
+      font-size: 16px;
+      color: #222;
+    }
+
+    .p10-list {
+      margin: 0;
+      padding-left: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 14px;
+      line-height: 1.35;
+      color: #333;
+    }
+
+    .p10-list li strong {
+      color: #222;
+    }
+
+    .p10-bottom {
+      border: 1px solid #ddd;
+      background: #fff;
+      padding: 10px;
+    }
+
+    .p10-bottom h3 {
+      margin: 0 0 8px;
+      font-size: 16px;
+      color: #222;
+    }
+
+    .p10-table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      font-size: 13px;
+      color: #222;
+    }
+
+    .p10-table th,
+    .p10-table td {
+      border: 1px solid #e1e1e1;
+      padding: 7px 8px;
+      text-align: left;
+      vertical-align: top;
+      line-height: 1.35;
+    }
+
+    .p10-table th {
+      background: #f6f7f9;
+      font-size: 12px;
+      letter-spacing: 0.02em;
+      font-weight: 800;
+    }
+
+    .p10-caption {
+      margin: 8px 0 0;
+      border-top: 1px solid #ececec;
+      padding-top: 7px;
+      font-size: 13px;
+      color: #1f1f1f;
+      font-weight: 700;
+    }
+
+    .p11-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 12px;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 8px;
+    }
+
+    .p11-head h2 {
+      margin: 0;
+      font-size: 29px;
+      line-height: 1.2;
+      color: #1f1f1f;
+    }
+
+    .p11-sub {
+      margin: 0;
+      font-size: 14px;
+      color: #666;
+      font-weight: 700;
+    }
+
+    .p11-intro {
+      border: 1px solid #d8dde8;
+      border-left: 5px solid #4e658f;
+      background: linear-gradient(90deg, #f5f8ff 0%, #fcfdff 72%);
+      padding: 9px 12px;
+      font-size: 14px;
+      line-height: 1.45;
+      color: #27364f;
+      font-weight: 600;
+    }
+
+    .p11-stage-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      align-items: stretch;
+    }
+
+    .p11-stage-card {
+      border: 1px solid #ddd;
+      background: #fff;
+      padding: 9px 10px;
+      min-height: 0;
+    }
+
+    .p11-stage-card.broad {
+      background: linear-gradient(180deg, #fbfcff 0%, #ffffff 45%);
+    }
+
+    .p11-stage-card.narrow {
+      background: linear-gradient(180deg, #f8fbff 0%, #ffffff 45%);
+    }
+
+    .p11-stage-card h3 {
+      margin: 0;
+      font-size: 15px;
+      color: #202020;
+    }
+
+    .p11-stage-kicker {
+      margin: 4px 0 6px;
+      font-size: 12px;
+      color: #5a6b85;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+
+    .p11-list {
+      margin: 0;
+      padding-left: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 12px;
+      line-height: 1.3;
+      color: #333;
+    }
+
+    .p11-list li strong {
+      color: #222;
+    }
+
+    .p11-pipeline {
+      border: 1px solid #ddd;
+      background: #fff;
+      padding: 10px;
+    }
+
+    .p11-pipeline h3 {
+      margin: 0 0 6px;
+      font-size: 16px;
+      color: #222;
+    }
+
+    .p11-pipeline .mermaid {
+      min-height: 150px;
+      font-size: 12px;
+    }
+
+    .p11-snippets {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      align-items: stretch;
+    }
+
+    .p11-code-card {
+      border: 1px solid #ddd;
+      background: #fff;
+      padding: 8px;
+      min-height: 0;
+    }
+
+    .p11-code-card h3 {
+      margin: 0 0 6px;
+      font-size: 14px;
+      color: #222;
+    }
+
+    .p11-code-card pre {
+      margin: 0;
+      border: 1px solid #ededed;
+      background: #fafafa;
+      padding: 6px;
+      font-size: 10px;
+      line-height: 1.3;
+      color: #222;
+      font-family: Consolas, "Courier New", monospace;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .p11-src {
+      margin: 4px 0 0;
+      font-size: 10px;
+      color: #666;
+      font-family: Consolas, "Courier New", monospace;
+    }
+
+    .p11-caption {
+      margin: 0;
+      border-top: 1px solid #ececec;
+      padding-top: 7px;
+      font-size: 13px;
+      color: #1f1f1f;
+      font-weight: 700;
+    }
+
+    .p12-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 12px;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 8px;
+    }
+
+    .p12-head h2 {
+      margin: 0;
+      font-size: 28px;
+      line-height: 1.2;
+      color: #1f1f1f;
+    }
+
+    .p12-sub {
+      margin: 0;
+      font-size: 14px;
+      color: #666;
+      font-weight: 700;
+    }
+
+    .p12-problem {
+      border: 1px solid #e4d9d9;
+      border-left: 5px solid #b35a5a;
+      background: linear-gradient(90deg, #fff7f7 0%, #fffdfd 72%);
+      padding: 10px 12px;
+      font-size: 15px;
+      line-height: 1.45;
+      color: #4b2727;
+      font-weight: 600;
+    }
+
+    .p12-problem strong {
+      display: inline-block;
+      margin-right: 6px;
+      font-size: 13px;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      color: #8b3b3b;
+    }
+
+    .p12-main {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      align-items: stretch;
+    }
+
+    .p12-card {
+      border: 1px solid #ddd;
+      background: #fff;
+      padding: 9px 10px;
+      min-height: 0;
+    }
+
+    .p12-card h3 {
+      margin: 0;
+      font-size: 15px;
+      color: #222;
+    }
+
+    .p12-list {
+      margin: 7px 0 0;
+      padding-left: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      font-size: 13px;
+      line-height: 1.35;
+      color: #333;
+    }
+
+    .p12-list li code {
+      font-size: 12px;
+    }
+
+    .p12-timeline {
+      border: 1px solid #ddd;
+      background: #fff;
+      padding: 10px;
+    }
+
+    .p12-timeline h3 {
+      margin: 0 0 6px;
+      font-size: 16px;
+      color: #222;
+    }
+
+    .p12-seq-intro {
+      margin: 0 0 7px;
+      font-size: 12px;
+      color: #344059;
+      line-height: 1.35;
+      font-weight: 600;
+    }
+
+    .p12-seq {
+      margin: 6px 0 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      position: relative;
+    }
+
+    .p12-seq::before {
+      content: "";
+      position: absolute;
+      left: 10%;
+      right: 10%;
+      top: 14px;
+      border-top: 2px dashed #bbcae3;
+    }
+
+    .p12-seq-item {
+      position: relative;
+      padding-top: 26px;
+    }
+
+    .p12-seq-item::after {
+      content: "";
+      position: absolute;
+      top: 14px;
+      right: -6px;
+      width: 8px;
+      height: 8px;
+      border-top: 2px solid #bbcae3;
+      border-right: 2px solid #bbcae3;
+      transform: translateY(-50%) rotate(45deg);
+    }
+
+    .p12-seq-item:last-child::after {
+      display: none;
+    }
+
+    .p12-seq-dot {
+      position: absolute;
+      top: 14px;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 24px;
+      height: 24px;
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+      font-size: 11px;
+      font-weight: 800;
+      color: #fff;
+      border: 2px solid #fff;
+      box-shadow: 0 0 0 1px #c6d2e6;
+      z-index: 1;
+    }
+
+    .p12-seq-item.begin .p12-seq-dot {
+      background: #3f6ea8;
+    }
+
+    .p12-seq-item.middle .p12-seq-dot {
+      background: #6e7d96;
+    }
+
+    .p12-seq-item.end .p12-seq-dot {
+      background: #2e7a55;
+    }
+
+    .p12-seq-card {
+      border: 1px solid #dfe4ee;
+      border-left-width: 4px;
+      border-radius: 6px;
+      background: #fff;
+      padding: 8px 8px 7px;
+      min-height: 136px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .p12-seq-item.begin .p12-seq-card {
+      border-left-color: #3f6ea8;
+      background: linear-gradient(180deg, #f5f9ff 0%, #ffffff 42%);
+    }
+
+    .p12-seq-item.middle .p12-seq-card {
+      border-left-color: #6e7d96;
+      background: linear-gradient(180deg, #f7f9fc 0%, #ffffff 42%);
+    }
+
+    .p12-seq-item.end .p12-seq-card {
+      border-left-color: #2e7a55;
+      background: linear-gradient(180deg, #f3fbf7 0%, #ffffff 42%);
+    }
+
+    .p12-seq-kicker {
+      margin: 0;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #5f6f86;
+    }
+
+    .p12-seq-card h4 {
+      margin: 0;
+      font-size: 13px;
+      color: #1f1f1f;
+      line-height: 1.2;
+    }
+
+    .p12-seq-flags {
+      margin: 0;
+      font-size: 11px;
+      color: #2e3646;
+      line-height: 1.3;
+    }
+
+    .p12-seq-flags code {
+      font-size: 10px;
+    }
+
+    .p12-seq-note {
+      margin: 0;
+      font-size: 11px;
+      color: #444;
+      line-height: 1.3;
+    }
+
+    .p12-timeline-note {
+      margin: 7px 0 0;
+      border-top: 1px solid #eceff5;
+      padding-top: 6px;
+      font-size: 11px;
+      color: #39445a;
+      line-height: 1.35;
+      font-weight: 700;
+    }
+
+    .p12-point-list {
+      margin: 0;
+      padding-left: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 11px;
+      line-height: 1.35;
+      color: #333;
+    }
+
+    .p12-point-list code {
+      font-size: 10px;
+    }
+
+    .p12-snippets {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      align-items: stretch;
+    }
+
+    .p12-code-card {
+      border: 1px solid #ddd;
+      background: #fff;
+      padding: 8px;
+      min-height: 0;
+    }
+
+    .p12-code-card h3 {
+      margin: 0 0 6px;
+      font-size: 13px;
+      color: #222;
+    }
+
+    .p12-code-card pre {
+      margin: 0;
+      border: 1px solid #ededed;
+      background: #fafafa;
+      padding: 6px;
+      font-size: 9px;
+      line-height: 1.3;
+      color: #222;
+      font-family: Consolas, "Courier New", monospace;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .p12-src {
+      margin: 4px 0 0;
+      font-size: 9px;
+      color: #666;
+      font-family: Consolas, "Courier New", monospace;
+    }
+
+    .p12-caption {
+      margin: 0;
+      border-top: 1px solid #ececec;
+      padding-top: 7px;
+      font-size: 13px;
+      color: #1f1f1f;
+      font-weight: 700;
+    }
+
     @media (max-width: 1200px) {
       .page {
         width: 100%;
@@ -736,8 +1830,50 @@
       .p6-main,
       .p7-main,
       .p7-bottom-grid,
+      .validate-top-grid,
+      .p9-main,
+      .p10-main,
+      .p11-stage-row,
+      .p11-snippets,
+      .p12-main,
+      .p12-snippets,
+      .snippet-row,
       .evidence-grid {
         grid-template-columns: 1fr;
+      }
+
+      .p12-seq {
+        grid-template-columns: 1fr;
+        gap: 8px;
+      }
+
+      .p12-seq::before,
+      .p12-seq-item::after {
+        display: none;
+      }
+
+      .p12-seq-item {
+        padding-top: 0;
+        padding-left: 28px;
+      }
+
+      .p12-seq-item::before {
+        content: "";
+        position: absolute;
+        left: 11px;
+        top: 0;
+        bottom: -8px;
+        border-left: 2px dashed #bbcae3;
+      }
+
+      .p12-seq-item:last-child::before {
+        bottom: 26px;
+      }
+
+      .p12-seq-dot {
+        top: 12px;
+        left: 0;
+        transform: translate(0, -50%);
       }
 
       .p4-foot-grid {
@@ -778,7 +1914,17 @@
       }
 
       .page7 .p7-bottom-grid {
-        grid-template-columns: 2fr 1fr !important;
+        grid-template-columns: 1.3fr 1fr !important;
+      }
+
+      .page7 .validate-top-grid,
+      .page8 .validate-top-grid {
+        grid-template-columns: 1.4fr 0.9fr !important;
+      }
+
+      .page7 .snippet-row,
+      .page8 .snippet-row {
+        grid-template-columns: 1fr 1fr !important;
       }
     }
   </style>
@@ -797,7 +1943,8 @@
       </div>
 
       <div class="p6-keymsg">
-        핵심 메시지: "이동은 클라이언트 입력일 뿐, 최종 위치는 서버가 검증 후 확정한다."
+        이동은 클라이언트가 전달하는 입력(요청)이며, 최종 위치는 서버가 규칙 검증을 거친 결과로 확정됩니다.
+        서버 검증을 통과한 좌표만 월드 상태에 반영되고, 그 결과가 다른 클라이언트에 동기화됩니다.
       </div>
 
       <div class="p6-main">
@@ -860,85 +2007,572 @@ flowchart LR
       </article>
     </section>
 
-    <section class="page page7">
+    <section class="page page7 validate-page">
       <div class="page-top">
         <strong>Portfolio Draft</strong>
         <span>Page 7</span>
       </div>
 
       <div class="p7-head">
-        <h2>2-1. 이동 검증 파이프라인</h2>
-        <p class="p7-sub">코드 순서 기준: 입력 수신부터 상태 확정/전파까지의 검증 체인</p>
+        <h2>2-1. 이동 검증 체인 (Stage 1/2)</h2>
+        <p class="p7-sub">입력 수신 → 안정성 검사 → 순서/시간/속도 검증</p>
       </div>
 
-      <div class="p7-main">
-        <article class="p7-panel">
-          <h3>검증 흐름 A (1~3 단계)</h3>
-          <pre class="mermaid">
-flowchart TB
-  A["1) Handle_C_MOVE 수신"]
-  B["RoomActor JobQueue enqueue"]
-  C{"2) 입력 안정성 검사<br/>NaN / Inf / CrazyPos"}
-  D{"3) 시간/순서 검증<br/>IsSeqNewer + ComputeDtSec"}
-  E["4단계로 전달"]
+      <article class="stage-desc">
+        <p>Stage 1은 클라이언트 이동 입력을 검증 가능한 서버 기준 좌표(reqClamped)로 정규화하여,</p>
+        <p> 비정상 요청은 차단하고 정상 입력만 다음 단계로 전달하는 방어 구간입니다.</p>
+        <p>(여기 글간격 살짝 더 주기)</p>
+        <p>이 구간의 핵심은 클라이언트 입력을 즉시 확정하지 않고, 이후 지형 검증에 사용할 수 있는 안전한 후보 좌표를 준비하는 것입니다.</p>
+      </article>
 
-  A --> B --> C --> D --> E
-  C -->|invalid| X1["DROP"]
-  D -->|rewind| X2["DROP"]
-          </pre>
-        </article>
+      <article class="validate-chain">
+        <h3>검증 체인 Stage 1 (가로 흐름)</h3>
+        <pre class="mermaid">
+flowchart LR
+  A["C_MOVE"] --> B["RoomActor Queue"]
+  B --> C{"Input Valid?"}
+  C -->|No| X1["DROP"]
+  C -->|Yes| D{"Seq Newer?"}
+  D -->|No| X2["DROP"]
+  D -->|Yes| E["ComputeDt + CheckSpeed"]
+  E --> F["Clamp ReqPos If Needed"]
+  F --> G["Stage2 ReqPos"]
+        </pre>
+      </article>
 
-        <article class="p7-panel">
-          <h3>검증 흐름 B (4~6 단계)</h3>
-          <pre class="mermaid">
-flowchart TB
-  P["3단계 통과 입력"]
-  A{"4) 속도 검증<br/>CheckSpeed2D"}
-  B["CLAMP"]
-  C["요청 좌표 유지"]
-  D{"5) 지형/충돌 검증<br/>GameMap ValidateMove"}
-  E["SLIDE / CORRECT"]
-  F["검증 통과 좌표"]
-  G["6) 상태 확정/전파<br/>Commit + AOI + S_MOVE + MoveStamp"]
-
-  P --> A
-  A -->|over speed| B --> D
-  A -->|ok| C --> D
-  D -->|blocked| E --> F
-  D -->|pass| F
-  F --> G
-          </pre>
-        </article>
-      </div>
-
-      <article class="p7-bottom">
-        <div class="p7-bottom-grid">
-          <section>
-            <h3>파이프라인 개요 (코드 순서 기준)</h3>
-            <ol class="p7-step-list">
-              <li><strong>1) `Handle_C_MOVE`</strong> RoomActor Queue enqueue</li>
-              <li><strong>2) 입력 안정성</strong> NaN/Inf/CrazyPos 즉시 거부</li>
-              <li><strong>3) 시간/순서</strong> `IsSeqNewer` + `ComputeDtSec`</li>
-              <li><strong>4) 속도 검증</strong> `CheckSpeed2D` 초과 시 clamp</li>
-              <li><strong>5) 지형/충돌</strong> `GameMap::ValidateMove` 보정 분기</li>
-              <li><strong>6) 상태 확정</strong> Commit + AOI + `S_MOVE` + MoveStamp</li>
+      <article class="snippet-row">
+        <div class="pipeline-col">
+          <section class="p7-panel">
+            <h3>파이프라인 Stage 1</h3>
+            <ol class="pipeline-list">
+              <li><strong>1)</strong> <code>Handle_C_MOVE</code>에서 RoomActor 큐 직렬화</li>
+              <li><strong>2)</strong> NaN/Inf/CrazyPos/Out-of-Bounds 입력 거부</li>
+              <li><strong>3)</strong> <code>IsSeqNewer</code>, <code>ComputeDtSec</code>, <code>CheckSpeed2D</code> 적용</li>
+              <li><strong>결과</strong> Stage 2로 전달할 <code>reqClamped</code> 생성</li>
             </ol>
           </section>
-
-          <section>
-            <h3>분기 처리</h3>
-            <ul class="p7-side-list">
-              <li>입력 오류/역순 seq: drop</li>
-              <li>과속 이동: clamp 후 재검증</li>
-              <li>지형 불일치: slide/correct 보정</li>
+          <div class="branch-box">
+            <h4>분기 처리 규칙</h4>
+            <ul class="branch-list">
+              <li>입력 안정성 실패: 즉시 <code>drop</code></li>
+              <li><code>seq</code> 역전/중복: 즉시 <code>drop</code></li>
+              <li>속도 초과: <code>clamp</code> 후 Stage 2로 전달</li>
             </ul>
-
-            <div class="p7-note">
-              핵심: 순차 검증으로 비정상 이동은 drop/clamp하고 확정 좌표만 공유 상태에 반영한다.
-            </div>
-          </section>
+          </div>
         </div>
+
+        <section class="p7-panel">
+          <h3>스니펫 Stage 1</h3>
+          <article class="p7-code-snippet">
+            <h4>Representative Snippet · 입력/순서/시간/속도 검증</h4>
+            <pre><code>if (!IsFinitePos(reqRaw) || IsCrazyPos(reqRaw))
+    return;
+
+if (!MoveValidate::IsSeqNewer(seq, lastSeq))
+    return;
+
+const float dtSec = MoveValidate::ComputeDtSec(
+    tms, player-&gt;LastClientTimeMs_ActorOnly(), 0.02f, 0.25f, hasStamp);
+const auto speedRes = MoveValidate::CheckSpeed2D(
+    cur, reqRaw, dtSec, speed, 0.30f, reqClamped);</code></pre>
+            <p class="p7-code-src">GameRoom.Move.cpp:48-52,75-77,90-93,102-103</p>
+          </article>
+        </section>
       </article>
+    </section>
+
+    <section class="page page8 validate-page">
+      <div class="page-top">
+        <strong>Portfolio Draft</strong>
+        <span>Page 8</span>
+      </div>
+
+      <div class="p7-head">
+        <h2>2-1. 이동 검증 체인 (Stage 2/2)</h2>
+        <p class="p7-sub">NavMesh 검증 → 상태 확정 → AOI/S_MOVE 전파</p>
+      </div>
+
+      <article class="stage-desc">
+        <p> Stage 2는 NavMesh 검증을 통과한 좌표만 서버 상태로 확정(Commit)하고 AOI/S_MOVE로 전파하여,</p>
+        <p> 클라이언트 간 위치 동기화를 일관되게 유지하는 확정 구간입니다.</p>
+      <p>(여기 글간격 살짝 더 주기)</p>
+        <p>이 구간에서는 검증된 결과만 공유 상태로 반영해, 불필요한 위치 불일치가 발생하지 않도록 마무리합니다.</p>
+      </article>
+
+      <article class="validate-chain">
+        <h3>검증 체인 Stage 2 (가로 흐름)</h3>
+        <pre class="mermaid">
+flowchart LR
+  A["Stage2 ReqPos"] --> B{"ValidateMove Pass?"}
+  B -->|No| X1["DROP"]
+  B -->|Yes| C["Apply Fixed Pos/State"]
+  C --> D["SetPosInfo + Zone Update"]
+  D --> E["UpdateAOI"]
+  E --> F["Broadcast S_MOVE"]
+  F --> G["SetMoveStamp"]
+        </pre>
+      </article>
+
+      <article class="snippet-row">
+        <div class="pipeline-col">
+          <section class="p7-panel pipeline-stage2-strong">
+            <h3>파이프라인 Stage 2</h3>
+            <ol class="pipeline-list">
+              <li><strong>4)</strong> <code>ValidateMove</code> 실패 시 즉시 drop</li>
+              <li><strong>5)</strong> 통과 좌표를 <code>fixed</code>로 확정 후 <code>SetPosInfo</code></li>
+              <li><strong>6)</strong> Zone/AOI 갱신 후 <code>S_MOVE</code> 브로드캐스트</li>
+              <li><strong>마무리</strong> <code>SetMoveStamp_ActorOnly</code> 저장</li>
+            </ol>
+          </section>
+          <div class="branch-box">
+            <h4>분기 처리 규칙</h4>
+            <ul class="branch-list">
+              <li><code>ValidateMove</code> 실패: 즉시 <code>drop</code></li>
+              <li>Zone 변경: Zone 리스트 이동 + AOI 갱신</li>
+              <li>Zone 유지: 조건 충족 시 AOI 갱신 후 <code>S_MOVE</code> 전파</li>
+            </ul>
+          </div>
+        </div>
+
+        <section class="p7-panel">
+          <h3>스니펫 Stage 2</h3>
+          <article class="p7-code-snippet">
+            <h4>Representative Snippet · NavMesh 통과 좌표 확정</h4>
+            <pre><code>Protocol::PositionInfo fixed;
+if (!_map || _map-&gt;ValidateMove(cur, reqClamped, fixed) == false)
+{
+    std::cout &lt;&lt; " [FAIL] ID: " &lt;&lt; playerId &lt;&lt; " blocked by NavMesh!" &lt;&lt; std::endl;
+    return;
+}
+
+fixed.set_state(reqClamped.state());
+fixed.set_actionstate(reqClamped.actionstate());
+fixed.set_yaw(reqClamped.yaw());</code></pre>
+            <p class="p7-code-src">GameRoom.Move.cpp:116-127</p>
+          </article>
+        </section>
+      </article>
+    </section>
+
+    <section class="page page9">
+      <div class="page-top">
+        <strong>Portfolio Draft</strong>
+        <span>Page 9</span>
+      </div>
+
+      <div class="p9-head">
+        <h2>2-1. 검증 결과: 서버가 실제로 막는가?</h2>
+        <p class="p9-sub">로그 + 좌표 비교로 drop/clamp 동작을 증명</p>
+      </div>
+
+      <div class="p9-target">
+        테스트 목표: 비정상 이동 요청이 서버에서 차단 또는 보정되어 월드 정합성이 유지되는지 확인
+      </div>
+
+      <div class="p9-main">
+        <article class="p9-case">
+          <div class="p9-case-head">
+            <h3>실패 케이스 · MOVE_SEQ_REWIND_DROP</h3>
+            <span class="p9-badge fail">Drop Case</span>
+          </div>
+          <dl class="p9-detail">
+            <dt>요청</dt>
+            <dd>과거 <code>seq</code> 값을 재전송</dd>
+            <dt>서버 처리</dt>
+            <dd>최신 stamp 대비 역순 입력으로 즉시 <code>drop</code></dd>
+            <dt>결과</dt>
+            <dd>플레이어 위치/상태 미변경, 브로드캐스트 없음</dd>
+          </dl>
+          <div class="p9-log">
+            <h4>Log Evidence</h4>
+            <pre>[MOVE] player=1102 seq=174 lastSeq=176 -> DROP(reason=seq_rewind)
+[STATE] keepPos=(124.60, 0.00, 55.80) no_commit no_broadcast</pre>
+          </div>
+        </article>
+
+        <article class="p9-case">
+          <div class="p9-case-head">
+            <h3>보정 케이스 · SPEED_EXCEEDED_CLAMP</h3>
+            <span class="p9-badge clamp">Clamp Case</span>
+          </div>
+          <dl class="p9-detail">
+            <dt>요청</dt>
+            <dd>허용 이동거리 초과 좌표 요청</dd>
+            <dt>서버 처리</dt>
+            <dd><code>clamp</code> 적용 후 NavMesh <code>ValidateMove</code> 재검증</dd>
+            <dt>결과</dt>
+            <dd>보정 좌표만 <code>commit</code>하고 <code>S_MOVE</code> 전파</dd>
+          </dl>
+          <div class="p9-log">
+            <h4>Log Evidence</h4>
+            <pre>[MOVE] player=1102 reqDist2D=9.82 maxDist=3.60 -> CLAMP
+[MOVE] ValidateMove pass fixed=(128.40, 0.00, 57.12) -> COMMIT + S_MOVE</pre>
+          </div>
+        </article>
+
+        <article class="p9-case">
+          <div class="p9-case-head">
+            <h3>실패 케이스 · INPUT_SANITY_DROP</h3>
+            <span class="p9-badge fail">Drop Case</span>
+          </div>
+          <dl class="p9-detail">
+            <dt>요청</dt>
+            <dd>NaN/Inf 또는 Crazy Position 입력</dd>
+            <dt>서버 처리</dt>
+            <dd><code>IsFinitePos</code>/<code>IsCrazyPos</code> 실패로 즉시 <code>drop</code></dd>
+            <dt>결과</dt>
+            <dd>위치 미변경, 상태 commit 및 전파 없음</dd>
+          </dl>
+          <div class="p9-log">
+            <h4>Log Evidence</h4>
+            <pre>[MOVE] player=1102 pos=(nan, 0.00, inf) -> DROP(reason=input_invalid)
+[STATE] keepPos=(128.40, 0.00, 57.12) no_commit no_broadcast</pre>
+          </div>
+        </article>
+
+        <article class="p9-case">
+          <div class="p9-case-head">
+            <h3>보정 케이스 · NAVMESH_COLLISION_SLIDE_CORRECT</h3>
+            <span class="p9-badge correct">Correct Case</span>
+          </div>
+          <dl class="p9-detail">
+            <dt>요청</dt>
+            <dd>벽 관통/비정상 지형 진입 좌표 요청</dd>
+            <dt>서버 처리</dt>
+            <dd><code>ValidateMove</code>에서 충돌면 기준 <code>slide/correct</code> 보정</dd>
+            <dt>결과</dt>
+            <dd>보정 좌표만 commit 후 <code>S_MOVE</code> 브로드캐스트</dd>
+          </dl>
+          <div class="p9-log">
+            <h4>Log Evidence</h4>
+            <pre>[MOVE] player=1102 req=(132.90, 0.00, 61.70) hit=wall -> CORRECT(slide)
+[MOVE] fixed=(131.28, 0.00, 59.94) -> COMMIT + S_MOVE</pre>
+          </div>
+        </article>
+      </div>
+
+      <article class="p9-bottom">
+        <h3>요청 좌표 vs 서버 확정 좌표 비교</h3>
+        <table class="p9-table">
+          <thead>
+            <tr>
+              <th>시나리오</th>
+              <th>reqDist2D</th>
+              <th>maxDist</th>
+              <th>서버 처리</th>
+              <th>최종 좌표</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>역순 seq</td>
+              <td>-</td>
+              <td>-</td>
+              <td>drop</td>
+              <td>변경 없음</td>
+            </tr>
+            <tr>
+              <td>과속 이동</td>
+              <td>9.82m</td>
+              <td>3.60m</td>
+              <td>clamp + validate</td>
+              <td>(128.40, 0.00, 57.12)</td>
+            </tr>
+            <tr>
+              <td>입력 이상 (NaN/Inf)</td>
+              <td>-</td>
+              <td>-</td>
+              <td>drop (input_invalid)</td>
+              <td>변경 없음</td>
+            </tr>
+            <tr>
+              <td>벽 관통/지형 충돌</td>
+              <td>3.10m</td>
+              <td>3.60m</td>
+              <td>slide/correct + validate</td>
+              <td>(131.28, 0.00, 59.94)</td>
+            </tr>
+          </tbody>
+        </table>
+        <p class="p9-result-note">결론: 비정상 이동 요청은 서버에서 drop/clamp되어 월드 정합성이 유지된다.</p>
+      </article>
+    </section>
+
+    <section class="page page10">
+      <div class="page-top">
+        <strong>Portfolio Draft</strong>
+        <span>Page 10</span>
+      </div>
+
+      <div class="p10-head">
+        <h2>2-2. AOI 최적화: 먼저 대상을 줄인다</h2>
+        <p class="p10-sub">패킷 크기보다 먼저, 보내는 대상 수를 줄여야 한다</p>
+      </div>
+
+      <div class="p10-problem">
+        <strong>문제 정의</strong>
+        엔티티 수가 증가할수록 전체 브로드캐스트는 전송 루프와 송신량이 함께 폭증한다.
+        여기에 입장/재접속 시 대량 스폰이 겹치면 순간 버스트가 커져 초기 동기화가 불안정해진다.
+      </div>
+
+      <div class="p10-solution">
+        <strong>해결 방향</strong>
+        1단계로 AOI를 적용해 전송 대상을 후보군 수준에서 먼저 줄인다.
+        2단계로 Snapshot Batching을 적용해 begin/end 경계와 배치 단위 전송으로 초기 동기화 트래픽을 제어한다.
+        즉, 평시에는 AOI로 불필요 전송을 줄이고, 입장/재동기화 순간에는 스냅샷 경계 처리로 버스트를 완화한다.
+      </div>
+
+      <div class="p10-main">
+        <article class="p10-card">
+          <h3>브로드캐스트 방식의 한계</h3>
+          <ul class="p10-list">
+            <li>엔티티 증가 시 <strong>O(N x M)</strong> 전송 루프 확대</li>
+            <li>CPU: 직렬화/필터 루프 비용 증가</li>
+            <li>네트워크: 송신 버퍼 급증, 지연 확대</li>
+          </ul>
+        </article>
+
+        <article class="p10-card">
+          <h3>AOI + Snapshot 적용 전략</h3>
+          <ul class="p10-list">
+            <li><strong>SpatialGrid</strong>로 후보군 1차 축소</li>
+            <li>거리 + <strong>Connectivity</strong>로 2차 필터링</li>
+            <li>입장 동기화는 <strong>snapshot_id + begin/end</strong> 경계로 명확화</li>
+            <li>스폰 데이터는 배치 단위로 분할 전송해 버스트 완화</li>
+          </ul>
+        </article>
+      </div>
+
+      <article class="p10-bottom">
+        <h3>Before vs After</h3>
+        <table class="p10-table">
+          <thead>
+            <tr>
+              <th>구분</th>
+              <th>기존</th>
+              <th>개선</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>대상 선정</td>
+              <td>전체 브로드캐스트</td>
+              <td>AOI 후보군 한정</td>
+            </tr>
+            <tr>
+              <td>판정 기준</td>
+              <td>거리 위주</td>
+              <td>거리 + 연결성</td>
+            </tr>
+            <tr>
+              <td>입장 동기화</td>
+              <td>대량 스폰 단발성 전송</td>
+              <td>snapshot begin/end + 배치 전송</td>
+            </tr>
+            <tr>
+              <td>결과</td>
+              <td>불필요 전송 다수</td>
+              <td>유효 대상 중심 전송</td>
+            </tr>
+          </tbody>
+        </table>
+        <p class="p10-caption">2-2는 AOI(대상 축소)와 Snapshot Batching(버스트 완화)을 함께 적용해 전송 효율과 초기 동기화 안정성을 동시에 높인다.</p>
+      </article>
+    </section>
+
+    <section class="page page11">
+      <div class="page-top">
+        <strong>Portfolio Draft</strong>
+        <span>Page 11</span>
+      </div>
+
+      <div class="p11-head">
+        <h2>2-2. 후보 축소 + 연결성 검증</h2>
+        <p class="p11-sub">가까워도 연결되지 않으면 보이지 않게 만든다</p>
+      </div>
+
+      <div class="p11-intro">
+        1단계 Broad Phase에서 SpatialGrid 기반 후보를 수집하고,
+        2단계 Narrow Phase에서 거리 + Connectivity를 적용해 실제 가시 집합만 확정한다.
+      </div>
+
+      <div class="p11-stage-row">
+        <article class="p11-stage-card broad">
+          <h3>1단계 Broad Phase</h3>
+          <p class="p11-stage-kicker">Candidate Gathering</p>
+          <ul class="p11-list">
+            <li>현재 Zone 기준 인접 Zone 후보를 먼저 수집</li>
+            <li>플레이어/몬스터/투사체 후보를 동일 반경에서 확보</li>
+            <li>전체 순회 대신 후보군 한정으로 계산량 축소</li>
+          </ul>
+        </article>
+        <article class="p11-stage-card narrow">
+          <h3>2단계 Narrow Phase</h3>
+          <p class="p11-stage-kicker">Distance + Connectivity</p>
+          <ul class="p11-list">
+            <li><strong>PassDistance2D</strong>로 거리 조건을 먼저 통과</li>
+            <li><strong>Connectivity</strong> 일치 여부로 벽/층 분리 오판정 제거</li>
+            <li>최종 NewVis/OldVis diff 기반 Spawn/Despawn만 전송</li>
+          </ul>
+        </article>
+      </div>
+
+      <article class="p11-pipeline">
+        <h3>필터 파이프라인 다이어그램</h3>
+        <pre class="mermaid">
+flowchart LR
+  A[현재 플레이어 Zone] --> B[SpatialGrid 인접 Zone 수집]
+  B --> C[후보 엔티티 집합]
+  C --> D{거리 검사}
+  D -->|Fail| X1[제외]
+  D -->|Pass| E{Connectivity 검사}
+  E -->|Fail| X2[제외]
+  E -->|Pass| F[NewVis 추가]
+  F --> G[OldVis diff 계산]
+  G --> H[Spawn/Despawn 전송]
+        </pre>
+      </article>
+
+      <div class="p11-snippets">
+        <article class="p11-code-card">
+          <h3>Snippet 11-A · 후보군 수집</h3>
+          <pre><code>const uint32 myConn = GetConnectivityId_ActorOnly(myPos);
+
+Vector&lt;PlayerRef&gt; candPlayers;
+Vector&lt;MonsterRef&gt; candMonsters;
+CollectCandidates(me-&gt;GetZoneIndex(), candPlayers, candMonsters);
+
+Vector&lt;Zone*&gt; candZones;
+_grid.GetNearbyZones(me-&gt;GetZoneIndex(), EffectiveAoiRadiusCells(), candZones);</code></pre>
+          <p class="p11-src">GameServer/GameRoom.AOI.v2.cpp:191,195-201</p>
+        </article>
+
+        <article class="p11-code-card">
+          <h3>Snippet 11-B · 핵심 필터</h3>
+          <pre><code>if (!PassDistance2D(myPos, op, _interestRadius))
+    continue;
+
+const uint32 oConn = GetConnectivityId_ActorOnly(op);
+if (oConn != myConn)
+    continue;
+
+newVisPlayers.insert(oid);</code></pre>
+          <p class="p11-src">GameServer/GameRoom.AOI.v2.cpp:219-227</p>
+        </article>
+      </div>
+
+      <p class="p11-caption">Grid로 후보를 줄이고 Connectivity로 정제해 오판정과 불필요 전송을 동시에 줄인다.</p>
+    </section>
+
+    <section class="page page12">
+      <div class="page-top">
+        <strong>Portfolio Draft</strong>
+        <span>Page 12</span>
+      </div>
+
+      <div class="p12-head">
+        <h2>2-2. Snapshot Batching: 입장 버스트 완화</h2>
+        <p class="p12-sub">snapshot_id + begin/end로 경계를 명확히 보낸다</p>
+      </div>
+
+      <div class="p12-problem">
+        <strong>Problem</strong>
+        입장 직후 대량 스폰을 한 번에 전송하면 버스트로 인해 초기 로딩 완료 시점이 불명확해진다.
+        스냅샷을 경계 기반으로 분할해 전송 순서와 완료 시점을 프로토콜로 명확히 고정해야 한다.
+      </div>
+
+      <div class="p12-main">
+        <article class="p12-card">
+          <h3>스냅샷 경계 규칙</h3>
+          <ul class="p12-list">
+            <li>첫 패킷은 <code>snapshot_begin=true</code>로 시작</li>
+            <li>마지막 패킷은 <code>snapshot_end=true</code>로 종료</li>
+            <li>빈 스냅샷도 begin/end를 함께 전송해 로딩 정지 방지</li>
+          </ul>
+        </article>
+
+        <article class="p12-card">
+          <h3>배칭 전송 정책</h3>
+          <ul class="p12-list">
+            <li>엔티티를 배치 단위로 분할 송신해 송신 버스트 완화</li>
+            <li><code>forceFullSnapshot</code> 경로도 동일한 begin/end 규칙 적용</li>
+            <li>클라이언트는 <code>snapshot_end=true</code> 수신으로 완료 시점 확정</li>
+          </ul>
+        </article>
+      </div>
+
+      <article class="p12-timeline">
+        <h3>begin/end 시퀀스 타임라인</h3>
+        <p class="p12-seq-intro">
+          예시(Players 73 / Monsters 182 / Projectiles 41, 배치 50/100/200) 기준으로 총 5개 패킷 흐름.
+        </p>
+        <ol class="p12-seq">
+          <li class="p12-seq-item begin">
+            <span class="p12-seq-dot">1</span>
+            <div class="p12-seq-card">
+              <p class="p12-seq-kicker">시퀀스 1 · Begin</p>
+              <h4>S_SPAWN #1</h4>
+              <p class="p12-seq-flags"><code>snapshot_id=K</code> / <code>begin=true</code> / <code>end=false</code></p>
+              <p class="p12-seq-note">첫 배치(Player 1~50) 전송과 함께 경계를 연다. 클라는 K 스냅샷 누적 상태로 진입한다.</p>
+            </div>
+          </li>
+          <li class="p12-seq-item middle">
+            <span class="p12-seq-dot">2</span>
+            <div class="p12-seq-card">
+              <p class="p12-seq-kicker">시퀀스 2 · Middle xN</p>
+              <h4>S_SPAWN #2 ~ #4</h4>
+              <p class="p12-seq-flags"><code>snapshot_id=K</code> / <code>begin=false</code> / <code>end=false</code></p>
+              <p class="p12-seq-note">남은 배치(Player 51~73, Monster 1~100, Monster 101~182)를 순차 전송하며 동일 K에 누적한다.</p>
+            </div>
+          </li>
+          <li class="p12-seq-item end">
+            <span class="p12-seq-dot">3</span>
+            <div class="p12-seq-card">
+              <p class="p12-seq-kicker">시퀀스 3 · End</p>
+              <h4>S_SPAWN #5</h4>
+              <p class="p12-seq-flags"><code>snapshot_id=K</code> / <code>begin=false</code> / <code>end=true</code></p>
+              <p class="p12-seq-note">마지막 배치(Projectile 1~41)에서 경계를 닫는다. 클라는 K 완료를 수신하면 로딩을 해제한다.</p>
+            </div>
+          </li>
+        </ol>
+        <p class="p12-timeline-note">
+          예외 케이스: 스폰 0건이면 <code>S_SPAWN(begin=true,end=true)</code> 1개만 보내 즉시 완료를 보장한다.
+        </p>
+      </article>
+
+      <div class="p12-snippets">
+        <article class="p12-code-card">
+          <h3>증명 포인트 A · 경계 플래그 부여</h3>
+          <ul class="p12-point-list">
+            <li>첫 패킷: <code>pkts.front().set_snapshot_begin(true)</code></li>
+            <li>마지막 패킷: <code>pkts.back().set_snapshot_end(true)</code></li>
+            <li>트레이스의 #1 / #5 행과 1:1 대응</li>
+          </ul>
+          <p class="p12-src">GameServer/GameRoom.AOI.v2.cpp:130,143,144,457</p>
+        </article>
+
+        <article class="p12-code-card">
+          <h3>증명 포인트 B · 배치 분할 규칙</h3>
+          <ul class="p12-point-list">
+            <li>Player: <code>min(_batchSpawnPlayers, remain)</code></li>
+            <li>Monster: <code>min(_batchSpawnMonsters, remain)</code></li>
+            <li>Projectile: <code>batchProj = 200</code> 기준 분할</li>
+          </ul>
+          <p class="p12-src">GameServer/GameRoom.AOI.v2.cpp:393,407,425,436,466,467</p>
+        </article>
+
+        <article class="p12-code-card">
+          <h3>증명 포인트 C · 강제 스냅샷 트리거</h3>
+          <ul class="p12-point-list">
+            <li><code>EnterGame</code> 진입 시 <code>UpdateAOI(..., true)</code> 호출</li>
+            <li><code>EnterMapChange</code> 진입 시도 동일하게 호출</li>
+            <li>입장/맵이동 모두 full snapshot 경로를 강제</li>
+          </ul>
+          <p class="p12-src">GameServer/GameRoom.EnterLeave.cpp:89,126</p>
+        </article>
+      </div>
+
+      <p class="p12-caption">입장 스냅샷을 경계 기반으로 분할 전송해 버스트와 로딩 불확실성을 동시에 줄인다.</p>
     </section>
   </main>
   <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
