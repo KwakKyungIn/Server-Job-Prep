@@ -126,6 +126,7 @@
   <ItemGroup>
     <ClCompile Include="condingTest_1week.cpp" />
     <ClCompile Include="condingTest_2week.cpp" />
+    <ClCompile Include="condingTest_3week.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
