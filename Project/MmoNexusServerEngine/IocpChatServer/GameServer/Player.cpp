@@ -4,6 +4,8 @@
 #include "GameRoom.h"
 #include "ClientPacketHandler.h"
 #include "DataManager.h"
+#include "ExperimentUtils.h"
+#include "GameMetrics.h"
 #include "PersistenceService.h"
 #include <limits>
 
@@ -91,7 +93,14 @@ void Player::OnDead(std::shared_ptr<Creature> attacker)
 			*movePkt.mutable_posinfo() = *_posInfo;
 
 		SendBufferRef sb = ClientPacketHandler::MakeSendBuffer(movePkt);
-		room->BroadcastToZone(sb, GetZoneIndex());
+		const bool roomWideBaseline = ExperimentUtils::IsHotRoomRoomWideBaseline();
+		const int32 recipients = roomWideBaseline
+			? room->Broadcast(sb)
+			: room->BroadcastToZone(sb, GetZoneIndex());
+		GameMetrics::OnBroadcastRecipients(
+			GameMetrics::HotRoomBroadcastKind::Move,
+			roomWideBaseline ? GameMetrics::HotRoomBroadcastMode::Room : GameMetrics::HotRoomBroadcastMode::Aoi,
+			static_cast<std::size_t>(recipients));
 	}
 
 	// 변신 상태였다면 해제하거나 버프 다 지우는 로직도 필요할 듯

@@ -124,8 +124,8 @@ public:
     GameMapRef GetMap() { return _map; }
 
     // 패킷 브로드캐스팅 (특정 Zone 혹은 방 전체)
-    void BroadcastToZone(SendBufferRef sendBuffer, int32 zoneIndex, uint64 exceptId = 0);
-    void Broadcast(SendBufferRef sendBuffer, uint64 exceptId = 0);
+    int32 BroadcastToZone(SendBufferRef sendBuffer, int32 zoneIndex, uint64 exceptId = 0);
+    int32 Broadcast(SendBufferRef sendBuffer, uint64 exceptId = 0);
 
     // 전투 관련 로직 (스킬 사용, 피격 등)
     void HandleSkill(std::shared_ptr<Creature> attacker, int32 skillId);
@@ -239,15 +239,20 @@ private:
     float _lazyUpdateDist = 10.f;      // 10m 이상 움직여야 갱신 (스로틀링)
     uint64 _lazyUpdateTickMs = 500;    // 혹은 0.5초가 지나야 갱신
 
-    // 패킷 뭉쳐 보내기 설정 (Socket 버퍼 오버플로우 방지)
-    int32 _batchSpawnPlayers = 50;
-    int32 _batchSpawnMonsters = 100;
+    // 패킷 뭉쳐 보내기 설정 (6KB SendBufferChunk를 넘지 않도록 보수적으로 유지)
+    int32 _batchSpawnPlayers = 20;
+    int32 _batchSpawnMonsters = 40;
     int32 _batchDespawn = 200;
 
 private:
     // AOI 메인 로직: 내가 누구를 봐야 하고, 누구를 안 보게 됐는지 계산
     void UpdateAOI(PlayerSessionRef session, PlayerRef me, bool forceFullSnapshot);
     bool ShouldUpdateAOI(PlayerRef me, bool zoneChanged) const;
+    void SendMoveSync(PlayerSessionRef ownerSession,
+        PlayerRef player,
+        const Protocol::PositionInfo& posInfo,
+        bool sendToOwner,
+        bool sendToVisibleOthers);
 
     // 주변 Zone들을 뒤져서 플레이어/몬스터 후보군 수집
     void CollectCandidates(int32 zoneIndex, Vector<PlayerRef>& outPlayers, Vector<MonsterRef>& outMonsters);
@@ -269,6 +274,10 @@ private:
 
     // 시야 반경을 그리드 셀 단위로 변환
     int32 EffectiveAoiRadiusCells() const;
+    void BuildRoomWideVisibilityForPlayer_ActorOnly(PlayerRef player);
+    void ClearRoomWideVisibilityForPlayer_ActorOnly(PlayerRef player);
+    void SendRoomWideSnapshotToPlayer_ActorOnly(PlayerSessionRef session, PlayerRef player, bool snapshotMode);
+    void BroadcastRoomWidePlayerSpawn_ActorOnly(PlayerRef player);
 
     // =========================================================
     // [Spawn System]

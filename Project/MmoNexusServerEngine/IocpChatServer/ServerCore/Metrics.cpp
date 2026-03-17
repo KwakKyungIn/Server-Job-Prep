@@ -86,11 +86,22 @@ namespace MetricsHistogramBuckets
 	{
 		static const std::vector<double> kBuckets = {
 			MetricsMillisecondsToSeconds(0.001),
+			MetricsMillisecondsToSeconds(0.005),
 			MetricsMillisecondsToSeconds(0.01),
+			MetricsMillisecondsToSeconds(0.05),
 			MetricsMillisecondsToSeconds(0.1),
+			MetricsMillisecondsToSeconds(0.25),
+			MetricsMillisecondsToSeconds(0.5),
 			MetricsMillisecondsToSeconds(1.0),
+			MetricsMillisecondsToSeconds(2.0),
+			MetricsMillisecondsToSeconds(5.0),
 			MetricsMillisecondsToSeconds(10.0),
+			MetricsMillisecondsToSeconds(20.0),
+			MetricsMillisecondsToSeconds(50.0),
 			MetricsMillisecondsToSeconds(100.0),
+			MetricsMillisecondsToSeconds(200.0),
+			MetricsMillisecondsToSeconds(500.0),
+			MetricsMillisecondsToSeconds(1000.0),
 		};
 		return kBuckets;
 	}

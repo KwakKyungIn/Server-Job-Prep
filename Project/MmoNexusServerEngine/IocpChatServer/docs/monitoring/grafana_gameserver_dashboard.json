@@ -45,6 +45,7 @@
       }
     ]
   },
+  "description": "Portfolio dashboard for Hot Room Mix A/B tests comparing final AOI mode against room-wide baseline mode.",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
@@ -59,7 +60,7 @@
       },
       "fieldConfig": {
         "defaults": {
-          "unit": "s"
+          "unit": "short"
         },
         "overrides": []
       },
@@ -79,12 +80,18 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "histogram_quantile(0.95, sum(rate(gs_packet_handle_seconds_bucket{op!=\"other\"}[$__rate_interval])) by (le, op))",
-          "legendFormat": "{{op}}",
+          "expr": "gs_ccu",
+          "legendFormat": "Connected Sessions",
           "refId": "A"
+        },
+        {
+          "editorMode": "code",
+          "expr": "gs_ingame_players",
+          "legendFormat": "Ingame Players",
+          "refId": "B"
         }
       ],
-      "title": "Game Packet Handle p95",
+      "title": "Load Status: Sessions vs Players",
       "type": "timeseries"
     },
     {
@@ -94,7 +101,7 @@
       },
       "fieldConfig": {
         "defaults": {
-          "unit": "s"
+          "unit": "short"
         },
         "overrides": []
       },
@@ -114,12 +121,30 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "histogram_quantile(0.95, sum(rate(gs_jobqueue_wait_seconds_bucket[$__rate_interval])) by (le))",
-          "legendFormat": "p95",
+          "expr": "histogram_quantile(0.95, sum(rate(gs_broadcast_recipients_bucket{kind=\"move\",mode=\"aoi\"}[$__rate_interval])) by (le))",
+          "legendFormat": "Move - AOI",
           "refId": "A"
+        },
+        {
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.95, sum(rate(gs_broadcast_recipients_bucket{kind=\"move\",mode=\"room\"}[$__rate_interval])) by (le))",
+          "legendFormat": "Move - Room Wide",
+          "refId": "B"
+        },
+        {
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.95, sum(rate(gs_broadcast_recipients_bucket{kind=\"skill\",mode=\"aoi\"}[$__rate_interval])) by (le))",
+          "legendFormat": "Skill - AOI",
+          "refId": "C"
+        },
+        {
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.95, sum(rate(gs_broadcast_recipients_bucket{kind=\"skill\",mode=\"room\"}[$__rate_interval])) by (le))",
+          "legendFormat": "Skill - Room Wide",
+          "refId": "D"
         }
       ],
-      "title": "Game JobQueue Wait p95",
+      "title": "Broadcast Fan-out p95",
       "type": "timeseries"
     },
     {
@@ -129,7 +154,7 @@
       },
       "fieldConfig": {
         "defaults": {
-          "unit": "s"
+          "unit": "Bps"
         },
         "overrides": []
       },
@@ -149,12 +174,18 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "histogram_quantile(0.95, sum(rate(gs_jobqueue_exec_seconds_bucket[$__rate_interval])) by (le))",
-          "legendFormat": "p95",
+          "expr": "sum(rate(gs_session_tx_bytes_total[$__rate_interval]))",
+          "legendFormat": "Server TX",
           "refId": "A"
+        },
+        {
+          "editorMode": "code",
+          "expr": "sum(rate(gs_session_rx_bytes_total[$__rate_interval]))",
+          "legendFormat": "Server RX",
+          "refId": "B"
         }
       ],
-      "title": "Game JobQueue Exec p95",
+      "title": "Session Traffic: TX vs RX",
       "type": "timeseries"
     },
     {
@@ -184,12 +215,12 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "histogram_quantile(0.95, sum(rate(gs_lobby_wait_seconds_bucket{type=\"enter_game\"}[$__rate_interval])) by (le))",
-          "legendFormat": "lobby_enter_p95",
+          "expr": "histogram_quantile(0.95, sum(rate(gs_jobqueue_wait_seconds_bucket{queue=\"job\"}[$__rate_interval])) by (le))",
+          "legendFormat": "Room Wait p95",
           "refId": "A"
         }
       ],
-      "title": "Lobby Enter Wait p95",
+      "title": "Room Queue Wait p95",
       "type": "timeseries"
     },
     {
@@ -199,13 +230,13 @@
       },
       "fieldConfig": {
         "defaults": {
-          "unit": "short"
+          "unit": "s"
         },
         "overrides": []
       },
       "gridPos": {
         "h": 8,
-        "w": 8,
+        "w": 16,
         "x": 8,
         "y": 8
       },
@@ -219,252 +250,30 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "gs_ccu",
-          "legendFormat": "ccu",
+          "expr": "histogram_quantile(0.95, sum(rate(gs_jobqueue_exec_seconds_bucket{queue=\"job\"}[$__rate_interval])) by (le))",
+          "legendFormat": "Job Exec p95",
           "refId": "A"
         },
         {
           "editorMode": "code",
-          "expr": "gs_ingame_players",
-          "legendFormat": "ingame",
+          "expr": "histogram_quantile(0.95, sum(rate(gs_packet_handle_seconds_bucket{op=\"move\"}[$__rate_interval])) by (le))",
+          "legendFormat": "Move Handle p95",
           "refId": "B"
-        }
-      ],
-      "title": "CCU vs Ingame",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "sps"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 8,
-        "x": 16,
-        "y": 8
-      },
-      "id": 6,
-      "options": {
-        "legend": {
-          "displayMode": "table",
-          "placement": "bottom"
-        }
-      },
-      "targets": [
-        {
-          "editorMode": "code",
-          "expr": "sum(rate(gs_worker_idle_seconds_total[$__rate_interval]))",
-          "legendFormat": "idle_rate",
-          "refId": "A"
-        },
-        {
-          "editorMode": "code",
-          "expr": "sum(rate(gs_worker_exec_seconds_total[$__rate_interval]))",
-          "legendFormat": "exec_rate",
-          "refId": "B"
-        }
-      ],
-      "title": "Worker Idle vs Exec (Rate)",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "reqps"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 8,
-        "x": 0,
-        "y": 16
-      },
-      "id": 7,
-      "options": {
-        "legend": {
-          "displayMode": "table",
-          "placement": "bottom"
-        }
-      },
-      "targets": [
-        {
-          "editorMode": "code",
-          "expr": "sum by (op, reason) (rate(gs_packet_failure_total[$__rate_interval]))",
-          "legendFormat": "{{op}}/{{reason}}",
-          "refId": "A"
-        }
-      ],
-      "title": "Packet Failures",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "reqps"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 8,
-        "x": 8,
-        "y": 16
-      },
-      "id": 8,
-      "options": {
-        "legend": {
-          "displayMode": "table",
-          "placement": "bottom"
-        }
-      },
-      "targets": [
-        {
-          "editorMode": "code",
-          "expr": "sum by (op) (rate(gs_packet_ingress_total[$__rate_interval]))",
-          "legendFormat": "{{op}}",
-          "refId": "A"
-        }
-      ],
-      "title": "Packet Ingress Throughput",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "s"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 8,
-        "x": 16,
-        "y": 16
-      },
-      "id": 9,
-      "options": {
-        "legend": {
-          "displayMode": "table",
-          "placement": "bottom"
-        }
-      },
-      "targets": [
-        {
-          "editorMode": "code",
-          "expr": "histogram_quantile(0.95, sum(rate(gs_s2s_rtt_seconds_bucket{op!=\"other\"}[$__rate_interval])) by (le, op))",
-          "legendFormat": "{{op}}",
-          "refId": "A"
-        }
-      ],
-      "title": "S2S RTT p95",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "Bps"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 24,
-        "x": 0,
-        "y": 24
-      },
-      "id": 10,
-      "options": {
-        "legend": {
-          "displayMode": "table",
-          "placement": "bottom"
-        }
-      },
-      "targets": [
-        {
-          "editorMode": "code",
-          "expr": "rate(gs_session_rx_bytes_total[$__rate_interval])",
-          "legendFormat": "rx_bps",
-          "refId": "A"
-        },
-        {
-          "editorMode": "code",
-          "expr": "rate(gs_session_tx_bytes_total[$__rate_interval])",
-          "legendFormat": "tx_bps",
-          "refId": "B"
-        }
-      ],
-      "title": "Session RX/TX Throughput",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "s"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 24,
-        "x": 0,
-        "y": 32
-      },
-      "id": 11,
-      "options": {
-        "legend": {
-          "displayMode": "table",
-          "placement": "bottom"
-        }
-      },
-      "targets": [
-        {
-          "editorMode": "code",
-          "expr": "histogram_quantile(0.95, sum(rate(gs_jobqueue_wait_seconds_bucket{queue=\"job\"}[$__rate_interval])) by (le))",
-          "legendFormat": "jobqueue_wait_p95",
-          "refId": "A"
         },
         {
           "editorMode": "code",
           "expr": "histogram_quantile(0.95, sum(rate(gs_packet_handle_seconds_bucket{op=\"skill\"}[$__rate_interval])) by (le))",
-          "legendFormat": "skill_handle_p95",
-          "refId": "B"
+          "legendFormat": "Skill Handle p95",
+          "refId": "C"
         },
         {
           "editorMode": "code",
-          "expr": "histogram_quantile(0.95, sum(rate(gs_packet_handle_seconds_bucket{op=\"use_item\"}[$__rate_interval])) by (le))",
-          "legendFormat": "use_item_handle_p95",
-          "refId": "C"
+          "expr": "histogram_quantile(0.95, sum(rate(gs_aoi_update_seconds_bucket[$__rate_interval])) by (le))",
+          "legendFormat": "AOI Update p95",
+          "refId": "D"
         }
       ],
-      "title": "Queue vs Skill/UseItem Handle p95 (CSV)",
+      "title": "Key Processing Latency p95",
       "type": "timeseries"
     },
     {
@@ -479,12 +288,12 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 10,
+        "h": 12,
         "w": 24,
         "x": 0,
-        "y": 40
+        "y": 16
       },
-      "id": 12,
+      "id": 6,
       "options": {
         "legend": {
           "displayMode": "table",
@@ -495,143 +304,143 @@
         {
           "editorMode": "code",
           "expr": "gs_ccu",
-          "legendFormat": "ccu",
+          "legendFormat": "Connected Sessions",
           "refId": "A"
         },
         {
           "editorMode": "code",
           "expr": "gs_ingame_players",
-          "legendFormat": "ingame_players",
+          "legendFormat": "Ingame Players",
           "refId": "B"
         },
         {
           "editorMode": "code",
-          "expr": "histogram_quantile(0.95, sum(rate(gs_jobqueue_wait_seconds_bucket{queue=\"job\"}[$__rate_interval])) by (le))",
-          "legendFormat": "jobqueue_wait_p95",
+          "expr": "histogram_quantile(0.95, sum(rate(gs_broadcast_recipients_bucket{kind=\"move\",mode=\"aoi\"}[$__rate_interval])) by (le))",
+          "legendFormat": "Broadcast p95 - Move AOI",
           "refId": "C"
         },
         {
           "editorMode": "code",
-          "expr": "histogram_quantile(0.95, sum(rate(gs_jobqueue_exec_seconds_bucket{queue=\"job\"}[$__rate_interval])) by (le))",
-          "legendFormat": "jobqueue_exec_p95",
+          "expr": "histogram_quantile(0.95, sum(rate(gs_broadcast_recipients_bucket{kind=\"move\",mode=\"room\"}[$__rate_interval])) by (le))",
+          "legendFormat": "Broadcast p95 - Move Room Wide",
           "refId": "D"
         },
         {
           "editorMode": "code",
-          "expr": "max(gs_jobqueue_depth{queue=\"job\"})",
-          "legendFormat": "jobqueue_depth_max",
+          "expr": "histogram_quantile(0.95, sum(rate(gs_broadcast_recipients_bucket{kind=\"skill\",mode=\"aoi\"}[$__rate_interval])) by (le))",
+          "legendFormat": "Broadcast p95 - Skill AOI",
           "refId": "E"
         },
         {
           "editorMode": "code",
-          "expr": "sum(gs_globalqueue_depth{queue=\"global\"})",
-          "legendFormat": "globalqueue_depth_sum",
+          "expr": "histogram_quantile(0.95, sum(rate(gs_broadcast_recipients_bucket{kind=\"skill\",mode=\"room\"}[$__rate_interval])) by (le))",
+          "legendFormat": "Broadcast p95 - Skill Room Wide",
           "refId": "F"
         },
         {
           "editorMode": "code",
-          "expr": "sum(rate(gs_worker_exec_seconds_total{type=\"logic\"}[$__rate_interval]))",
-          "legendFormat": "worker_exec_rate",
+          "expr": "sum(rate(gs_session_tx_bytes_total[$__rate_interval]))",
+          "legendFormat": "Session TX Bps",
           "refId": "G"
         },
         {
           "editorMode": "code",
-          "expr": "sum(rate(gs_worker_idle_seconds_total{type=\"logic\"}[$__rate_interval]))",
-          "legendFormat": "worker_idle_rate",
+          "expr": "sum(rate(gs_session_rx_bytes_total[$__rate_interval]))",
+          "legendFormat": "Session RX Bps",
           "refId": "H"
         },
         {
           "editorMode": "code",
-          "expr": "sum(rate(gs_worker_exec_seconds_total{type=\"logic\"}[$__rate_interval])) / clamp_min(sum(rate(gs_worker_exec_seconds_total{type=\"logic\"}[$__rate_interval])) + sum(rate(gs_worker_idle_seconds_total{type=\"logic\"}[$__rate_interval])), 1e-9)",
-          "legendFormat": "worker_busy_ratio",
+          "expr": "histogram_quantile(0.95, sum(rate(gs_jobqueue_wait_seconds_bucket{queue=\"job\"}[$__rate_interval])) by (le))",
+          "legendFormat": "Room Wait p95 sec",
           "refId": "I"
         },
         {
           "editorMode": "code",
-          "expr": "sum(rate(gs_packet_ingress_total[$__rate_interval]))",
-          "legendFormat": "packet_ingress_total_rps",
+          "expr": "histogram_quantile(0.95, sum(rate(gs_jobqueue_exec_seconds_bucket{queue=\"job\"}[$__rate_interval])) by (le))",
+          "legendFormat": "Room Exec p95 sec",
           "refId": "J"
         },
         {
           "editorMode": "code",
-          "expr": "sum(rate(gs_packet_ingress_total{op=\"skill\"}[$__rate_interval]))",
-          "legendFormat": "packet_ingress_skill_rps",
+          "expr": "max(gs_jobqueue_depth{queue=\"job\"})",
+          "legendFormat": "Room Queue Depth max",
           "refId": "K"
         },
         {
           "editorMode": "code",
-          "expr": "sum(rate(gs_packet_ingress_total{op=\"use_item\"}[$__rate_interval]))",
-          "legendFormat": "packet_ingress_use_item_rps",
+          "expr": "sum(rate(gs_worker_exec_seconds_total{type=\"logic\"}[$__rate_interval])) / clamp_min(sum(rate(gs_worker_exec_seconds_total{type=\"logic\"}[$__rate_interval])) + sum(rate(gs_worker_idle_seconds_total{type=\"logic\"}[$__rate_interval])), 1e-9)",
+          "legendFormat": "Worker Busy Ratio",
           "refId": "L"
         },
         {
           "editorMode": "code",
-          "expr": "sum(rate(gs_packet_failure_total[$__rate_interval]))",
-          "legendFormat": "packet_failure_total_rps",
+          "expr": "sum(rate(gs_packet_ingress_total[$__rate_interval]))",
+          "legendFormat": "Packet Ingress total rps",
           "refId": "M"
         },
         {
           "editorMode": "code",
-          "expr": "histogram_quantile(0.95, sum(rate(gs_packet_handle_seconds_bucket[$__rate_interval])) by (le))",
-          "legendFormat": "packet_handle_p95_all",
+          "expr": "sum(rate(gs_packet_ingress_total{op=\"move\"}[$__rate_interval]))",
+          "legendFormat": "Packet Ingress move rps",
           "refId": "N"
         },
         {
           "editorMode": "code",
-          "expr": "histogram_quantile(0.95, sum(rate(gs_packet_handle_seconds_bucket{op=\"skill\"}[$__rate_interval])) by (le))",
-          "legendFormat": "packet_handle_p95_skill",
+          "expr": "sum(rate(gs_packet_ingress_total{op=\"skill\"}[$__rate_interval]))",
+          "legendFormat": "Packet Ingress skill rps",
           "refId": "O"
         },
         {
           "editorMode": "code",
-          "expr": "histogram_quantile(0.95, sum(rate(gs_packet_handle_seconds_bucket{op=\"use_item\"}[$__rate_interval])) by (le))",
-          "legendFormat": "packet_handle_p95_use_item",
+          "expr": "sum(rate(gs_packet_failure_total[$__rate_interval]))",
+          "legendFormat": "Packet Failure rps",
           "refId": "P"
         },
         {
           "editorMode": "code",
-          "expr": "histogram_quantile(0.95, sum(rate(gs_s2s_rtt_seconds_bucket{op!=\"other\"}[$__rate_interval])) by (le))",
-          "legendFormat": "s2s_rtt_p95_all",
+          "expr": "histogram_quantile(0.95, sum(rate(gs_packet_handle_seconds_bucket{op=\"move\"}[$__rate_interval])) by (le))",
+          "legendFormat": "Move Handle p95 sec",
           "refId": "Q"
         },
         {
           "editorMode": "code",
-          "expr": "rate(gs_session_rx_bytes_total[$__rate_interval])",
-          "legendFormat": "session_rx_bps",
+          "expr": "histogram_quantile(0.95, sum(rate(gs_packet_handle_seconds_bucket{op=\"skill\"}[$__rate_interval])) by (le))",
+          "legendFormat": "Skill Handle p95 sec",
           "refId": "R"
         },
         {
           "editorMode": "code",
-          "expr": "rate(gs_session_tx_bytes_total[$__rate_interval])",
-          "legendFormat": "session_tx_bps",
+          "expr": "histogram_quantile(0.95, sum(rate(gs_aoi_update_seconds_bucket[$__rate_interval])) by (le))",
+          "legendFormat": "AOI Update p95 sec",
           "refId": "S"
         },
         {
           "editorMode": "code",
-          "expr": "histogram_quantile(0.95, sum(rate(db_req_handle_seconds_bucket{op!=\"other\"}[$__rate_interval])) by (le))",
-          "legendFormat": "db_req_handle_p95_all",
+          "expr": "sum(rate(gs_aoi_update_total[$__rate_interval]))",
+          "legendFormat": "AOI Update rps",
           "refId": "T"
         },
         {
           "editorMode": "code",
-          "expr": "histogram_quantile(0.95, sum(rate(db_query_seconds_bucket{op!=\"other\"}[$__rate_interval])) by (le))",
-          "legendFormat": "db_query_p95_all",
+          "expr": "histogram_quantile(0.95, sum(rate(gs_aoi_candidates_bucket{kind=\"player\"}[$__rate_interval])) by (le))",
+          "legendFormat": "AOI Candidates p95 - Player",
           "refId": "U"
         },
         {
           "editorMode": "code",
-          "expr": "histogram_quantile(0.95, sum(rate(db_pool_wait_seconds_bucket{op!=\"other\"}[$__rate_interval])) by (le))",
-          "legendFormat": "db_pool_wait_p95_all",
+          "expr": "histogram_quantile(0.95, sum(rate(gs_aoi_visible_bucket{kind=\"player\"}[$__rate_interval])) by (le))",
+          "legendFormat": "AOI Visible p95 - Player",
           "refId": "V"
         },
         {
           "editorMode": "code",
-          "expr": "db_pool_inuse / clamp_min(db_pool_size, 1)",
-          "legendFormat": "db_pool_utilization",
+          "expr": "sum(rate(gs_session_send_drop_total[$__rate_interval]))",
+          "legendFormat": "Session Send Drop rps",
           "refId": "W"
         }
       ],
-      "title": "CSV Snapshot - Major Signals",
+      "title": "CSV Export: Hot Room Major Signals",
       "type": "timeseries"
     }
   ],
@@ -641,7 +450,8 @@
   "tags": [
     "gameserver",
     "prometheus",
-    "phase2"
+    "hot-room",
+    "portfolio"
   ],
   "templating": {
     "list": []
@@ -652,8 +462,8 @@
   },
   "timepicker": {},
   "timezone": "",
-  "title": "GameServer Observability",
+  "title": "Hot Room Mix Performance Comparison",
   "uid": "gameserver-phase2",
-  "version": 3,
+  "version": 4,
   "weekStart": ""
 }

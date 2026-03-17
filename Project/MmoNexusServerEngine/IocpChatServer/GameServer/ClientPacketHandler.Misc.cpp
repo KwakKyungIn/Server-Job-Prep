@@ -1,5 +1,8 @@
 ﻿#include "pch.h"
 #include "ClientPacketHandler.h"
+#include "AutoCommitService.h"
+#include "ExperimentUtils.h"
+#include "GameMetrics.h"
 #include "PlayerSession.h"
 #include "PersistenceService.h"
 #include "Protocol_S2S.pb.h"
@@ -53,6 +56,9 @@ bool ClientPacketHandler::Handle_C_SET_QUICKSLOT(PacketSessionRef& session, Prot
     // DB 접근이 필요하므로 세션 액터 스레드에 태워서 순차적으로 처리함
     ps->Post([pid, idx, rt, refId](PlayerSessionRef self) mutable
         {
+            const bool immediateMode = ExperimentUtils::IsPersistenceImmediateQuickslot();
+            const bool markDirty = (immediateMode == false);
+
             // [중복 방지 규칙]
             // 같은 아이템이 여러 퀵슬롯에 등록되는 것을 막는다
             // 예: 1번 슬롯에 있는 포션을 2번 슬롯으로 옮기면, 1번 슬롯은 비워야 한다
@@ -75,7 +81,7 @@ bool ClientPacketHandler::Handle_C_SET_QUICKSLOT(PacketSessionRef& session, Prot
                             continue;
 
                         // 중복 발견! 기존에 있던 슬롯을 비워준다 (DB + 메모리 갱신)
-                        Persistence::PersistenceService::I().UpdateQuickSlot(pid, s.slotindex(), Protocol::QS_NONE, 0, /*markDirty=*/true);
+                        Persistence::PersistenceService::I().UpdateQuickSlot(pid, s.slotindex(), Protocol::QS_NONE, 0, markDirty);
 
                         // 클라이언트에게도 기존 슬롯이 비워졌음을 알려야 UI 갱신이 됨
                         Protocol::S_SET_QUICKSLOT cleared;
@@ -91,7 +97,16 @@ bool ClientPacketHandler::Handle_C_SET_QUICKSLOT(PacketSessionRef& session, Prot
             }
 
             // 이제 요청받은 슬롯에 데이터를 덮어쓴다 (Redis + Dirty Flag 설정)
-            Persistence::PersistenceService::I().UpdateQuickSlot(pid, idx, rt, refId, /*markDirty=*/true);
+            Persistence::PersistenceService::I().UpdateQuickSlot(pid, idx, rt, refId, markDirty);
+
+            if (immediateMode)
+                Persistence::AutoCommitService::I().SendQuickSlotImmediate(pid);
+
+            GameMetrics::OnPersistenceMutation(
+                GameMetrics::PersistenceMutationDomain::QuickSlot,
+                immediateMode
+                    ? GameMetrics::PersistenceMutationPath::Immediate
+                    : GameMetrics::PersistenceMutationPath::Writeback);
 
             // 최종적으로 클라이언트에게 변경 성공 응답 전송
             Protocol::S_SET_QUICKSLOT out;

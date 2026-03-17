@@ -21,6 +21,7 @@ enum class LoadScenario
 	Move,
 	Combat,
 	Mix,
+	Persistence,
 };
 
 class MetricsCollector
@@ -41,6 +42,7 @@ public:
 	void IncMoveSend();
 	void IncSkillSend();
 	void IncHeartbeatSend();
+	void IncQuickSlotSend();
 
 	struct Snapshot
 	{
@@ -56,6 +58,7 @@ public:
 		int32 moveSend = 0;
 		int32 skillSend = 0;
 		int32 heartbeatSend = 0;
+		int32 quickslotSend = 0;
 
 		float loginAvg = 0.0f;
 		float loginP95 = 0.0f;
@@ -89,6 +92,7 @@ private:
 	std::atomic<int32> _moveSend{ 0 };
 	std::atomic<int32> _skillSend{ 0 };
 	std::atomic<int32> _heartbeatSend{ 0 };
+	std::atomic<int32> _quickslotSend{ 0 };
 };
 
 class LoadClient : public std::enable_shared_from_this<LoadClient>
@@ -139,6 +143,7 @@ private:
 	void SendMove(uint64 nowMs);
 	void SendSkill(uint64 nowMs);
 	void SendHeartbeat(uint64 nowMs);
+	void SendQuickSlot(uint64 nowMs);
 
 	void UpdatePositionRandomLocked(float maxStep, uint64 nowMs);
 	bool BuildPathLocked(uint64 nowMs);
@@ -171,8 +176,12 @@ private:
 	uint64 _lastMoveMs = 0;
 	uint64 _lastSkillMs = 0;
 	uint64 _lastHeartbeatMs = 0;
+	uint64 _lastQuickSlotMs = 0;
 	std::atomic<uint64> _lastMoveSentMs{ 0 };
 	std::atomic<uint64> _lastSkillSentMs{ 0 };
+	int32 _quickSlotCursor = 0;
+	int32 _quickSlotSkillCursor = 1;
+	uint64 _quickSlotEventCount = 0;
 
 	std::shared_ptr<LoadLoginSession> _loginSession;
 	std::shared_ptr<LoadGameSession> _gameSession;

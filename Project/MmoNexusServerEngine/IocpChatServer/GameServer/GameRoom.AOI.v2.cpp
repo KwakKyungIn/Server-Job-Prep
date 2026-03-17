@@ -3,7 +3,9 @@
 #include "Player.h"
 #include "Monster.h"
 #include "GameRoom.Net.h"
+#include "GameMetrics.h"
 #include <algorithm>
+#include <chrono>
 #include "ClientPacketHandler.h"
 #include "PlayerSession.h"
 #include "GameMap.h"
@@ -186,6 +188,7 @@ void GameRoom::UpdateAOI(PlayerSessionRef session, PlayerRef me, bool forceFullS
 {
     if (!session || !me) return;
 
+    const auto updateStart = std::chrono::steady_clock::now();
     const uint64 meId = me->GetPlayerId();
     const auto& myPos = *me->GetPosInfo();
     const uint32 myConn = GetConnectivityId_ActorOnly(myPos);
@@ -205,6 +208,9 @@ void GameRoom::UpdateAOI(PlayerSessionRef session, PlayerRef me, bool forceFullS
     HashSet<uint64> newVisPlayers;
     HashSet<uint64> newVisMonsters;
     HashSet<uint64> newVisProjectiles;
+    std::size_t candidatePlayers = 0;
+    std::size_t candidateMonsters = 0;
+    std::size_t candidateProjectiles = 0;
 
     // 플레이어 검사
     for (const PlayerRef& other : candPlayers)
@@ -212,6 +218,7 @@ void GameRoom::UpdateAOI(PlayerSessionRef session, PlayerRef me, bool forceFullS
         if (!other) continue;
         const uint64 oid = other->GetPlayerId();
         if (oid == meId) continue; // 나는 제외
+        ++candidatePlayers;
 
         const auto& op = *other->GetPosInfo();
 
@@ -232,6 +239,7 @@ void GameRoom::UpdateAOI(PlayerSessionRef session, PlayerRef me, bool forceFullS
     {
         if (!m) continue;
         const uint64 mid = m->GetObjectId();
+        ++candidateMonsters;
         const auto& mp = *m->GetPosInfo();
 
         if (!PassDistance2D(myPos, mp, _interestRadius))
@@ -254,6 +262,7 @@ void GameRoom::UpdateAOI(PlayerSessionRef session, PlayerRef me, bool forceFullS
             if (!pr) continue;
 
             const uint64 prid = pr->GetObjectId();
+            ++candidateProjectiles;
             const auto& pp = *pr->GetPosInfo();
 
             if (!PassDistance2D(myPos, pp, _interestRadius))
@@ -266,6 +275,13 @@ void GameRoom::UpdateAOI(PlayerSessionRef session, PlayerRef me, bool forceFullS
             newVisProjectiles.insert(prid);
         }
     }
+
+    GameMetrics::OnAoiCandidates(GameMetrics::AoiObjectKind::Player, candidatePlayers);
+    GameMetrics::OnAoiCandidates(GameMetrics::AoiObjectKind::Monster, candidateMonsters);
+    GameMetrics::OnAoiCandidates(GameMetrics::AoiObjectKind::Projectile, candidateProjectiles);
+    GameMetrics::OnAoiVisible(GameMetrics::AoiObjectKind::Player, newVisPlayers.size());
+    GameMetrics::OnAoiVisible(GameMetrics::AoiObjectKind::Monster, newVisMonsters.size());
+    GameMetrics::OnAoiVisible(GameMetrics::AoiObjectKind::Projectile, newVisProjectiles.size());
 
     // 3. Diff Algorithm (Delta Update)
     // 이전 프레임에 보였던 목록(Old) vs 지금 보이는 목록(New) 비교
@@ -433,7 +449,7 @@ void GameRoom::UpdateAOI(PlayerSessionRef session, PlayerRef me, bool forceFullS
         }
 
         // 투사체 배칭
-        const int32 batchProj = 200;
+        const int32 batchProj = 64;
         for (int32 t = 0; t < (int32)toSpawnPr.size(); )
         {
             Protocol::S_SPAWN pkt;
@@ -477,7 +493,7 @@ void GameRoom::UpdateAOI(PlayerSessionRef session, PlayerRef me, bool forceFullS
 
         if (!toSpawnPr.empty())
         {
-            const int32 batchProj = 200;
+            const int32 batchProj = 64;
             for (int32 t = 0; t < (int32)toSpawnPr.size(); )
             {
                 Protocol::S_SPAWN pkt;
@@ -497,6 +513,7 @@ void GameRoom::UpdateAOI(PlayerSessionRef session, PlayerRef me, bool forceFullS
 
     // 7. 대칭 업데이트 (Symmetric Update)
     // 내가 A를 보게 되었다면, A에게도 "나"를 보여줘야 함
+    std::size_t spawnRecipients = 0;
     for (const PlayerRef& other : toSpawnP)
     {
         if (!other) continue;
@@ -510,10 +527,12 @@ void GameRoom::UpdateAOI(PlayerSessionRef session, PlayerRef me, bool forceFullS
             *info = *me->GetPlayerInfo();
 
             SendToPlayer(other->GetPlayerId(), ClientPacketHandler::MakeSendBuffer(pkt));
+            ++spawnRecipients;
         }
     }
 
     // 내가 A를 못 보게 되었다면(멀어짐), A에게서도 "나"를 지워야 함
+    std::size_t despawnRecipients = 0;
     for (uint64 pid : toDespawnP)
     {
         PlayerRef other = FindPlayer_ActorOnly(pid);
@@ -525,8 +544,18 @@ void GameRoom::UpdateAOI(PlayerSessionRef session, PlayerRef me, bool forceFullS
             Protocol::S_DESPAWN pkt;
             pkt.add_objectids(meId);
             SendToPlayer(pid, ClientPacketHandler::MakeSendBuffer(pkt));
+            ++despawnRecipients;
         }
     }
+
+    GameMetrics::OnBroadcastRecipients(
+        GameMetrics::HotRoomBroadcastKind::Spawn,
+        GameMetrics::HotRoomBroadcastMode::Aoi,
+        spawnRecipients);
+    GameMetrics::OnBroadcastRecipients(
+        GameMetrics::HotRoomBroadcastKind::Despawn,
+        GameMetrics::HotRoomBroadcastMode::Aoi,
+        despawnRecipients);
 
     // 8. 내 상태 업데이트
     // 현재 보이는 목록을 Old 목록으로 저장
@@ -537,6 +566,10 @@ void GameRoom::UpdateAOI(PlayerSessionRef session, PlayerRef me, bool forceFullS
     // 마지막으로 AOI 체크한 위치와 시간을 저장 (스로틀링용)
     me->SetLastAoiPos_ActorOnly(*me->GetPosInfo());
     me->SetLastAoiTickMs_ActorOnly(::GetTickCount64());
+
+    const double elapsedSeconds = std::chrono::duration<double>(std::chrono::steady_clock::now() - updateStart).count();
+    GameMetrics::OnAoiUpdateCount();
+    GameMetrics::OnAoiUpdate(elapsedSeconds);
 }
 
 int32 GameRoom::EffectiveAoiRadiusCells() const

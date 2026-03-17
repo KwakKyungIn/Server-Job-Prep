@@ -6,6 +6,8 @@
 #include "ClientPacketHandler.h"
 #include "ClientPacketHandler.MapChangeUtil.h"
 #include "DataManager.h"
+#include "ExperimentUtils.h"
+#include "GameMetrics.h"
 #include "GameRoom.Net.h"
 #include "PersistenceService.h"
 
@@ -195,6 +197,16 @@ void GameRoom::HandleRespawn(PlayerSessionRef session, PlayerRef player)
         spawn.set_y(0.f);
         spawn.set_z(50.f);
     }
+
+    if (ExperimentUtils::ShouldRandomizeRespawnSpawn())
+    {
+        if (ExperimentUtils::TryRandomizeSpawn(player->GetMapId(), spawn, _map.get()))
+        {
+            printf(" [Experiment] Random respawn spawn: player=%llu map=%d pos=(%.1f, %.1f, %.1f)\n",
+                player->GetPlayerId(), player->GetMapId(), spawn.x(), spawn.y(), spawn.z());
+        }
+    }
+
     spawn.set_yaw(0.f);
     spawn.set_state(Protocol::MOVE_IDLE);
     spawn.set_actionstate(Protocol::ACTION_IDLE);
@@ -226,26 +238,13 @@ void GameRoom::HandleRespawn(PlayerSessionRef session, PlayerRef player)
     }
 
     // AOI 갱신 (텔레포트 처리를 위해 강제 호출)
-    UpdateAOI(session, player, false);
+    if (!ExperimentUtils::IsHotRoomRoomWideBaseline())
+        UpdateAOI(session, player, false);
 
     const uint64 playerId = player->GetPlayerId();
 
     // 위치/상태 동기화
-    {
-        Protocol::S_MOVE movePkt;
-        movePkt.set_objectid(playerId);
-        *movePkt.mutable_posinfo() = *pos;
-
-        SendBufferRef moveSb = ClientPacketHandler::MakeSendBuffer(movePkt);
-        session->Send(moveSb);
-
-        auto& vis = player->VisiblePlayers_ActorOnly();
-        for (uint64 vid : vis)
-        {
-            if (vid == playerId) continue;
-            SendToPlayer(vid, moveSb);
-        }
-    }
+    SendMoveSync(session, player, *pos, true, true);
 
     // HP 복구 동기화
     {
@@ -258,11 +257,22 @@ void GameRoom::HandleRespawn(PlayerSessionRef session, PlayerRef player)
         SendBufferRef hpSb = ClientPacketHandler::MakeSendBuffer(hpPkt);
         session->Send(hpSb);
 
-        auto& vis = player->VisiblePlayers_ActorOnly();
-        for (uint64 vid : vis)
+        if (ExperimentUtils::IsHotRoomRoomWideBaseline())
         {
-            if (vid == playerId) continue;
-            SendToPlayer(vid, hpSb);
+            const int32 recipients = Broadcast(hpSb, playerId);
+            GameMetrics::OnBroadcastRecipients(
+                GameMetrics::HotRoomBroadcastKind::Hp,
+                GameMetrics::HotRoomBroadcastMode::Room,
+                static_cast<std::size_t>(recipients));
+        }
+        else
+        {
+            auto& vis = player->VisiblePlayers_ActorOnly();
+            for (uint64 vid : vis)
+            {
+                if (vid == playerId) continue;
+                SendToPlayer(vid, hpSb);
+            }
         }
     }
 

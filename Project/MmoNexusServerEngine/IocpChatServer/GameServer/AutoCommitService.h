@@ -35,6 +35,9 @@ namespace Persistence
         // 이걸 호출하면 다음 틱을 기다리지 않고 바로 저장 로직을 수행함
         void RequestFlushNow(uint64 pid);
 
+        // Persistence Drain baseline에서 QuickSlot 변경을 즉시 저장할 때 사용
+        bool SendQuickSlotImmediate(uint64 pid);
+
         // DB 서버로부터 저장 완료 응답이 왔을 때 호출됨
         // 진행 중인 저장 카운트를 줄여서 다음 저장이 가능하게 만듦
         void OnCommitFinished(uint64 pid);

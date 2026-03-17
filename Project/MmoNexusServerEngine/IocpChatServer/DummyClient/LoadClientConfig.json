@@ -2,7 +2,7 @@
   "login_server": { "ip": "127.0.0.1", "port": 7780 },
   "game_server": { "ip": "127.0.0.1", "port": 7777 },
 
-  "ccu_target": 300,
+  "ccu_target": 200,
   "ramp_step": 50,
   "ramp_interval_sec": 10,
   "hold_sec": 300,
@@ -10,16 +10,17 @@
   "channel_id": 1,
   "map_id": 1,
 
-  "scenario": "move",
-  "move_hz": 6,
-  "skill_hz": 1,
+  "scenario": "persistence",
+  "move_hz": 0,
+  "skill_hz": 0,
   "heartbeat_hz": 1,
+  "quickslot_hz": 1,
 
   "spawn_cluster": {
-    "center_x": 512.0,
+    "center_x": 490.0,
     "center_y": 0.0,
-    "center_z": 512.0,
-    "radius": 20.0
+    "center_z": 490.0,
+    "radius": 0.0
   },
 
   "account": {
@@ -46,7 +47,7 @@
   },
 
   "navmesh": {
-    "enabled": true,
+    "enabled": false,
     "maps_path": "Maps.json",
     "navmesh_path": "",
     "max_goal_attempts": 8,

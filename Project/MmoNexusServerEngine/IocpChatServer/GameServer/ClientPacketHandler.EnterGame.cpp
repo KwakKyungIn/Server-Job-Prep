@@ -8,6 +8,7 @@
 #include "LobbyRoom.h"
 #include "RoomManager.h"
 #include "PartyActor.h"
+#include "ExperimentUtils.h"
 
 extern shared_ptr<PacketSession> G_DBSession;
 
@@ -55,6 +56,13 @@ bool ClientPacketHandler::Handle_C_ENTER_GAME(PacketSessionRef& session, Protoco
 			mapId = dm->GetDefaultWorldMapId();
 	}
 
+	const int32 requestedWorldMapId = mapId;
+	mapId = ExperimentUtils::ResolveForcedWorldMapId(mapId);
+	if (requestedWorldMapId != mapId)
+	{
+		printf(" [EnterGame] Experiment map override: %d -> %d\n", requestedWorldMapId, mapId);
+	}
+
 	const MapConfig* cfg = (dm ? dm->GetMapConfig(mapId) : nullptr);
 
 
@@ -77,6 +85,7 @@ bool ClientPacketHandler::Handle_C_ENTER_GAME(PacketSessionRef& session, Protoco
 			{
 				DataManager* dm = DataManager::Instance();
 				finalMapId = (dm ? dm->GetDefaultWorldMapId() : 1);
+				finalMapId = ExperimentUtils::ResolveForcedWorldMapId(finalMapId);
 
 				const MapConfig* cfg = dm ? dm->GetMapConfig(finalMapId) : nullptr;
 				finalSpawn.Clear();

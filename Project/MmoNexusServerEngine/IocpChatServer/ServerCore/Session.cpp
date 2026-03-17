@@ -16,6 +16,7 @@ namespace
 	{
 		std::shared_ptr<Counter> rxBytesCounter;
 		std::shared_ptr<Counter> txBytesCounter;
+		std::shared_ptr<Counter> sendDropCounter;
 	};
 
 	SessionIoMetrics& GetSessionIoMetrics()
@@ -27,6 +28,10 @@ namespace
 			MetricsSystem::Instance().RegisterCounter(
 				"session_tx_bytes_total",
 				"Total sent bytes processed by Session::ProcessSend."),
+			MetricsSystem::Instance().RegisterCounter(
+				"session_send_drop_total",
+				"Total Session::Send drops caused by backlog protection.",
+				{ "reason" }),
 		};
 
 		return metrics;
@@ -46,6 +51,14 @@ namespace
 			return;
 
 		GetSessionIoMetrics().txBytesCounter->Inc(static_cast<double>(numOfBytes));
+	}
+
+	void AddSessionSendDrop(const char* reason)
+	{
+		if (reason == nullptr || reason[0] == '\0')
+			return;
+
+		GetSessionIoMetrics().sendDropCounter->Inc(1.0, { { "reason", reason } });
 	}
 }
 
@@ -129,6 +142,7 @@ void Session::Send(const SendBufferRef& sendBuffer)
 			(_sendBacklogCount + 1 > MAX_BACKLOG_COUNT))
 		{
 			// 필요하다면 여기서 Disconnect()로 강제 종료 가능
+			AddSessionSendDrop("hard_cap");
 			return; // 현재 정책: 드롭
 		}
 
@@ -138,6 +152,7 @@ void Session::Send(const SendBufferRef& sendBuffer)
 			if ((_sendBacklogBytes >= SOFT_BACKLOG_BYTES_WHEN_REGISTERED) ||
 				(_sendBacklogCount >= SOFT_BACKLOG_COUNT_WHEN_REGISTERED))
 			{
+				AddSessionSendDrop("soft_cap");
 				return; // 드롭
 			}
 		}

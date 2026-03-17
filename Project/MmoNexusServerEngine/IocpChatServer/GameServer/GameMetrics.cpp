@@ -23,9 +23,60 @@ namespace
         std::shared_ptr<Counter> packetFailureCounter;
         std::shared_ptr<Histogram> lobbyWaitHistogram;
         std::shared_ptr<Histogram> s2sRttHistogram;
+        std::shared_ptr<Histogram> broadcastRecipientsHistogram;
+        std::shared_ptr<Histogram> aoiUpdateHistogram;
+        std::shared_ptr<Counter> aoiUpdateCounter;
+        std::shared_ptr<Histogram> aoiCandidatesHistogram;
+        std::shared_ptr<Histogram> aoiVisibleHistogram;
+        std::shared_ptr<Histogram> autocommitTickHistogram;
+        std::shared_ptr<Gauge> autocommitTargetsGauge;
+        std::shared_ptr<Gauge> autocommitInflightGauge;
+        std::shared_ptr<Counter> autocommitSentCounter;
+        std::shared_ptr<Counter> autocommitSkipCounter;
+        std::shared_ptr<Gauge> dirtySetSizeGauge;
+        std::shared_ptr<Counter> persistenceMutationCounter;
         std::shared_ptr<Gauge> ccuGauge;
         std::shared_ptr<Gauge> ingameGauge;
     };
+
+    const std::vector<double>& CountHistogramBuckets()
+    {
+        static const std::vector<double> kBuckets = {
+            0.0,
+            1.0,
+            2.0,
+            4.0,
+            8.0,
+            16.0,
+            32.0,
+            64.0,
+            128.0,
+            256.0,
+            512.0,
+            1024.0,
+        };
+
+        return kBuckets;
+    }
+
+    const std::vector<double>& AoiUpdateSecondsBuckets()
+    {
+        static const std::vector<double> kBuckets = {
+            MetricsMillisecondsToSeconds(0.001),
+            MetricsMillisecondsToSeconds(0.005),
+            MetricsMillisecondsToSeconds(0.01),
+            MetricsMillisecondsToSeconds(0.05),
+            MetricsMillisecondsToSeconds(0.1),
+            MetricsMillisecondsToSeconds(0.5),
+            MetricsMillisecondsToSeconds(1.0),
+            MetricsMillisecondsToSeconds(5.0),
+            MetricsMillisecondsToSeconds(10.0),
+            MetricsMillisecondsToSeconds(50.0),
+            MetricsMillisecondsToSeconds(100.0),
+        };
+
+        return kBuckets;
+    }
 
     GameMetricsRegistry& GetGameMetricsRegistry()
     {
@@ -53,6 +104,54 @@ namespace
                 "S2S request-to-response RTT in seconds.",
                 MetricsHistogramBuckets::DbQuerySeconds(),
                 { "op" }),
+            MetricsSystem::Instance().RegisterHistogram(
+                "broadcast_recipients",
+                "Recipients reached by Hot Room broadcast fan-out.",
+                CountHistogramBuckets(),
+                { "kind", "mode" }),
+            MetricsSystem::Instance().RegisterHistogram(
+                "aoi_update_seconds",
+                "AOI update execution time in seconds.",
+                AoiUpdateSecondsBuckets()),
+            MetricsSystem::Instance().RegisterCounter(
+                "aoi_update_total",
+                "Total AOI update executions."),
+            MetricsSystem::Instance().RegisterHistogram(
+                "aoi_candidates",
+                "AOI broad-phase candidate count per update.",
+                CountHistogramBuckets(),
+                { "kind" }),
+            MetricsSystem::Instance().RegisterHistogram(
+                "aoi_visible",
+                "AOI visible object count per update.",
+                CountHistogramBuckets(),
+                { "kind" }),
+            MetricsSystem::Instance().RegisterHistogram(
+                "autocommit_tick_seconds",
+                "AutoCommit tick execution time in seconds.",
+                MetricsHistogramBuckets::JobQueueWaitSeconds()),
+            MetricsSystem::Instance().RegisterGauge(
+                "autocommit_targets",
+                "Number of persistence targets collected in the latest AutoCommit tick."),
+            MetricsSystem::Instance().RegisterGauge(
+                "autocommit_inflight",
+                "Number of player ids currently waiting for AutoCommit save responses."),
+            MetricsSystem::Instance().RegisterCounter(
+                "autocommit_sent_total",
+                "Total AutoCommit save requests sent by domain.",
+                { "domain" }),
+            MetricsSystem::Instance().RegisterCounter(
+                "autocommit_skip_total",
+                "Total AutoCommit skips by reason.",
+                { "reason" }),
+            MetricsSystem::Instance().RegisterGauge(
+                "dirty_set_size",
+                "Current dirty set size by persistence domain.",
+                { "domain" }),
+            MetricsSystem::Instance().RegisterCounter(
+                "persistence_mutation_total",
+                "Total persistence mutations by domain and path.",
+                { "domain", "path" }),
             MetricsSystem::Instance().RegisterGauge(
                 "ccu",
                 "Current connected session count."),
@@ -120,6 +219,122 @@ namespace
             return "validate";
         case GameMetrics::ClientPacketFailureReason::Handler:
             return "handler";
+        default:
+            return "other";
+        }
+    }
+
+    const char* BroadcastKindLabel(GameMetrics::HotRoomBroadcastKind kind)
+    {
+        switch (kind)
+        {
+        case GameMetrics::HotRoomBroadcastKind::Move:
+            return "move";
+        case GameMetrics::HotRoomBroadcastKind::Skill:
+            return "skill";
+        case GameMetrics::HotRoomBroadcastKind::Hp:
+            return "hp";
+        case GameMetrics::HotRoomBroadcastKind::Spawn:
+            return "spawn";
+        case GameMetrics::HotRoomBroadcastKind::Despawn:
+            return "despawn";
+        default:
+            return "other";
+        }
+    }
+
+    const char* BroadcastModeLabel(GameMetrics::HotRoomBroadcastMode mode)
+    {
+        switch (mode)
+        {
+        case GameMetrics::HotRoomBroadcastMode::Aoi:
+            return "aoi";
+        case GameMetrics::HotRoomBroadcastMode::Room:
+            return "room";
+        default:
+            return "other";
+        }
+    }
+
+    const char* AoiObjectKindLabel(GameMetrics::AoiObjectKind kind)
+    {
+        switch (kind)
+        {
+        case GameMetrics::AoiObjectKind::Player:
+            return "player";
+        case GameMetrics::AoiObjectKind::Monster:
+            return "monster";
+        case GameMetrics::AoiObjectKind::Projectile:
+            return "projectile";
+        default:
+            return "other";
+        }
+    }
+
+    const char* AutoCommitDomainLabel(GameMetrics::AutoCommitDomain domain)
+    {
+        switch (domain)
+        {
+        case GameMetrics::AutoCommitDomain::Core:
+            return "core";
+        case GameMetrics::AutoCommitDomain::Inventory:
+            return "inv";
+        case GameMetrics::AutoCommitDomain::QuickSlot:
+            return "qs";
+        default:
+            return "other";
+        }
+    }
+
+    const char* AutoCommitSkipReasonLabel(GameMetrics::AutoCommitSkipReason reason)
+    {
+        switch (reason)
+        {
+        case GameMetrics::AutoCommitSkipReason::Inflight:
+            return "inflight";
+        case GameMetrics::AutoCommitSkipReason::EmptySnapshot:
+            return "empty_snapshot";
+        case GameMetrics::AutoCommitSkipReason::RedisMissing:
+            return "redis_missing";
+        default:
+            return "other";
+        }
+    }
+
+    const char* DirtySetDomainLabel(GameMetrics::DirtySetDomain domain)
+    {
+        switch (domain)
+        {
+        case GameMetrics::DirtySetDomain::Player:
+            return "player";
+        case GameMetrics::DirtySetDomain::Inventory:
+            return "inv";
+        case GameMetrics::DirtySetDomain::QuickSlot:
+            return "qs";
+        default:
+            return "other";
+        }
+    }
+
+    const char* PersistenceMutationDomainLabel(GameMetrics::PersistenceMutationDomain domain)
+    {
+        switch (domain)
+        {
+        case GameMetrics::PersistenceMutationDomain::QuickSlot:
+            return "qs";
+        default:
+            return "other";
+        }
+    }
+
+    const char* PersistenceMutationPathLabel(GameMetrics::PersistenceMutationPath path)
+    {
+        switch (path)
+        {
+        case GameMetrics::PersistenceMutationPath::Writeback:
+            return "writeback";
+        case GameMetrics::PersistenceMutationPath::Immediate:
+            return "immediate";
         default:
             return "other";
         }
@@ -456,6 +671,19 @@ namespace GameMetrics
 
         OnSessionCountChanged(0);
         OnIngamePlayerCountChanged(0);
+        OnAutoCommitTargets(0);
+        OnAutoCommitInflight(0);
+        OnDirtySetSize(DirtySetDomain::Player, 0);
+        OnDirtySetSize(DirtySetDomain::Inventory, 0);
+        OnDirtySetSize(DirtySetDomain::QuickSlot, 0);
+        OnAutoCommitSent(AutoCommitDomain::Core, 0);
+        OnAutoCommitSent(AutoCommitDomain::Inventory, 0);
+        OnAutoCommitSent(AutoCommitDomain::QuickSlot, 0);
+        OnAutoCommitSkip(AutoCommitSkipReason::Inflight, 0);
+        OnAutoCommitSkip(AutoCommitSkipReason::EmptySnapshot, 0);
+        OnAutoCommitSkip(AutoCommitSkipReason::RedisMissing, 0);
+        OnPersistenceMutation(PersistenceMutationDomain::QuickSlot, PersistenceMutationPath::Writeback, 0);
+        OnPersistenceMutation(PersistenceMutationDomain::QuickSlot, PersistenceMutationPath::Immediate, 0);
     }
 
     void Shutdown()
@@ -547,6 +775,92 @@ namespace GameMetrics
     void OnIngamePlayerCountChanged(std::int64_t ingameCount)
     {
         GetGameMetricsRegistry().ingameGauge->Set(static_cast<double>(ingameCount));
+    }
+
+    void OnBroadcastRecipients(HotRoomBroadcastKind kind, HotRoomBroadcastMode mode, std::size_t recipients)
+    {
+        GetGameMetricsRegistry().broadcastRecipientsHistogram->Observe(
+            static_cast<double>(recipients),
+            {
+                { "kind", BroadcastKindLabel(kind) },
+                { "mode", BroadcastModeLabel(mode) },
+            });
+    }
+
+    void OnAoiUpdate(double elapsedSeconds)
+    {
+        if (elapsedSeconds < 0.0)
+            return;
+
+        GetGameMetricsRegistry().aoiUpdateHistogram->Observe(elapsedSeconds);
+    }
+
+    void OnAoiUpdateCount()
+    {
+        GetGameMetricsRegistry().aoiUpdateCounter->Inc();
+    }
+
+    void OnAoiCandidates(AoiObjectKind kind, std::size_t count)
+    {
+        GetGameMetricsRegistry().aoiCandidatesHistogram->Observe(
+            static_cast<double>(count),
+            { { "kind", AoiObjectKindLabel(kind) } });
+    }
+
+    void OnAoiVisible(AoiObjectKind kind, std::size_t count)
+    {
+        GetGameMetricsRegistry().aoiVisibleHistogram->Observe(
+            static_cast<double>(count),
+            { { "kind", AoiObjectKindLabel(kind) } });
+    }
+
+    void OnAutoCommitTick(double elapsedSeconds)
+    {
+        if (elapsedSeconds < 0.0)
+            return;
+
+        GetGameMetricsRegistry().autocommitTickHistogram->Observe(elapsedSeconds);
+    }
+
+    void OnAutoCommitTargets(std::size_t count)
+    {
+        GetGameMetricsRegistry().autocommitTargetsGauge->Set(static_cast<double>(count));
+    }
+
+    void OnAutoCommitInflight(std::size_t count)
+    {
+        GetGameMetricsRegistry().autocommitInflightGauge->Set(static_cast<double>(count));
+    }
+
+    void OnAutoCommitSent(AutoCommitDomain domain, std::size_t count)
+    {
+        GetGameMetricsRegistry().autocommitSentCounter->Inc(
+            static_cast<double>(count),
+            { { "domain", AutoCommitDomainLabel(domain) } });
+    }
+
+    void OnAutoCommitSkip(AutoCommitSkipReason reason, std::size_t count)
+    {
+        GetGameMetricsRegistry().autocommitSkipCounter->Inc(
+            static_cast<double>(count),
+            { { "reason", AutoCommitSkipReasonLabel(reason) } });
+    }
+
+    void OnDirtySetSize(DirtySetDomain domain, std::size_t count)
+    {
+        GetGameMetricsRegistry().dirtySetSizeGauge->Set(
+            static_cast<double>(count),
+            { { "domain", DirtySetDomainLabel(domain) } });
+    }
+
+    void OnPersistenceMutation(PersistenceMutationDomain domain, PersistenceMutationPath path, std::size_t count)
+    {
+        GetGameMetricsRegistry().persistenceMutationCounter->Inc(
+            static_cast<double>(count),
+            {
+                { "domain", PersistenceMutationDomainLabel(domain) },
+                { "path", PersistenceMutationPathLabel(path) },
+            });
     }
 
     void TrackS2SRequestPacket(std::uint16_t packetId, const Protocol::S2S_REQ_LOAD_PLAYER_DATA& pkt)

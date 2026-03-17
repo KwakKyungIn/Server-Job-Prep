@@ -7,6 +7,7 @@
 #include "PersistenceService.h"
 #include "GameSessionManager.h"
 #include "GameMetrics.h"
+#include "ExperimentUtils.h"
 
 // 퀵슬롯 최대 개수 제한 (프로토콜 및 DB 스키마와 일치시켜야 함)
 static constexpr int32 QS_MAX = 12; // 0~11
@@ -149,6 +150,25 @@ void LobbyRoom::TryEnterWorldIfReady(uint64 playerId)
         });
 
     GameMetrics::OnLobbyEnterComplete(playerId);
+
+    if (ExperimentUtils::ShouldRandomizeEnterSpawn())
+    {
+        Protocol::PositionInfo randomizedSpawn;
+        if (auto* pos = p->GetPosInfo())
+            randomizedSpawn.CopyFrom(*pos);
+
+        if (ExperimentUtils::TryRandomizeSpawn(mapId, randomizedSpawn, world->GetMap().get()))
+        {
+            if (auto* pos = p->GetPosInfo())
+            {
+                pos->CopyFrom(randomizedSpawn);
+                p->ResetMoveStamp_ActorOnly();
+            }
+
+            printf(" [Experiment] Random enter spawn: player=%llu map=%d pos=(%.1f, %.1f, %.1f)\n",
+                playerId, mapId, randomizedSpawn.x(), randomizedSpawn.y(), randomizedSpawn.z());
+        }
+    }
 
     // 월드 룸의 JobQueue에 입장 작업을 밀어넣음 (스레드 전환)
     world->Push([world, ps, p]() mutable

@@ -6,8 +6,10 @@
 #include "ClientPacketHandler.h"
 #include "GameMap.h"
 #include "DataManager.h"
+#include "ExperimentUtils.h"
 #include "ObjectUtils.h"
 #include "Monster.h"
+#include "GameMetrics.h"
 
 // 2D 충돌 판정용 수학 함수 (선분 vs 원)
 // 투사체 경로(선분)와 타겟의 히트박스(원)가 겹치는지 검사함
@@ -74,6 +76,34 @@ void GameRoom::EnterProjectile(ProjectileRef p)
     p->SetZoneIndex(zoneIndex);
     _grid.GetZone(zoneIndex).projectiles.insert(p);
 
+    if (ExperimentUtils::IsHotRoomRoomWideBaseline())
+    {
+        auto& viewers = p->Viewers_ActorOnly();
+        viewers.clear();
+
+        for (auto& item : _players)
+        {
+            PlayerRef pl = item.second;
+            if (!pl)
+                continue;
+
+            pl->VisibleProjectiles_ActorOnly().insert(pid);
+            viewers.insert(pl->GetPlayerId());
+        }
+
+        Protocol::S_SPAWN spawnPkt;
+        auto* info = spawnPkt.add_projectiles();
+        *info = *p->GetProjectileInfo();
+        SendBufferRef sb = ClientPacketHandler::MakeSendBuffer(spawnPkt);
+
+        const int32 recipients = Broadcast(sb);
+        GameMetrics::OnBroadcastRecipients(
+            GameMetrics::HotRoomBroadcastKind::Spawn,
+            GameMetrics::HotRoomBroadcastMode::Room,
+            static_cast<std::size_t>(recipients));
+        return;
+    }
+
     // AOI 처리: 주변 플레이어들에게 투사체 스폰 패킷 전송
     // 투사체는 빠르니까 시야 처리가 중요함
     Vector<Zone*> zones;
@@ -81,6 +111,7 @@ void GameRoom::EnterProjectile(ProjectileRef p)
 
     auto& viewers = p->Viewers_ActorOnly();
     viewers.clear();
+    std::size_t spawnRecipients = 0;
 
     const auto& pp = *p->GetPosInfo();
     const uint32 pConn = GetConnectivityId_ActorOnly(pp);
@@ -110,6 +141,7 @@ void GameRoom::EnterProjectile(ProjectileRef p)
             {
                 viewers.insert(pl->GetPlayerId());
                 SendToPlayer(pl->GetPlayerId(), sb);
+                ++spawnRecipients;
             }
             else
             {
@@ -117,6 +149,11 @@ void GameRoom::EnterProjectile(ProjectileRef p)
             }
         }
     }
+
+    GameMetrics::OnBroadcastRecipients(
+        GameMetrics::HotRoomBroadcastKind::Spawn,
+        GameMetrics::HotRoomBroadcastMode::Aoi,
+        spawnRecipients);
 }
 
 void GameRoom::LeaveProjectile(uint64 projectileId)
@@ -135,16 +172,42 @@ void GameRoom::LeaveProjectile(uint64 projectileId)
         pkt.add_objectids(projectileId);
         SendBufferRef sb = ClientPacketHandler::MakeSendBuffer(pkt);
 
-        auto& viewers = p->Viewers_ActorOnly();
-        for (uint64 vid : viewers)
+        if (ExperimentUtils::IsHotRoomRoomWideBaseline())
         {
-            PlayerRef pl = FindPlayer_ActorOnly(vid);
-            if (pl)
-                pl->VisibleProjectiles_ActorOnly().erase(projectileId);
+            auto& viewers = p->Viewers_ActorOnly();
+            for (uint64 vid : viewers)
+            {
+                PlayerRef pl = FindPlayer_ActorOnly(vid);
+                if (pl)
+                    pl->VisibleProjectiles_ActorOnly().erase(projectileId);
+            }
 
-            SendToPlayer(vid, sb);
+            const int32 recipients = Broadcast(sb);
+            GameMetrics::OnBroadcastRecipients(
+                GameMetrics::HotRoomBroadcastKind::Despawn,
+                GameMetrics::HotRoomBroadcastMode::Room,
+                static_cast<std::size_t>(recipients));
+            viewers.clear();
         }
-        viewers.clear();
+        else
+        {
+            auto& viewers = p->Viewers_ActorOnly();
+            std::size_t despawnRecipients = 0;
+            for (uint64 vid : viewers)
+            {
+                PlayerRef pl = FindPlayer_ActorOnly(vid);
+                if (pl)
+                    pl->VisibleProjectiles_ActorOnly().erase(projectileId);
+
+                SendToPlayer(vid, sb);
+                ++despawnRecipients;
+            }
+            viewers.clear();
+            GameMetrics::OnBroadcastRecipients(
+                GameMetrics::HotRoomBroadcastKind::Despawn,
+                GameMetrics::HotRoomBroadcastMode::Aoi,
+                despawnRecipients);
+        }
     }
 
     // Grid 시스템에서 완전히 제거
@@ -174,6 +237,21 @@ void GameRoom::OnProjectileMoved(ProjectileRef p)
 
         _grid.GetZone(newZone).projectiles.insert(p);
         p->SetZoneIndex(newZone);
+    }
+
+    if (ExperimentUtils::IsHotRoomRoomWideBaseline())
+    {
+        Protocol::S_MOVE movePkt;
+        movePkt.set_objectid(pid);
+        *movePkt.mutable_posinfo() = *p->GetPosInfo();
+        SendBufferRef sb = ClientPacketHandler::MakeSendBuffer(movePkt);
+
+        const int32 recipients = Broadcast(sb);
+        GameMetrics::OnBroadcastRecipients(
+            GameMetrics::HotRoomBroadcastKind::Move,
+            GameMetrics::HotRoomBroadcastMode::Room,
+            static_cast<std::size_t>(recipients));
+        return;
     }
 
     // AOI 업데이트 로직 (GameRoom.Monster.cpp와 유사)
@@ -213,6 +291,7 @@ void GameRoom::OnProjectileMoved(ProjectileRef p)
         Protocol::S_DESPAWN pkt;
         pkt.add_objectids(pid);
         SendBufferRef sb = ClientPacketHandler::MakeSendBuffer(pkt);
+        std::size_t despawnRecipients = 0;
 
         for (uint64 vid : oldViewers)
         {
@@ -223,7 +302,13 @@ void GameRoom::OnProjectileMoved(ProjectileRef p)
             if (pl) pl->VisibleProjectiles_ActorOnly().erase(pid);
 
             SendToPlayer(vid, sb);
+            ++despawnRecipients;
         }
+
+        GameMetrics::OnBroadcastRecipients(
+            GameMetrics::HotRoomBroadcastKind::Despawn,
+            GameMetrics::HotRoomBroadcastMode::Aoi,
+            despawnRecipients);
     }
 
     // 3. Spawn 처리: 새로 보게 된 사람들 (New - Old)
@@ -232,6 +317,7 @@ void GameRoom::OnProjectileMoved(ProjectileRef p)
         auto* info = pkt.add_projectiles();
         *info = *p->GetProjectileInfo();
         SendBufferRef sb = ClientPacketHandler::MakeSendBuffer(pkt);
+        std::size_t spawnRecipients = 0;
 
         for (uint64 vid : newViewers)
         {
@@ -242,7 +328,13 @@ void GameRoom::OnProjectileMoved(ProjectileRef p)
             if (pl) pl->VisibleProjectiles_ActorOnly().insert(pid);
 
             SendToPlayer(vid, sb);
+            ++spawnRecipients;
         }
+
+        GameMetrics::OnBroadcastRecipients(
+            GameMetrics::HotRoomBroadcastKind::Spawn,
+            GameMetrics::HotRoomBroadcastMode::Aoi,
+            spawnRecipients);
     }
 
     // 4. Move 패킷 전송: 계속 보고 있는 사람들 (Intersection) + New Viewers
@@ -251,9 +343,18 @@ void GameRoom::OnProjectileMoved(ProjectileRef p)
         movePkt.set_objectid(pid);
         *movePkt.mutable_posinfo() = *p->GetPosInfo();
         SendBufferRef sb = ClientPacketHandler::MakeSendBuffer(movePkt);
+        std::size_t moveRecipients = 0;
 
         for (uint64 vid : newViewers)
+        {
             SendToPlayer(vid, sb);
+            ++moveRecipients;
+        }
+
+        GameMetrics::OnBroadcastRecipients(
+            GameMetrics::HotRoomBroadcastKind::Move,
+            GameMetrics::HotRoomBroadcastMode::Aoi,
+            moveRecipients);
     }
 
     // 시청자 목록 교체
@@ -469,7 +570,14 @@ void GameRoom::UpdateProjectiles(uint64 deltaMs)
                 SendBufferRef sb = ClientPacketHandler::MakeSendBuffer(changePkt);
 
                 const int32 impactZone = _grid.GetZoneIndex(*p->GetPosInfo());
-                BroadcastToZone(sb, impactZone);
+                const bool roomWideBaseline = ExperimentUtils::IsHotRoomRoomWideBaseline();
+                const int32 recipients = roomWideBaseline
+                    ? Broadcast(sb)
+                    : BroadcastToZone(sb, impactZone);
+                GameMetrics::OnBroadcastRecipients(
+                    GameMetrics::HotRoomBroadcastKind::Hp,
+                    roomWideBaseline ? GameMetrics::HotRoomBroadcastMode::Room : GameMetrics::HotRoomBroadcastMode::Aoi,
+                    static_cast<std::size_t>(recipients));
 
                 // 피격 기록 (다단히트 방지)
                 p->MarkHit(h.victimNetId);

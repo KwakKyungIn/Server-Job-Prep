@@ -21,6 +21,7 @@ static LoadScenario ParseScenarioType(const std::string& raw)
 	if (s == "move") return LoadScenario::Move;
 	if (s == "combat") return LoadScenario::Combat;
 	if (s == "mix") return LoadScenario::Mix;
+	if (s == "persistence") return LoadScenario::Persistence;
 	return LoadScenario::Idle;
 }
 
@@ -126,6 +127,7 @@ void MetricsCollector::IncEnterSuccess() { _enterSuccess.fetch_add(1); }
 void MetricsCollector::IncMoveSend() { _moveSend.fetch_add(1); }
 void MetricsCollector::IncSkillSend() { _skillSend.fetch_add(1); }
 void MetricsCollector::IncHeartbeatSend() { _heartbeatSend.fetch_add(1); }
+void MetricsCollector::IncQuickSlotSend() { _quickslotSend.fetch_add(1); }
 
 void MetricsCollector::CalcAvgP95(const std::vector<int32>& samples, float& outAvg, float& outP95)
 {
@@ -161,6 +163,7 @@ MetricsCollector::Snapshot MetricsCollector::MakeSnapshotAndReset(uint64 nowMs, 
 	snap.moveSend = _moveSend.exchange(0);
 	snap.skillSend = _skillSend.exchange(0);
 	snap.heartbeatSend = _heartbeatSend.exchange(0);
+	snap.quickslotSend = _quickslotSend.exchange(0);
 
 	std::vector<int32> loginSamples;
 	std::vector<int32> enterSamples;
@@ -306,6 +309,10 @@ void LoadClient::OnEnterGameResponse(const Protocol::S_ENTER_GAME& pkt, uint64 n
 		_lastAckZ = _pos.z();
 		_stuckAckCount = 0;
 		_forceRepath = false;
+		_lastQuickSlotMs = 0;
+		_quickSlotCursor = 0;
+		_quickSlotSkillCursor = 1;
+		_quickSlotEventCount = 0;
 		if (pkt.has_myplayer() && pkt.myplayer().has_statinfo())
 		{
 			const int32 spd = pkt.myplayer().statinfo().speed();
@@ -433,6 +440,8 @@ void LoadClient::Tick(uint64 nowMs)
 			SendMove(nowMs);
 		if (_manager->GetScenario() == LoadScenario::Combat || _manager->GetScenario() == LoadScenario::Mix)
 			SendSkill(nowMs);
+		if (_manager->GetScenario() == LoadScenario::Persistence)
+			SendQuickSlot(nowMs);
 		break;
 	default:
 		break;
@@ -586,6 +595,47 @@ void LoadClient::SendHeartbeat(uint64 nowMs)
 
 	_lastHeartbeatMs = nowMs;
 	if (_manager) _manager->Metrics().IncHeartbeatSend();
+}
+
+void LoadClient::SendQuickSlot(uint64 nowMs)
+{
+	const LoadClientConfig& cfg = _manager->GetConfig();
+	if (cfg.quickslotHz <= 0.0f)
+		return;
+	if (!_gameSession || !_gameSession->IsConnected())
+		return;
+
+	const uint64 interval = static_cast<uint64>(1000.0f / cfg.quickslotHz);
+	if (_lastQuickSlotMs != 0 && nowMs - _lastQuickSlotMs < interval)
+		return;
+
+	Protocol::C_SET_QUICKSLOT pkt;
+	pkt.set_slotindex(_quickSlotCursor);
+
+	if (((_quickSlotEventCount + 1) % 4) == 0)
+	{
+		pkt.set_reftype(Protocol::QS_NONE);
+		pkt.set_refid(0);
+	}
+	else
+	{
+		pkt.set_reftype(Protocol::QS_SKILL);
+		pkt.set_refid(static_cast<uint64>(_quickSlotSkillCursor));
+
+		_quickSlotSkillCursor++;
+		if (_quickSlotSkillCursor > 3)
+			_quickSlotSkillCursor = 1;
+	}
+
+	auto sb = ServerPacketHandler::MakeSendBuffer(pkt);
+	_gameSession->Send(sb);
+
+	_lastQuickSlotMs = nowMs;
+	_quickSlotEventCount++;
+	_quickSlotCursor = (_quickSlotCursor + 1) % 4;
+
+	if (_manager)
+		_manager->Metrics().IncQuickSlotSend();
 }
 
 bool LoadClient::BuildPathLocked(uint64 nowMs)
@@ -891,7 +941,7 @@ void LoadClientManager::Start()
 		_csv = new std::ofstream(_config.options.csvPath, std::ios::out | std::ios::trunc);
 		if (_csv && _csv->is_open())
 		{
-			(*_csv) << "timestamp_ms,active,ingame,connect_fail,login_success,login_fail,enter_success,enter_fail,errors,move_send,skill_send,heartbeat_send,login_avg,login_p95,enter_avg,enter_p95,move_avg,move_p95,skill_avg,skill_p95\n";
+			(*_csv) << "timestamp_ms,active,ingame,connect_fail,login_success,login_fail,enter_success,enter_fail,errors,move_send,skill_send,heartbeat_send,quickslot_send,login_avg,login_p95,enter_avg,enter_p95,move_avg,move_p95,skill_avg,skill_p95\n";
 		}
 		else
 		{
@@ -1011,6 +1061,7 @@ void LoadClientManager::LogIfNeeded(uint64 nowMs)
 		<< " enter(avg/p95)=" << snap.enterAvg << "/" << snap.enterP95
 		<< " move(avg/p95)=" << snap.moveAvg << "/" << snap.moveP95
 		<< " skill(avg/p95)=" << snap.skillAvg << "/" << snap.skillP95
+		<< " quickslot_send=" << snap.quickslotSend
 		<< " errors=" << snap.errors
 		<< std::endl;
 
@@ -1031,6 +1082,7 @@ void LoadClientManager::LogIfNeeded(uint64 nowMs)
 				<< snap.moveSend << ','
 				<< snap.skillSend << ','
 				<< snap.heartbeatSend << ','
+				<< snap.quickslotSend << ','
 				<< snap.loginAvg << ','
 				<< snap.loginP95 << ','
 				<< snap.enterAvg << ','

@@ -94,7 +94,7 @@
 
 | 시나리오 | ccu_target | ramp_step | ramp_interval_sec | hold_sec | scenario | move_hz | skill_hz | heartbeat_hz | quickslot_hz | channel_id | map_id | spawn_radius | navmesh |
 | --- | ---: | ---: | ---: | ---: | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
-| Hot Room Mix | 250 | 50 | 10 | 180 | mix | 6 | 1 | 1 | 0 | 1 | 1 | 15 | enabled |
+| Hot Room Mix | 250 | 50 | 10 | 180 | mix | 6 | 1 | 1 | 0 | 1 | 2 | 120 | enabled |
 | Persistence Drain | 200 | 50 | 10 | 180 | persistence | 0 | 0 | 1 | 1 | 1 | 1 | 0 | disabled |
 | Enter Burst | 300 | 100 | 5 | 120 | idle | 0 | 0 | 1 | 0 | 1 | 1 | 0 | disabled |
 | Idle Soak | 200 | 50 | 10 | 1800 | idle | 0 | 0 | 1 | 0 | 1 | 1 | 0 | disabled |

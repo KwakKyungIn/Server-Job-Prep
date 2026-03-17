@@ -3,7 +3,20 @@
 #include "Types.h"
 
 #include <atomic>
+#include <cstdint>
 #include <string>
+
+enum class HotRoomAoiMode : std::uint8_t
+{
+	Final = 0,
+	RoomWideBaseline,
+};
+
+enum class PersistenceMode : std::uint8_t
+{
+	Writeback = 0,
+	ImmediateQuickslot,
+};
 
 struct ServerConfig
 {
@@ -16,10 +29,23 @@ struct ServerConfig
 		std::string BindAddress = "127.0.0.1";
 	};
 
+	struct ExperimentConfig
+	{
+		bool Enabled = false;
+		HotRoomAoiMode HotRoomMode = HotRoomAoiMode::Final;
+		PersistenceMode Persistence = PersistenceMode::Writeback;
+		int32 AutoCommitIntervalSec = 120;
+		int32 ForceEnterWorldMapId = 0;
+		bool RandomSpawnOnEnter = false;
+		bool RandomSpawnOnRespawn = false;
+		float RandomSpawnRadius = 0.0f;
+	};
+
 	std::wstring DBConnectionString;
 	int32 Port = 0;
 	int32 MaxUser = 0;
 	MetricsConfig Metrics;
+	ExperimentConfig Experiment;
 };
 
 using MetricsConfig = ServerConfig::MetricsConfig;

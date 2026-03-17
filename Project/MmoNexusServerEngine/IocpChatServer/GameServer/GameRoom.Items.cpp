@@ -4,10 +4,12 @@
 #include "PlayerSession.h"
 #include "Monster.h"
 #include "DataManager.h"
+#include "ExperimentUtils.h"
 #include "RoomManager.h"
 #include "GameRoom.Net.h"
 #include "PersistenceService.h"
 #include "GameItemUidGen.h"
+#include "GameMetrics.h"
 #include <limits>
 #include <random>
 
@@ -313,7 +315,14 @@ void GameRoom::HandleUseItem(PlayerSessionRef session, PlayerRef player, Protoco
 			*movePkt.mutable_posinfo() = *pos;
 
 		SendBufferRef moveSb = ClientPacketHandler::MakeSendBuffer(movePkt);
-		BroadcastToZone(moveSb, player->GetZoneIndex());
+		const bool roomWideBaseline = ExperimentUtils::IsHotRoomRoomWideBaseline();
+		const int32 moveRecipients = roomWideBaseline
+			? Broadcast(moveSb)
+			: BroadcastToZone(moveSb, player->GetZoneIndex());
+		GameMetrics::OnBroadcastRecipients(
+			GameMetrics::HotRoomBroadcastKind::Move,
+			roomWideBaseline ? GameMetrics::HotRoomBroadcastMode::Room : GameMetrics::HotRoomBroadcastMode::Aoi,
+			static_cast<std::size_t>(moveRecipients));
 
 		Protocol::S_CHANGE_HP hpPkt;
 		hpPkt.set_objectid(playerId);
@@ -321,7 +330,13 @@ void GameRoom::HandleUseItem(PlayerSessionRef session, PlayerRef player, Protoco
 		hpPkt.set_currenthp(newHp);
 		hpPkt.set_damage(0);
 		SendBufferRef hpSb = ClientPacketHandler::MakeSendBuffer(hpPkt);
-		BroadcastToZone(hpSb, player->GetZoneIndex());
+		const int32 hpRecipients = roomWideBaseline
+			? Broadcast(hpSb)
+			: BroadcastToZone(hpSb, player->GetZoneIndex());
+		GameMetrics::OnBroadcastRecipients(
+			GameMetrics::HotRoomBroadcastKind::Hp,
+			roomWideBaseline ? GameMetrics::HotRoomBroadcastMode::Room : GameMetrics::HotRoomBroadcastMode::Aoi,
+			static_cast<std::size_t>(hpRecipients));
 	}
 
 	// DB/Redis에 변경된 HP 즉시 저장 (Write-Back)

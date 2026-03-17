@@ -5,6 +5,7 @@
 #include "Player.h"
 #include "GameRoom.h"
 #include "DataManager.h"
+#include "ExperimentUtils.h"
 #include "RoomActor.h"
 #include <atomic>
 #include <chrono>
@@ -38,6 +39,19 @@ namespace MapChangeUtil
         outPos = p->GetReturnPos();
 
         DataManager* dm = DataManager::Instance();
+        const int32 forcedMapId = ExperimentUtils::ResolveForcedWorldMapId(outMapId);
+        if (forcedMapId != outMapId)
+        {
+            outMapId = forcedMapId;
+            outInstId = 0;
+
+            const MapConfig* cfg = dm ? dm->GetMapConfig(outMapId) : nullptr;
+            outPos.Clear();
+            outPos.set_x(cfg ? cfg->spawnX : 50.f);
+            outPos.set_y(cfg ? cfg->spawnY : 0.f);
+            outPos.set_z(cfg ? cfg->spawnZ : 50.f);
+        }
+
         // 맵 데이터가 없거나 유효하지 않은 ID라면 방어 코드 작동
         if (!dm || !dm->IsValidMapId(outMapId))
         {
@@ -49,6 +63,11 @@ namespace MapChangeUtil
             outPos.set_x(cfg ? cfg->spawnX : 50.f);
             outPos.set_y(cfg ? cfg->spawnY : 0.f);
             outPos.set_z(cfg ? cfg->spawnZ : 50.f);
+        }
+
+        if (p->HasPendingRespawn() && ExperimentUtils::ShouldRandomizeRespawnSpawn())
+        {
+            ExperimentUtils::TryRandomizeSpawn(outMapId, outPos);
         }
     }
 

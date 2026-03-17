@@ -2,6 +2,8 @@
 #include "GameRoom.h"
 #include "Player.h"
 #include "Monster.h"
+#include "ExperimentUtils.h"
+#include "GameMetrics.h"
 #include "RoomManager.h"
 #include "GameRoom.Net.h"
 
@@ -49,6 +51,34 @@ void GameRoom::EnterMonster(MonsterRef monster)
 	monster->SetZoneIndex(zoneIndex);
 	_grid.GetZone(zoneIndex).monsters.insert(monster);
 
+	if (ExperimentUtils::IsHotRoomRoomWideBaseline())
+	{
+		Protocol::S_SPAWN spawnPkt;
+		auto* mInfo = spawnPkt.add_monsters();
+		*mInfo = *monster->GetMonsterInfo();
+		SendBufferRef sb = ClientPacketHandler::MakeSendBuffer(spawnPkt);
+
+		auto& viewers = monster->Viewers_ActorOnly();
+		viewers.clear();
+
+		for (auto& item : _players)
+		{
+			PlayerRef p = item.second;
+			if (!p)
+				continue;
+
+			p->VisibleMonsters_ActorOnly().insert(mid);
+			viewers.insert(p->GetPlayerId());
+		}
+
+		const int32 recipients = Broadcast(sb);
+		GameMetrics::OnBroadcastRecipients(
+			GameMetrics::HotRoomBroadcastKind::Spawn,
+			GameMetrics::HotRoomBroadcastMode::Room,
+			static_cast<std::size_t>(recipients));
+		return;
+	}
+
 	// AOI 처리: 주변 Zone들을 긁어와서 시야 범위 내 플레이어 찾기
 	Vector<Zone*> zones;
 	_grid.GetNearbyZones(zoneIndex, EffectiveAoiRadiusCells(), zones);
@@ -61,6 +91,7 @@ void GameRoom::EnterMonster(MonsterRef monster)
 	// 이 몬스터를 보고 있는 플레이어 목록 초기화
 	auto& viewers = monster->Viewers_ActorOnly();
 	viewers.clear();
+	std::size_t spawnRecipients = 0;
 
 	const auto& mp = *monster->GetPosInfo();
 	const uint32 mConn = GetConnectivityId_ActorOnly(mp); // 벽 너머에 있는 애들은 제외하려고 ID 확인
@@ -86,6 +117,7 @@ void GameRoom::EnterMonster(MonsterRef monster)
 			{
 				viewers.insert(p->GetPlayerId());
 				SendToPlayer(p->GetPlayerId(), sb); // 클라한테 스폰 패킷 전송
+				++spawnRecipients;
 			}
 			else
 			{
@@ -94,6 +126,11 @@ void GameRoom::EnterMonster(MonsterRef monster)
 			}
 		}
 	}
+
+	GameMetrics::OnBroadcastRecipients(
+		GameMetrics::HotRoomBroadcastKind::Spawn,
+		GameMetrics::HotRoomBroadcastMode::Aoi,
+		spawnRecipients);
 }
 
 void GameRoom::LeaveMonster(uint64 objectId)
@@ -112,16 +149,43 @@ void GameRoom::LeaveMonster(uint64 objectId)
 		pkt.add_objectids(objectId);
 		SendBufferRef sb = ClientPacketHandler::MakeSendBuffer(pkt);
 
-		auto& viewers = m->Viewers_ActorOnly();
-		for (uint64 pid : viewers)
+		if (ExperimentUtils::IsHotRoomRoomWideBaseline())
 		{
-			PlayerRef p = FindPlayer_ActorOnly(pid);
-			if (p)
-				p->VisibleMonsters_ActorOnly().erase(objectId); // 플레이어 시야 목록에서 삭제
+			auto& viewers = m->Viewers_ActorOnly();
+			for (uint64 pid : viewers)
+			{
+				PlayerRef p = FindPlayer_ActorOnly(pid);
+				if (p)
+					p->VisibleMonsters_ActorOnly().erase(objectId);
+			}
 
-			SendToPlayer(pid, sb);
+			const int32 recipients = Broadcast(sb);
+			GameMetrics::OnBroadcastRecipients(
+				GameMetrics::HotRoomBroadcastKind::Despawn,
+				GameMetrics::HotRoomBroadcastMode::Room,
+				static_cast<std::size_t>(recipients));
+			viewers.clear();
 		}
-		viewers.clear();
+		else
+		{
+
+			auto& viewers = m->Viewers_ActorOnly();
+			std::size_t despawnRecipients = 0;
+			for (uint64 pid : viewers)
+			{
+				PlayerRef p = FindPlayer_ActorOnly(pid);
+				if (p)
+					p->VisibleMonsters_ActorOnly().erase(objectId); // 플레이어 시야 목록에서 삭제
+
+				SendToPlayer(pid, sb);
+				++despawnRecipients;
+			}
+			viewers.clear();
+			GameMetrics::OnBroadcastRecipients(
+				GameMetrics::HotRoomBroadcastKind::Despawn,
+				GameMetrics::HotRoomBroadcastMode::Aoi,
+				despawnRecipients);
+		}
 	}
 
 	// Grid 시스템에서 몬스터 제거
@@ -155,6 +219,21 @@ void GameRoom::OnMonsterMoved(MonsterRef monster)
 		monster->SetZoneIndex(newZoneIndex);
 	}
 
+	if (ExperimentUtils::IsHotRoomRoomWideBaseline())
+	{
+		Protocol::S_MOVE movePkt;
+		movePkt.set_objectid(mid);
+		*movePkt.mutable_posinfo() = *monster->GetPosInfo();
+		SendBufferRef sb = ClientPacketHandler::MakeSendBuffer(movePkt);
+
+		const int32 recipients = Broadcast(sb);
+		GameMetrics::OnBroadcastRecipients(
+			GameMetrics::HotRoomBroadcastKind::Move,
+			GameMetrics::HotRoomBroadcastMode::Room,
+			static_cast<std::size_t>(recipients));
+		return;
+	}
+
 	// 1단계: Cheap Update - 일단 보고 있던 사람들한테 이동 패킷만 쏨
 	// 시야 목록 갱신은 비용이 비싸니까 매번 안 함
 	{
@@ -164,8 +243,17 @@ void GameRoom::OnMonsterMoved(MonsterRef monster)
 		SendBufferRef sb = ClientPacketHandler::MakeSendBuffer(movePkt);
 
 		auto& viewers = monster->Viewers_ActorOnly();
+		std::size_t moveRecipients = 0;
 		for (uint64 pid : viewers)
+		{
 			SendToPlayer(pid, sb);
+			++moveRecipients;
+		}
+
+		GameMetrics::OnBroadcastRecipients(
+			GameMetrics::HotRoomBroadcastKind::Move,
+			GameMetrics::HotRoomBroadcastMode::Aoi,
+			moveRecipients);
 	}
 
 	// 2단계: Expensive Update 트리거 체크
@@ -225,6 +313,7 @@ void GameRoom::OnMonsterMoved(MonsterRef monster)
 		Protocol::S_DESPAWN pkt;
 		pkt.add_objectids(mid);
 		SendBufferRef sb = ClientPacketHandler::MakeSendBuffer(pkt);
+		std::size_t despawnRecipients = 0;
 
 		for (uint64 pid : oldViewers)
 		{
@@ -234,7 +323,13 @@ void GameRoom::OnMonsterMoved(MonsterRef monster)
 			PlayerRef p = FindPlayer_ActorOnly(pid);
 			if (p) p->VisibleMonsters_ActorOnly().erase(mid);
 			SendToPlayer(pid, sb);
+			++despawnRecipients;
 		}
+
+		GameMetrics::OnBroadcastRecipients(
+			GameMetrics::HotRoomBroadcastKind::Despawn,
+			GameMetrics::HotRoomBroadcastMode::Aoi,
+			despawnRecipients);
 	}
 
 	// Spawn 처리: 새로 보게 된 애들 (New - Old)
@@ -243,6 +338,7 @@ void GameRoom::OnMonsterMoved(MonsterRef monster)
 		auto* mInfo = pkt.add_monsters();
 		*mInfo = *monster->GetMonsterInfo();
 		SendBufferRef sb = ClientPacketHandler::MakeSendBuffer(pkt);
+		std::size_t spawnRecipients = 0;
 
 		for (uint64 pid : newViewers)
 		{
@@ -252,7 +348,13 @@ void GameRoom::OnMonsterMoved(MonsterRef monster)
 			PlayerRef p = FindPlayer_ActorOnly(pid);
 			if (p) p->VisibleMonsters_ActorOnly().insert(mid);
 			SendToPlayer(pid, sb);
+			++spawnRecipients;
 		}
+
+		GameMetrics::OnBroadcastRecipients(
+			GameMetrics::HotRoomBroadcastKind::Spawn,
+			GameMetrics::HotRoomBroadcastMode::Aoi,
+			spawnRecipients);
 	}
 
 	// 갱신된 목록으로 교체하고 타임스탬프 찍음

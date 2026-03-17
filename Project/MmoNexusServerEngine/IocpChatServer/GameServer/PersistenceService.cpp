@@ -319,7 +319,8 @@ namespace Persistence
 
         // RedisManager에서 HGetAll 실패 시 false 반환하도록 되어있음
         // 퀵슬롯은 없을 수도 있지만(Empty), DB 에러랑 구분하기 위해 체크
-        _redis->HGetAll(KeyPlayerQuick(pid), kv);
+        if (_redis->HGetAll(KeyPlayerQuick(pid), kv) == false)
+            return false;
 
         out.set_playerid(pid);
         out.clear_slots();

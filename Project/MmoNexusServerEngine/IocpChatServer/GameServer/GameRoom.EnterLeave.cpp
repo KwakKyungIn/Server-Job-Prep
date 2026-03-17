@@ -7,6 +7,8 @@
 #include "Monster.h"
 #include "PartyActor.h"
 #include "Projectile.h"
+#include "ExperimentUtils.h"
+#include "GameMetrics.h"
 
 // 플레이어를 방 자료구조에 실제로 등록하는 내부 함수
 // (일반 입장, 맵 이동 입장 공통 사용)
@@ -86,7 +88,16 @@ void GameRoom::Enter(PlayerSessionRef session, PlayerRef player)
 
 	// 2. AOI 업데이트 및 주변 스폰 전송
 	// forceFullSnapshot=true: 처음 들어왔으니 주변 모든 객체 정보를 한 번에 받아야 함
-	UpdateAOI(session, player, true /*forceFullSnapshot*/);
+	if (ExperimentUtils::IsHotRoomRoomWideBaseline())
+	{
+		BuildRoomWideVisibilityForPlayer_ActorOnly(player);
+		SendRoomWideSnapshotToPlayer_ActorOnly(session, player, true);
+		BroadcastRoomWidePlayerSpawn_ActorOnly(player);
+	}
+	else
+	{
+		UpdateAOI(session, player, true /*forceFullSnapshot*/);
+	}
 
 	printf(" [Enter-Login] Player %llu\n", player->GetPlayerId());
 }
@@ -123,7 +134,16 @@ void GameRoom::EnterMapChange(PlayerSessionRef session, PlayerRef player)
 
 	// 2. 스폰 패킷 전송 (내 주변 몹/유저 정보)
 	// 맵 로딩이 끝난 직후이므로 풀 스냅샷 전송
-	UpdateAOI(session, player, true /*forceFullSnapshot*/);
+	if (ExperimentUtils::IsHotRoomRoomWideBaseline())
+	{
+		BuildRoomWideVisibilityForPlayer_ActorOnly(player);
+		SendRoomWideSnapshotToPlayer_ActorOnly(session, player, true);
+		BroadcastRoomWidePlayerSpawn_ActorOnly(player);
+	}
+	else
+	{
+		UpdateAOI(session, player, true /*forceFullSnapshot*/);
+	}
 
 	// 3. 파티 정보 재전송
 	// 맵 이동 시 파티 UI가 갱신되어야 하므로 파티 액터에게 정보 요청
@@ -177,20 +197,41 @@ void GameRoom::Leave(PlayerSessionRef session, PlayerRef player)
 	// 1. 주변 시야 정리 (Despawn 전파)
 	// 나를 보고 있던 유저들에게 "나 사라짐" 패킷을 보내고, 
 	// 그들의 Visible List에서 나를 지워야 함 (Zombie 객체 방지)
+	if (ExperimentUtils::IsHotRoomRoomWideBaseline())
+	{
+		Protocol::S_DESPAWN pkt;
+		pkt.add_objectids(meId);
+		SendBufferRef sb = ClientPacketHandler::MakeSendBuffer(pkt);
+
+		const int32 recipients = Broadcast(sb, meId);
+		GameMetrics::OnBroadcastRecipients(
+			GameMetrics::HotRoomBroadcastKind::Despawn,
+			GameMetrics::HotRoomBroadcastMode::Room,
+			static_cast<std::size_t>(recipients));
+
+		ClearRoomWideVisibilityForPlayer_ActorOnly(player);
+	}
+	else
 	{
 		Protocol::S_DESPAWN pkt;
 		pkt.add_objectids(meId);
 		SendBufferRef sb = ClientPacketHandler::MakeSendBuffer(pkt);
 
 		auto& visP = player->VisiblePlayers_ActorOnly();
+		std::size_t recipients = 0;
 		for (uint64 vid : visP)
 		{
 			PlayerRef other = FindPlayer_ActorOnly(vid);
 			if (!other) continue;
 			other->VisiblePlayers_ActorOnly().erase(meId);
 			SendToPlayer(vid, sb);
+			++recipients;
 		}
 		visP.clear();
+		GameMetrics::OnBroadcastRecipients(
+			GameMetrics::HotRoomBroadcastKind::Despawn,
+			GameMetrics::HotRoomBroadcastMode::Aoi,
+			recipients);
 
 		// 몬스터 어그로 목록에서도 제거
 		auto& visM = player->VisibleMonsters_ActorOnly();

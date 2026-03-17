@@ -34,11 +34,50 @@ namespace
 		return defaultValue;
 	}
 
+	float ReadFloat(const json& object, const char* key, float defaultValue)
+	{
+		if (object.is_object() && object.contains(key) && object[key].is_number())
+			return object[key].get<float>();
+		return defaultValue;
+	}
+
 	std::string ReadString(const json& object, const char* key, const std::string& defaultValue)
 	{
 		if (object.is_object() && object.contains(key) && object[key].is_string())
 			return object[key].get<std::string>();
 		return defaultValue;
+	}
+
+	HotRoomAoiMode ReadHotRoomAoiMode(const json& object, const char* key, HotRoomAoiMode defaultValue)
+	{
+		if (object.is_object() == false || object.contains(key) == false || object[key].is_string() == false)
+			return defaultValue;
+
+		const std::string value = object[key].get<std::string>();
+		if (value == "final")
+			return HotRoomAoiMode::Final;
+		if (value == "room_wide_baseline")
+			return HotRoomAoiMode::RoomWideBaseline;
+
+		std::cout << "[Config][WARN] Unknown Experiment." << key << "(" << value
+			<< "). Fallback to final." << std::endl;
+		return HotRoomAoiMode::Final;
+	}
+
+	PersistenceMode ReadPersistenceMode(const json& object, const char* key, PersistenceMode defaultValue)
+	{
+		if (object.is_object() == false || object.contains(key) == false || object[key].is_string() == false)
+			return defaultValue;
+
+		const std::string value = object[key].get<std::string>();
+		if (value == "writeback")
+			return PersistenceMode::Writeback;
+		if (value == "immediate_quickslot")
+			return PersistenceMode::ImmediateQuickslot;
+
+		std::cout << "[Config][WARN] Unknown Experiment." << key << "(" << value
+			<< "). Fallback to writeback." << std::endl;
+		return PersistenceMode::Writeback;
 	}
 
 	void NormalizeMetricsConfig(MetricsConfig& metrics)
@@ -58,6 +97,18 @@ namespace
 			metrics.Enabled = false;
 			metrics.Port = 0;
 		}
+	}
+
+	void NormalizeExperimentConfig(ServerConfig::ExperimentConfig& experiment)
+	{
+		if (experiment.AutoCommitIntervalSec <= 0)
+			experiment.AutoCommitIntervalSec = 120;
+
+		if (experiment.ForceEnterWorldMapId < 0)
+			experiment.ForceEnterWorldMapId = 0;
+
+		if (experiment.RandomSpawnRadius < 0.0f)
+			experiment.RandomSpawnRadius = 0.0f;
 	}
 
 	std::string WideToUtf8(const std::wstring& value)
@@ -191,7 +242,21 @@ namespace
 				outConfig.Metrics.BindAddress = ReadString(metrics, "BindAddress", outConfig.Metrics.BindAddress);
 			}
 
+			if (data.contains("Experiment") && data["Experiment"].is_object())
+			{
+				const json& experiment = data["Experiment"];
+				outConfig.Experiment.Enabled = ReadBool(experiment, "Enabled", outConfig.Experiment.Enabled);
+				outConfig.Experiment.HotRoomMode = ReadHotRoomAoiMode(experiment, "HotRoomAoiMode", outConfig.Experiment.HotRoomMode);
+				outConfig.Experiment.Persistence = ReadPersistenceMode(experiment, "PersistenceMode", outConfig.Experiment.Persistence);
+				outConfig.Experiment.AutoCommitIntervalSec = ReadInt(experiment, "AutoCommitIntervalSec", outConfig.Experiment.AutoCommitIntervalSec);
+				outConfig.Experiment.ForceEnterWorldMapId = ReadInt(experiment, "ForceEnterWorldMapId", outConfig.Experiment.ForceEnterWorldMapId);
+				outConfig.Experiment.RandomSpawnOnEnter = ReadBool(experiment, "RandomSpawnOnEnter", outConfig.Experiment.RandomSpawnOnEnter);
+				outConfig.Experiment.RandomSpawnOnRespawn = ReadBool(experiment, "RandomSpawnOnRespawn", outConfig.Experiment.RandomSpawnOnRespawn);
+				outConfig.Experiment.RandomSpawnRadius = ReadFloat(experiment, "RandomSpawnRadius", outConfig.Experiment.RandomSpawnRadius);
+			}
+
 			NormalizeMetricsConfig(outConfig.Metrics);
+			NormalizeExperimentConfig(outConfig.Experiment);
 			std::cout << "[Config] Loaded Successfully: " << configPath << std::endl;
 		}
 		catch (const std::exception& e)
@@ -200,6 +265,7 @@ namespace
 				<< ". Defaults will be used." << std::endl;
 			outConfig = ServerConfig();
 			NormalizeMetricsConfig(outConfig.Metrics);
+			NormalizeExperimentConfig(outConfig.Experiment);
 		}
 	}
 }

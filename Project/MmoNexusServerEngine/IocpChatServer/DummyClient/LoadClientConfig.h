@@ -69,6 +69,7 @@ struct LoadClientConfig
 	float moveHz = 0.0f;
 	float skillHz = 0.0f;
 	float heartbeatHz = 0.0f;
+	float quickslotHz = 0.0f;
 
 	SpawnCluster spawnCluster;
 	AccountConfig account;

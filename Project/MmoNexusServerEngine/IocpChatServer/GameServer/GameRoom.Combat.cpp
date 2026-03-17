@@ -2,9 +2,11 @@
 #include "GameRoom.h"
 #include "GameMap.h"
 #include "Player.h"
+#include "ExperimentUtils.h"
 #include "RoomManager.h"
 #include "GameRoom.Net.h"
 #include "Projectile.h"
+#include "GameMetrics.h"
 
 
 void GameRoom::HandleSkill(std::shared_ptr<Creature> attacker, int32 skillId, float castYaw, uint32 clientTimeMs)
@@ -57,7 +59,17 @@ void GameRoom::HandleSkill(std::shared_ptr<Creature> attacker, int32 skillId, fl
             skillPkt.set_cooldownms(skillData->cooldown());
 
             SendBufferRef skillBuffer = ClientPacketHandler::MakeSendBuffer(skillPkt);
-            BroadcastToZone(skillBuffer, zoneIndex);
+            const bool roomWideBaseline = ExperimentUtils::IsHotRoomRoomWideBaseline();
+            const uint64 exceptId = (roomWideBaseline && attacker->GetObjectType() == Protocol::OBJECT_TYPE_PLAYER)
+                ? std::static_pointer_cast<Player>(attacker)->GetPlayerId()
+                : 0;
+            const int32 recipients = roomWideBaseline
+                ? Broadcast(skillBuffer, exceptId)
+                : BroadcastToZone(skillBuffer, zoneIndex);
+            GameMetrics::OnBroadcastRecipients(
+                GameMetrics::HotRoomBroadcastKind::Skill,
+                roomWideBaseline ? GameMetrics::HotRoomBroadcastMode::Room : GameMetrics::HotRoomBroadcastMode::Aoi,
+                static_cast<std::size_t>(recipients));
         }
 
         // 2. 투사체 속성 설정 (속도, 수명, 히트 반경 등)
@@ -130,7 +142,17 @@ void GameRoom::HandleSkill(std::shared_ptr<Creature> attacker, int32 skillId, fl
         skillPkt.set_cooldownms(skillData->cooldown());
 
         SendBufferRef skillBuffer = ClientPacketHandler::MakeSendBuffer(skillPkt);
-        BroadcastToZone(skillBuffer, result.zoneIndex);
+        const bool roomWideBaseline = ExperimentUtils::IsHotRoomRoomWideBaseline();
+        const uint64 exceptId = (roomWideBaseline && attacker->GetObjectType() == Protocol::OBJECT_TYPE_PLAYER)
+            ? std::static_pointer_cast<Player>(attacker)->GetPlayerId()
+            : 0;
+        const int32 recipients = roomWideBaseline
+            ? Broadcast(skillBuffer, exceptId)
+            : BroadcastToZone(skillBuffer, result.zoneIndex);
+        GameMetrics::OnBroadcastRecipients(
+            GameMetrics::HotRoomBroadcastKind::Skill,
+            roomWideBaseline ? GameMetrics::HotRoomBroadcastMode::Room : GameMetrics::HotRoomBroadcastMode::Aoi,
+            static_cast<std::size_t>(recipients));
     }
 
     // 2. 피격 결과(HP 감소) 패킷 전송
@@ -146,7 +168,14 @@ void GameRoom::HandleSkill(std::shared_ptr<Creature> attacker, int32 skillId, fl
         changePkt.set_damage(hit.damage);
 
         SendBufferRef sendBuffer = ClientPacketHandler::MakeSendBuffer(changePkt);
-        BroadcastToZone(sendBuffer, result.zoneIndex);
+        const bool roomWideBaseline = ExperimentUtils::IsHotRoomRoomWideBaseline();
+        const int32 recipients = roomWideBaseline
+            ? Broadcast(sendBuffer)
+            : BroadcastToZone(sendBuffer, result.zoneIndex);
+        GameMetrics::OnBroadcastRecipients(
+            GameMetrics::HotRoomBroadcastKind::Hp,
+            roomWideBaseline ? GameMetrics::HotRoomBroadcastMode::Room : GameMetrics::HotRoomBroadcastMode::Aoi,
+            static_cast<std::size_t>(recipients));
     }
 }
 

@@ -50,6 +50,7 @@ bool LoadClientConfig::LoadFromFile(const std::string& path, LoadClientConfig& o
 	outConfig.moveHz = j.value("move_hz", outConfig.moveHz);
 	outConfig.skillHz = j.value("skill_hz", outConfig.skillHz);
 	outConfig.heartbeatHz = j.value("heartbeat_hz", outConfig.heartbeatHz);
+	outConfig.quickslotHz = j.value("quickslot_hz", outConfig.quickslotHz);
 
 	if (j.contains("spawn_cluster") && j["spawn_cluster"].is_object())
 	{

@@ -108,7 +108,7 @@
   "hold_sec": 300,
 
   "channel_id": 1,
-  "map_id": 1,
+  "map_id": 2,
 
   "scenario": "move",
   "move_hz": 6,
@@ -119,7 +119,7 @@
     "center_x": 512.0,
     "center_y": 0.0,
     "center_z": 512.0,
-    "radius": 20.0
+    "radius": 120.0
   },
 
   "account": {
@@ -186,4 +186,3 @@
 - 단일 PC 환경은 네트워크/CPU 병목이 겹침
 - LoginServer/DBAgent 부하가 GameServer 결과에 영향을 줄 수 있음
 - CCU는 “측정 결과”로만 표기
-

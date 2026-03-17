@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstddef>
 #include <cstdint>
 
 namespace Protocol
@@ -31,6 +32,60 @@ namespace GameMetrics
         Handler,
     };
 
+    enum class HotRoomBroadcastKind
+    {
+        Move,
+        Skill,
+        Hp,
+        Spawn,
+        Despawn,
+    };
+
+    enum class HotRoomBroadcastMode
+    {
+        Aoi,
+        Room,
+    };
+
+    enum class AoiObjectKind
+    {
+        Player,
+        Monster,
+        Projectile,
+    };
+
+    enum class AutoCommitDomain
+    {
+        Core,
+        Inventory,
+        QuickSlot,
+    };
+
+    enum class AutoCommitSkipReason
+    {
+        Inflight,
+        EmptySnapshot,
+        RedisMissing,
+    };
+
+    enum class DirtySetDomain
+    {
+        Player,
+        Inventory,
+        QuickSlot,
+    };
+
+    enum class PersistenceMutationDomain
+    {
+        QuickSlot,
+    };
+
+    enum class PersistenceMutationPath
+    {
+        Writeback,
+        Immediate,
+    };
+
     void Initialize();
     void Shutdown();
 
@@ -44,6 +99,18 @@ namespace GameMetrics
 
     void OnSessionCountChanged(std::int64_t sessionCount);
     void OnIngamePlayerCountChanged(std::int64_t ingameCount);
+    void OnBroadcastRecipients(HotRoomBroadcastKind kind, HotRoomBroadcastMode mode, std::size_t recipients);
+    void OnAoiUpdate(double elapsedSeconds);
+    void OnAoiUpdateCount();
+    void OnAoiCandidates(AoiObjectKind kind, std::size_t count);
+    void OnAoiVisible(AoiObjectKind kind, std::size_t count);
+    void OnAutoCommitTick(double elapsedSeconds);
+    void OnAutoCommitTargets(std::size_t count);
+    void OnAutoCommitInflight(std::size_t count);
+    void OnAutoCommitSent(AutoCommitDomain domain, std::size_t count = 1);
+    void OnAutoCommitSkip(AutoCommitSkipReason reason, std::size_t count = 1);
+    void OnDirtySetSize(DirtySetDomain domain, std::size_t count);
+    void OnPersistenceMutation(PersistenceMutationDomain domain, PersistenceMutationPath path, std::size_t count = 1);
 
     template<typename T>
     inline void TrackS2SRequestPacket(std::uint16_t /*packetId*/, const T& /*pkt*/)
