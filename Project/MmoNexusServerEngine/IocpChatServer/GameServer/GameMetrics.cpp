@@ -102,7 +102,7 @@ namespace
             MetricsSystem::Instance().RegisterHistogram(
                 "s2s_rtt_seconds",
                 "S2S request-to-response RTT in seconds.",
-                MetricsHistogramBuckets::DbQuerySeconds(),
+                MetricsHistogramBuckets::JobQueueWaitSeconds(),
                 { "op" }),
             MetricsSystem::Instance().RegisterHistogram(
                 "broadcast_recipients",

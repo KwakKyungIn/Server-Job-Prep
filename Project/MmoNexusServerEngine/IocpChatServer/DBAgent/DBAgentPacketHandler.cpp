@@ -3,6 +3,7 @@
 #include "DBConnectionPool.h"
 #include "DBAgentMetrics.h"
 #include "GameSession.h" // [필수] GameSession 클래스를 알기 위해 추가
+#include "LoginSession.h"
 #include "Job.h"         // [필수] Job을 생성하기 위해 추가
 
 static constexpr int32 QS_MAX = 12; // 0~11
@@ -16,14 +17,12 @@ bool DBAgentPacketHandler::Handle_INVALID(PacketSessionRef& session, BYTE* buffe
 // [Game -> DB] 로그인 요청 처리
 bool DBAgentPacketHandler::Handle_S2S_REQ_LOGIN(PacketSessionRef& session, Protocol::S2S_REQ_LOGIN& pkt)
 {
-	// [FIX] GameSessionRef가 없으면 그냥 shared_ptr<GameSession> 쓰면 된다.
-	// 부모(PacketSession)를 자식(GameSession)으로 변환해야 PushJob을 쓸 수 있다.
-	shared_ptr<GameSession> gameSession = static_pointer_cast<GameSession>(session);
+	PacketSessionRef ownerSession = session;
 
 	// [JOB WRAPPING] 
 	// 기존 로직을 그대로 람다([]) 안으로 옮긴다.
 	// 이제 이 코드는 네트워크 스레드가 아니라, 로직 스레드에서 실행된다.
-	gameSession->PushJob(ObjectPool<Job>::MakeShared([gameSession, pkt]()
+	shared_ptr<Job> job = ObjectPool<Job>::MakeShared([ownerSession, pkt]()
 		{
 			DBAgentMetrics::ScopedRequestMetrics requestScope(DBAgentPacketHandler::PKT_S2S_REQ_LOGIN);
 
@@ -96,14 +95,26 @@ bool DBAgentPacketHandler::Handle_S2S_REQ_LOGIN(PacketSessionRef& session, Proto
 			resPkt.set_playersessionid(pkt.playersessionid()); // 왕복 티켓
 
 			auto sendBuffer = DBAgentPacketHandler::MakeSendBuffer(resPkt);
-			gameSession->Send(sendBuffer);
+			ownerSession->Send(sendBuffer);
 
 			// ==========================================================
 			//  기존 코드 끝
 			// ==========================================================
-		}));
+		});
 
-	return true;
+	if (auto gameSession = dynamic_pointer_cast<GameSession>(session))
+	{
+		gameSession->PushJob(job);
+		return true;
+	}
+
+	if (auto loginSession = dynamic_pointer_cast<LoginSession>(session))
+	{
+		loginSession->PushJob(job);
+		return true;
+	}
+
+	return false;
 }
 
 // [Game -> DB] 아이템 로딩 요청 처리
@@ -111,7 +122,7 @@ bool DBAgentPacketHandler::Handle_S2S_REQ_ITEMS_LOAD(PacketSessionRef& session, 
 {
 	shared_ptr<GameSession> gameSession = static_pointer_cast<GameSession>(session);
 
-	gameSession->PushJob(ObjectPool<Job>::MakeShared([gameSession, pkt]()
+	gameSession->PushHighJob(ObjectPool<Job>::MakeShared([gameSession, pkt]()
 		{
 			DBAgentMetrics::ScopedRequestMetrics requestScope(DBAgentPacketHandler::PKT_S2S_REQ_ITEMS_LOAD);
 
@@ -185,7 +196,7 @@ bool DBAgentPacketHandler::Handle_S2S_REQ_LOAD_GAME_DATA(PacketSessionRef& sessi
 {
 	shared_ptr<GameSession> gameSession = static_pointer_cast<GameSession>(session);
 
-	gameSession->PushJob(ObjectPool<Job>::MakeShared([gameSession, pkt]()
+	gameSession->PushHighJob(ObjectPool<Job>::MakeShared([gameSession, pkt]()
 		{
 			DBAgentMetrics::ScopedRequestMetrics requestScope(DBAgentPacketHandler::PKT_S2S_REQ_LOAD_GAME_DATA);
 
@@ -362,7 +373,7 @@ bool DBAgentPacketHandler::Handle_S2S_REQ_LOAD_PLAYER_DATA(PacketSessionRef& ses
 {
 	shared_ptr<GameSession> gameSession = static_pointer_cast<GameSession>(session);
 
-	gameSession->PushJob(ObjectPool<Job>::MakeShared([gameSession, pkt]()
+	gameSession->PushHighJob(ObjectPool<Job>::MakeShared([gameSession, pkt]()
 		{
 			DBAgentMetrics::ScopedRequestMetrics requestScope(DBAgentPacketHandler::PKT_S2S_REQ_LOAD_PLAYER_DATA);
 
@@ -668,7 +679,7 @@ bool DBAgentPacketHandler::Handle_S2S_REQ_QUICKSLOT_LOAD(PacketSessionRef& sessi
 {
 	auto gameSession = static_pointer_cast<GameSession>(session);
 
-	gameSession->PushJob(ObjectPool<Job>::MakeShared([gameSession, pkt]()
+	gameSession->PushHighJob(ObjectPool<Job>::MakeShared([gameSession, pkt]()
 		{
 			DBAgentMetrics::ScopedRequestMetrics requestScope(DBAgentPacketHandler::PKT_S2S_REQ_QUICKSLOT_LOAD);
 

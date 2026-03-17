@@ -9,7 +9,8 @@ class GameSession : public PacketSession
 public:
 	GameSession()
 	{
-		// [NEW] 엔진 장착
+		// 우선순위 큐: LOAD 계열 요청은 high 큐로 분리해 SAVE 버스트의 영향을 줄인다.
+		_highJobQueue = MakeShared<JobQueue>();
 		_jobQueue = MakeShared<JobQueue>();
 	}
 	virtual ~GameSession() {}
@@ -25,7 +26,14 @@ public:
 		_jobQueue->Push(job);
 	}
 
+	void PushHighJob(shared_ptr<Job> job)
+	{
+		_highJobQueue->Push(job);
+	}
+
 public:
-	// [NEW] 이 세션(GameServer)에서 오는 요청을 처리할 큐
+	// 우선순위 높은 요청(LOAD 계열)용 큐
+	shared_ptr<JobQueue> _highJobQueue;
+	// 일반 요청(SAVE 계열 등)용 큐
 	shared_ptr<JobQueue> _jobQueue;
 };

@@ -77,6 +77,8 @@ void Service::ReleaseSession(SessionRef session)
 
 void Service::CheckHeartbeat()
 {
+	static constexpr uint64 kHeartbeatTimeoutMs = 60000;
+
 	uint64 now = ::GetTickCount64();
 	Vector<SessionRef> timeoutSessions;
 
@@ -88,7 +90,7 @@ void Service::CheckHeartbeat()
 
 			uint64 lastRecv = session->GetLastRecvTime();
 
-			if (lastRecv != 0 && (now - lastRecv > 30000))
+			if (lastRecv != 0 && (now - lastRecv > kHeartbeatTimeoutMs))
 			{
 				std::cout << "Heartbeat Timeout!" << std::endl;
 				timeoutSessions.push_back(session);

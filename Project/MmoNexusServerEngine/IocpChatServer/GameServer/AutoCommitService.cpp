@@ -9,10 +9,86 @@
 
 #include <algorithm>
 #include <chrono>
+#include <thread>
 #include <vector>
 
 namespace Persistence
 {
+    namespace
+    {
+        // Flush 버스트를 줄이기 위해 한 번에 처리할 타겟 수를 제한한다.
+        constexpr size_t kAutoCommitTargetsPerBatch = 12;
+        constexpr int32 kAutoCommitInterBatchSleepMs = 8;
+        // SendBuffer chunk(6KB) 하드 제한보다 여유 있게 인벤토리 저장 패킷을 분할한다.
+        constexpr int32 kInventoryChunkMaxBytes = 3500;
+
+        int32 SendInventoryChunked(
+            const AutoCommitService::SendInvFn& sendInv,
+            const Protocol::S2S_REQ_SAVE_INVENTORY& srcReq)
+        {
+            if (sendInv == nullptr)
+                return 0;
+
+            Protocol::S2S_REQ_SAVE_INVENTORY chunkReq;
+            chunkReq.set_playerid(srcReq.playerid());
+
+            int32 sentCount = 0;
+            bool hasPayload = false;
+
+            // 삭제 목록은 첫 청크에만 넣는다.
+            for (int i = 0; i < srcReq.deleteditemuids_size(); ++i)
+            {
+                chunkReq.add_deleteditemuids(srcReq.deleteditemuids(i));
+                hasPayload = true;
+            }
+
+            auto FlushChunk = [&]() -> bool
+            {
+                if (hasPayload == false)
+                    return true;
+
+                sendInv(chunkReq);
+                ++sentCount;
+
+                chunkReq.clear_deleteditemuids();
+                chunkReq.clear_items();
+                hasPayload = false;
+                return true;
+            };
+
+            for (int i = 0; i < srcReq.items_size(); ++i)
+            {
+                const Protocol::ItemInfo& item = srcReq.items(i);
+                *chunkReq.add_items() = item;
+                hasPayload = true;
+
+                if (chunkReq.ByteSizeLong() > kInventoryChunkMaxBytes)
+                {
+                    chunkReq.mutable_items()->RemoveLast();
+
+                    if (FlushChunk() == false)
+                        return sentCount;
+
+                    *chunkReq.add_items() = item;
+                    hasPayload = true;
+
+                    // 단일 아이템이 너무 커서 기준을 넘어도 그대로 전송(무한 루프 방지)
+                    if (chunkReq.ByteSizeLong() > kInventoryChunkMaxBytes)
+                    {
+                        sendInv(chunkReq);
+                        ++sentCount;
+                        chunkReq.clear_deleteditemuids();
+                        chunkReq.clear_items();
+                        hasPayload = false;
+                    }
+                }
+            }
+
+            FlushChunk();
+            return sentCount;
+        }
+    }
+
     AutoCommitService& AutoCommitService::I()
     {
         static AutoCommitService s;
@@ -228,8 +304,16 @@ namespace Persistence
             GameMetrics::OnAutoCommitInflight(_inflightCount.size());
         }
 
+        std::vector<uint64> targetList;
+        targetList.reserve(targets.size());
         for (uint64 pid : targets)
+            targetList.push_back(pid);
+
+        size_t processedInBatch = 0;
+        for (size_t i = 0; i < targetList.size(); ++i)
         {
+            const uint64 pid = targetList[i];
+
             // 이미 저장 요청이 진행 중인 플레이어는 건너뜀 (중복 저장 방지)
             {
                 std::lock_guard<std::mutex> lock(_mx);
@@ -269,9 +353,16 @@ namespace Persistence
 
             if (invOk && _sendInv)
             {
-                _sendInv(invReq);
-                sentCount++;
-                GameMetrics::OnAutoCommitSent(GameMetrics::AutoCommitDomain::Inventory);
+                const int32 invSentCount = SendInventoryChunked(_sendInv, invReq);
+                if (invSentCount > 0)
+                {
+                    sentCount += invSentCount;
+                    GameMetrics::OnAutoCommitSent(GameMetrics::AutoCommitDomain::Inventory, static_cast<std::size_t>(invSentCount));
+                }
+                else
+                {
+                    GameMetrics::OnAutoCommitSkip(GameMetrics::AutoCommitSkipReason::EmptySnapshot);
+                }
             }
             else if (shouldHandleInv && !invOk)
             {
@@ -297,6 +388,13 @@ namespace Persistence
                 std::lock_guard<std::mutex> lock(_mx);
                 _inflightCount[pid] = sentCount;
                 GameMetrics::OnAutoCommitInflight(_inflightCount.size());
+            }
+
+            ++processedInBatch;
+            if (processedInBatch >= kAutoCommitTargetsPerBatch && (i + 1) < targetList.size())
+            {
+                std::this_thread::sleep_for(std::chrono::milliseconds(kAutoCommitInterBatchSleepMs));
+                processedInBatch = 0;
             }
         }
 
