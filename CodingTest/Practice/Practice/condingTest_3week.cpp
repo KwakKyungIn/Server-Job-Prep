@@ -410,6 +410,8 @@ int main() {
 }
 */
 
+/*
+
 int main() {
 	ios_base::sync_with_stdio(false); cin.tie(NULL);
 
@@ -483,4 +485,294 @@ int main() {
 
 
 	cout << cnt;
+}
+*/
+/*
+const int dy[] = { -1,1,0,0 };
+const int dx[] = { 0,0,-1,1 };
+int R, C;
+vector<int> visited(26);
+
+bool check(char c) {
+	int k = c - 'A';
+	if (visited[k] == 1) {
+		return true;
+	}
+	else {
+		return false;
+	}
+}
+
+int go(vector<string> &grid, int sy,int sx) {
+	visited[grid[sy][sx] - 'A'] = 1;
+	int maxLen = 0;
+
+	for (int i = 0; i < 4; i++) {
+		int ny = dy[i] + sy;
+		int nx = dx[i] + sx;
+
+		if (ny >= R || ny < 0 || nx >= C || nx < 0)continue;
+		if(check(grid[ny][nx]))continue;
+
+		
+		maxLen = max(maxLen, go(grid, ny, nx));
+
+		
+
+	}
+	visited[grid[sy][sx] - 'A'] = 0;
+	return maxLen+1;
+}
+
+int main() {
+	ios_base::sync_with_stdio(false); cin.tie(NULL);
+
+	
+	cin >> R >> C;
+
+	vector<string> grid(R);
+
+	for (int i = 0; i < R; i++) {
+		cin >> grid[i];
+	}
+
+	cout<<go(grid, 0, 0);
+
+
+}
+
+*/
+
+/*
+
+vector<int> visited(10);
+vector<char> checkingList;
+int n;
+bool check(int i) {
+
+	if (visited[i] == 1) {
+		return true;
+	}
+	else {
+		return false;
+	}
+}
+
+int go(int n) {
+	visited[n] = 1;
+
+
+	visited[n] = 0;
+}
+int main() {
+	ios_base::sync_with_stdio(false); cin.tie(NULL);
+
+	cin >> n;
+
+	for (int i = 0; i < n; i++) {
+		char temp;
+		cin >> temp;
+		checkingList.push_back(temp);
+	}
+	for (int i = 0; i < 10; i++) {
+		go(i);
+	}
+}
+
+*/
+
+/*
+int main() {
+	ios_base::sync_with_stdio(false); cin.tie(NULL);
+
+	int level = 0;
+	cin >> level;
+	int cnt = 0;
+	cnt = (1 << level) - 1;
+
+	vector<int> num(cnt);
+	vector<vector<int>> answer(level);
+
+	for (int i = 0; i < cnt; i++) {
+		int temp;
+		cin >> temp;
+		num[i] = temp;
+	}
+
+	while (level!=1) {
+
+
+
+		level--;
+	}
+
+}
+*/
+
+/*
+const int dy[] = { -1,1,0,0 };
+const int dx[] = { 0,0,-1,1 };
+int R, C,K;
+int countN;
+void go(vector<string>& grid, vector<vector<int>> &visited, int sy, int sx, int dist) {
+	visited[sy][sx] = 1;
+	dist++;
+	if (dist == K) {
+		if (sy == 0 && sx==C-1) countN++;
+		visited[sy][sx] = 0;
+		return;
+	}
+
+	for (int i = 0; i < 4; i++) {
+		int ny = dy[i] + sy;
+		int nx = dx[i] + sx;
+
+		if (ny >= R || ny < 0 || nx >= C || nx < 0)continue;
+		if (visited[ny][nx]) continue;
+		if (grid[ny][nx] == 'T')continue;
+
+		go(grid, visited, ny, nx, dist);
+	}
+	visited[sy][sx] = 0;
+}
+
+int main() {
+	ios_base::sync_with_stdio(false); cin.tie(NULL);
+
+
+	cin >> R >> C>>K;
+
+	vector<string> grid(R);
+	vector<vector<int>> visited(R, vector<int>(C));
+
+	for (int i = 0; i < R; i++) {
+		cin >> grid[i];
+	}
+
+	go(grid, visited, R-1, 0, 0);
+
+	cout<<countN;
+}
+*/
+/*
+int dy[] = { 0, -1, 1, 0, 0 };
+int dx[] = { 0, 0, 0, -1, 1 };
+
+bool canPlace(int y, int x, vector<vector<int>>& visited, vector<vector<int>>& cost) {
+	for (int i = 0; i < 5; i++) {
+		int ny = y + dy[i];
+		int nx = x + dx[i];
+
+		if (visited[ny][nx]) return false;
+	}
+	return true;
+}
+
+int getCost(int y, int x, vector<vector<int>>& cost) {
+	int sum = 0;
+	for (int i = 0; i < 5; i++) {
+		int ny = y + dy[i];
+		int nx = x + dx[i];
+		sum += cost[ny][nx];
+	}
+	return sum;
+}
+
+void setVisited(int y, int x, vector<vector<int>>& visited, int val) {
+	for (int i = 0; i < 5; i++) {
+		int ny = y + dy[i];
+		int nx = x + dx[i];
+		visited[ny][nx] = val;
+	}
+}
+int N;
+int main() {
+
+	cin >> N;
+	vector<vector<int>> grid(N, vector<int>(N));
+	vector<vector<int>> visited(N, vector<int>(N));
+
+	for (int i = 0; i < N; i++) {
+		for (int j = 0; j < N; j++) {
+			cin >> grid[i][j];
+		}
+	}
+
+
+	for (int i = 0; i < N * N; i++) {
+		for (int j = i + 1; j < N * N; j++) {
+			for (int k = j + 1; k < N * N; k++) {
+
+				int y1 = i / N, x1 = i % N;
+				int y2 = j / N, x2 = j % N;
+				int y3 = k / N, x3 = k % N;
+
+				if (canPlace(y1, x1,visited, grid) &&
+					canPlace(y2, x2,visited, grid) &&
+					canPlace(y3, x3, visited, grid)) {
+
+					int total = 0;
+
+					setVisited(y1, x1, visited, 1);
+					setVisited(y2, x2, visited, 1);
+					setVisited(y3, x3, visited, 1);
+
+					total += getCost(y1, x1,grid);
+					total += getCost(y2, x2,grid);
+					total += getCost(y3, x3,grid);
+
+					// min °»½Å
+
+					setVisited(y1, x1, visited, 0);
+					setVisited(y2, x2, visited, 0);
+					setVisited(y3, x3, visited, 0);
+				}
+
+
+			}
+		}
+	}
+
+
+}
+*/
+
+/*
+int main() {
+	ios_base::sync_with_stdio(false);
+	cin.tie(NULL);
+
+	int N;
+
+	cin >> N;
+	int longcnt = N / 4;
+
+	for (int i = 0; i < longcnt; i++) {
+		cout << "long ";
+	}
+	cout << "int";
+}
+
+*/
+
+
+
+int main() {
+	int N, M;
+	cin >> N >> M;
+	vector<int> answer(N);
+	for (int i = 0; i < N; i++) {
+		answer[i] = i+1;
+	}
+
+	for (int i = 0; i < M; i++) {
+		int temp1, temp2, temp3;
+		cin >> temp1 >> temp2;
+		temp3 = answer[temp1-1];
+		answer[temp1-1] = answer[temp2-1];
+		answer[temp2-1] = temp3;
+	}
+	for (auto a : answer) {
+		cout << a << ' ';
+	}
 }
